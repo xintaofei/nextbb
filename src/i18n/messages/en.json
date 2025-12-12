@@ -1,0 +1,10 @@
+{
+  "Index": {
+    "title": "Hello, Next.js",
+    "description": "This is a production-ready i18n example."
+  },
+  "Dashboard": {
+    "title": "你好，Next.js",
+    "description": "这是一个生产级多语言示例。"
+  }
+}
