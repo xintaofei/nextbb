@@ -6,7 +6,7 @@ export function NavTop() {
       className="dark:invert"
       src="/next.svg"
       alt="Vercel logomark"
-      width={160}
+      width={120}
       height={80}
     />
   )
