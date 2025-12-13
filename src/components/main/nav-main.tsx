@@ -1,4 +1,4 @@
-import { Edit } from "lucide-react"
+import { BookUser, Edit, Inbox, Layers } from "lucide-react"
 
 import {
   SidebarGroup,
@@ -13,19 +13,19 @@ export function NavMain() {
       <SidebarMenu>
         <Link href="/">
           <SidebarMenuButton>
-            <Edit />
+            <Layers />
             <span>话题</span>
           </SidebarMenuButton>
         </Link>
         <Link href="/user/activity">
           <SidebarMenuButton>
-            <Edit />
+            <BookUser />
             <span>我的帖子</span>
           </SidebarMenuButton>
         </Link>
         <Link href="/user/messages">
           <SidebarMenuButton>
-            <Edit />
+            <Inbox />
             <span>我的消息</span>
           </SidebarMenuButton>
         </Link>
