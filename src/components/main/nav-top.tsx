@@ -1,19 +1,13 @@
-import {
-  SidebarMenu,
-  SidebarMenuItem,
-  SidebarTrigger,
-} from "@/components/ui/sidebar"
-import { AudioWaveform } from "lucide-react"
+import Image from "next/image"
 
 export function NavTop() {
   return (
-    <SidebarMenu>
-      <SidebarMenuItem>
-        <div className="flex flex-row justify-between items-center p-2">
-          <AudioWaveform className="size-6" />
-          <SidebarTrigger className="-ml-1" />
-        </div>
-      </SidebarMenuItem>
-    </SidebarMenu>
+    <Image
+      className="dark:invert"
+      src="/next.svg"
+      alt="Vercel logomark"
+      width={160}
+      height={80}
+    />
   )
 }
