@@ -1,4 +1,4 @@
-import { BookUser, Edit, Inbox, Layers } from "lucide-react"
+import { BookUser, Inbox, Layers } from "lucide-react"
 
 import {
   SidebarGroup,
