@@ -142,7 +142,7 @@ export default function Home() {
           <col />
           <col className="w-40" />
           <col className="w-20" />
-          <col className="w-24" />
+          <col className="w-20" />
           <col className="w-20" />
         </colgroup>
         <TableHeader>

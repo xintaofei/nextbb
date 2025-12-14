@@ -8,11 +8,11 @@ export default function MainLayout({
   children: ReactNode
 }>) {
   return (
-    <SidebarProvider>
-      <AppSidebar />
-      <SidebarInset>
-        <main className="max-w-5xl mx-auto">{children}</main>
-      </SidebarInset>
-    </SidebarProvider>
+    <div className="max-w-7xl mx-auto">
+      <SidebarProvider>
+        <AppSidebar variant="floating" />
+        <SidebarInset>{children}</SidebarInset>
+      </SidebarProvider>
+    </div>
   )
 }
