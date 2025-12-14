@@ -24,6 +24,7 @@ import {
   InputGroupAddon,
   InputGroupInput,
 } from "@/components/ui/input-group"
+import Link from "next/link"
 
 export default function Home() {
   const t = useTranslations("Index")
@@ -157,9 +158,11 @@ export default function Home() {
           {topics.map((topic) => (
             <TableRow key={topic.id}>
               <TableCell className="flex flex-col gap-2">
-                <Label className="max-w-full text-lg whitespace-normal break-words">
-                  {topic.title}
-                </Label>
+                <Link href={`/topic/${topic.id}`}>
+                  <span className="cursor-pointer max-w-full text-lg font-medium whitespace-normal break-words">
+                    {topic.title}
+                  </span>
+                </Link>
                 <div className="flex max-w-full flex-wrap gap-2 overflow-hidden">
                   <Badge variant="secondary">Secondary</Badge>
                   <Badge
