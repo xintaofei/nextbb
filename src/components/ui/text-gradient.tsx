@@ -43,7 +43,7 @@ const TextGradient = React.forwardRef<HTMLSpanElement, TextGradientProps>(
       style,
       ...props
     },
-    ref,
+    ref
   ) => {
     const inlineStyle: CSSVariableStyle = {
       "--spread": `${spread}px`,
@@ -59,7 +59,7 @@ const TextGradient = React.forwardRef<HTMLSpanElement, TextGradientProps>(
         className={cn(
           "relative inline-block bg-clip-text text-transparent",
           "[background-repeat:no-repeat,padding-box]",
-          className,
+          className
         )}
         style={inlineStyle}
         {...props}
@@ -75,7 +75,7 @@ const TextGradient = React.forwardRef<HTMLSpanElement, TextGradientProps>(
         {children}
       </span>
     )
-  },
+  }
 )
 
 TextGradient.displayName = "TextGradient"
