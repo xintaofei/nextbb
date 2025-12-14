@@ -182,7 +182,7 @@ export default function TopicPage() {
             ))}
           </TimelineSteps>
         </div>
-        <div className="sticky top-8 w-64 h-80 shrink-0 bg-muted"></div>
+        <div className="flex flex-col sticky top-8 w-64 h-80 shrink-0 border-1 rounded-xl"></div>
       </div>
     </div>
   )
