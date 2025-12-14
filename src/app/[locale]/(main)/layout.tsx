@@ -10,7 +10,9 @@ export default function MainLayout({
   return (
     <SidebarProvider>
       <AppSidebar />
-      <SidebarInset className="overflow-hidden">{children}</SidebarInset>
+      <SidebarInset>
+        <main className="max-w-5xl mx-auto">{children}</main>
+      </SidebarInset>
     </SidebarProvider>
   )
 }
