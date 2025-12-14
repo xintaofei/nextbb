@@ -61,6 +61,31 @@ export default function Home() {
       id: "8",
       title: "有支持vless+reality的安卓客户端吗",
     },
+    {
+      id: "9",
+      title: "十几年前买的十几张的老式手机卡竟然还活着",
+    },
+    {
+      id: "10",
+      title:
+        "Gpt5.2(high)上线竞技场直接聊天已经两天，稳定霸榜倒数第10&11 勉强超越glm4.6v flash",
+    },
+    {
+      id: "11",
+      title: "GPT5.2pro有概率做对今年的CMO2025第一天压轴",
+    },
+    {
+      id: "12",
+      title: "甲骨文账号，终于创建成功！",
+    },
+    {
+      id: "13",
+      title: "GPT k12教师 是不是被降智了？",
+    },
+    {
+      id: "14",
+      title: "tadaCloudflare优选IP筛选工具震撼来袭！",
+    },
   ]
 
   return (
@@ -113,21 +138,30 @@ export default function Home() {
             </Button>
           </div>
         </div>
-        <Table>
+        <Table className="w-full table-fixed">
+          <colgroup>
+            <col />
+            <col className="w-40" />
+            <col className="w-20" />
+            <col className="w-24" />
+            <col className="w-20" />
+          </colgroup>
           <TableHeader>
             <TableRow>
               <TableHead colSpan={2}>话题</TableHead>
-              <TableHead className="w-20 text-center">回复</TableHead>
-              <TableHead className="w-24 text-center">浏览量</TableHead>
-              <TableHead className="w-20 text-center">活动</TableHead>
+              <TableHead className="text-center">回复</TableHead>
+              <TableHead className="text-center">浏览量</TableHead>
+              <TableHead className="text-center">活动</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {topics.map((topic) => (
               <TableRow key={topic.id}>
                 <TableCell className="flex flex-col gap-2">
-                  <Label className="text-lg">{topic.title}</Label>
-                  <div className="flex w-full flex-wrap gap-2">
+                  <Label className="max-w-full text-lg whitespace-normal break-words">
+                    {topic.title}
+                  </Label>
+                  <div className="flex max-w-full flex-wrap gap-2 overflow-hidden">
                     <Badge variant="secondary">Secondary</Badge>
                     <Badge
                       variant="secondary"
@@ -140,7 +174,7 @@ export default function Home() {
                     <Badge variant="outline">Outline</Badge>
                   </div>
                 </TableCell>
-                <TableCell className="w-40">
+                <TableCell>
                   <div className="*:data-[slot=avatar]:ring-background flex -space-x-2 *:data-[slot=avatar]:ring-2 *:data-[slot=avatar]:grayscale">
                     <Avatar>
                       <AvatarImage
