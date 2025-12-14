@@ -1,6 +1,6 @@
 import { Label } from "@/components/ui/label"
 import { Fragment, ReactNode } from "react"
-import { Link } from "@/i18n/navigation"
+import Link from "next/link"
 
 export interface Breadcrumb {
   description: string

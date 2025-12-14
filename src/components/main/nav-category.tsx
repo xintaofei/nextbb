@@ -9,7 +9,6 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar"
 import { useState } from "react"
-import { Link } from "@/i18n/navigation"
 import { Category } from "@/types/api/category"
 import {
   Bug,
@@ -23,6 +22,7 @@ import {
   SquareFunction,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
+import Link from "next/link"
 
 export function NavCategory() {
   const { isMobile } = useSidebar()
