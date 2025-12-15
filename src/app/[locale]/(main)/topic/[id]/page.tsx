@@ -138,7 +138,7 @@ export default function TopicPage() {
           <TimelineSteps>
             {posts.map((post, index) => (
               <TimelineStepsItem key={post.id}>
-                <TimelineStepsConnector variant="dashed" />
+                <TimelineStepsConnector />
                 <TimelineStepsHeader>
                   <TimelineStepsIcon size="lg" className="overflow-hidden p-0">
                     <Avatar className="size-full">
@@ -158,7 +158,7 @@ export default function TopicPage() {
                     </span>
                   </div>
                 </TimelineStepsHeader>
-                <TimelineStepsContent className="border-b border-dashed">
+                <TimelineStepsContent className="border-b">
                   <TimelineStepsDescription>
                     {post.content}
                   </TimelineStepsDescription>
