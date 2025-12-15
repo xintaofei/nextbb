@@ -54,10 +54,10 @@ function TimelineSteps({
  * TimelineItem
  * -------------------------------------------------------------------------- */
 
-const timelineStepsItemVariants = cva("relative flex flex-col", {
+const timelineStepsItemVariants = cva("relative flex flex-row w-full gap-4", {
   variants: {
     orientation: {
-      vertical: "pb-8 last:pb-0",
+      vertical: "pb-4 last:pb-0",
       horizontal: "flex-1 items-center",
     },
     status: {
@@ -231,7 +231,7 @@ function TimelineStepsContent({
   return (
     <div
       data-slot="timeline-steps-content"
-      className={cn("ms-[3.75rem] flex flex-col gap-1 pt-0.5 pb-2", className)}
+      className={cn(" w-full flex flex-col gap-4 pb-2", className)}
       {...props}
     />
   )

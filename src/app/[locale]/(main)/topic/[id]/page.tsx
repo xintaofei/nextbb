@@ -139,13 +139,13 @@ export default function TopicPage() {
             {posts.map((post, index) => (
               <TimelineStepsItem key={post.id}>
                 <TimelineStepsConnector />
-                <TimelineStepsHeader>
-                  <TimelineStepsIcon size="lg" className="overflow-hidden p-0">
-                    <Avatar className="size-full">
-                      <AvatarImage src={post.author.avatar} alt="@shadcn" />
-                      <AvatarFallback>{post.author.name}</AvatarFallback>
-                    </Avatar>
-                  </TimelineStepsIcon>
+                <TimelineStepsIcon size="lg" className="overflow-hidden p-0">
+                  <Avatar className="size-full">
+                    <AvatarImage src={post.author.avatar} alt="@shadcn" />
+                    <AvatarFallback>{post.author.name}</AvatarFallback>
+                  </Avatar>
+                </TimelineStepsIcon>
+                <TimelineStepsContent className="border-b">
                   <div className="flex flex-row justify-between items-center w-full">
                     <div className="flex flex-row gap-2">
                       <TimelineStepsTitle>
@@ -157,8 +157,6 @@ export default function TopicPage() {
                       {index === 0 ? "楼主" : "#" + index}
                     </span>
                   </div>
-                </TimelineStepsHeader>
-                <TimelineStepsContent className="border-b">
                   <TimelineStepsDescription>
                     {post.content}
                   </TimelineStepsDescription>
