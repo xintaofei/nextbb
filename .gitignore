@@ -2,6 +2,7 @@
 
 #ide
 .idea
+.trae
 
 # dependencies
 /node_modules
