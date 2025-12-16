@@ -8,7 +8,10 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
-import { TopicForm, TopicFormData } from "@/components/new-topic/topic-form"
+import {
+  TopicForm,
+  TopicFormData,
+} from "@/components/main/new-topic/topic-form"
 
 interface NewTopicDialogProps {
   open: boolean

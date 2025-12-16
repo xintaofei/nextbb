@@ -2,7 +2,6 @@
 
 import { useTranslations } from "next-intl"
 import { useState } from "react"
-import { Label } from "@/components/ui/label"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import {
   Table,
@@ -13,16 +12,16 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
-import { BadgeCheckIcon, Check, ChevronsUpDown, SearchIcon } from "lucide-react"
+import { BadgeCheckIcon, ChevronsUpDown, SearchIcon } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import {
   InputGroup,
   InputGroupAddon,
   InputGroupInput,
 } from "@/components/ui/input-group"
-import { NewTopicButton } from "@/components/new-topic/new-topic-button"
-import { NewTopicDialog } from "@/components/new-topic/new-topic-dialog"
+import { NewTopicButton } from "@/components/main/new-topic/new-topic-button"
+import { NewTopicDialog } from "@/components/main/new-topic/new-topic-dialog"
 import Link from "next/link"
 
 export default function Home() {

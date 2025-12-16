@@ -10,7 +10,6 @@ import {
   TimelineStepsConnector,
   TimelineStepsContent,
   TimelineStepsDescription,
-  TimelineStepsHeader,
   TimelineStepsIcon,
   TimelineStepsItem,
   TimelineStepsTime,
