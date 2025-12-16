@@ -6,5 +6,133 @@
   "Dashboard": {
     "title": "你好，Next.js",
     "description": "这是一个生产级多语言示例。"
+  },
+  "Common": {
+    "Search": {
+      "placeholder": "搜索..."
+    },
+    "Filters": {
+      "category": "类别",
+      "tag": "标签"
+    },
+    "Tabs": {
+      "latest": "最新",
+      "hot": "热门",
+      "leaderboard": "排行榜",
+      "categories": "类别",
+      "myPosts": "我的帖子",
+      "favorites": "收藏"
+    },
+    "Table": {
+      "topic": "话题",
+      "replies": "回复",
+      "views": "浏览量",
+      "activity": "活动"
+    },
+    "Badge": {
+      "secondary": "次要",
+      "verified": "已验证",
+      "destructive": "危险",
+      "outline": "描边"
+    },
+    "LocaleSwitcher": {
+      "auto": "自动选择",
+      "zh": "中文",
+      "en": "English",
+      "ariaLabel": "语言"
+    },
+    "Time": {
+      "minutesAgo": "{count} 分钟前"
+    }
+  },
+  "Category": {
+    "defaultName": "类别 {id}",
+    "noDescription": "暂无描述"
+  },
+  "Topic": {
+    "reply": "回复",
+    "floor": {
+      "op": "楼主"
+    },
+    "Navigator": {
+      "toFirst": "到首楼",
+      "toLast": "到末楼",
+      "aria": {
+        "toFirst": "到首楼",
+        "toLast": "到末楼"
+      },
+      "counter": "{current}/{total}"
+    },
+    "New": {
+      "title": "新建话题",
+      "description": "创建新话题与社区成员分享您的想法",
+      "button": "新建话题",
+      "form": {
+        "title": {
+          "label": "话题标题",
+          "placeholder": "请输入话题标题",
+          "counter": "{count}/100 字符"
+        },
+        "category": {
+          "label": "分类",
+          "placeholder": "请选择分类"
+        },
+        "content": {
+          "label": "话题内容",
+          "placeholder": "请详细描述您的话题内容...",
+          "counter": "{count}/5000 字符"
+        },
+        "tags": {
+          "label": "标签",
+          "placeholder": "输入标签后按回车添加",
+          "info": "{used}/{max} 标签，每个标签最多 {maxLength} 字符"
+        },
+        "actions": {
+          "reset": "重置",
+          "preview": "预览",
+          "publish": "发布话题",
+          "publishing": "发布中..."
+        }
+      },
+      "preview": {
+        "title": "预览",
+        "close": "关闭预览",
+        "field": {
+          "title": "标题:",
+          "category": "分类:",
+          "tags": "标签:",
+          "content": "内容:"
+        }
+      },
+      "submit": {
+        "success": "话题创建成功！（验证阶段演示）"
+      }
+    },
+    "Categories": {
+      "tech": "技术讨论",
+      "resource": "资源分享",
+      "help": "求助问答",
+      "chat": "闲聊",
+      "announcement": "公告"
+    },
+    "Validation": {
+      "title": {
+        "min": "标题至少需要5个字符",
+        "max": "标题不能超过100个字符"
+      },
+      "category": {
+        "required": "请选择分类"
+      },
+      "content": {
+        "min": "内容至少需要20个字符",
+        "max": "内容不能超过5000个字符"
+      },
+      "tag": {
+        "maxLength": "单个标签不能超过15个字符"
+      },
+      "tags": {
+        "maxCount": "最多5个标签"
+      }
+    }
   }
 }

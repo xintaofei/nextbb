@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { LanguagesIcon } from "lucide-react"
 import { usePathname, useRouter } from "next/navigation"
-import { useLocale } from "next-intl"
+import { useLocale, useTranslations } from "next-intl"
 import * as React from "react"
 
 const SUPPORTED_LOCALES = ["zh", "en"] as const
@@ -36,9 +36,9 @@ export function LocaleSwitcher() {
   const pathname = usePathname()
   const locale = useLocale() as (typeof SUPPORTED_LOCALES)[number]
   const [mode, setMode] = React.useState<Mode>("auto")
+  const t = useTranslations("Common.LocaleSwitcher")
 
-  const label =
-    mode === "auto" ? "自动选择" : mode === "zh" ? "中文" : "English"
+  const label = mode === "auto" ? t("auto") : mode === "zh" ? t("zh") : t("en")
 
   return (
     <DropdownMenu>
@@ -47,7 +47,7 @@ export function LocaleSwitcher() {
           variant="ghost"
           size="sm"
           className="gap-2 h-8"
-          aria-label="Locale"
+          aria-label={t("ariaLabel")}
         >
           <LanguagesIcon className="size-4" />
           <span className="text-sm">{label}</span>
@@ -73,9 +73,11 @@ export function LocaleSwitcher() {
             router.push(nextPath)
           }}
         >
-          <DropdownMenuRadioItem value="auto">自动选择</DropdownMenuRadioItem>
-          <DropdownMenuRadioItem value="zh">中文</DropdownMenuRadioItem>
-          <DropdownMenuRadioItem value="en">English</DropdownMenuRadioItem>
+          <DropdownMenuRadioItem value="auto">
+            {t("auto")}
+          </DropdownMenuRadioItem>
+          <DropdownMenuRadioItem value="zh">{t("zh")}</DropdownMenuRadioItem>
+          <DropdownMenuRadioItem value="en">{t("en")}</DropdownMenuRadioItem>
         </DropdownMenuRadioGroup>
       </DropdownMenuContent>
     </DropdownMenu>

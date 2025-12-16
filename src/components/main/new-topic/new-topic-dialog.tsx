@@ -12,6 +12,7 @@ import {
   TopicForm,
   TopicFormData,
 } from "@/components/main/new-topic/topic-form"
+import { useTranslations } from "next-intl"
 
 interface NewTopicDialogProps {
   open: boolean
@@ -20,6 +21,7 @@ interface NewTopicDialogProps {
 
 export function NewTopicDialog({ open, onOpenChange }: NewTopicDialogProps) {
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const t = useTranslations("Topic.New")
 
   const handleSubmit = async (data: TopicFormData) => {
     setIsSubmitting(true)
@@ -31,7 +33,7 @@ export function NewTopicDialog({ open, onOpenChange }: NewTopicDialogProps) {
       setIsSubmitting(false)
       onOpenChange(false)
       // 这里可以添加成功提示
-      alert("话题创建成功！（验证阶段演示）")
+      alert(t("submit.success"))
     }, 1000)
   }
 
@@ -39,10 +41,8 @@ export function NewTopicDialog({ open, onOpenChange }: NewTopicDialogProps) {
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-[600px] max-h-[80vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>新建话题</DialogTitle>
-          <DialogDescription>
-            创建新话题与社区成员分享您的想法
-          </DialogDescription>
+          <DialogTitle>{t("title")}</DialogTitle>
+          <DialogDescription>{t("description")}</DialogDescription>
         </DialogHeader>
         <TopicForm onSubmit={handleSubmit} isSubmitting={isSubmitting} />
       </DialogContent>

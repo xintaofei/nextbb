@@ -10,12 +10,14 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip"
 import { ChevronsUp, ChevronsDown } from "lucide-react"
+import { useTranslations } from "next-intl"
 
 type TopicNavigatorProps = {
   total: number
 }
 
 export function TopicNavigator({ total }: TopicNavigatorProps) {
+  const t = useTranslations("Topic.Navigator")
   const totalFloors = Math.max(total - 1, 1)
   const [current, setCurrent] = useState(1)
   const [sliderValue, setSliderValue] = useState<number[]>([totalFloors])
@@ -183,14 +185,14 @@ export function TopicNavigator({ total }: TopicNavigatorProps) {
                 <Button
                   variant="ghost"
                   size="icon"
-                  aria-label="到首楼"
+                  aria-label={t("aria.toFirst")}
                   onClick={jumpFirst}
                   disabled={current <= 1}
                 >
                   <ChevronsUp className="size-4" />
                 </Button>
               </TooltipTrigger>
-              <TooltipContent>到首楼</TooltipContent>
+              <TooltipContent>{t("toFirst")}</TooltipContent>
             </Tooltip>
             <div className="flex-1 w-full flex items-center justify-center">
               <div
@@ -266,14 +268,14 @@ export function TopicNavigator({ total }: TopicNavigatorProps) {
                 <Button
                   variant="ghost"
                   size="icon"
-                  aria-label="到末楼"
+                  aria-label={t("aria.toLast")}
                   onClick={jumpLast}
                   disabled={current >= totalFloors}
                 >
                   <ChevronsDown className="size-4" />
                 </Button>
               </TooltipTrigger>
-              <TooltipContent>到末楼</TooltipContent>
+              <TooltipContent>{t("toLast")}</TooltipContent>
             </Tooltip>
           </div>
         </TooltipProvider>

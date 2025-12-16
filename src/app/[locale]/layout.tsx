@@ -4,10 +4,14 @@ import { ReactNode } from "react"
 import { getLocale, getMessages } from "next-intl/server"
 import { NextIntlClientProvider } from "next-intl"
 import { ThemeProvider } from "next-themes"
+import { getTranslations } from "next-intl/server"
 
-export const metadata: Metadata = {
-  title: "NextBB",
-  description: "Next bulletin board",
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations("Index")
+  return {
+    title: t("title"),
+    description: t("description"),
+  }
 }
 
 export default async function RootLayout({

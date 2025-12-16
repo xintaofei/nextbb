@@ -23,10 +23,13 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { NewTopicButton } from "@/components/main/new-topic/new-topic-button"
 import { NewTopicDialog } from "@/components/main/new-topic/new-topic-dialog"
+import { useTranslations } from "next-intl"
 
 export default function CategoryPage() {
   const { id } = useParams<{ id: string }>()
   const [isNewTopicDialogOpen, setIsNewTopicDialogOpen] = useState(false)
+  const tc = useTranslations("Common")
+  const tCat = useTranslations("Category")
 
   const categories: Record<string, { name: string; description: string }> = {
     "1": { name: "AI讨论", description: "围绕大模型、应用与实践的交流" },
@@ -36,8 +39,8 @@ export default function CategoryPage() {
   }
 
   const category = categories[id] ?? {
-    name: `类别 ${id}`,
-    description: "暂无描述",
+    name: tCat("defaultName", { id }),
+    description: tCat("noDescription"),
   }
 
   const topics = [
@@ -81,7 +84,7 @@ export default function CategoryPage() {
           </span>
         </div>
         <InputGroup className="w-80">
-          <InputGroupInput placeholder="Search..." />
+          <InputGroupInput placeholder={tc("Search.placeholder")} />
           <InputGroupAddon>
             <SearchIcon />
           </InputGroupAddon>
@@ -95,7 +98,7 @@ export default function CategoryPage() {
               role="combobox"
               className="w-20 justify-between"
             >
-              类别
+              {tc("Filters.category")}
               <ChevronsUpDown className="opacity-50" />
             </Button>
             <Button
@@ -103,18 +106,18 @@ export default function CategoryPage() {
               role="combobox"
               className="w-20 justify-between"
             >
-              标签
+              {tc("Filters.tag")}
               <ChevronsUpDown className="opacity-50" />
             </Button>
           </div>
           <Tabs defaultValue="1">
             <TabsList>
-              <TabsTrigger value="1">最新</TabsTrigger>
-              <TabsTrigger value="2">热门</TabsTrigger>
-              <TabsTrigger value="3">排行榜</TabsTrigger>
-              <TabsTrigger value="4">类别</TabsTrigger>
-              <TabsTrigger value="5">我的帖子</TabsTrigger>
-              <TabsTrigger value="6">收藏</TabsTrigger>
+              <TabsTrigger value="1">{tc("Tabs.latest")}</TabsTrigger>
+              <TabsTrigger value="2">{tc("Tabs.hot")}</TabsTrigger>
+              <TabsTrigger value="3">{tc("Tabs.leaderboard")}</TabsTrigger>
+              <TabsTrigger value="4">{tc("Tabs.categories")}</TabsTrigger>
+              <TabsTrigger value="5">{tc("Tabs.myPosts")}</TabsTrigger>
+              <TabsTrigger value="6">{tc("Tabs.favorites")}</TabsTrigger>
             </TabsList>
           </Tabs>
         </div>
@@ -132,10 +135,12 @@ export default function CategoryPage() {
         </colgroup>
         <TableHeader>
           <TableRow>
-            <TableHead colSpan={2}>话题</TableHead>
-            <TableHead className="text-center">回复</TableHead>
-            <TableHead className="text-center">浏览量</TableHead>
-            <TableHead className="text-center">活动</TableHead>
+            <TableHead colSpan={2}>{tc("Table.topic")}</TableHead>
+            <TableHead className="text-center">{tc("Table.replies")}</TableHead>
+            <TableHead className="text-center">{tc("Table.views")}</TableHead>
+            <TableHead className="text-center">
+              {tc("Table.activity")}
+            </TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -148,16 +153,16 @@ export default function CategoryPage() {
                   </span>
                 </Link>
                 <div className="flex max-w-full flex-wrap gap-2 overflow-hidden">
-                  <Badge variant="secondary">Secondary</Badge>
+                  <Badge variant="secondary">{tc("Badge.secondary")}</Badge>
                   <Badge
                     variant="secondary"
                     className="bg-blue-500 text-white dark:bg-blue-600"
                   >
                     <BadgeCheckIcon />
-                    Verified
+                    {tc("Badge.verified")}
                   </Badge>
-                  <Badge variant="destructive">Destructive</Badge>
-                  <Badge variant="outline">Outline</Badge>
+                  <Badge variant="destructive">{tc("Badge.destructive")}</Badge>
+                  <Badge variant="outline">{tc("Badge.outline")}</Badge>
                 </div>
               </TableCell>
               <TableCell>

@@ -26,10 +26,12 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { useTranslations } from "next-intl"
 
 export default function TopicPage() {
   const { id } = useParams<{ id: string }>()
+  const tc = useTranslations("Common")
+  const t = useTranslations("Topic")
 
   const topic = {
     id: id,
@@ -168,16 +170,16 @@ export default function TopicPage() {
           </span>
         </Link>
         <div className="flex max-w-full flex-wrap gap-2 overflow-hidden">
-          <Badge variant="secondary">Secondary</Badge>
+          <Badge variant="secondary">{tc("Badge.secondary")}</Badge>
           <Badge
             variant="secondary"
             className="bg-blue-500 text-white dark:bg-blue-600"
           >
             <BadgeCheckIcon />
-            Verified
+            {tc("Badge.verified")}
           </Badge>
-          <Badge variant="destructive">Destructive</Badge>
-          <Badge variant="outline">Outline</Badge>
+          <Badge variant="destructive">{tc("Badge.destructive")}</Badge>
+          <Badge variant="outline">{tc("Badge.outline")}</Badge>
         </div>
       </div>
       <div className="flex flex-row justify-between gap-8">
@@ -202,10 +204,12 @@ export default function TopicPage() {
                       <TimelineStepsTitle>
                         {post.author.name}
                       </TimelineStepsTitle>
-                      <TimelineStepsTime>5 minutes ago</TimelineStepsTime>
+                      <TimelineStepsTime>
+                        {tc("Time.minutesAgo", { count: 5 })}
+                      </TimelineStepsTime>
                     </div>
                     <span className="text-muted-foreground text-sm">
-                      {index === 0 ? "楼主" : "#" + index}
+                      {index === 0 ? t("floor.op") : "#" + index}
                     </span>
                   </div>
                   <TimelineStepsDescription>
@@ -223,7 +227,7 @@ export default function TopicPage() {
                     </Button>
                     <Button variant="ghost">
                       <Reply className="text-foreground" />
-                      回复
+                      {t("reply")}
                     </Button>
                   </TimelineStepsAction>
                 </TimelineStepsContent>
@@ -242,10 +246,12 @@ export default function TopicPage() {
         </colgroup>
         <TableHeader>
           <TableRow>
-            <TableHead>话题</TableHead>
-            <TableHead className="text-center">回复</TableHead>
-            <TableHead className="text-center">浏览量</TableHead>
-            <TableHead className="text-center">活动</TableHead>
+            <TableHead>{tc("Table.topic")}</TableHead>
+            <TableHead className="text-center">{tc("Table.replies")}</TableHead>
+            <TableHead className="text-center">{tc("Table.views")}</TableHead>
+            <TableHead className="text-center">
+              {tc("Table.activity")}
+            </TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -258,16 +264,16 @@ export default function TopicPage() {
                   </span>
                 </Link>
                 <div className="flex max-w-full flex-wrap gap-2 overflow-hidden mt-2">
-                  <Badge variant="secondary">Secondary</Badge>
+                  <Badge variant="secondary">{tc("Badge.secondary")}</Badge>
                   <Badge
                     variant="secondary"
                     className="bg-blue-500 text-white dark:bg-blue-600"
                   >
                     <BadgeCheckIcon />
-                    Verified
+                    {tc("Badge.verified")}
                   </Badge>
-                  <Badge variant="destructive">Destructive</Badge>
-                  <Badge variant="outline">Outline</Badge>
+                  <Badge variant="destructive">{tc("Badge.destructive")}</Badge>
+                  <Badge variant="outline">{tc("Badge.outline")}</Badge>
                 </div>
               </TableCell>
               <TableCell className="text-center">{t.replies}</TableCell>

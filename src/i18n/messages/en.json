@@ -6,5 +6,133 @@
   "Dashboard": {
     "title": "你好，Next.js",
     "description": "这是一个生产级多语言示例。"
+  },
+  "Common": {
+    "Search": {
+      "placeholder": "Search..."
+    },
+    "Filters": {
+      "category": "Category",
+      "tag": "Tag"
+    },
+    "Tabs": {
+      "latest": "Latest",
+      "hot": "Hot",
+      "leaderboard": "Leaderboard",
+      "categories": "Categories",
+      "myPosts": "My Posts",
+      "favorites": "Favorites"
+    },
+    "Table": {
+      "topic": "Topic",
+      "replies": "Replies",
+      "views": "Views",
+      "activity": "Activity"
+    },
+    "Badge": {
+      "secondary": "Secondary",
+      "verified": "Verified",
+      "destructive": "Destructive",
+      "outline": "Outline"
+    },
+    "LocaleSwitcher": {
+      "auto": "Auto",
+      "zh": "Chinese",
+      "en": "English",
+      "ariaLabel": "Locale"
+    },
+    "Time": {
+      "minutesAgo": "{count} minutes ago"
+    }
+  },
+  "Category": {
+    "defaultName": "Category {id}",
+    "noDescription": "No description"
+  },
+  "Topic": {
+    "reply": "Reply",
+    "floor": {
+      "op": "OP"
+    },
+    "Navigator": {
+      "toFirst": "Jump to first",
+      "toLast": "Jump to last",
+      "aria": {
+        "toFirst": "Jump to first",
+        "toLast": "Jump to last"
+      },
+      "counter": "{current}/{total}"
+    },
+    "New": {
+      "title": "New Topic",
+      "description": "Create a topic to share with the community",
+      "button": "New Topic",
+      "form": {
+        "title": {
+          "label": "Title",
+          "placeholder": "Enter topic title",
+          "counter": "{count}/100 characters"
+        },
+        "category": {
+          "label": "Category",
+          "placeholder": "Select a category"
+        },
+        "content": {
+          "label": "Content",
+          "placeholder": "Describe your topic in detail...",
+          "counter": "{count}/5000 characters"
+        },
+        "tags": {
+          "label": "Tags",
+          "placeholder": "Type a tag then press Enter",
+          "info": "{used}/{max} tags, up to {maxLength} chars each"
+        },
+        "actions": {
+          "reset": "Reset",
+          "preview": "Preview",
+          "publish": "Publish Topic",
+          "publishing": "Publishing..."
+        }
+      },
+      "preview": {
+        "title": "Preview",
+        "close": "Close Preview",
+        "field": {
+          "title": "Title:",
+          "category": "Category:",
+          "tags": "Tags:",
+          "content": "Content:"
+        }
+      },
+      "submit": {
+        "success": "Topic created successfully! (demo)"
+      }
+    },
+    "Categories": {
+      "tech": "Tech Discussion",
+      "resource": "Resource Sharing",
+      "help": "Help & Q&A",
+      "chat": "Casual Chat",
+      "announcement": "Announcement"
+    },
+    "Validation": {
+      "title": {
+        "min": "Title must be at least 5 characters",
+        "max": "Title must be at most 100 characters"
+      },
+      "category": {
+        "required": "Please select a category"
+      },
+      "content": {
+        "min": "Content must be at least 20 characters",
+        "max": "Content must be at most 5000 characters"
+      },
+      "tag": {
+        "maxLength": "A tag must be at most 15 characters"
+      },
+      "tags": {
+        "maxCount": "Up to 5 tags"
+      }
+    }
   }
 }

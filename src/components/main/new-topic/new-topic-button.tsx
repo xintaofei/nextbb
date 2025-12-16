@@ -2,6 +2,7 @@
 
 import { Edit } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { useTranslations } from "next-intl"
 
 interface NewTopicButtonProps {
   onClick: () => void
@@ -9,10 +10,11 @@ interface NewTopicButtonProps {
 }
 
 export function NewTopicButton({ onClick, className }: NewTopicButtonProps) {
+  const t = useTranslations("Topic.New")
   return (
     <Button variant="secondary" onClick={onClick} className={className}>
       <Edit className="mr-2 h-4 w-4" />
-      新建话题
+      {t("button")}
     </Button>
   )
 }

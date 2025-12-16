@@ -12,6 +12,7 @@ interface TagsInputProps {
   maxTags?: number
   maxLength?: number
   placeholder?: string
+  infoText?: string
 }
 
 export function TagsInput({
@@ -20,6 +21,7 @@ export function TagsInput({
   maxTags = 5,
   maxLength = 15,
   placeholder = "输入标签后按回车添加",
+  infoText,
 }: TagsInputProps) {
   const [inputValue, setInputValue] = useState("")
 
@@ -79,7 +81,8 @@ export function TagsInput({
       )}
 
       <div className="text-xs text-muted-foreground">
-        {value.length}/{maxTags} 标签，每个标签最多 {maxLength} 字符
+        {infoText ??
+          `${value.length}/${maxTags} 标签，每个标签最多 ${maxLength} 字符`}
       </div>
     </div>
   )

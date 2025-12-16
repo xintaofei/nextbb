@@ -24,23 +24,15 @@ import {
 } from "@/components/ui/select"
 import { TagsInput } from "./tags-input"
 import { useState } from "react"
+import { useMemo } from "react"
+import { useTranslations } from "next-intl"
 
-const topicFormSchema = z.object({
-  title: z
-    .string()
-    .min(5, "标题至少需要5个字符")
-    .max(100, "标题不能超过100个字符"),
-  category: z.string().min(1, "请选择分类"),
-  content: z
-    .string()
-    .min(20, "内容至少需要20个字符")
-    .max(5000, "内容不能超过5000个字符"),
-  tags: z
-    .array(z.string().max(15, "单个标签不能超过15个字符"))
-    .max(5, "最多5个标签"),
-})
-
-type TopicFormData = z.infer<typeof topicFormSchema>
+type TopicFormData = {
+  title: string
+  category: string
+  content: string
+  tags: string[]
+}
 
 interface TopicFormProps {
   onSubmit: (data: TopicFormData) => void
@@ -48,17 +40,36 @@ interface TopicFormProps {
 }
 
 const CATEGORIES = [
-  { value: "tech", label: "技术讨论" },
-  { value: "resource", label: "资源分享" },
-  { value: "help", label: "求助问答" },
-  { value: "chat", label: "闲聊" },
-  { value: "announcement", label: "公告" },
+  { value: "tech", labelKey: "Topic.Categories.tech" },
+  { value: "resource", labelKey: "Topic.Categories.resource" },
+  { value: "help", labelKey: "Topic.Categories.help" },
+  { value: "chat", labelKey: "Topic.Categories.chat" },
+  { value: "announcement", labelKey: "Topic.Categories.announcement" },
 ]
 
 export type { TopicFormData }
 export function TopicForm({ onSubmit, isSubmitting = false }: TopicFormProps) {
   const [showPreview, setShowPreview] = useState(false)
   const [previewData, setPreviewData] = useState<TopicFormData | null>(null)
+  const t = useTranslations("Topic.New")
+  const tv = useTranslations("Topic.Validation")
+  const tTopic = useTranslations("Topic")
+
+  const topicFormSchema = useMemo(
+    () =>
+      z.object({
+        title: z.string().min(5, tv("title.min")).max(100, tv("title.max")),
+        category: z.string().min(1, tv("category.required")),
+        content: z
+          .string()
+          .min(20, tv("content.min"))
+          .max(5000, tv("content.max")),
+        tags: z
+          .array(z.string().max(15, tv("tag.maxLength")))
+          .max(5, tv("tags.maxCount")),
+      }),
+    [tv]
+  )
 
   const form = useForm<TopicFormData>({
     resolver: zodResolver(topicFormSchema),
@@ -92,11 +103,13 @@ export function TopicForm({ onSubmit, isSubmitting = false }: TopicFormProps) {
           name="title"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>话题标题</FormLabel>
+              <FormLabel>{t("form.title.label")}</FormLabel>
               <FormControl>
-                <Input placeholder="请输入话题标题" {...field} />
+                <Input placeholder={t("form.title.placeholder")} {...field} />
               </FormControl>
-              <FormDescription>{titleCount}/100 字符</FormDescription>
+              <FormDescription>
+                {t("form.title.counter", { count: titleCount })}
+              </FormDescription>
               <FormMessage />
             </FormItem>
           )}
@@ -107,17 +120,17 @@ export function TopicForm({ onSubmit, isSubmitting = false }: TopicFormProps) {
           name="category"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>分类</FormLabel>
+              <FormLabel>{t("form.category.label")}</FormLabel>
               <Select onValueChange={field.onChange} defaultValue={field.value}>
                 <FormControl>
                   <SelectTrigger>
-                    <SelectValue placeholder="请选择分类" />
+                    <SelectValue placeholder={t("form.category.placeholder")} />
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
                   {CATEGORIES.map((category) => (
                     <SelectItem key={category.value} value={category.value}>
-                      {category.label}
+                      {tTopic(category.labelKey.replace("Topic.", ""))}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -132,15 +145,17 @@ export function TopicForm({ onSubmit, isSubmitting = false }: TopicFormProps) {
           name="content"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>话题内容</FormLabel>
+              <FormLabel>{t("form.content.label")}</FormLabel>
               <FormControl>
                 <Textarea
-                  placeholder="请详细描述您的话题内容..."
+                  placeholder={t("form.content.placeholder")}
                   className="min-h-[200px] resize-y"
                   {...field}
                 />
               </FormControl>
-              <FormDescription>{contentCount}/5000 字符</FormDescription>
+              <FormDescription>
+                {t("form.content.counter", { count: contentCount })}
+              </FormDescription>
               <FormMessage />
             </FormItem>
           )}
@@ -151,9 +166,18 @@ export function TopicForm({ onSubmit, isSubmitting = false }: TopicFormProps) {
           name="tags"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>标签</FormLabel>
+              <FormLabel>{t("form.tags.label")}</FormLabel>
               <FormControl>
-                <TagsInput value={field.value} onChange={field.onChange} />
+                <TagsInput
+                  value={field.value}
+                  onChange={field.onChange}
+                  placeholder={t("form.tags.placeholder")}
+                  infoText={t("form.tags.info", {
+                    used: field.value.length,
+                    max: 5,
+                    maxLength: 15,
+                  })}
+                />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -167,7 +191,7 @@ export function TopicForm({ onSubmit, isSubmitting = false }: TopicFormProps) {
             onClick={() => form.reset()}
             disabled={isSubmitting}
           >
-            重置
+            {t("form.actions.reset")}
           </Button>
           <Button
             type="button"
@@ -175,32 +199,38 @@ export function TopicForm({ onSubmit, isSubmitting = false }: TopicFormProps) {
             onClick={handlePreview}
             disabled={isSubmitting}
           >
-            预览
+            {t("form.actions.preview")}
           </Button>
           <Button type="submit" disabled={isSubmitting}>
-            {isSubmitting ? "发布中..." : "发布话题"}
+            {isSubmitting
+              ? t("form.actions.publishing")
+              : t("form.actions.publish")}
           </Button>
         </div>
 
         {showPreview && previewData && (
           <div className="mt-6 p-4 border rounded-lg bg-muted/50">
-            <h3 className="font-semibold mb-2">预览</h3>
+            <h3 className="font-semibold mb-2">{t("preview.title")}</h3>
             <div className="space-y-2">
               <p>
-                <strong>标题:</strong> {previewData.title}
+                <strong>{t("preview.field.title")}</strong> {previewData.title}
               </p>
               <p>
-                <strong>分类:</strong>{" "}
-                {
-                  CATEGORIES.find((c) => c.value === previewData.category)
-                    ?.label
-                }
+                <strong>{t("preview.field.category")}</strong>{" "}
+                {previewData.category
+                  ? tTopic(
+                      CATEGORIES.find(
+                        (c) => c.value === previewData.category
+                      )?.labelKey.replace("Topic.", "") || "Categories.tech"
+                    )
+                  : ""}
               </p>
               <p>
-                <strong>标签:</strong> {previewData.tags.join(", ")}
+                <strong>{t("preview.field.tags")}</strong>{" "}
+                {previewData.tags.join(", ")}
               </p>
               <div>
-                <strong>内容:</strong>
+                <strong>{t("preview.field.content")}</strong>
                 <div className="mt-1 whitespace-pre-wrap">
                   {previewData.content}
                 </div>
@@ -212,7 +242,7 @@ export function TopicForm({ onSubmit, isSubmitting = false }: TopicFormProps) {
               className="mt-3"
               onClick={() => setShowPreview(false)}
             >
-              关闭预览
+              {t("preview.close")}
             </Button>
           </div>
         )}
