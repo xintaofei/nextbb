@@ -1,5 +1,9 @@
 "use client"
 
+import { useMemo } from "react"
+import { useRouter } from "next/navigation"
+import { useLocale } from "next-intl"
+import useSWR from "swr"
 import {
   BadgeCheck,
   Bell,
@@ -8,7 +12,6 @@ import {
   LogOut,
   Sparkles,
 } from "lucide-react"
-
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import {
   DropdownMenu,
@@ -28,13 +31,66 @@ import {
 import { ThemeSwitcher } from "@/components/common/theme-switcher"
 import { LocaleSwitcher } from "@/components/common/locale-switcher"
 
+type MeProfile = {
+  id: string
+  email: string
+  username: string
+  avatar?: string | null
+}
+
+type MeUser = {
+  id: string
+  email?: string | null
+}
+
+type MeResponse = {
+  user: MeUser
+  profile?: MeProfile | null
+}
+
+const fetcher = async (url: string): Promise<MeResponse | null> => {
+  const res = await fetch(url, { cache: "no-store" })
+  if (!res.ok) return null
+  return res.json()
+}
+
 export function NavUser() {
   const { isMobile } = useSidebar()
+  const locale = useLocale()
+  const router = useRouter()
 
-  const user = {
-    name: "feitao",
-    email: "yyimba@qq.com",
-    avatar: "/avatars/shadcn.jpg",
+  const { data, isLoading, mutate } = useSWR<MeResponse | null>(
+    "/api/auth/me",
+    fetcher
+  )
+
+  const displayName = useMemo(() => {
+    if (!data) return "未登录"
+    return data.profile?.username || data.user.email || "未登录"
+  }, [data])
+
+  const displayEmail = useMemo(() => {
+    if (!data) return ""
+    return data.user.email || ""
+  }, [data])
+
+  const displayAvatar = useMemo(() => {
+    if (!data) return ""
+    return data.profile?.avatar || ""
+  }, [data])
+
+  const onLogout = async () => {
+    await fetch("/api/auth/logout", { method: "POST" })
+    await mutate()
+    router.replace(`/${locale}`)
+  }
+
+  const goLogin = () => {
+    router.push(`/${locale}/login`)
+  }
+
+  const goRegister = () => {
+    router.push(`/${locale}/register`)
   }
 
   return (
@@ -47,12 +103,16 @@ export function NavUser() {
               className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
             >
               <Avatar className="h-8 w-8 rounded-lg">
-                <AvatarImage src={user.avatar} alt={user.name} />
-                <AvatarFallback className="rounded-lg">CN</AvatarFallback>
+                <AvatarImage src={displayAvatar} alt={displayName} />
+                <AvatarFallback className="rounded-lg">
+                  {displayName.slice(0, 1).toUpperCase()}
+                </AvatarFallback>
               </Avatar>
               <div className="grid flex-1 text-left text-sm leading-tight">
-                <span className="truncate font-medium">{user.name}</span>
-                <span className="truncate text-xs">{user.email}</span>
+                <span className="truncate font-medium">
+                  {isLoading ? "加载中..." : displayName}
+                </span>
+                <span className="truncate text-xs">{displayEmail}</span>
               </div>
               <ChevronsUpDown className="ml-auto size-4" />
             </SidebarMenuButton>
@@ -66,12 +126,14 @@ export function NavUser() {
             <DropdownMenuLabel className="p-0 font-normal">
               <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
                 <Avatar className="h-8 w-8 rounded-lg">
-                  <AvatarImage src={user.avatar} alt={user.name} />
-                  <AvatarFallback className="rounded-lg">CN</AvatarFallback>
+                  <AvatarImage src={displayAvatar} alt={displayName} />
+                  <AvatarFallback className="rounded-lg">
+                    {displayName.slice(0, 1).toUpperCase()}
+                  </AvatarFallback>
                 </Avatar>
                 <div className="grid flex-1 text-left text-sm leading-tight">
-                  <span className="truncate font-medium">{user.name}</span>
-                  <span className="truncate text-xs">{user.email}</span>
+                  <span className="truncate font-medium">{displayName}</span>
+                  <span className="truncate text-xs">{displayEmail}</span>
                 </div>
               </div>
             </DropdownMenuLabel>
@@ -103,10 +165,21 @@ export function NavUser() {
               <LocaleSwitcher />
             </div>
             <DropdownMenuSeparator />
-            <DropdownMenuItem>
-              <LogOut />
-              Log out
-            </DropdownMenuItem>
+            {!data ? (
+              <>
+                <DropdownMenuItem onSelect={goLogin}>
+                  登录
+                </DropdownMenuItem>
+                <DropdownMenuItem onSelect={goRegister}>
+                  注册
+                </DropdownMenuItem>
+              </>
+            ) : (
+              <DropdownMenuItem onSelect={onLogout}>
+                <LogOut />
+                Log out
+              </DropdownMenuItem>
+            )}
           </DropdownMenuContent>
         </DropdownMenu>
       </SidebarMenuItem>
