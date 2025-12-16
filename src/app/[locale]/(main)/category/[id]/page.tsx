@@ -21,8 +21,8 @@ import {
 } from "@/components/ui/table"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { NewTopicButton } from "@/components/main/new-topic/new-topic-button"
-import { NewTopicDialog } from "@/components/main/new-topic/new-topic-dialog"
+import { NewTopicButton } from "@/components/new-topic/new-topic-button"
+import { NewTopicDialog } from "@/components/new-topic/new-topic-dialog"
 import { useTranslations } from "next-intl"
 
 export default function CategoryPage() {

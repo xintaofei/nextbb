@@ -11,7 +11,7 @@ import {
 import {
   TopicForm,
   TopicFormData,
-} from "@/components/main/new-topic/topic-form"
+} from "@/components/new-topic/topic-form"
 import { useTranslations } from "next-intl"
 
 interface NewTopicDialogProps {

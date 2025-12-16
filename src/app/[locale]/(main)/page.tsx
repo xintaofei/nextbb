@@ -20,8 +20,8 @@ import {
   InputGroupAddon,
   InputGroupInput,
 } from "@/components/ui/input-group"
-import { NewTopicButton } from "@/components/main/new-topic/new-topic-button"
-import { NewTopicDialog } from "@/components/main/new-topic/new-topic-dialog"
+import { NewTopicButton } from "@/components/new-topic/new-topic-button"
+import { NewTopicDialog } from "@/components/new-topic/new-topic-dialog"
 import Link from "next/link"
 
 export default function Home() {
