@@ -92,7 +92,11 @@ export default function RegisterPage() {
                   <FormItem>
                     <FormLabel>邮箱</FormLabel>
                     <FormControl>
-                      <Input type="email" placeholder="name@example.com" {...field} />
+                      <Input
+                        type="email"
+                        placeholder="name@example.com"
+                        {...field}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -105,7 +109,11 @@ export default function RegisterPage() {
                   <FormItem>
                     <FormLabel>密码</FormLabel>
                     <FormControl>
-                      <Input type="password" placeholder="请输入密码" {...field} />
+                      <Input
+                        type="password"
+                        placeholder="请输入密码"
+                        {...field}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -131,7 +139,10 @@ export default function RegisterPage() {
                   <FormItem>
                     <FormLabel>头像地址（可选）</FormLabel>
                     <FormControl>
-                      <Input placeholder="https://example.com/avatar.png" {...field} />
+                      <Input
+                        placeholder="https://example.com/avatar.png"
+                        {...field}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
