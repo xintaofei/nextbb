@@ -167,12 +167,8 @@ export function NavUser() {
             <DropdownMenuSeparator />
             {!data ? (
               <>
-                <DropdownMenuItem onSelect={goLogin}>
-                  登录
-                </DropdownMenuItem>
-                <DropdownMenuItem onSelect={goRegister}>
-                  注册
-                </DropdownMenuItem>
+                <DropdownMenuItem onSelect={goLogin}>登录</DropdownMenuItem>
+                <DropdownMenuItem onSelect={goRegister}>注册</DropdownMenuItem>
               </>
             ) : (
               <DropdownMenuItem onSelect={onLogout}>
