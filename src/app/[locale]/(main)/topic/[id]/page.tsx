@@ -55,7 +55,7 @@ export default function TopicPage() {
       id: "2",
       author: {
         id: "2",
-        name: "Xggz",
+        name: "Xggz2",
         avatar: "https://github.com/maxleiter.png",
       },
       content: "Swedish should be 100% now! Trying to keep it up-to-date",
@@ -65,7 +65,7 @@ export default function TopicPage() {
       id: "3",
       author: {
         id: "2",
-        name: "Xggz",
+        name: "Xggz3",
         avatar: "https://github.com/evilrabbit.png",
       },
       content: "Swedish should be 100% now! Trying to keep it up-to-date",
@@ -75,7 +75,7 @@ export default function TopicPage() {
       id: "4",
       author: {
         id: "2",
-        name: "Xggz",
+        name: "Xggz4",
         avatar: "https://github.com/shadcn.png",
       },
       content: "Swedish should be 100% now! Trying to keep it up-to-date",
@@ -85,7 +85,7 @@ export default function TopicPage() {
       id: "5",
       author: {
         id: "2",
-        name: "Xggz",
+        name: "Xggz5",
         avatar: "https://github.com/shadcn.png",
       },
       content: "Swedish should be 100% now! Trying to keep it up-to-date",
@@ -95,7 +95,7 @@ export default function TopicPage() {
       id: "6",
       author: {
         id: "2",
-        name: "Xggz",
+        name: "Xggz6",
         avatar: "https://github.com/evilrabbit.png",
       },
       content: "Swedish should be 100% now! Trying to keep it up-to-date",
@@ -105,7 +105,7 @@ export default function TopicPage() {
       id: "7",
       author: {
         id: "2",
-        name: "Xggz",
+        name: "Xggz7",
         avatar: "https://github.com/evilrabbit.png",
       },
       content: "Swedish should be 100% now! Trying to keep it up-to-date",
@@ -115,7 +115,7 @@ export default function TopicPage() {
       id: "8",
       author: {
         id: "2",
-        name: "Xggz",
+        name: "Xggz8",
         avatar: "https://github.com/maxleiter.png",
       },
       content: "Swedish should be 100% now! Trying to keep it up-to-date",

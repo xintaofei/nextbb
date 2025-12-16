@@ -10,7 +10,7 @@ export default function MainLayout({
   return (
     <div className="max-w-[86rem] mx-auto">
       <SidebarProvider>
-        <AppSidebar variant="floating" />
+        <AppSidebar />
         <SidebarInset>{children}</SidebarInset>
       </SidebarProvider>
     </div>
