@@ -28,18 +28,17 @@ export default function CategoryPage() {
   const { id } = useParams<{ id: string }>()
   const [isNewTopicDialogOpen, setIsNewTopicDialogOpen] = useState(false)
 
-  const categories: Record<
-    string,
-    { name: string; description: string }
-  > = {
+  const categories: Record<string, { name: string; description: string }> = {
     "1": { name: "AI讨论", description: "围绕大模型、应用与实践的交流" },
     "2": { name: "资源分享", description: "工具、教程、脚本与经验的集中分享" },
     "3": { name: "求助与答疑", description: "问题求助与技术答疑讨论区" },
     "4": { name: "闲聊区", description: "与主题相关的轻松聊天与想法" },
   }
 
-  const category =
-    categories[id] ?? { name: `类别 ${id}`, description: "暂无描述" }
+  const category = categories[id] ?? {
+    name: `类别 ${id}`,
+    description: "暂无描述",
+  }
 
   const topics = [
     {
@@ -77,7 +76,9 @@ export default function CategoryPage() {
       <div className="flex flex-row justify-between items-start py-8">
         <div className="flex flex-col">
           <h1 className="text-5xl">{category.name}</h1>
-          <span className="text-muted-foreground mt-2">{category.description}</span>
+          <span className="text-muted-foreground mt-2">
+            {category.description}
+          </span>
         </div>
         <InputGroup className="w-80">
           <InputGroupInput placeholder="Search..." />

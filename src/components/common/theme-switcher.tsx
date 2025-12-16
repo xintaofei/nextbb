@@ -46,4 +46,3 @@ export function ThemeSwitcher({ className }: { className?: string }) {
     </DropdownMenu>
   )
 }
-
