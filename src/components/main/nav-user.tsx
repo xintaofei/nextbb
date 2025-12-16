@@ -25,6 +25,8 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar"
+import { ThemeSwitcher } from "@/components/common/theme-switcher"
+import { LocaleSwitcher } from "@/components/common/locale-switcher"
 
 export function NavUser() {
   const { isMobile } = useSidebar()
@@ -95,6 +97,11 @@ export function NavUser() {
                 Notifications
               </DropdownMenuItem>
             </DropdownMenuGroup>
+            <DropdownMenuSeparator />
+            <div className="flex items-center gap-2 px-2 py-2">
+              <ThemeSwitcher />
+              <LocaleSwitcher />
+            </div>
             <DropdownMenuSeparator />
             <DropdownMenuItem>
               <LogOut />
