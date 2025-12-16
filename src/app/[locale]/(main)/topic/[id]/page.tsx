@@ -17,6 +17,16 @@ import {
 } from "@/components/ui/timeline-steps"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
+import { TopicNavigator } from "@/components/topic/topic-navigator"
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 
 export default function TopicPage() {
   const { id } = useParams<{ id: string }>()
@@ -111,6 +121,44 @@ export default function TopicPage() {
     },
   ]
 
+  const relatedTopics = [
+    {
+      id: "101",
+      title: "如何在生产中安全使用AI助手",
+      replies: 12,
+      views: 1543,
+      activity: "2 小时前",
+    },
+    {
+      id: "102",
+      title: "企业内部知识库与大模型集成方案",
+      replies: 8,
+      views: 987,
+      activity: "5 小时前",
+    },
+    {
+      id: "103",
+      title: "Prompt 编写最佳实践合集",
+      replies: 23,
+      views: 3201,
+      activity: "1 天前",
+    },
+    {
+      id: "104",
+      title: "开源模型与闭源模型的权衡",
+      replies: 15,
+      views: 2109,
+      activity: "3 天前",
+    },
+    {
+      id: "105",
+      title: "开源模型与闭源模型的权衡",
+      replies: 15,
+      views: 2109,
+      activity: "3 天前",
+    },
+  ]
+
   return (
     <div className="flex min-h-screen w-full flex-col p-8 gap-8">
       <div className="flex flex-col gap-2">
@@ -136,7 +184,11 @@ export default function TopicPage() {
         <div className="flex-1">
           <TimelineSteps>
             {posts.map((post, index) => (
-              <TimelineStepsItem key={post.id}>
+              <TimelineStepsItem
+                id={`post-${index + 1}`}
+                data-post-anchor
+                key={post.id}
+              >
                 <TimelineStepsConnector />
                 <TimelineStepsIcon size="lg" className="overflow-hidden p-0">
                   <Avatar className="size-full">
@@ -179,8 +231,54 @@ export default function TopicPage() {
             ))}
           </TimelineSteps>
         </div>
-        <div className="flex flex-col sticky top-8 w-64 h-80 shrink-0 border rounded-xl"></div>
+        <TopicNavigator total={posts.length} />
       </div>
+      <Table className="w-full table-fixed">
+        <colgroup>
+          <col />
+          <col className="w-20" />
+          <col className="w-20" />
+          <col className="w-20" />
+        </colgroup>
+        <TableHeader>
+          <TableRow>
+            <TableHead>话题</TableHead>
+            <TableHead className="text-center">回复</TableHead>
+            <TableHead className="text-center">浏览量</TableHead>
+            <TableHead className="text-center">活动</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {relatedTopics.map((t) => (
+            <TableRow key={t.id}>
+              <TableCell className="max-w-full">
+                <Link href={`/topic/${t.id}`}>
+                  <span className="cursor-pointer max-w-full text-lg font-medium whitespace-normal break-words">
+                    {t.title}
+                  </span>
+                </Link>
+                <div className="flex max-w-full flex-wrap gap-2 overflow-hidden mt-2">
+                  <Badge variant="secondary">Secondary</Badge>
+                  <Badge
+                    variant="secondary"
+                    className="bg-blue-500 text-white dark:bg-blue-600"
+                  >
+                    <BadgeCheckIcon />
+                    Verified
+                  </Badge>
+                  <Badge variant="destructive">Destructive</Badge>
+                  <Badge variant="outline">Outline</Badge>
+                </div>
+              </TableCell>
+              <TableCell className="text-center">{t.replies}</TableCell>
+              <TableCell className="text-center">{t.views}</TableCell>
+              <TableCell className="text-center text-muted-foreground">
+                {t.activity}
+              </TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
     </div>
   )
 }
