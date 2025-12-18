@@ -6,16 +6,12 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-  useSidebar,
 } from "@/components/ui/sidebar"
 import { useState } from "react"
 import Link from "next/link"
-import { CategoryResponse } from "@/types/dto"
 
 export function NavCategory() {
-  const { isMobile } = useSidebar()
-
-  const [categories, setCategories] = useState<CategoryResponse[]>([
+  const [categories] = useState([
     {
       id: "1",
       name: "文档",
