@@ -9,78 +9,57 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar"
 import { useState } from "react"
-import { Category } from "@/types/api/category"
-import {
-  Bug,
-  FileSliders,
-  HeartPlus,
-  HousePlug,
-  Megaphone,
-  MessageCircleHeart,
-  Palette,
-  Smile,
-  SquareFunction,
-} from "lucide-react"
-import { cn } from "@/lib/utils"
 import Link from "next/link"
+import { CategoryResponse } from "@/types/dto"
 
 export function NavCategory() {
   const { isMobile } = useSidebar()
 
-  const [categories, setCategories] = useState<Category[]>([
+  const [categories, setCategories] = useState<CategoryResponse[]>([
     {
       id: "1",
       name: "文档",
-      icon: FileSliders,
-      color: "blue-500",
+      icon: "🌟",
     },
     {
       id: "2",
       name: "支持",
-      icon: HeartPlus,
-      color: "green-500",
+      icon: "🌟",
     },
     {
       id: "9",
       name: "公告",
-      icon: Megaphone,
-      color: "red-500",
+      icon: "🌟",
     },
     {
       id: "3",
       name: "聊天灌水",
-      icon: MessageCircleHeart,
-      color: "indigo-500",
+      icon: "🌟",
     },
     {
       id: "4",
       name: "插件",
-      icon: HousePlug,
-      color: "orange-500",
+      icon: "🌟",
     },
     {
       id: "5",
       name: "功能",
-      icon: SquareFunction,
-      color: "fuchsia-500",
+      icon: "🌟",
     },
     {
       id: "6",
       name: "用户体验",
-      icon: Smile,
-      color: "teal-500",
+      icon: "🌟",
     },
     {
       id: "7",
       name: "错误",
-      icon: Bug,
-      color: "yellow-500",
+      icon: "🌟",
     },
     {
       id: "8",
       name: "主题组件",
-      icon: Palette,
-      color: "violet-500",
+      icon: "🌟",
     },
   ])
 
@@ -92,9 +71,7 @@ export function NavCategory() {
           <SidebarMenuItem key={category.id}>
             <SidebarMenuButton asChild>
               <Link href={`/category/${category.id}`}>
-                {category.icon && (
-                  <category.icon className={cn(`text-${category.color}`)} />
-                )}
+                <span>{category.icon}</span>
                 <span>{category.name}</span>
               </Link>
             </SidebarMenuButton>
