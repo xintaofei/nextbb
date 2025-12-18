@@ -8,10 +8,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
-import {
-  TopicForm,
-  TopicFormData,
-} from "@/components/new-topic/topic-form"
+import { TopicForm, TopicFormData } from "@/components/new-topic/topic-form"
 import { useTranslations } from "next-intl"
 
 interface NewTopicDialogProps {

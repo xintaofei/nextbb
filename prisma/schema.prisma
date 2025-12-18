@@ -1,0 +1,74 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+}
+
+model users {
+  id          BigInt   @id @db.BigInt
+  name        String   @db.VarChar(32)
+  avatar      String   @db.VarChar(256)
+  email       String   @db.VarChar(256)
+  status      Int      @db.TinyInt
+  is_deleted  Boolean  @db.Bit(1)
+  created_at  DateTime @default(now()) @db.DateTime(0)
+  updated_at  DateTime @updatedAt @db.DateTime(0)
+
+  topics topics[]
+  posts  posts[]
+
+  @@map("users")
+}
+
+model categories {
+  id          BigInt   @id @db.BigInt
+  name        String   @db.VarChar(32)
+  icon        String   @db.VarChar(32)
+  is_deleted  Boolean  @db.Bit(1)
+  created_at  DateTime @default(now()) @db.DateTime(0)
+  updated_at  DateTime @updatedAt @db.DateTime(0)
+
+  topics topics[]
+
+  @@map("categories")
+}
+
+model topics {
+  id          BigInt   @id @db.BigInt
+  category_id BigInt   @db.BigInt
+  user_id     BigInt   @db.BigInt
+  title       String   @db.VarChar(256)
+  is_deleted  Boolean  @db.Bit(1)
+  created_at  DateTime @default(now()) @db.DateTime(0)
+  updated_at  DateTime @updatedAt @db.DateTime(0)
+
+  category categories @relation(fields: [category_id], references: [id])
+  user     users      @relation(fields: [user_id], references: [id])
+  posts    posts[]
+
+  @@index([user_id], map: "user_index")
+  @@index([category_id], map: "category_index")
+  @@map("topics")
+}
+
+model posts {
+  id               BigInt   @id @db.BigInt
+  topic_id         BigInt   @db.BigInt
+  user_id          BigInt   @db.BigInt
+  parent_id        BigInt   @default(0) @db.BigInt
+  reply_to_user_id BigInt   @default(0) @db.BigInt
+  floor_number     Int      @db.Int
+  content          String   @db.Text
+  is_deleted       Boolean  @db.Bit(1)
+  created_at       DateTime @default(now()) @db.DateTime(0)
+  updated_at       DateTime @updatedAt @db.DateTime(0)
+
+  topic topics @relation(fields: [topic_id], references: [id])
+  user  users  @relation(fields: [user_id], references: [id])
+
+  @@index([topic_id], map: "topic_index")
+  @@index([user_id], map: "user_index")
+  @@map("posts")
+}
