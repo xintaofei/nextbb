@@ -17,6 +17,7 @@ import {
 } from "@/components/ui/timeline-steps"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
+import { Textarea } from "@/components/ui/textarea"
 import { TopicNavigator } from "@/components/topic/topic-navigator"
 import {
   Table,
@@ -28,6 +29,7 @@ import {
 } from "@/components/ui/table"
 import { useTranslations } from "next-intl"
 import { useEffect, useMemo, useState } from "react"
+import { toast } from "sonner"
 
 export default function TopicPage() {
   const { id } = useParams<{ id: string }>()
@@ -88,6 +90,65 @@ export default function TopicPage() {
       mounted = false
     }
   }, [id])
+
+  const [replyContent, setReplyContent] = useState<string>("")
+  const [replyToPostId, setReplyToPostId] = useState<string | null>(null)
+  const [submitting, setSubmitting] = useState<boolean>(false)
+
+  const onClickReply = (postId: string, authorName: string) => {
+    setReplyToPostId(postId)
+    if (!replyContent.trim()) {
+      setReplyContent(`@${authorName} `)
+    }
+    const anchorEl = document.getElementById("reply-form")
+    if (anchorEl) {
+      anchorEl.scrollIntoView({ behavior: "smooth", block: "center" })
+    }
+  }
+
+  const submitReply = async () => {
+    const content = replyContent.trim()
+    if (!content) {
+      toast.error(tc("Form.required"))
+      return
+    }
+    setSubmitting(true)
+    try {
+      const res = await fetch(`/api/topic/${id}/reply`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          content,
+          parentId: replyToPostId ?? undefined,
+        }),
+      })
+      if (res.status === 401) {
+        toast.error(tc("Error.unauthorized"))
+        return
+      }
+      if (!res.ok) {
+        toast.error(tc("Error.requestFailed"))
+        return
+      }
+      setReplyContent("")
+      setReplyToPostId(null)
+      const detailRes = await fetch(`/api/topic/${id}`, { cache: "no-store" })
+      if (detailRes.ok) {
+        const json = (await detailRes.json()) as TopicDetail
+        setData(json)
+        toast.success(tc("Action.success"))
+        const newIndex = json.posts.length
+        const el = document.getElementById(`post-${newIndex}`)
+        if (el) el.scrollIntoView({ behavior: "smooth", block: "center" })
+      } else {
+        toast.success(tc("Action.success"))
+      }
+    } catch {
+      toast.error(tc("Error.network"))
+    } finally {
+      setSubmitting(false)
+    }
+  }
 
   return (
     <div className="flex min-h-screen w-full flex-col p-8 gap-8">
@@ -151,7 +212,10 @@ export default function TopicPage() {
                     <Button variant="ghost" size="icon">
                       <Flag />
                     </Button>
-                    <Button variant="ghost">
+                    <Button
+                      variant="ghost"
+                      onClick={() => onClickReply(post.id, post.author.name)}
+                    >
                       <Reply className="text-foreground" />
                       {t("reply")}
                     </Button>
@@ -160,6 +224,26 @@ export default function TopicPage() {
               </TimelineStepsItem>
             ))}
           </TimelineSteps>
+          <div
+            id="reply-form"
+            className="mt-6 rounded-xl border bg-card p-4 shadow-sm flex flex-col gap-4"
+          >
+            {replyToPostId ? (
+              <div className="text-sm text-muted-foreground">
+                #{posts.findIndex((p) => p.id === replyToPostId)} {t("reply")}
+              </div>
+            ) : null}
+            <Textarea
+              value={replyContent}
+              onChange={(e) => setReplyContent(e.target.value)}
+              rows={4}
+            />
+            <div className="flex justify-end">
+              <Button onClick={submitReply} disabled={submitting}>
+                {t("reply")}
+              </Button>
+            </div>
+          </div>
         </div>
         <TopicNavigator total={posts.length} />
       </div>

@@ -5,6 +5,7 @@ import { getLocale, getMessages } from "next-intl/server"
 import { NextIntlClientProvider } from "next-intl"
 import { ThemeProvider } from "next-themes"
 import { getTranslations } from "next-intl/server"
+import { Toaster } from "@/components/ui/sonner"
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("Index")
@@ -32,6 +33,7 @@ export default async function RootLayout({
             disableTransitionOnChange
           >
             {children}
+            <Toaster richColors closeButton />
           </ThemeProvider>
         </NextIntlClientProvider>
       </body>
