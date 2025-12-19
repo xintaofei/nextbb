@@ -61,7 +61,7 @@ export function NavCategory() {
 
   return (
     <SidebarGroup className="group-data-[collapsible=icon]:hidden">
-      <SidebarGroupLabel>类别</SidebarGroupLabel>
+      <SidebarGroupLabel>分类</SidebarGroupLabel>
       <SidebarMenu>
         {categories.map((category) => (
           <SidebarMenuItem key={category.id}>

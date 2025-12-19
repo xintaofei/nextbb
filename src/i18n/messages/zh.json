@@ -12,14 +12,14 @@
       "placeholder": "搜索..."
     },
     "Filters": {
-      "category": "类别",
+      "category": "分类",
       "tag": "标签"
     },
     "Tabs": {
       "latest": "最新",
       "hot": "热门",
       "leaderboard": "排行榜",
-      "categories": "类别",
+      "categories": "分类",
       "myPosts": "我的帖子",
       "favorites": "收藏"
     },
