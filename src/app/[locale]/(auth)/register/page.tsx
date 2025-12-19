@@ -21,9 +21,12 @@ import Link from "next/link"
 
 const schema = z.object({
   email: z.string().email(),
-  password: z.string().min(6),
-  username: z.string().min(2),
-  avatar: z.string().url().optional().or(z.literal("")),
+  password: z.string().min(8).max(72),
+  username: z.string().min(2).max(32),
+  avatar: z.preprocess(
+    (v) => (typeof v === "string" && v.trim() === "" ? undefined : v),
+    z.string().url().optional()
+  ),
 })
 
 type RegisterValues = z.infer<typeof schema>
