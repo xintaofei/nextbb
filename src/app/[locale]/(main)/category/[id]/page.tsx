@@ -4,7 +4,7 @@ import { useParams } from "next/navigation"
 import { useEffect, useState } from "react"
 import Link from "next/link"
 import { Badge } from "@/components/ui/badge"
-import { BadgeCheckIcon, ChevronsUpDown, SearchIcon } from "lucide-react"
+import { BadgeCheckIcon, SearchIcon } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import {
   InputGroup,
@@ -24,6 +24,8 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { NewTopicButton } from "@/components/new-topic/new-topic-button"
 import { NewTopicDialog } from "@/components/new-topic/new-topic-dialog"
 import { useTranslations } from "next-intl"
+import { CategorySelect } from "@/components/filters/category-select"
+import { TagSelect } from "@/components/filters/tag-select"
 
 export default function CategoryPage() {
   const { id } = useParams<{ id: string }>()
@@ -157,22 +159,8 @@ export default function CategoryPage() {
       <div className="flex flex-row justify-between items-center">
         <div className="flex flex-row gap-4">
           <div className="flex flex-row gap-2">
-            <Button
-              variant="outline"
-              role="combobox"
-              className="w-20 justify-between"
-            >
-              {tc("Filters.category")}
-              <ChevronsUpDown className="opacity-50" />
-            </Button>
-            <Button
-              variant="outline"
-              role="combobox"
-              className="w-20 justify-between"
-            >
-              {tc("Filters.tag")}
-              <ChevronsUpDown className="opacity-50" />
-            </Button>
+            <CategorySelect className="w-20" />
+            <TagSelect className="w-20" />
           </div>
           <Tabs defaultValue="1">
             <TabsList>

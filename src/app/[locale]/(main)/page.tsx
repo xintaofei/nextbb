@@ -12,7 +12,7 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
-import { BadgeCheckIcon, ChevronsUpDown, SearchIcon } from "lucide-react"
+import { BadgeCheckIcon, SearchIcon } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import {
@@ -23,6 +23,8 @@ import {
 import { NewTopicButton } from "@/components/new-topic/new-topic-button"
 import { NewTopicDialog } from "@/components/new-topic/new-topic-dialog"
 import Link from "next/link"
+import { CategorySelect } from "@/components/filters/category-select"
+import { TagSelect } from "@/components/filters/tag-select"
 
 type TopicParticipant = {
   id: string
@@ -96,22 +98,8 @@ export default function Home() {
       <div className="flex flex-row justify-between items-center">
         <div className="flex flex-row gap-4">
           <div className="flex flex-row gap-2">
-            <Button
-              variant="outline"
-              role="combobox"
-              className="w-20 justify-between"
-            >
-              {tc("Filters.category")}
-              <ChevronsUpDown className="opacity-50" />
-            </Button>
-            <Button
-              variant="outline"
-              role="combobox"
-              className="w-20 justify-between"
-            >
-              {tc("Filters.tag")}
-              <ChevronsUpDown className="opacity-50" />
-            </Button>
+            <CategorySelect className="w-20" />
+            <TagSelect className="w-20" />
           </div>
           <Tabs defaultValue="1">
             <TabsList>
