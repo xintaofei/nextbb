@@ -1,7 +1,7 @@
 "use client"
 
 import { useParams } from "next/navigation"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import Link from "next/link"
 import { Badge } from "@/components/ui/badge"
 import { BadgeCheckIcon, ChevronsUpDown, SearchIcon } from "lucide-react"
@@ -31,17 +31,51 @@ export default function CategoryPage() {
   const tc = useTranslations("Common")
   const tCat = useTranslations("Category")
 
-  const categories: Record<string, { name: string; description: string }> = {
-    "1": { name: "AI讨论", description: "围绕大模型、应用与实践的交流" },
-    "2": { name: "资源分享", description: "工具、教程、脚本与经验的集中分享" },
-    "3": { name: "求助与答疑", description: "问题求助与技术答疑讨论区" },
-    "4": { name: "闲聊区", description: "与主题相关的轻松聊天与想法" },
+  type CategoryInfo = {
+    id: string
+    name: string
+    icon?: string
+    description: string | null
   }
 
-  const category = categories[id] ?? {
-    name: tCat("defaultName", { id }),
-    description: tCat("noDescription"),
-  }
+  const [category, setCategory] = useState<CategoryInfo | null>(null)
+  const [loading, setLoading] = useState<boolean>(true)
+
+  useEffect(() => {
+    let cancelled = false
+    async function load() {
+      setLoading(true)
+      try {
+        const res = await fetch(`/api/category/${id}`, { cache: "no-store" })
+        if (!res.ok) {
+          const fallback: CategoryInfo = {
+            id,
+            name: tCat("defaultName", { id }),
+            icon: "📁",
+            description: null,
+          }
+          if (!cancelled) setCategory(fallback)
+          return
+        }
+        const data: CategoryInfo = await res.json()
+        if (!cancelled) setCategory(data)
+      } catch {
+        const fallback: CategoryInfo = {
+          id,
+          name: tCat("defaultName", { id }),
+          icon: "📁",
+          description: null,
+        }
+        if (!cancelled) setCategory(fallback)
+      } finally {
+        if (!cancelled) setLoading(false)
+      }
+    }
+    load()
+    return () => {
+      cancelled = true
+    }
+  }, [id, tCat])
 
   const topics = [
     {
@@ -78,9 +112,16 @@ export default function CategoryPage() {
     <div className="flex min-h-screen w-full flex-col px-8 gap-4">
       <div className="flex flex-row justify-between items-start py-8">
         <div className="flex flex-col">
-          <h1 className="text-5xl">{category.name}</h1>
+          <div className="flex items-center gap-3">
+            <span className="text-5xl leading-none">
+              {category?.icon ?? "📁"}
+            </span>
+            <h1 className="text-5xl">
+              {category?.name ?? tCat("defaultName", { id })}
+            </h1>
+          </div>
           <span className="text-muted-foreground mt-2">
-            {category.description}
+            {category?.description ?? tCat("noDescription")}
           </span>
         </div>
         <InputGroup className="w-80">
