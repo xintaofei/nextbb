@@ -50,6 +50,8 @@ model tags {
   created_at  DateTime @default(now()) @db.DateTime(0)
   updated_at  DateTime @updatedAt @db.DateTime(0)
 
+  topic_links topic_tags[]
+
   @@map("tags")
   @@unique([name], map: "name_index")
 }
@@ -66,6 +68,7 @@ model topics {
   category categories @relation(fields: [category_id], references: [id])
   user     users      @relation(fields: [user_id], references: [id])
   posts    posts[]
+  tag_links topic_tags[]
 
   @@index([user_id], map: "user_index")
   @@index([category_id], map: "category_index")
@@ -90,4 +93,18 @@ model posts {
   @@index([topic_id], map: "topic_index")
   @@index([user_id], map: "user_index")
   @@map("posts")
+}
+
+model topic_tags {
+  topic_id   BigInt   @db.BigInt
+  tag_id     BigInt   @db.BigInt
+  created_at DateTime @default(now()) @db.DateTime(0)
+
+  topic topics @relation(fields: [topic_id], references: [id])
+  tag   tags   @relation(fields: [tag_id], references: [id])
+
+  @@id([topic_id, tag_id])
+  @@index([tag_id], map: "tag_index")
+  @@index([topic_id], map: "topic_index")
+  @@map("topic_tags")
 }

@@ -31,6 +31,41 @@ export default function CategoryPage() {
   const tc = useTranslations("Common")
   const tCat = useTranslations("Category")
 
+  type TopicParticipant = {
+    id: string
+    name: string
+    avatar: string
+  }
+
+  type TopicListItem = {
+    id: string
+    title: string
+    category: { id: string; name: string; icon?: string }
+    tags: { id: string; name: string; icon: string }[]
+    participants: TopicParticipant[]
+    replies: number
+    views: number
+    activity: string
+  }
+
+  type TopicListResult = {
+    items: TopicListItem[]
+    page: number
+    pageSize: number
+    total: number
+  }
+
+  function formatRelative(iso: string): string {
+    if (!iso) return ""
+    const now = Date.now()
+    const then = new Date(iso).getTime()
+    const diff = Math.floor((now - then) / 1000)
+    if (diff < 60) return `${diff}秒`
+    if (diff < 3600) return `${Math.floor(diff / 60)}分钟`
+    if (diff < 86400) return `${Math.floor(diff / 3600)}小时`
+    return `${Math.floor(diff / 86400)}天`
+  }
+
   type CategoryInfo = {
     id: string
     name: string
@@ -40,6 +75,7 @@ export default function CategoryPage() {
 
   const [category, setCategory] = useState<CategoryInfo | null>(null)
   const [loading, setLoading] = useState<boolean>(true)
+  const [topics, setTopics] = useState<TopicListItem[]>([])
 
   useEffect(() => {
     let cancelled = false
@@ -77,36 +113,23 @@ export default function CategoryPage() {
     }
   }, [id, tCat])
 
-  const topics = [
-    {
-      id: "101",
-      title: "如何在生产中安全使用AI助手",
-      replies: 12,
-      views: 1543,
-      activity: "2 小时前",
-    },
-    {
-      id: "102",
-      title: "企业内部知识库与大模型集成方案",
-      replies: 8,
-      views: 987,
-      activity: "5 小时前",
-    },
-    {
-      id: "103",
-      title: "Prompt 编写最佳实践合集",
-      replies: 23,
-      views: 3201,
-      activity: "1 天前",
-    },
-    {
-      id: "104",
-      title: "开源模型与闭源模型的权衡",
-      replies: 15,
-      views: 2109,
-      activity: "3 天前",
-    },
-  ]
+  useEffect(() => {
+    let cancelled = false
+    ;(async () => {
+      try {
+        const res = await fetch(
+          `/api/topics?categoryId=${encodeURIComponent(id)}&page=1&pageSize=20`,
+          { cache: "no-store" }
+        )
+        if (!res.ok) return
+        const data: TopicListResult = await res.json()
+        if (!cancelled) setTopics(data.items)
+      } catch {}
+    })()
+    return () => {
+      cancelled = true
+    }
+  }, [id])
 
   return (
     <div className="flex min-h-screen w-full flex-col px-8 gap-4">
@@ -194,60 +217,33 @@ export default function CategoryPage() {
                   </span>
                 </Link>
                 <div className="flex max-w-full flex-wrap gap-2 overflow-hidden">
-                  <Badge variant="secondary">{tc("Badge.secondary")}</Badge>
-                  <Badge
-                    variant="secondary"
-                    className="bg-blue-500 text-white dark:bg-blue-600"
-                  >
-                    <BadgeCheckIcon />
-                    {tc("Badge.verified")}
+                  <Badge variant="secondary">
+                    {t.category.icon ?? "📁"} {t.category.name}
                   </Badge>
-                  <Badge variant="destructive">{tc("Badge.destructive")}</Badge>
-                  <Badge variant="outline">{tc("Badge.outline")}</Badge>
+                  {t.tags.map((tag) => (
+                    <Badge key={tag.id} variant="outline">
+                      {tag.icon} {tag.name}
+                    </Badge>
+                  ))}
                 </div>
               </TableCell>
               <TableCell>
                 <div className="*:data-[slot=avatar]:ring-background flex -space-x-2 *:data-[slot=avatar]:ring-2 *:data-[slot=avatar]:grayscale">
-                  <Avatar>
-                    <AvatarImage
-                      src="https://github.com/shadcn.png"
-                      alt="@shadcn"
-                    />
-                    <AvatarFallback>CN</AvatarFallback>
-                  </Avatar>
-                  <Avatar>
-                    <AvatarImage
-                      src="https://github.com/maxleiter.png"
-                      alt="@maxleiter"
-                    />
-                    <AvatarFallback>LR</AvatarFallback>
-                  </Avatar>
-                  <Avatar>
-                    <AvatarImage
-                      src="https://github.com/evilrabbit.png"
-                      alt="@evilrabbit"
-                    />
-                    <AvatarFallback>ER</AvatarFallback>
-                  </Avatar>
-                  <Avatar>
-                    <AvatarImage
-                      src="https://github.com/evilrabbit.png"
-                      alt="@evilrabbit"
-                    />
-                    <AvatarFallback>ER</AvatarFallback>
-                  </Avatar>
-                  <Avatar>
-                    <AvatarImage
-                      src="https://github.com/maxleiter.png"
-                      alt="@evilrabbit"
-                    />
-                    <AvatarFallback>ER</AvatarFallback>
-                  </Avatar>
+                  {t.participants.map((u) => (
+                    <Avatar key={u.id}>
+                      <AvatarImage src={u.avatar} alt={u.name} />
+                      <AvatarFallback>
+                        {u.name.slice(0, 2).toUpperCase()}
+                      </AvatarFallback>
+                    </Avatar>
+                  ))}
                 </div>
               </TableCell>
               <TableCell className="text-center">{t.replies}</TableCell>
               <TableCell className="text-center">{t.views}</TableCell>
-              <TableCell className="text-center">{t.activity}</TableCell>
+              <TableCell className="text-center">
+                {formatRelative(t.activity)}
+              </TableCell>
             </TableRow>
           ))}
         </TableBody>

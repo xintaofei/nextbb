@@ -1,7 +1,7 @@
 "use client"
 
 import { useTranslations } from "next-intl"
-import { useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import {
   Table,
@@ -24,70 +24,63 @@ import { NewTopicButton } from "@/components/new-topic/new-topic-button"
 import { NewTopicDialog } from "@/components/new-topic/new-topic-dialog"
 import Link from "next/link"
 
+type TopicParticipant = {
+  id: string
+  name: string
+  avatar: string
+}
+
+type TopicListItem = {
+  id: string
+  title: string
+  category: { id: string; name: string; icon?: string }
+  tags: { id: string; name: string; icon: string }[]
+  participants: TopicParticipant[]
+  replies: number
+  views: number
+  activity: string
+}
+
+type TopicListResult = {
+  items: TopicListItem[]
+  page: number
+  pageSize: number
+  total: number
+}
+
+function formatRelative(iso: string): string {
+  if (!iso) return ""
+  const now = Date.now()
+  const then = new Date(iso).getTime()
+  const diff = Math.floor((now - then) / 1000)
+  if (diff < 60) return `${diff}秒`
+  if (diff < 3600) return `${Math.floor(diff / 60)}分钟`
+  if (diff < 86400) return `${Math.floor(diff / 3600)}小时`
+  return `${Math.floor(diff / 86400)}天`
+}
+
 export default function Home() {
   const t = useTranslations("Index")
   const tc = useTranslations("Common")
   const [isNewTopicDialogOpen, setIsNewTopicDialogOpen] = useState(false)
 
-  const topics = [
-    {
-      id: "1",
-      title: "Claude巨头打架太有意思啦，猛猛蹬！",
-    },
-    {
-      id: "2",
-      title: "依旧基于方块佬的OpenWebUI response函数，添加了工具调用功能",
-    },
-    {
-      id: "3",
-      title: "OIIOII【动漫生成agent】的邀请码两个，有兴趣的可以去玩一下！",
-    },
-    {
-      id: "4",
-      title: "你们有遇到没办法用2fa登陆馒头的情况吗",
-    },
-    {
-      id: "5",
-      title: "【Claude Code 2API】助力每一个额度清零的梦想！🚀",
-    },
-    {
-      id: "6",
-      title: "【抽奖】5个谷歌学生优惠家庭组车位（美区）",
-    },
-    {
-      id: "7",
-      title: "周末回来，怎么大家都疯了",
-    },
-    {
-      id: "8",
-      title: "有支持vless+reality的安卓客户端吗",
-    },
-    {
-      id: "9",
-      title: "十几年前买的十几张的老式手机卡竟然还活着",
-    },
-    {
-      id: "10",
-      title:
-        "Gpt5.2(high)上线竞技场直接聊天已经两天，稳定霸榜倒数第10&11 勉强超越glm4.6v flash",
-    },
-    {
-      id: "11",
-      title: "GPT5.2pro有概率做对今年的CMO2025第一天压轴",
-    },
-    {
-      id: "12",
-      title: "甲骨文账号，终于创建成功！",
-    },
-    {
-      id: "13",
-      title: "GPT k12教师 是不是被降智了？",
-    },
-    {
-      id: "14",
-      title: "tadaCloudflare优选IP筛选工具震撼来袭！",
-    },
-  ]
+  const [topics, setTopics] = useState<TopicListItem[]>([])
+  useEffect(() => {
+    let cancelled = false
+    ;(async () => {
+      try {
+        const res = await fetch(`/api/topics?page=1&pageSize=20`, {
+          cache: "no-store",
+        })
+        if (!res.ok) return
+        const data: TopicListResult = await res.json()
+        if (!cancelled) setTopics(data.items)
+      } catch {}
+    })()
+    return () => {
+      cancelled = true
+    }
+  }, [])
 
   return (
     <div className="flex min-h-screen w-full flex-col px-8 gap-4">
@@ -163,60 +156,33 @@ export default function Home() {
                   </span>
                 </Link>
                 <div className="flex max-w-full flex-wrap gap-2 overflow-hidden">
-                  <Badge variant="secondary">{tc("Badge.secondary")}</Badge>
-                  <Badge
-                    variant="secondary"
-                    className="bg-blue-500 text-white dark:bg-blue-600"
-                  >
-                    <BadgeCheckIcon />
-                    {tc("Badge.verified")}
+                  <Badge variant="secondary">
+                    {topic.category.icon ?? "📁"} {topic.category.name}
                   </Badge>
-                  <Badge variant="destructive">{tc("Badge.destructive")}</Badge>
-                  <Badge variant="outline">{tc("Badge.outline")}</Badge>
+                  {topic.tags.map((tag) => (
+                    <Badge key={tag.id} variant="outline">
+                      {tag.icon} {tag.name}
+                    </Badge>
+                  ))}
                 </div>
               </TableCell>
               <TableCell>
                 <div className="*:data-[slot=avatar]:ring-background flex -space-x-2 *:data-[slot=avatar]:ring-2 *:data-[slot=avatar]:grayscale">
-                  <Avatar>
-                    <AvatarImage
-                      src="https://github.com/shadcn.png"
-                      alt="@shadcn"
-                    />
-                    <AvatarFallback>CN</AvatarFallback>
-                  </Avatar>
-                  <Avatar>
-                    <AvatarImage
-                      src="https://github.com/maxleiter.png"
-                      alt="@maxleiter"
-                    />
-                    <AvatarFallback>LR</AvatarFallback>
-                  </Avatar>
-                  <Avatar>
-                    <AvatarImage
-                      src="https://github.com/evilrabbit.png"
-                      alt="@evilrabbit"
-                    />
-                    <AvatarFallback>ER</AvatarFallback>
-                  </Avatar>
-                  <Avatar>
-                    <AvatarImage
-                      src="https://github.com/evilrabbit.png"
-                      alt="@evilrabbit"
-                    />
-                    <AvatarFallback>ER</AvatarFallback>
-                  </Avatar>
-                  <Avatar>
-                    <AvatarImage
-                      src="https://github.com/maxleiter.png"
-                      alt="@evilrabbit"
-                    />
-                    <AvatarFallback>ER</AvatarFallback>
-                  </Avatar>
+                  {topic.participants.map((u) => (
+                    <Avatar key={u.id}>
+                      <AvatarImage src={u.avatar} alt={u.name} />
+                      <AvatarFallback>
+                        {u.name.slice(0, 2).toUpperCase()}
+                      </AvatarFallback>
+                    </Avatar>
+                  ))}
                 </div>
               </TableCell>
-              <TableCell className="text-center">12</TableCell>
-              <TableCell className="text-center">123</TableCell>
-              <TableCell className="text-center">3分钟</TableCell>
+              <TableCell className="text-center">{topic.replies}</TableCell>
+              <TableCell className="text-center">{topic.views}</TableCell>
+              <TableCell className="text-center">
+                {formatRelative(topic.activity)}
+              </TableCell>
             </TableRow>
           ))}
         </TableBody>
