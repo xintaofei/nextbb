@@ -29,6 +29,8 @@ model categories {
   id          BigInt   @id @db.BigInt
   name        String   @db.VarChar(32)
   icon        String   @db.VarChar(32)
+  description String?  @db.VarChar(255)
+  sort        Int      @default(0) @db.Int
   is_deleted  Boolean  @db.Bit(1)
   created_at  DateTime @default(now()) @db.DateTime(0)
   updated_at  DateTime @updatedAt @db.DateTime(0)

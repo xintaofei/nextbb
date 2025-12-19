@@ -18,7 +18,7 @@ export async function AppSidebar({
   const categories = await prisma.categories.findMany({
     where: { is_deleted: false },
     select: { id: true, name: true, icon: true },
-    orderBy: { updated_at: "desc" },
+    orderBy: [{ sort: "asc" }, { updated_at: "desc" }],
   })
 
   const categoryItems = categories.map((c) => ({
