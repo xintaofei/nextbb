@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/dialog"
 import { TopicForm, TopicFormData } from "@/components/new-topic/topic-form"
 import { useTranslations } from "next-intl"
+import { toast } from "sonner"
 
 interface NewTopicDialogProps {
   open: boolean
@@ -22,16 +23,40 @@ export function NewTopicDialog({ open, onOpenChange }: NewTopicDialogProps) {
 
   const handleSubmit = async (data: TopicFormData) => {
     setIsSubmitting(true)
-    // 验证阶段仅展示UI，无实际提交
-    console.log("话题数据:", data)
-
-    // 模拟提交延迟
-    setTimeout(() => {
-      setIsSubmitting(false)
+    try {
+      const res = await fetch("/api/topics", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          title: data.title,
+          categoryId: data.categoryId,
+          content: data.content,
+          tags: data.tags,
+        }),
+      })
+      if (!res.ok) {
+        if (res.status === 401) {
+          toast.error(t("submit.unauthorized"))
+          return
+        }
+        const err = await res.json().catch(() => ({}))
+        toast.error(
+          err?.error
+            ? `${t("submit.failed")}: ${err.error}`
+            : t("submit.failed")
+        )
+        return
+      }
+      const payload: { topicId: string } = await res.json()
+      toast.success(t("submit.success"))
       onOpenChange(false)
-      // 这里可以添加成功提示
-      alert(t("submit.success"))
-    }, 1000)
+      // 可选：跳转到新话题页
+      // router.push(`/topic/${payload.topicId}`)
+    } catch {
+      toast.error(t("submit.failed"))
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   return (

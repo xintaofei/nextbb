@@ -84,7 +84,7 @@
         },
         "tags": {
           "label": "Tags",
-          "placeholder": "Type a tag then press Enter",
+          "placeholder": "Select tags",
           "info": "{used}/{max} tags, up to {maxLength} chars each"
         },
         "actions": {
@@ -105,7 +105,9 @@
         }
       },
       "submit": {
-        "success": "Topic created successfully! (demo)"
+        "success": "Topic created successfully!",
+        "failed": "Failed to create topic",
+        "unauthorized": "Please sign in to publish"
       }
     },
     "Categories": {

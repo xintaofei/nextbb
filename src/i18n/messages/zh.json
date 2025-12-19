@@ -84,7 +84,7 @@
         },
         "tags": {
           "label": "标签",
-          "placeholder": "输入标签后按回车添加",
+          "placeholder": "选择标签",
           "info": "{used}/{max} 标签，每个标签最多 {maxLength} 字符"
         },
         "actions": {
@@ -105,7 +105,9 @@
         }
       },
       "submit": {
-        "success": "话题创建成功！（验证阶段演示）"
+        "success": "话题创建成功！",
+        "failed": "话题创建失败",
+        "unauthorized": "请先登录后再发布"
       }
     },
     "Categories": {
