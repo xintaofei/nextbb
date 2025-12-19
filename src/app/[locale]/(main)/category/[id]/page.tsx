@@ -78,6 +78,17 @@ export default function CategoryPage() {
   const [category, setCategory] = useState<CategoryInfo | null>(null)
   const [loading, setLoading] = useState<boolean>(true)
   const [topics, setTopics] = useState<TopicListItem[]>([])
+  async function loadTopics() {
+    try {
+      const res = await fetch(
+        `/api/topics?categoryId=${encodeURIComponent(id)}&page=1&pageSize=20`,
+        { cache: "no-store" }
+      )
+      if (!res.ok) return
+      const data: TopicListResult = await res.json()
+      setTopics(data.items)
+    } catch {}
+  }
 
   useEffect(() => {
     let cancelled = false
@@ -240,6 +251,9 @@ export default function CategoryPage() {
       <NewTopicDialog
         open={isNewTopicDialogOpen}
         onOpenChange={setIsNewTopicDialogOpen}
+        onPublished={() => {
+          loadTopics()
+        }}
       />
     </div>
   )

@@ -15,9 +15,14 @@ import { toast } from "sonner"
 interface NewTopicDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
+  onPublished?: (topicId: string) => void
 }
 
-export function NewTopicDialog({ open, onOpenChange }: NewTopicDialogProps) {
+export function NewTopicDialog({
+  open,
+  onOpenChange,
+  onPublished,
+}: NewTopicDialogProps) {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const t = useTranslations("Topic.New")
 
@@ -50,6 +55,7 @@ export function NewTopicDialog({ open, onOpenChange }: NewTopicDialogProps) {
       const payload: { topicId: string } = await res.json()
       toast.success(t("submit.success"))
       onOpenChange(false)
+      onPublished?.(payload.topicId)
       // 可选：跳转到新话题页
       // router.push(`/topic/${payload.topicId}`)
     } catch {

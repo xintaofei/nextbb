@@ -67,17 +67,20 @@ export default function Home() {
   const [isNewTopicDialogOpen, setIsNewTopicDialogOpen] = useState(false)
 
   const [topics, setTopics] = useState<TopicListItem[]>([])
+  async function loadTopics() {
+    try {
+      const res = await fetch(`/api/topics?page=1&pageSize=20`, {
+        cache: "no-store",
+      })
+      if (!res.ok) return
+      const data: TopicListResult = await res.json()
+      setTopics(data.items)
+    } catch {}
+  }
   useEffect(() => {
     let cancelled = false
     ;(async () => {
-      try {
-        const res = await fetch(`/api/topics?page=1&pageSize=20`, {
-          cache: "no-store",
-        })
-        if (!res.ok) return
-        const data: TopicListResult = await res.json()
-        if (!cancelled) setTopics(data.items)
-      } catch {}
+      await loadTopics()
     })()
     return () => {
       cancelled = true
@@ -179,6 +182,9 @@ export default function Home() {
       <NewTopicDialog
         open={isNewTopicDialogOpen}
         onOpenChange={setIsNewTopicDialogOpen}
+        onPublished={() => {
+          loadTopics()
+        }}
       />
     </div>
   )
