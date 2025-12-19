@@ -6,10 +6,10 @@ import { generateId } from "@/lib/id"
 import { signAuthToken, setAuthCookie } from "@/lib/auth"
 
 const schema = z.object({
-  email: z.string().email(),
+  email: z.email(),
   password: z.string().min(8).max(72),
   username: z.string().min(2).max(32),
-  avatar: z.string().url().optional(),
+  avatar: z.url().optional(),
 })
 
 export async function POST(request: Request) {

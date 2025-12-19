@@ -20,13 +20,10 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import Link from "next/link"
 
 const schema = z.object({
-  email: z.string().email(),
+  email: z.email(),
   password: z.string().min(8).max(72),
   username: z.string().min(2).max(32),
-  avatar: z.preprocess(
-    (v) => (typeof v === "string" && v.trim() === "" ? undefined : v),
-    z.string().url().optional()
-  ),
+  avatar: z.url().optional().or(z.literal("")),
 })
 
 type RegisterValues = z.infer<typeof schema>
