@@ -8,7 +8,7 @@ import {
   SidebarMenuItem,
 } from "@/components/ui/sidebar"
 import Link from "next/link"
-import { useLocale, useTranslations } from "next-intl"
+import { useTranslations } from "next-intl"
 
 type CategoryItem = {
   id: string
@@ -17,7 +17,6 @@ type CategoryItem = {
 }
 
 export function NavCategory({ categories }: { categories: CategoryItem[] }) {
-  const locale = useLocale()
   const tCommon = useTranslations("Common")
 
   return (
@@ -27,7 +26,7 @@ export function NavCategory({ categories }: { categories: CategoryItem[] }) {
         {categories.map((category) => (
           <SidebarMenuItem key={category.id}>
             <SidebarMenuButton asChild>
-              <Link href={`/${locale}/category/${category.id}`}>
+              <Link href={`/category/${category.id}`}>
                 <span>{category.icon ?? "📁"}</span>
                 <span>{category.name}</span>
               </Link>
