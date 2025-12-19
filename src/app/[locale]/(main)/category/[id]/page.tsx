@@ -193,8 +193,8 @@ export default function CategoryPage() {
       <div className="flex flex-row justify-between items-center">
         <div className="flex flex-row gap-4">
           <div className="flex flex-row gap-2">
-            <CategorySelect className="w-20" />
-            <TagSelect className="w-20" />
+            <CategorySelect className="w-30" />
+            <TagSelect className="w-30" />
           </div>
           <Tabs defaultValue="1">
             <TabsList>
