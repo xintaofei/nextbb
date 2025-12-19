@@ -20,6 +20,14 @@ import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
 import { TopicNavigator } from "@/components/topic/topic-navigator"
 import {
+  Drawer,
+  DrawerContent,
+  DrawerDescription,
+  DrawerFooter,
+  DrawerHeader,
+  DrawerTitle,
+} from "@/components/ui/drawer"
+import {
   Table,
   TableBody,
   TableCell,
@@ -94,16 +102,14 @@ export default function TopicPage() {
   const [replyContent, setReplyContent] = useState<string>("")
   const [replyToPostId, setReplyToPostId] = useState<string | null>(null)
   const [submitting, setSubmitting] = useState<boolean>(false)
+  const [replyOpen, setReplyOpen] = useState<boolean>(false)
 
   const onClickReply = (postId: string, authorName: string) => {
     setReplyToPostId(postId)
     if (!replyContent.trim()) {
       setReplyContent(`@${authorName} `)
     }
-    const anchorEl = document.getElementById("reply-form")
-    if (anchorEl) {
-      anchorEl.scrollIntoView({ behavior: "smooth", block: "center" })
-    }
+    setReplyOpen(true)
   }
 
   const submitReply = async () => {
@@ -132,6 +138,7 @@ export default function TopicPage() {
       }
       setReplyContent("")
       setReplyToPostId(null)
+      setReplyOpen(false)
       const detailRes = await fetch(`/api/topic/${id}`, { cache: "no-store" })
       if (detailRes.ok) {
         const json = (await detailRes.json()) as TopicDetail
@@ -224,29 +231,42 @@ export default function TopicPage() {
               </TimelineStepsItem>
             ))}
           </TimelineSteps>
-          <div
-            id="reply-form"
-            className="mt-6 rounded-xl border bg-card p-4 shadow-sm flex flex-col gap-4"
-          >
+        </div>
+        <TopicNavigator total={posts.length} />
+      </div>
+      <Drawer open={replyOpen} onOpenChange={setReplyOpen}>
+        <DrawerContent>
+          <DrawerHeader>
+            <DrawerTitle>{t("reply")}</DrawerTitle>
             {replyToPostId ? (
-              <div className="text-sm text-muted-foreground">
-                #{posts.findIndex((p) => p.id === replyToPostId)} {t("reply")}
-              </div>
+              <DrawerDescription>
+                #{posts.findIndex((p) => p.id === replyToPostId)}
+              </DrawerDescription>
             ) : null}
+          </DrawerHeader>
+          <div className="px-4">
             <Textarea
               value={replyContent}
               onChange={(e) => setReplyContent(e.target.value)}
-              rows={4}
+              rows={5}
             />
-            <div className="flex justify-end">
+          </div>
+          <DrawerFooter>
+            <div className="flex justify-end gap-2">
+              <Button
+                variant="outline"
+                onClick={() => setReplyOpen(false)}
+                disabled={submitting}
+              >
+                {tc("Action.cancel")}
+              </Button>
               <Button onClick={submitReply} disabled={submitting}>
                 {t("reply")}
               </Button>
             </div>
-          </div>
-        </div>
-        <TopicNavigator total={posts.length} />
-      </div>
+          </DrawerFooter>
+        </DrawerContent>
+      </Drawer>
       <Table className="w-full table-fixed">
         <colgroup>
           <col />
