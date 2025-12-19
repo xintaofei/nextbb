@@ -1,4 +1,5 @@
 import * as React from "react"
+import { prisma } from "@/lib/prisma"
 
 import { NavMain } from "@/components/main/nav-main"
 import { NavCategory } from "@/components/main/nav-category"
@@ -11,7 +12,21 @@ import {
   SidebarHeader,
 } from "@/components/ui/sidebar"
 
-export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+export async function AppSidebar({
+  ...props
+}: React.ComponentProps<typeof Sidebar>) {
+  const categories = await prisma.categories.findMany({
+    where: { is_deleted: false },
+    select: { id: true, name: true, icon: true },
+    orderBy: { updated_at: "desc" },
+  })
+
+  const categoryItems = categories.map((c) => ({
+    id: String(c.id),
+    name: c.name,
+    icon: c.icon ?? "📁",
+  }))
+
   return (
     <Sidebar {...props}>
       <SidebarHeader>
@@ -19,7 +34,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       </SidebarHeader>
       <SidebarContent>
         <NavMain />
-        <NavCategory />
+        <NavCategory categories={categoryItems} />
       </SidebarContent>
       <SidebarFooter>
         <NavUser />
