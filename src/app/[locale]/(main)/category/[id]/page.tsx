@@ -26,6 +26,7 @@ import { NewTopicDialog } from "@/components/new-topic/new-topic-dialog"
 import { useTranslations } from "next-intl"
 import { CategorySelect } from "@/components/filters/category-select"
 import { TagSelect } from "@/components/filters/tag-select"
+import { Skeleton } from "@/components/ui/skeleton"
 
 export default function CategoryPage() {
   const { id } = useParams<{ id: string }>()
@@ -78,8 +79,10 @@ export default function CategoryPage() {
   const [category, setCategory] = useState<CategoryInfo | null>(null)
   const [loading, setLoading] = useState<boolean>(true)
   const [topics, setTopics] = useState<TopicListItem[]>([])
+  const [topicsLoading, setTopicsLoading] = useState<boolean>(true)
   async function loadTopics() {
     try {
+      setTopicsLoading(true)
       const res = await fetch(
         `/api/topics?categoryId=${encodeURIComponent(id)}&page=1&pageSize=20`,
         { cache: "no-store" }
@@ -87,7 +90,10 @@ export default function CategoryPage() {
       if (!res.ok) return
       const data: TopicListResult = await res.json()
       setTopics(data.items)
-    } catch {}
+    } catch {
+    } finally {
+      setTopicsLoading(false)
+    }
   }
 
   useEffect(() => {
@@ -130,6 +136,7 @@ export default function CategoryPage() {
     let cancelled = false
     ;(async () => {
       try {
+        setTopicsLoading(true)
         const res = await fetch(
           `/api/topics?categoryId=${encodeURIComponent(id)}&page=1&pageSize=20`,
           { cache: "no-store" }
@@ -137,7 +144,10 @@ export default function CategoryPage() {
         if (!res.ok) return
         const data: TopicListResult = await res.json()
         if (!cancelled) setTopics(data.items)
-      } catch {}
+      } catch {
+      } finally {
+        if (!cancelled) setTopicsLoading(false)
+      }
     })()
     return () => {
       cancelled = true
@@ -149,16 +159,29 @@ export default function CategoryPage() {
       <div className="flex flex-row justify-between items-start py-8">
         <div className="flex flex-col">
           <div className="flex items-center gap-3">
-            <span className="text-5xl leading-none">
-              {category?.icon ?? "📁"}
-            </span>
-            <h1 className="text-5xl">
-              {category?.name ?? tCat("defaultName", { id })}
-            </h1>
+            {loading ? (
+              <>
+                <Skeleton className="h-12 w-12 rounded-full" />
+                <Skeleton className="h-10 w-64" />
+              </>
+            ) : (
+              <>
+                <span className="text-5xl leading-none">
+                  {category?.icon ?? "📁"}
+                </span>
+                <h1 className="text-5xl">
+                  {category?.name ?? tCat("defaultName", { id })}
+                </h1>
+              </>
+            )}
           </div>
-          <span className="text-muted-foreground mt-2">
-            {category?.description ?? tCat("noDescription")}
-          </span>
+          {loading ? (
+            <Skeleton className="h-4 w-96 mt-2" />
+          ) : (
+            <span className="text-muted-foreground mt-2">
+              {category?.description ?? tCat("noDescription")}
+            </span>
+          )}
         </div>
         <InputGroup className="w-80">
           <InputGroupInput placeholder={tc("Search.placeholder")} />
@@ -207,44 +230,76 @@ export default function CategoryPage() {
           </TableRow>
         </TableHeader>
         <TableBody>
-          {topics.map((t) => (
-            <TableRow key={t.id}>
-              <TableCell className="flex flex-col gap-2">
-                <Link href={`/topic/${t.id}`}>
-                  <span className="cursor-pointer max-w-full text-lg font-medium whitespace-normal break-words">
-                    {t.title}
-                  </span>
-                </Link>
-                <div className="flex max-w-full flex-wrap gap-2 overflow-hidden">
-                  <Badge variant="secondary">
-                    {t.category.icon ?? "📁"} {t.category.name}
-                  </Badge>
-                  {t.tags.map((tag) => (
-                    <Badge key={tag.id} variant="outline">
-                      {tag.icon} {tag.name}
-                    </Badge>
-                  ))}
-                </div>
-              </TableCell>
-              <TableCell>
-                <div className="*:data-[slot=avatar]:ring-background flex -space-x-2 *:data-[slot=avatar]:ring-2 *:data-[slot=avatar]:grayscale">
-                  {t.participants.map((u) => (
-                    <Avatar key={u.id}>
-                      <AvatarImage src={u.avatar} alt={u.name} />
-                      <AvatarFallback>
-                        {u.name.slice(0, 2).toUpperCase()}
-                      </AvatarFallback>
-                    </Avatar>
-                  ))}
-                </div>
-              </TableCell>
-              <TableCell className="text-center">{t.replies}</TableCell>
-              <TableCell className="text-center">{t.views}</TableCell>
-              <TableCell className="text-center">
-                {formatRelative(t.activity)}
-              </TableCell>
-            </TableRow>
-          ))}
+          {loading || topicsLoading
+            ? Array.from({ length: 8 }).map((_, i) => (
+                <TableRow key={`skeleton-${i}`}>
+                  <TableCell className="flex flex-col gap-2">
+                    <Skeleton className="h-5 w-80" />
+                    <div className="flex max-w-full flex-wrap gap-2 overflow-hidden">
+                      <Skeleton className="h-5 w-24" />
+                      <Skeleton className="h-5 w-20" />
+                      <Skeleton className="h-5 w-20" />
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex -space-x-2">
+                      {Array.from({ length: 3 }).map((_, j) => (
+                        <Skeleton
+                          key={j}
+                          className="h-8 w-8 rounded-full ring-2 ring-background"
+                        />
+                      ))}
+                    </div>
+                  </TableCell>
+                  <TableCell className="text-center">
+                    <Skeleton className="h-4 w-12 mx-auto" />
+                  </TableCell>
+                  <TableCell className="text-center">
+                    <Skeleton className="h-4 w-12 mx-auto" />
+                  </TableCell>
+                  <TableCell className="text-center">
+                    <Skeleton className="h-4 w-20 mx-auto" />
+                  </TableCell>
+                </TableRow>
+              ))
+            : topics.map((t) => (
+                <TableRow key={t.id}>
+                  <TableCell className="flex flex-col gap-2">
+                    <Link href={`/topic/${t.id}`}>
+                      <span className="cursor-pointer max-w-full text-lg font-medium whitespace-normal break-words">
+                        {t.title}
+                      </span>
+                    </Link>
+                    <div className="flex max-w-full flex-wrap gap-2 overflow-hidden">
+                      <Badge variant="secondary">
+                        {t.category.icon ?? "📁"} {t.category.name}
+                      </Badge>
+                      {t.tags.map((tag) => (
+                        <Badge key={tag.id} variant="outline">
+                          {tag.icon} {tag.name}
+                        </Badge>
+                      ))}
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    <div className="*:data-[slot=avatar]:ring-background flex -space-x-2 *:data-[slot=avatar]:ring-2 *:data-[slot=avatar]:grayscale">
+                      {t.participants.map((u) => (
+                        <Avatar key={u.id}>
+                          <AvatarImage src={u.avatar} alt={u.name} />
+                          <AvatarFallback>
+                            {u.name.slice(0, 2).toUpperCase()}
+                          </AvatarFallback>
+                        </Avatar>
+                      ))}
+                    </div>
+                  </TableCell>
+                  <TableCell className="text-center">{t.replies}</TableCell>
+                  <TableCell className="text-center">{t.views}</TableCell>
+                  <TableCell className="text-center">
+                    {formatRelative(t.activity)}
+                  </TableCell>
+                </TableRow>
+              ))}
         </TableBody>
       </Table>
 
