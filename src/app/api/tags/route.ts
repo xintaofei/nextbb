@@ -22,7 +22,15 @@ export async function GET() {
     orderBy: [{ sort: "desc" }, { id: "asc" }],
   })
 
-  const result: TagDTO[] = tags.map((t) => ({
+  type TagRow = {
+    id: bigint
+    name: string
+    icon: string
+    description: string
+    sort: number
+  }
+
+  const result: TagDTO[] = tags.map((t: TagRow) => ({
     id: String(t.id),
     name: t.name,
     icon: t.icon,

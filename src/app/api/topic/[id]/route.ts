@@ -73,7 +73,13 @@ export async function GET(
     },
     orderBy: { floor_number: "asc" },
   })
-  const posts: PostItem[] = postsDb.map((p) => ({
+  type PostRow = {
+    id: bigint
+    content: string
+    created_at: Date
+    user: { id: bigint; name: string; avatar: string }
+  }
+  const posts: PostItem[] = postsDb.map((p: PostRow) => ({
     id: String(p.id),
     author: {
       id: String(p.user.id),
@@ -117,7 +123,8 @@ export async function GET(
       const current = agg[key].activity
       if (!current || when > current) agg[key].activity = when
     }
-    relatedTopics = relatedDb.map((t) => {
+    type RelatedRow = { id: bigint; title: string }
+    relatedTopics = relatedDb.map((t: RelatedRow) => {
       const a = agg[String(t.id)]
       return {
         id: String(t.id),
@@ -138,11 +145,13 @@ export async function GET(
         name: topic.category.name,
         icon: topic.category.icon ?? undefined,
       },
-      tags: topic.tag_links.map((l) => ({
-        id: String(l.tag.id),
-        name: l.tag.name,
-        icon: l.tag.icon,
-      })),
+      tags: topic.tag_links.map(
+        (l: { tag: { id: bigint; name: string; icon: string } }) => ({
+          id: String(l.tag.id),
+          name: l.tag.name,
+          icon: l.tag.icon,
+        })
+      ),
     },
     posts,
     relatedTopics,

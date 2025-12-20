@@ -69,7 +69,13 @@ export async function GET(req: Request) {
     take: pageSize,
     orderBy: { id: "desc" },
   })
-  const topicIds = topics.map((t) => t.id)
+  type TopicRow = {
+    id: bigint
+    title: string
+    category: { id: bigint; name: string; icon: string }
+    tag_links: { tag: { id: bigint; name: string; icon: string } }[]
+  }
+  const topicIds = topics.map((t: TopicRow) => t.id)
   const posts = await prisma.posts.findMany({
     where: { topic_id: { in: topicIds }, is_deleted: false },
     select: {
@@ -110,13 +116,15 @@ export async function GET(req: Request) {
     const when = p.updated_at ?? p.created_at
     if (!t || when > t) byTopic[key].activity = when
   }
-  const items: TopicListItem[] = topics.map((t) => {
+  const items: TopicListItem[] = topics.map((t: TopicRow) => {
     const agg = byTopic[String(t.id)]
-    const tags = t.tag_links.map((l) => ({
-      id: String(l.tag.id),
-      name: l.tag.name,
-      icon: l.tag.icon,
-    }))
+    const tags = t.tag_links.map(
+      (l: { tag: { id: bigint; name: string; icon: string } }) => ({
+        id: String(l.tag.id),
+        name: l.tag.name,
+        icon: l.tag.icon,
+      })
+    )
     return {
       id: String(t.id),
       title: t.title,
@@ -191,7 +199,9 @@ export async function POST(req: Request) {
     select: { id: true, name: true },
   })
 
-  const foundNames = new Set(tags.map((t) => t.name))
+  const foundNames = new Set(
+    tags.map((t: { id: bigint; name: string }) => t.name)
+  )
   const missing = tagNames.filter((n) => !foundNames.has(n))
   if (missing.length > 0) {
     return NextResponse.json(
@@ -228,7 +238,7 @@ export async function POST(req: Request) {
 
     if (tags.length > 0) {
       await tx.topic_tags.createMany({
-        data: tags.map((t, i) => ({
+        data: tags.map((t: { id: bigint; name: string }, i) => ({
           topic_id: topic.id,
           tag_id: t.id,
           created_at: new Date(),

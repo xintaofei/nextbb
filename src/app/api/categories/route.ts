@@ -22,7 +22,15 @@ export async function GET() {
     orderBy: [{ sort: "asc" }, { updated_at: "desc" }],
   })
 
-  const result: CategoryDTO[] = categories.map((c) => ({
+  type CategoryRow = {
+    id: bigint
+    name: string
+    icon: string
+    description: string | null
+    sort: number
+  }
+
+  const result: CategoryDTO[] = categories.map((c: CategoryRow) => ({
     id: String(c.id),
     name: c.name,
     icon: c.icon ?? undefined,
