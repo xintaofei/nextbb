@@ -4,7 +4,7 @@ generator client {
 }
 
 datasource db {
-  provider = "mysql"
+  provider = "postgresql"
 }
 
 model users {
@@ -13,10 +13,10 @@ model users {
   avatar      String   @db.VarChar(256)
   email       String   @db.VarChar(256)
   password    String   @db.VarChar(255)
-  status      Int      @db.TinyInt
-  is_deleted  Boolean  @db.Bit(1)
-  created_at  DateTime @default(now()) @db.DateTime(0)
-  updated_at  DateTime @updatedAt @db.DateTime(0)
+  status      Int
+  is_deleted  Boolean
+  created_at  DateTime @default(now())
+  updated_at  DateTime @updatedAt
 
   topics topics[]
   posts  posts[]
@@ -30,10 +30,10 @@ model categories {
   name        String   @db.VarChar(32)
   icon        String   @db.VarChar(32)
   description String?  @db.VarChar(255)
-  sort        Int      @default(0) @db.Int
-  is_deleted  Boolean  @db.Bit(1)
-  created_at  DateTime @default(now()) @db.DateTime(0)
-  updated_at  DateTime @updatedAt @db.DateTime(0)
+  sort        Int      @default(0)
+  is_deleted  Boolean
+  created_at  DateTime @default(now())
+  updated_at  DateTime @updatedAt
 
   topics topics[]
 
@@ -45,10 +45,10 @@ model tags {
   name        String   @db.VarChar(32)
   icon        String   @db.VarChar(32)
   description String   @default("") @db.VarChar(256)
-  sort        Int      @default(0) @db.Int
-  is_deleted  Boolean  @db.Bit(1)
-  created_at  DateTime @default(now()) @db.DateTime(0)
-  updated_at  DateTime @updatedAt @db.DateTime(0)
+  sort        Int      @default(0)
+  is_deleted  Boolean
+  created_at  DateTime @default(now())
+  updated_at  DateTime @updatedAt
 
   topic_links topic_tags[]
 
@@ -61,17 +61,17 @@ model topics {
   category_id BigInt   @db.BigInt
   user_id     BigInt   @db.BigInt
   title       String   @db.VarChar(256)
-  is_deleted  Boolean  @db.Bit(1)
-  created_at  DateTime @default(now()) @db.DateTime(0)
-  updated_at  DateTime @updatedAt @db.DateTime(0)
+  is_deleted  Boolean
+  created_at  DateTime @default(now())
+  updated_at  DateTime @updatedAt
 
   category categories @relation(fields: [category_id], references: [id])
   user     users      @relation(fields: [user_id], references: [id])
   posts    posts[]
   tag_links topic_tags[]
 
-  @@index([user_id], map: "user_index")
-  @@index([category_id], map: "category_index")
+  @@index([user_id], map: "topics_user_index")
+  @@index([category_id], map: "topics_category_index")
   @@map("topics")
 }
 
@@ -81,30 +81,30 @@ model posts {
   user_id          BigInt   @db.BigInt
   parent_id        BigInt   @default(0) @db.BigInt
   reply_to_user_id BigInt   @default(0) @db.BigInt
-  floor_number     Int      @db.Int
+  floor_number     Int
   content          String   @db.Text
-  is_deleted       Boolean  @db.Bit(1)
-  created_at       DateTime @default(now()) @db.DateTime(0)
-  updated_at       DateTime @updatedAt @db.DateTime(0)
+  is_deleted       Boolean
+  created_at       DateTime @default(now())
+  updated_at       DateTime @updatedAt
 
   topic topics @relation(fields: [topic_id], references: [id])
   user  users  @relation(fields: [user_id], references: [id])
 
-  @@index([topic_id], map: "topic_index")
-  @@index([user_id], map: "user_index")
+  @@index([topic_id], map: "posts_topic_index")
+  @@index([user_id], map: "posts_user_index")
   @@map("posts")
 }
 
 model topic_tags {
   topic_id   BigInt   @db.BigInt
   tag_id     BigInt   @db.BigInt
-  created_at DateTime @default(now()) @db.DateTime(0)
+  created_at DateTime @default(now())
 
   topic topics @relation(fields: [topic_id], references: [id])
   tag   tags   @relation(fields: [tag_id], references: [id])
 
   @@id([topic_id, tag_id])
-  @@index([tag_id], map: "tag_index")
-  @@index([topic_id], map: "topic_index")
+  @@index([tag_id], map: "topic_tags_tag_index")
+  @@index([topic_id], map: "topic_tags_topic_index")
   @@map("topic_tags")
 }

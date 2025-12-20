@@ -1,31 +1,35 @@
 import { PrismaClient } from "@prisma/client"
-import { PrismaMariaDb } from "@prisma/adapter-mariadb"
+import fs from "node:fs"
+import { Pool } from "pg"
+import { PrismaPg } from "@prisma/adapter-pg"
 
 declare global {
   var prisma: PrismaClient | undefined
 }
 
-function getMariaDbAdapter(): PrismaMariaDb {
-  const url = new URL(process.env.DATABASE_URL!)
-  const host = url.hostname
-  const port = Number(url.port || "3306")
-  const user = decodeURIComponent(url.username)
-  const password = decodeURIComponent(url.password)
-  const database = url.pathname.replace(/^\//, "")
-  const connectionLimitParam = url.searchParams.get("connection_limit")
-  const connectionLimit =
-    connectionLimitParam !== null ? Number(connectionLimitParam) : 5
-  return new PrismaMariaDb({
-    host,
-    port,
-    user,
-    password,
-    database,
-    connectionLimit,
-  })
+function getPgSslOption():
+  | boolean
+  | { rejectUnauthorized: boolean; ca?: string | Buffer } {
+  const envVar = process.env.POSTGRES_SSL_REJECT_UNAUTHORIZED
+  const caPath = process.env.POSTGRES_SSL_CA
+  if (caPath && caPath.length > 0) {
+    const ca = fs.readFileSync(caPath)
+    return {
+      rejectUnauthorized: envVar === "false" ? false : true,
+      ca,
+    }
+  }
+  if (envVar === "false") {
+    return { rejectUnauthorized: false }
+  }
+  return true
 }
 
-const adapter = getMariaDbAdapter()
+const pool = new Pool({
+  connectionString: process.env.POSTGRES_URL!,
+  ssl: getPgSslOption(),
+})
+const adapter = new PrismaPg(pool)
 
 export const prisma: PrismaClient =
   global.prisma ?? new PrismaClient({ adapter })
