@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma"
 import { z } from "zod"
 import { getSessionUser } from "@/lib/auth"
 import { generateId } from "@/lib/id"
+import type { Prisma } from "@prisma/client"
 
 const TopicListQuery = z.object({
   categoryId: z.string().regex(/^\d+$/).optional(),
@@ -210,45 +211,47 @@ export async function POST(req: Request) {
     )
   }
 
-  const result = await prisma.$transaction(async (tx) => {
-    const topic = await tx.topics.create({
-      data: {
-        id: generateId(),
-        category_id: categoryId,
-        user_id: auth.userId,
-        title: body.title,
-        is_deleted: false,
-      },
-      select: { id: true },
-    })
-
-    await tx.posts.create({
-      data: {
-        id: generateId(),
-        topic_id: topic.id,
-        user_id: auth.userId,
-        parent_id: BigInt(0),
-        reply_to_user_id: BigInt(0),
-        floor_number: 1,
-        content: body.content,
-        is_deleted: false,
-      },
-      select: { id: true },
-    })
-
-    if (tags.length > 0) {
-      await tx.topic_tags.createMany({
-        data: tags.map((t: { id: bigint; name: string }, i) => ({
-          topic_id: topic.id,
-          tag_id: t.id,
-          created_at: new Date(),
-        })),
-        skipDuplicates: true,
+  const result = await prisma.$transaction(
+    async (tx: Prisma.TransactionClient) => {
+      const topic = await tx.topics.create({
+        data: {
+          id: generateId(),
+          category_id: categoryId,
+          user_id: auth.userId,
+          title: body.title,
+          is_deleted: false,
+        },
+        select: { id: true },
       })
-    }
 
-    return { topicId: String(topic.id) }
-  })
+      await tx.posts.create({
+        data: {
+          id: generateId(),
+          topic_id: topic.id,
+          user_id: auth.userId,
+          parent_id: BigInt(0),
+          reply_to_user_id: BigInt(0),
+          floor_number: 1,
+          content: body.content,
+          is_deleted: false,
+        },
+        select: { id: true },
+      })
+
+      if (tags.length > 0) {
+        await tx.topic_tags.createMany({
+          data: tags.map((t: { id: bigint; name: string }) => ({
+            topic_id: topic.id,
+            tag_id: t.id,
+            created_at: new Date(),
+          })),
+          skipDuplicates: true,
+        })
+      }
+
+      return { topicId: String(topic.id) }
+    }
+  )
 
   const response: TopicCreateResult = { topicId: result.topicId }
   return NextResponse.json(response, { status: 201 })
