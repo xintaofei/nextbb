@@ -5,7 +5,7 @@ import { prisma } from "@/lib/prisma"
 import { signAuthToken, setAuthCookie } from "@/lib/auth"
 
 const schema = z.object({
-  email: z.string().email(),
+  email: z.email(),
   password: z.string().min(8).max(72),
 })
 
