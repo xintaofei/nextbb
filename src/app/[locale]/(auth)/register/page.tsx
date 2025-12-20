@@ -23,7 +23,6 @@ const schema = z.object({
   email: z.email(),
   password: z.string().min(8).max(72),
   username: z.string().min(2).max(32),
-  avatar: z.url().optional().or(z.literal("")),
 })
 
 type RegisterValues = z.infer<typeof schema>
@@ -51,7 +50,7 @@ export default function RegisterPage() {
 
   const form = useForm<RegisterValues>({
     resolver: zodResolver(schema),
-    defaultValues: { email: "", password: "", username: "", avatar: "" },
+    defaultValues: { email: "", password: "", username: "" },
     mode: "onChange",
   })
 
@@ -61,7 +60,6 @@ export default function RegisterPage() {
       email: values.email,
       password: values.password,
       username: values.username,
-      avatar: values.avatar || undefined,
     }
     const res = await fetch("/api/auth/register", {
       method: "POST",
@@ -127,22 +125,6 @@ export default function RegisterPage() {
                     <FormLabel>用户名</FormLabel>
                     <FormControl>
                       <Input placeholder="请输入用户名" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="avatar"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>头像地址（可选）</FormLabel>
-                    <FormControl>
-                      <Input
-                        placeholder="https://example.com/avatar.png"
-                        {...field}
-                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>

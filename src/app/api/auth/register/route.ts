@@ -4,12 +4,12 @@ import bcrypt from "bcryptjs"
 import { prisma } from "@/lib/prisma"
 import { generateId } from "@/lib/id"
 import { signAuthToken, setAuthCookie } from "@/lib/auth"
+import { createHash } from "crypto"
 
 const schema = z.object({
   email: z.email(),
   password: z.string().min(8).max(72),
   username: z.string().min(2).max(32),
-  avatar: z.url().optional(),
 })
 
 export async function POST(request: Request) {
@@ -20,7 +20,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "参数不合法" }, { status: 400 })
   }
 
-  const { email, password, username, avatar } = result.data
+  const { email, password, username } = result.data
 
   const exists = await prisma.users.findUnique({
     where: { email },
@@ -34,12 +34,17 @@ export async function POST(request: Request) {
 
   const id = generateId()
 
+  const emailHash = createHash("md5")
+    .update(email.trim().toLowerCase())
+    .digest("hex")
+  const avatarUrl = `https://www.gravatar.com/avatar/${emailHash}`
+
   const user = await prisma.users.create({
     data: {
       id,
       email,
       name: username,
-      avatar: avatar ?? "",
+      avatar: avatarUrl,
       password: hash,
       status: 1,
       is_deleted: false,
