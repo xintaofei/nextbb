@@ -86,7 +86,7 @@ export function TopicList({
                 </TableCell>
                 <TableCell>
                   <div className="flex -space-x-2">
-                    {Array.from({ length: 3 }).map((_, j) => (
+                    {Array.from({ length: 5 }).map((_, j) => (
                       <Skeleton
                         key={j}
                         className="h-8 w-8 rounded-full ring-2 ring-background"
@@ -95,13 +95,13 @@ export function TopicList({
                   </div>
                 </TableCell>
                 <TableCell className="text-center">
-                  <Skeleton className="h-4 w-12 mx-auto" />
+                  <Skeleton className="h-4 w-10 mx-auto" />
                 </TableCell>
                 <TableCell className="text-center">
-                  <Skeleton className="h-4 w-12 mx-auto" />
+                  <Skeleton className="h-4 w-10 mx-auto" />
                 </TableCell>
                 <TableCell className="text-center">
-                  <Skeleton className="h-4 w-20 mx-auto" />
+                  <Skeleton className="h-4 w-10 mx-auto" />
                 </TableCell>
               </TableRow>
             ))
