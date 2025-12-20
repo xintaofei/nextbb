@@ -348,9 +348,9 @@ export default function TopicPage() {
                   <TableCell className="max-w-full">
                     <Skeleton className="h-5 w-80" />
                     <div className="flex max-w-full flex-wrap gap-2 overflow-hidden mt-2">
-                      <Skeleton className="h-6 w-24" />
-                      <Skeleton className="h-6 w-20" />
-                      <Skeleton className="h-6 w-28" />
+                      <Skeleton className="h-5 w-24" />
+                      <Skeleton className="h-5 w-20" />
+                      <Skeleton className="h-5 w-20" />
                     </div>
                   </TableCell>
                   <TableCell className="text-center">
@@ -360,7 +360,7 @@ export default function TopicPage() {
                     <Skeleton className="h-4 w-10 mx-auto" />
                   </TableCell>
                   <TableCell className="text-center">
-                    <Skeleton className="h-4 w-16 mx-auto" />
+                    <Skeleton className="h-4 w-10 mx-auto" />
                   </TableCell>
                 </TableRow>
               ))
