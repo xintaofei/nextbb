@@ -3,7 +3,7 @@
 import { useParams } from "next/navigation"
 import Link from "next/link"
 import { Badge } from "@/components/ui/badge"
-import { BadgeCheckIcon, Bookmark, Flag, Heart, Reply } from "lucide-react"
+import { Bookmark, Flag, Heart, Reply } from "lucide-react"
 import {
   TimelineSteps,
   TimelineStepsAction,
@@ -39,6 +39,7 @@ import { useTranslations } from "next-intl"
 import { useEffect, useMemo, useState } from "react"
 import { toast } from "sonner"
 import { formatRelative } from "@/lib/time"
+import { Skeleton } from "@/components/ui/skeleton"
 
 export default function TopicPage() {
   const { id } = useParams<{ id: string }>()
@@ -106,6 +107,7 @@ export default function TopicPage() {
   const [replyToPostId, setReplyToPostId] = useState<string | null>(null)
   const [submitting, setSubmitting] = useState<boolean>(false)
   const [replyOpen, setReplyOpen] = useState<boolean>(false)
+  const loading = !data
 
   const onClickReply = (postId: string, authorName: string) => {
     setReplyToPostId(postId)
@@ -163,79 +165,131 @@ export default function TopicPage() {
   return (
     <div className="flex min-h-screen w-full flex-col p-8 gap-8">
       <div className="flex flex-col gap-2">
-        <Link href={`/topic/${topic.id}`}>
-          <span className="cursor-pointer max-w-full text-2xl font-medium whitespace-normal wrap-break-word">
-            {topic.title}
-          </span>
-        </Link>
-        <div className="flex max-w-full flex-wrap gap-2 overflow-hidden">
-          {data?.topic.category ? (
-            <Badge variant="secondary">{data.topic.category.name}</Badge>
-          ) : null}
-          {data?.topic.tags.map((tag) => (
-            <Badge key={tag.id} variant="outline">
-              {tag.name}
-            </Badge>
-          ))}
-        </div>
+        {loading ? (
+          <>
+            <Skeleton className="h-8 w-3/4" />
+            <div className="flex max-w-full flex-wrap gap-2 overflow-hidden">
+              <Skeleton className="h-6 w-24" />
+              <Skeleton className="h-6 w-20" />
+              <Skeleton className="h-6 w-28" />
+            </div>
+          </>
+        ) : (
+          <>
+            <Link href={`/topic/${topic.id}`}>
+              <span className="cursor-pointer max-w-full text-2xl font-medium whitespace-normal wrap-break-word">
+                {topic.title}
+              </span>
+            </Link>
+            <div className="flex max-w-full flex-wrap gap-2 overflow-hidden">
+              {data?.topic.category ? (
+                <Badge variant="secondary">{data.topic.category.name}</Badge>
+              ) : null}
+              {data?.topic.tags.map((tag) => (
+                <Badge key={tag.id} variant="outline">
+                  {tag.name}
+                </Badge>
+              ))}
+            </div>
+          </>
+        )}
       </div>
       <div className="flex flex-row justify-between gap-8">
         <div className="flex-1">
-          <TimelineSteps>
-            {posts.map((post, index) => (
-              <TimelineStepsItem
-                id={`post-${index + 1}`}
-                data-post-anchor
-                key={post.id}
-              >
-                <TimelineStepsConnector />
-                <TimelineStepsIcon size="lg" className="overflow-hidden p-0">
-                  <Avatar className="size-full">
-                    <AvatarImage src={post.author.avatar} alt="@shadcn" />
-                    <AvatarFallback>{post.author.name}</AvatarFallback>
-                  </Avatar>
-                </TimelineStepsIcon>
-                <TimelineStepsContent className="border-b">
-                  <div className="flex flex-row justify-between items-center w-full">
-                    <div className="flex flex-row gap-2">
-                      <TimelineStepsTitle>
-                        {post.author.name}
-                      </TimelineStepsTitle>
-                      <TimelineStepsTime>
-                        {tc("Time.minutesAgo", { count: post.minutesAgo })}
-                      </TimelineStepsTime>
+          {loading ? (
+            <TimelineSteps>
+              {Array.from({ length: 3 }, (_, i) => i).map((i) => (
+                <TimelineStepsItem key={`s-${i}`}>
+                  <TimelineStepsConnector />
+                  <TimelineStepsIcon size="lg" className="overflow-hidden p-0">
+                    <Skeleton className="h-10 w-10 rounded-full" />
+                  </TimelineStepsIcon>
+                  <TimelineStepsContent className="border-b">
+                    <div className="flex flex-row justify-between items-center w-full">
+                      <div className="flex flex-row gap-2">
+                        <Skeleton className="h-5 w-24" />
+                        <Skeleton className="h-4 w-16" />
+                      </div>
+                      <Skeleton className="h-4 w-10" />
                     </div>
-                    <span className="text-muted-foreground text-sm">
-                      {index === 0 ? t("floor.op") : "#" + index}
-                    </span>
-                  </div>
-                  <TimelineStepsDescription>
-                    {post.content}
-                  </TimelineStepsDescription>
-                  <TimelineStepsAction>
-                    <Button variant="ghost" size="icon">
-                      <Heart />
-                    </Button>
-                    <Button variant="ghost" size="icon">
-                      <Bookmark />
-                    </Button>
-                    <Button variant="ghost" size="icon">
-                      <Flag />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      onClick={() => onClickReply(post.id, post.author.name)}
-                    >
-                      <Reply className="text-foreground" />
-                      {t("reply")}
-                    </Button>
-                  </TimelineStepsAction>
-                </TimelineStepsContent>
-              </TimelineStepsItem>
-            ))}
-          </TimelineSteps>
+                    <div className="mt-2 flex flex-col gap-2">
+                      <Skeleton className="h-4 w-full" />
+                      <Skeleton className="h-4 w-11/12" />
+                      <Skeleton className="h-4 w-10/12" />
+                    </div>
+                    <TimelineStepsAction>
+                      <Skeleton className="h-8 w-8 rounded-md" />
+                      <Skeleton className="h-8 w-8 rounded-md" />
+                      <Skeleton className="h-8 w-8 rounded-md" />
+                      <Skeleton className="h-8 w-16 rounded-md" />
+                    </TimelineStepsAction>
+                  </TimelineStepsContent>
+                </TimelineStepsItem>
+              ))}
+            </TimelineSteps>
+          ) : (
+            <TimelineSteps>
+              {posts.map((post, index) => (
+                <TimelineStepsItem
+                  id={`post-${index + 1}`}
+                  data-post-anchor
+                  key={post.id}
+                >
+                  <TimelineStepsConnector />
+                  <TimelineStepsIcon size="lg" className="overflow-hidden p-0">
+                    <Avatar className="size-full">
+                      <AvatarImage src={post.author.avatar} alt="@shadcn" />
+                      <AvatarFallback>{post.author.name}</AvatarFallback>
+                    </Avatar>
+                  </TimelineStepsIcon>
+                  <TimelineStepsContent className="border-b">
+                    <div className="flex flex-row justify-between items-center w-full">
+                      <div className="flex flex-row gap-2">
+                        <TimelineStepsTitle>
+                          {post.author.name}
+                        </TimelineStepsTitle>
+                        <TimelineStepsTime>
+                          {tc("Time.minutesAgo", { count: post.minutesAgo })}
+                        </TimelineStepsTime>
+                      </div>
+                      <span className="text-muted-foreground text-sm">
+                        {index === 0 ? t("floor.op") : "#" + index}
+                      </span>
+                    </div>
+                    <TimelineStepsDescription>
+                      {post.content}
+                    </TimelineStepsDescription>
+                    <TimelineStepsAction>
+                      <Button variant="ghost" size="icon">
+                        <Heart />
+                      </Button>
+                      <Button variant="ghost" size="icon">
+                        <Bookmark />
+                      </Button>
+                      <Button variant="ghost" size="icon">
+                        <Flag />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        onClick={() => onClickReply(post.id, post.author.name)}
+                      >
+                        <Reply className="text-foreground" />
+                        {t("reply")}
+                      </Button>
+                    </TimelineStepsAction>
+                  </TimelineStepsContent>
+                </TimelineStepsItem>
+              ))}
+            </TimelineSteps>
+          )}
         </div>
-        <TopicNavigator total={posts.length} />
+        {loading ? (
+          <div className="w-48">
+            <Skeleton className="h-64 w-full" />
+          </div>
+        ) : (
+          <TopicNavigator total={posts.length} />
+        )}
       </div>
       <Drawer open={replyOpen} onOpenChange={setReplyOpen}>
         <DrawerContent>
@@ -288,32 +342,54 @@ export default function TopicPage() {
           </TableRow>
         </TableHeader>
         <TableBody>
-          {relatedTopics.map((t) => (
-            <TableRow key={t.id}>
-              <TableCell className="max-w-full">
-                <Link href={`/topic/${t.id}`}>
-                  <span className="cursor-pointer max-w-full text-lg font-medium whitespace-normal break-words">
-                    {t.title}
-                  </span>
-                </Link>
-                <div className="flex max-w-full flex-wrap gap-2 overflow-hidden mt-2">
-                  <Badge variant="secondary">
-                    {t.category.icon ?? "📁"} {t.category.name}
-                  </Badge>
-                  {t.tags.map((tag) => (
-                    <Badge key={tag.id} variant="outline">
-                      {tag.icon} {tag.name}
-                    </Badge>
-                  ))}
-                </div>
-              </TableCell>
-              <TableCell className="text-center">{t.replies}</TableCell>
-              <TableCell className="text-center">{t.views}</TableCell>
-              <TableCell className="text-center text-muted-foreground">
-                {formatRelative(t.activity)}
-              </TableCell>
-            </TableRow>
-          ))}
+          {loading
+            ? Array.from({ length: 4 }, (_, i) => i).map((i) => (
+                <TableRow key={`rt-s-${i}`}>
+                  <TableCell className="max-w-full">
+                    <Skeleton className="h-5 w-80" />
+                    <div className="flex max-w-full flex-wrap gap-2 overflow-hidden mt-2">
+                      <Skeleton className="h-6 w-24" />
+                      <Skeleton className="h-6 w-20" />
+                      <Skeleton className="h-6 w-28" />
+                    </div>
+                  </TableCell>
+                  <TableCell className="text-center">
+                    <Skeleton className="h-4 w-10 mx-auto" />
+                  </TableCell>
+                  <TableCell className="text-center">
+                    <Skeleton className="h-4 w-10 mx-auto" />
+                  </TableCell>
+                  <TableCell className="text-center">
+                    <Skeleton className="h-4 w-16 mx-auto" />
+                  </TableCell>
+                </TableRow>
+              ))
+            : relatedTopics.map((t) => (
+                <TableRow key={t.id}>
+                  <TableCell className="max-w-full">
+                    <Link href={`/topic/${t.id}`}>
+                      <span className="cursor-pointer max-w-full text-lg font-medium whitespace-normal wrap-break-word">
+                        {t.title}
+                      </span>
+                    </Link>
+                    <div className="flex max-w-full flex-wrap gap-2 overflow-hidden mt-2">
+                      <Badge variant="secondary">
+                        {t.category.icon ?? "📁"} {t.category.name}
+                      </Badge>
+                      {t.tags.map((tag) => (
+                        <Badge key={tag.id} variant="outline">
+                          {tag.icon} {tag.name}
+                        </Badge>
+                      ))}
+                    </div>
+                  </TableCell>
+                  <TableCell className="text-center">{t.replies}</TableCell>
+                  <TableCell className="text-center">{t.views}</TableCell>
+                  <TableCell className="text-center text-muted-foreground">
+                    {formatRelative(t.activity)}
+                  </TableCell>
+                </TableRow>
+              ))}
         </TableBody>
       </Table>
     </div>
