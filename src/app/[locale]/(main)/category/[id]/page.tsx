@@ -8,7 +8,6 @@ import {
   InputGroupAddon,
   InputGroupInput,
 } from "@/components/ui/input-group"
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { useSearchParams } from "next/navigation"
 import { useTranslations } from "next-intl"
 import { TopicControls } from "@/components/topic/topic-controls"
@@ -16,6 +15,7 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { TopicList, TopicListItem } from "@/components/topic/topic-list"
 import { NewTopicButton } from "@/components/new-topic/new-topic-button"
 import { NewTopicDialog } from "@/components/new-topic/new-topic-dialog"
+import { TopicSortTabs } from "@/components/topic/topic-sort-tabs"
 
 export default function CategoryPage() {
   const { id } = useParams<{ id: string }>()
@@ -47,9 +47,11 @@ export default function CategoryPage() {
       setTopicsLoading(true)
       const categoryId = searchParams.get("categoryId") ?? id
       const tagId = searchParams.get("tagId")
+      const sort = searchParams.get("sort")
       const qs = new URLSearchParams()
       if (categoryId) qs.set("categoryId", categoryId)
       if (tagId) qs.set("tagId", tagId)
+      if (sort) qs.set("sort", sort)
       qs.set("page", "1")
       qs.set("pageSize", "20")
       const res = await fetch(`/api/topics?${qs.toString()}`, {
@@ -170,16 +172,7 @@ export default function CategoryPage() {
             className="flex flex-row gap-2"
             initialCategoryId={id}
           />
-          <Tabs defaultValue="1">
-            <TabsList>
-              <TabsTrigger value="1">{tc("Tabs.latest")}</TabsTrigger>
-              <TabsTrigger value="2">{tc("Tabs.hot")}</TabsTrigger>
-              <TabsTrigger value="3">{tc("Tabs.leaderboard")}</TabsTrigger>
-              <TabsTrigger value="4">{tc("Tabs.categories")}</TabsTrigger>
-              <TabsTrigger value="5">{tc("Tabs.myPosts")}</TabsTrigger>
-              <TabsTrigger value="6">{tc("Tabs.favorites")}</TabsTrigger>
-            </TabsList>
-          </Tabs>
+          <TopicSortTabs />
         </div>
         <div className="flex flex-row gap-2">
           <NewTopicButton onClick={() => setIsNewTopicDialogOpen(true)} />

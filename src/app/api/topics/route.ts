@@ -25,6 +25,7 @@ interface TxClient {
 const TopicListQuery = z.object({
   categoryId: z.string().regex(/^\d+$/).optional(),
   tagId: z.string().regex(/^\d+$/).optional(),
+  sort: z.enum(["latest", "hot"]).optional(),
   page: z.string().regex(/^\d+$/).optional(),
   pageSize: z.string().regex(/^\d+$/).optional(),
 })
@@ -58,6 +59,7 @@ export async function GET(req: Request) {
   const q = TopicListQuery.safeParse({
     categoryId: url.searchParams.get("categoryId") ?? undefined,
     tagId: url.searchParams.get("tagId") ?? undefined,
+    sort: url.searchParams.get("sort") ?? undefined,
     page: url.searchParams.get("page") ?? undefined,
     pageSize: url.searchParams.get("pageSize") ?? undefined,
   })
@@ -165,8 +167,19 @@ export async function GET(req: Request) {
       activity: agg.activity ? agg.activity.toISOString() : "",
     }
   })
+  let sorted = items
+  const sortMode = q.success && q.data.sort ? q.data.sort : "latest"
+  if (sortMode === "hot") {
+    sorted = [...items].sort((a, b) => b.replies - a.replies)
+  } else {
+    sorted = [...items].sort((a, b) => {
+      const ta = a.activity ? new Date(a.activity).getTime() : 0
+      const tb = b.activity ? new Date(b.activity).getTime() : 0
+      return tb - ta
+    })
+  }
   const result: TopicListResult = {
-    items,
+    items: sorted,
     page,
     pageSize,
     total,
