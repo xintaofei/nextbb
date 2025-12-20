@@ -13,7 +13,8 @@
     },
     "Filters": {
       "category": "分类",
-      "tag": "标签"
+      "tag": "标签",
+      "all": "☑️ 全部"
     },
     "Tabs": {
       "latest": "最新",

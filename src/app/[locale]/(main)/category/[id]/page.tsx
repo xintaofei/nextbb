@@ -9,19 +9,20 @@ import {
   InputGroupInput,
 } from "@/components/ui/input-group"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { NewTopicButton } from "@/components/new-topic/new-topic-button"
-import { NewTopicDialog } from "@/components/new-topic/new-topic-dialog"
+import { useSearchParams } from "next/navigation"
 import { useTranslations } from "next-intl"
-import { CategorySelect } from "@/components/filters/category-select"
-import { TagSelect } from "@/components/filters/tag-select"
+import { TopicControls } from "@/components/topic/topic-controls"
 import { Skeleton } from "@/components/ui/skeleton"
 import { TopicList, TopicListItem } from "@/components/topic/topic-list"
+import { NewTopicButton } from "@/components/new-topic/new-topic-button"
+import { NewTopicDialog } from "@/components/new-topic/new-topic-dialog"
 
 export default function CategoryPage() {
   const { id } = useParams<{ id: string }>()
-  const [isNewTopicDialogOpen, setIsNewTopicDialogOpen] = useState(false)
   const tc = useTranslations("Common")
   const tCat = useTranslations("Category")
+  const searchParams = useSearchParams()
+  const [isNewTopicDialogOpen, setIsNewTopicDialogOpen] = useState(false)
 
   type TopicListResult = {
     items: TopicListItem[]
@@ -44,10 +45,16 @@ export default function CategoryPage() {
   async function loadTopics() {
     try {
       setTopicsLoading(true)
-      const res = await fetch(
-        `/api/topics?categoryId=${encodeURIComponent(id)}&page=1&pageSize=20`,
-        { cache: "no-store" }
-      )
+      const categoryId = searchParams.get("categoryId") ?? id
+      const tagId = searchParams.get("tagId")
+      const qs = new URLSearchParams()
+      if (categoryId) qs.set("categoryId", categoryId)
+      if (tagId) qs.set("tagId", tagId)
+      qs.set("page", "1")
+      qs.set("pageSize", "20")
+      const res = await fetch(`/api/topics?${qs.toString()}`, {
+        cache: "no-store",
+      })
       if (!res.ok) return
       const data: TopicListResult = await res.json()
       setTopics(data.items)
@@ -98,10 +105,16 @@ export default function CategoryPage() {
     ;(async () => {
       try {
         setTopicsLoading(true)
-        const res = await fetch(
-          `/api/topics?categoryId=${encodeURIComponent(id)}&page=1&pageSize=20`,
-          { cache: "no-store" }
-        )
+        const categoryId = searchParams.get("categoryId") ?? id
+        const tagId = searchParams.get("tagId")
+        const qs = new URLSearchParams()
+        if (categoryId) qs.set("categoryId", categoryId)
+        if (tagId) qs.set("tagId", tagId)
+        qs.set("page", "1")
+        qs.set("pageSize", "20")
+        const res = await fetch(`/api/topics?${qs.toString()}`, {
+          cache: "no-store",
+        })
         if (!res.ok) return
         const data: TopicListResult = await res.json()
         if (!cancelled) setTopics(data.items)
@@ -113,7 +126,7 @@ export default function CategoryPage() {
     return () => {
       cancelled = true
     }
-  }, [id])
+  }, [id, searchParams])
 
   return (
     <div className="flex min-h-screen w-full flex-col px-8 gap-4">
@@ -153,10 +166,10 @@ export default function CategoryPage() {
       </div>
       <div className="flex flex-row justify-between items-center">
         <div className="flex flex-row gap-4">
-          <div className="flex flex-row gap-2">
-            <CategorySelect className="w-30" />
-            <TagSelect className="w-30" />
-          </div>
+          <TopicControls
+            className="flex flex-row gap-2"
+            initialCategoryId={id}
+          />
           <Tabs defaultValue="1">
             <TabsList>
               <TabsTrigger value="1">{tc("Tabs.latest")}</TabsTrigger>
@@ -173,7 +186,6 @@ export default function CategoryPage() {
         </div>
       </div>
       <TopicList items={topics} loading={loading || topicsLoading} />
-
       <NewTopicDialog
         open={isNewTopicDialogOpen}
         onOpenChange={setIsNewTopicDialogOpen}

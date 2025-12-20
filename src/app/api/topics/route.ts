@@ -24,6 +24,7 @@ interface TxClient {
 
 const TopicListQuery = z.object({
   categoryId: z.string().regex(/^\d+$/).optional(),
+  tagId: z.string().regex(/^\d+$/).optional(),
   page: z.string().regex(/^\d+$/).optional(),
   pageSize: z.string().regex(/^\d+$/).optional(),
 })
@@ -56,6 +57,7 @@ export async function GET(req: Request) {
   const url = new URL(req.url)
   const q = TopicListQuery.safeParse({
     categoryId: url.searchParams.get("categoryId") ?? undefined,
+    tagId: url.searchParams.get("tagId") ?? undefined,
     page: url.searchParams.get("page") ?? undefined,
     pageSize: url.searchParams.get("pageSize") ?? undefined,
   })
@@ -69,8 +71,13 @@ export async function GET(req: Request) {
     ...(q.data.categoryId
       ? { category_id: BigInt(q.data.categoryId) }
       : undefined),
+    ...(q.data.tagId
+      ? { tag_links: { some: { tag_id: BigInt(q.data.tagId) } } }
+      : undefined),
   }
-  const total = await prisma.topics.count({ where })
+  const total = await prisma.topics.count({
+    where,
+  })
   const topics = await prisma.topics.findMany({
     where,
     select: {

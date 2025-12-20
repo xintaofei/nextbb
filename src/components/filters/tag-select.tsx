@@ -20,9 +20,10 @@ type Props = {
   value?: string
   onChange?: (value: string | undefined) => void
   className?: string
+  clearable?: boolean
 }
 
-export function TagSelect({ value, onChange, className }: Props) {
+export function TagSelect({ value, onChange, className, clearable }: Props) {
   const tc = useTranslations("Common")
   const [options, setOptions] = useState<TagOption[]>([])
   const [selected, setSelected] = useState<string | undefined>(value)
@@ -60,12 +61,13 @@ export function TagSelect({ value, onChange, className }: Props) {
   }, [value])
 
   const placeholder = useMemo(() => tc("Filters.tag"), [tc])
+  const allLabel = useMemo(() => tc("Filters.all"), [tc])
 
   return (
     <Select
       value={selected ?? ""}
       onValueChange={(v) => {
-        const next = v.length > 0 ? v : undefined
+        const next = v === "__all__" ? undefined : v
         setSelected(next)
         onChange?.(next)
       }}
@@ -74,6 +76,11 @@ export function TagSelect({ value, onChange, className }: Props) {
         <SelectValue placeholder={placeholder} />
       </SelectTrigger>
       <SelectContent>
+        {clearable ? (
+          <SelectItem key="__all__" value="__all__">
+            {allLabel}
+          </SelectItem>
+        ) : null}
         {options.map((opt) => (
           <SelectItem key={opt.id} value={opt.id}>
             {opt.icon} {opt.name}

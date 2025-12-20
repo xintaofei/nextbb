@@ -9,11 +9,11 @@ import {
   InputGroupAddon,
   InputGroupInput,
 } from "@/components/ui/input-group"
+import { useSearchParams } from "next/navigation"
+import { TopicControls } from "@/components/topic/topic-controls"
+import { TopicList, TopicListItem } from "@/components/topic/topic-list"
 import { NewTopicButton } from "@/components/new-topic/new-topic-button"
 import { NewTopicDialog } from "@/components/new-topic/new-topic-dialog"
-import { CategorySelect } from "@/components/filters/category-select"
-import { TagSelect } from "@/components/filters/tag-select"
-import { TopicList, TopicListItem } from "@/components/topic/topic-list"
 
 type TopicListResult = {
   items: TopicListItem[]
@@ -25,6 +25,7 @@ type TopicListResult = {
 export default function Home() {
   const t = useTranslations("Index")
   const tc = useTranslations("Common")
+  const searchParams = useSearchParams()
   const [isNewTopicDialogOpen, setIsNewTopicDialogOpen] = useState(false)
 
   const [loading, setLoading] = useState<boolean>(true)
@@ -32,7 +33,14 @@ export default function Home() {
   async function loadTopics() {
     try {
       setLoading(true)
-      const res = await fetch(`/api/topics?page=1&pageSize=20`, {
+      const categoryId = searchParams.get("categoryId")
+      const tagId = searchParams.get("tagId")
+      const qs = new URLSearchParams()
+      if (categoryId) qs.set("categoryId", categoryId)
+      if (tagId) qs.set("tagId", tagId)
+      qs.set("page", "1")
+      qs.set("pageSize", "20")
+      const res = await fetch(`/api/topics?${qs.toString()}`, {
         cache: "no-store",
       })
       if (!res.ok) return
@@ -51,7 +59,7 @@ export default function Home() {
     return () => {
       cancelled = true
     }
-  }, [])
+  }, [searchParams])
 
   return (
     <div className="flex min-h-screen w-full flex-col px-8 gap-4">
@@ -66,10 +74,7 @@ export default function Home() {
       </div>
       <div className="flex flex-row justify-between items-center">
         <div className="flex flex-row gap-4">
-          <div className="flex flex-row gap-2">
-            <CategorySelect className="w-30" />
-            <TagSelect className="w-30" />
-          </div>
+          <TopicControls className="flex flex-row gap-2" />
           <Tabs defaultValue="1">
             <TabsList>
               <TabsTrigger value="1">{tc("Tabs.latest")}</TabsTrigger>
@@ -86,7 +91,6 @@ export default function Home() {
         </div>
       </div>
       <TopicList items={topics} loading={loading} />
-
       <NewTopicDialog
         open={isNewTopicDialogOpen}
         onOpenChange={setIsNewTopicDialogOpen}

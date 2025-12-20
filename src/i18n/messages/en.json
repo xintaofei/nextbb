@@ -13,7 +13,8 @@
     },
     "Filters": {
       "category": "Category",
-      "tag": "Tag"
+      "tag": "Tag",
+      "all": "☑️ All"
     },
     "Tabs": {
       "latest": "Latest",
