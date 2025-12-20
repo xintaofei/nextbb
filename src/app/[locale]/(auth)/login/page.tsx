@@ -20,7 +20,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import Link from "next/link"
 
 const schema = z.object({
-  email: z.string().email(),
+  email: z.email(),
   password: z.string().min(6),
 })
 
