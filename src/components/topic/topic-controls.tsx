@@ -43,11 +43,6 @@ export function TopicControls({
   const updateQuery = useCallback(
     (next: TopicControlsState) => {
       const params = new URLSearchParams(searchParams.toString())
-      if (next.categoryId) {
-        params.set("categoryId", next.categoryId)
-      } else {
-        params.delete("categoryId")
-      }
       if (next.tagId) {
         params.set("tagId", next.tagId)
       } else {
@@ -64,12 +59,41 @@ export function TopicControls({
     [pathname, router, searchParams, onChange, startTransition]
   )
 
+  const navigateToCategory = useCallback(
+    (nextCategoryId: string | undefined) => {
+      const params = new URLSearchParams(searchParams.toString())
+      params.delete("categoryId")
+      if (tagId) params.set("tagId", tagId)
+      params.set("page", "1")
+
+      const idx = pathname.indexOf("/category/")
+      const root =
+        idx >= 0 ? pathname.slice(0, idx) : pathname.replace(/\/$/, "")
+      const base = root.length > 0 ? root : "/"
+
+      const target =
+        nextCategoryId && nextCategoryId.length > 0
+          ? `${base}${base.endsWith("/") ? "" : "/"}category/${nextCategoryId}`
+          : base
+
+      const url =
+        params.toString().length > 0 ? `${target}?${params.toString()}` : target
+
+      startTransition(() => {
+        router.push(url)
+        router.refresh()
+      })
+      onChange?.({ categoryId: nextCategoryId, tagId })
+    },
+    [pathname, router, searchParams, startTransition, tagId, onChange]
+  )
+
   return (
     <div className={className}>
       <div className="flex flex-row gap-2 items-center">
         <CategorySelect
           value={categoryId}
-          onChange={(v) => updateQuery({ categoryId: v, tagId })}
+          onChange={(v) => navigateToCategory(v)}
           className="w-36"
           clearable
         />
