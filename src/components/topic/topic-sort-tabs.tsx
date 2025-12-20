@@ -26,7 +26,7 @@ export function TopicSortTabs({ className }: TopicSortTabsProps) {
   function setSort(next: SortValue) {
     const params = new URLSearchParams(searchParams.toString())
     params.set("sort", next)
-    params.set("page", "1")
+    params.delete("page")
     const url = `${pathname}?${params.toString()}`
     startTransition(() => {
       router.replace(url)

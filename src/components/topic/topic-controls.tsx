@@ -48,7 +48,7 @@ export function TopicControls({
       } else {
         params.delete("tagId")
       }
-      params.set("page", "1")
+      params.delete("page")
       const url = `${pathname}?${params.toString()}`
       startTransition(() => {
         router.replace(url)
@@ -64,7 +64,7 @@ export function TopicControls({
       const params = new URLSearchParams(searchParams.toString())
       params.delete("categoryId")
       if (tagId) params.set("tagId", tagId)
-      params.set("page", "1")
+      params.delete("page")
 
       const idx = pathname.indexOf("/category/")
       const root =
