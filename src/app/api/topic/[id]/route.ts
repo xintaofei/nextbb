@@ -104,7 +104,7 @@ export async function GET(
     orderBy: { updated_at: "desc" },
     take: 5,
   })
-  const relatedIds = relatedDb.map((t) => t.id)
+  const relatedIds = relatedDb.map((t: { id: bigint; title: string }) => t.id)
   let relatedTopics: RelatedTopicItem[] = []
   if (relatedIds.length > 0) {
     const relatedPosts = await prisma.posts.findMany({

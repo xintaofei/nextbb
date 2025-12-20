@@ -190,7 +190,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Category not found" }, { status: 404 })
   }
 
-  const tagNames = [...new Set(body.tags.map((t) => t.trim()))].filter(
+  const tagNames = [...new Set(body.tags.map((t: string) => t.trim()))].filter(
     (t) => t.length > 0
   )
 
