@@ -38,6 +38,7 @@ import {
 import { useTranslations } from "next-intl"
 import { useEffect, useMemo, useState } from "react"
 import { toast } from "sonner"
+import { formatRelative } from "@/lib/time"
 
 export default function TopicPage() {
   const { id } = useParams<{ id: string }>()
@@ -55,6 +56,8 @@ export default function TopicPage() {
   type RelatedTopicItem = {
     id: string
     title: string
+    category: { id: string; name: string; icon?: string }
+    tags: { id: string; name: string; icon: string }[]
     replies: number
     views: number
     activity: string
@@ -294,22 +297,20 @@ export default function TopicPage() {
                   </span>
                 </Link>
                 <div className="flex max-w-full flex-wrap gap-2 overflow-hidden mt-2">
-                  <Badge variant="secondary">{tc("Badge.secondary")}</Badge>
-                  <Badge
-                    variant="secondary"
-                    className="bg-blue-500 text-white dark:bg-blue-600"
-                  >
-                    <BadgeCheckIcon />
-                    {tc("Badge.verified")}
+                  <Badge variant="secondary">
+                    {t.category.icon ?? "📁"} {t.category.name}
                   </Badge>
-                  <Badge variant="destructive">{tc("Badge.destructive")}</Badge>
-                  <Badge variant="outline">{tc("Badge.outline")}</Badge>
+                  {t.tags.map((tag) => (
+                    <Badge key={tag.id} variant="outline">
+                      {tag.icon} {tag.name}
+                    </Badge>
+                  ))}
                 </div>
               </TableCell>
               <TableCell className="text-center">{t.replies}</TableCell>
               <TableCell className="text-center">{t.views}</TableCell>
               <TableCell className="text-center text-muted-foreground">
-                {t.activity}
+                {formatRelative(t.activity)}
               </TableCell>
             </TableRow>
           ))}

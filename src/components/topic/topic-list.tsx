@@ -13,6 +13,7 @@ import {
 import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Skeleton } from "@/components/ui/skeleton"
+import { formatRelative } from "@/lib/time"
 
 export type TopicParticipant = {
   id: string
@@ -41,17 +42,6 @@ export type TopicListItem = {
   replies: number
   views: number
   activity: string
-}
-
-function formatRelative(iso: string): string {
-  if (!iso) return ""
-  const now = Date.now()
-  const then = new Date(iso).getTime()
-  const diff = Math.floor((now - then) / 1000)
-  if (diff < 60) return `${diff}秒`
-  if (diff < 3600) return `${Math.floor(diff / 60)}分钟`
-  if (diff < 86400) return `${Math.floor(diff / 3600)}小时`
-  return `${Math.floor(diff / 86400)}天`
 }
 
 export function TopicList({

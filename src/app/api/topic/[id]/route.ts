@@ -18,6 +18,8 @@ type PostItem = {
 type RelatedTopicItem = {
   id: string
   title: string
+  category: { id: string; name: string; icon?: string }
+  tags: { id: string; name: string; icon: string }[]
   replies: number
   views: number
   activity: string
@@ -100,11 +102,27 @@ export async function GET(
       category_id: topic.category.id,
       id: { not: topic.id },
     },
-    select: { id: true, title: true },
+    select: {
+      id: true,
+      title: true,
+      category: { select: { id: true, name: true, icon: true } },
+      tag_links: {
+        select: {
+          tag: { select: { id: true, name: true, icon: true } },
+        },
+      },
+    },
     orderBy: { updated_at: "desc" },
     take: 5,
   })
-  const relatedIds = relatedDb.map((t: { id: bigint; title: string }) => t.id)
+  const relatedIds = relatedDb.map(
+    (t: {
+      id: bigint
+      title: string
+      category: { id: bigint; name: string; icon: string | null }
+      tag_links: { tag: { id: bigint; name: string; icon: string } }[]
+    }) => t.id
+  )
   let relatedTopics: RelatedTopicItem[] = []
   if (relatedIds.length > 0) {
     const relatedPosts = await prisma.posts.findMany({
@@ -123,17 +141,35 @@ export async function GET(
       const current = agg[key].activity
       if (!current || when > current) agg[key].activity = when
     }
-    type RelatedRow = { id: bigint; title: string }
-    relatedTopics = relatedDb.map((t: RelatedRow) => {
-      const a = agg[String(t.id)]
-      return {
-        id: String(t.id),
-        title: t.title,
-        replies: Math.max(a.replies - 1, 0),
-        views: 0,
-        activity: a.activity ? a.activity.toISOString() : "",
+    relatedTopics = relatedDb.map(
+      (t: {
+        id: bigint
+        title: string
+        category: { id: bigint; name: string; icon: string | null }
+        tag_links: { tag: { id: bigint; name: string; icon: string } }[]
+      }) => {
+        const a = agg[String(t.id)]
+        return {
+          id: String(t.id),
+          title: t.title,
+          category: {
+            id: String(t.category.id),
+            name: t.category.name,
+            icon: t.category.icon ?? undefined,
+          },
+          tags: t.tag_links.map(
+            (l: { tag: { id: bigint; name: string; icon: string } }) => ({
+              id: String(l.tag.id),
+              name: l.tag.name,
+              icon: l.tag.icon,
+            })
+          ),
+          replies: Math.max(a.replies - 1, 0),
+          views: 0,
+          activity: a.activity ? a.activity.toISOString() : "",
+        }
       }
-    })
+    )
   }
 
   const result: TopicDetailResult = {
