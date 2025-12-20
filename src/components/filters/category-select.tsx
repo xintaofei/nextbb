@@ -39,8 +39,9 @@ export function CategorySelect({ value, onChange, className }: Props) {
           icon?: string
         }> = await res.json()
         if (!cancelled) {
+          type CategoryApiItem = { id: string; name: string; icon?: string }
           setOptions(
-            data.map((c) => ({
+            data.map((c: CategoryApiItem) => ({
               id: c.id,
               name: c.name,
               icon: c.icon,

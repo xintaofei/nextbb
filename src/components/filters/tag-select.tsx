@@ -39,8 +39,9 @@ export function TagSelect({ value, onChange, className }: Props) {
           icon: string
         }> = await res.json()
         if (!cancelled) {
+          type TagApiItem = { id: string; name: string; icon: string }
           setOptions(
-            data.map((t) => ({
+            data.map((t: TagApiItem) => ({
               id: t.id,
               name: t.name,
               icon: t.icon,

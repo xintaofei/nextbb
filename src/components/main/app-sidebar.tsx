@@ -21,7 +21,13 @@ export async function AppSidebar({
     orderBy: [{ sort: "asc" }, { updated_at: "desc" }],
   })
 
-  const categoryItems = categories.map((c) => ({
+  interface CategoryRow {
+    id: bigint
+    name: string
+    icon: string
+  }
+
+  const categoryItems = categories.map((c: CategoryRow) => ({
     id: String(c.id),
     name: c.name,
     icon: c.icon ?? "📁",
