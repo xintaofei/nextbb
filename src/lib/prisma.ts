@@ -7,17 +7,29 @@ declare global {
   var prisma: PrismaClient | undefined
 }
 
-const url =
-  process.env.POSTGRES_URL_NON_POOLING ??
-  process.env.POSTGRES_URL ??
-  process.env.POSTGRES_PRISMA_URL ??
-  ""
+const pooled =
+  process.env.POSTGRES_PRISMA_URL ?? process.env.POSTGRES_URL ?? null
+let url = pooled ?? process.env.POSTGRES_URL_NON_POOLING ?? ""
 if (!url || url.length === 0) {
   throw new Error(
     "Database connection string is empty: set POSTGRES_URL_NON_POOLING or POSTGRES_URL or POSTGRES_PRISMA_URL"
   )
 }
-const pool = new Pool({ connectionString: url, ssl: true })
+if (pooled) {
+  try {
+    const u = new URL(url)
+    if (!u.searchParams.has("pgbouncer")) {
+      u.searchParams.set("pgbouncer", "true")
+      url = u.toString()
+    }
+  } catch {}
+}
+const pool = new Pool({
+  connectionString: url,
+  ssl: true,
+  max: parseInt(process.env.POSTGRES_POOL_MAX ?? "1", 10),
+  idleTimeoutMillis: 10000,
+})
 const adapter = new PrismaPg(pool)
 
 export const prisma: PrismaClient =
