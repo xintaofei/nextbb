@@ -28,7 +28,12 @@
       "topic": "Topic",
       "replies": "Replies",
       "views": "Views",
-      "activity": "Activity"
+      "activity": "Activity",
+      "empty": "No data"
+    },
+    "Loading": {
+      "loading": "Loading...",
+      "noMore": "No more"
     },
     "Badge": {
       "secondary": "Secondary",

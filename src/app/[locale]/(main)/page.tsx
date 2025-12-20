@@ -3,7 +3,6 @@
 import { useTranslations } from "next-intl"
 import { useEffect, useState } from "react"
 import { SearchIcon } from "lucide-react"
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import {
   InputGroup,
   InputGroupAddon,
@@ -15,6 +14,7 @@ import { TopicList, TopicListItem } from "@/components/topic/topic-list"
 import { NewTopicButton } from "@/components/new-topic/new-topic-button"
 import { NewTopicDialog } from "@/components/new-topic/new-topic-dialog"
 import { TopicSortTabs } from "@/components/topic/topic-sort-tabs"
+import { useMemo } from "react"
 
 type TopicListResult = {
   items: TopicListItem[]
@@ -31,9 +31,18 @@ export default function Home() {
 
   const [loading, setLoading] = useState<boolean>(true)
   const [topics, setTopics] = useState<TopicListItem[]>([])
-  async function loadTopics() {
+  const [page, setPage] = useState<number>(1)
+  const [pageSize] = useState<number>(10)
+  const [total, setTotal] = useState<number>(0)
+  const [loadingMore, setLoadingMore] = useState<boolean>(false)
+  const hasMore = useMemo(() => topics.length < total, [topics.length, total])
+  async function loadTopics(initial?: boolean) {
     try {
-      setLoading(true)
+      if (initial) {
+        setLoading(true)
+      } else {
+        setLoadingMore(true)
+      }
       const categoryId = searchParams.get("categoryId")
       const tagId = searchParams.get("tagId")
       const sort = searchParams.get("sort")
@@ -41,27 +50,52 @@ export default function Home() {
       if (categoryId) qs.set("categoryId", categoryId)
       if (tagId) qs.set("tagId", tagId)
       if (sort) qs.set("sort", sort)
-      qs.set("page", "1")
-      qs.set("pageSize", "20")
+      qs.set("page", String(initial ? 1 : page))
+      qs.set("pageSize", String(pageSize))
       const res = await fetch(`/api/topics?${qs.toString()}`, {
         cache: "no-store",
       })
       if (!res.ok) return
       const data: TopicListResult = await res.json()
-      setTopics(data.items)
+      if (initial) {
+        const unique = (() => {
+          const seen = new Set<string>()
+          const res: TopicListItem[] = []
+          for (const it of data.items) {
+            if (!seen.has(it.id)) {
+              seen.add(it.id)
+              res.push(it)
+            }
+          }
+          return res
+        })()
+        setTopics(unique)
+        setTotal(data.total)
+        setPage(1)
+      } else {
+        setTopics((prev) => {
+          const seen = new Set(prev.map((p) => p.id))
+          const next = data.items.filter((it) => !seen.has(it.id))
+          return [...prev, ...next]
+        })
+        setTotal(data.total)
+      }
     } catch {
     } finally {
-      setLoading(false)
+      if (initial) {
+        setLoading(false)
+      } else {
+        setLoadingMore(false)
+      }
     }
   }
   useEffect(() => {
-    let cancelled = false
     ;(async () => {
-      await loadTopics()
+      setPage(1)
+      setTotal(0)
+      await loadTopics(true)
     })()
-    return () => {
-      cancelled = true
-    }
+    return () => {}
   }, [searchParams])
 
   return (
@@ -84,12 +118,23 @@ export default function Home() {
           <NewTopicButton onClick={() => setIsNewTopicDialogOpen(true)} />
         </div>
       </div>
-      <TopicList items={topics} loading={loading} />
+      <TopicList
+        items={topics}
+        loading={loading}
+        hasMore={hasMore}
+        loadingMore={loadingMore}
+        onLoadMore={async () => {
+          if (loadingMore || !hasMore) return
+          const next = page + 1
+          setPage(next)
+          await loadTopics(false)
+        }}
+      />
       <NewTopicDialog
         open={isNewTopicDialogOpen}
         onOpenChange={setIsNewTopicDialogOpen}
         onPublished={() => {
-          loadTopics()
+          loadTopics(true)
         }}
       />
     </div>

@@ -14,6 +14,8 @@ import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Skeleton } from "@/components/ui/skeleton"
 import { formatRelative } from "@/lib/time"
+import { Spinner } from "@/components/ui/spinner"
+import { useEffect, useRef } from "react"
 
 export type TopicParticipant = {
   id: string
@@ -48,12 +50,39 @@ export function TopicList({
   items,
   loading,
   className,
+  hasMore,
+  loadingMore,
+  onLoadMore,
 }: {
   items: TopicListItem[]
   loading: boolean
   className?: string
+  hasMore?: boolean
+  loadingMore?: boolean
+  onLoadMore?: () => Promise<void> | void
 }) {
   const tc = useTranslations("Common")
+  const sentinelRef = useRef<HTMLDivElement | null>(null)
+
+  useEffect(() => {
+    if (!sentinelRef.current) return
+    if (!hasMore || loadingMore) return
+    const el = sentinelRef.current
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const [entry] = entries
+        if (entry.isIntersecting) {
+          onLoadMore?.()
+        }
+      },
+      { root: null, rootMargin: "0px", threshold: 0.1 }
+    )
+    observer.observe(el)
+    return () => {
+      observer.unobserve(el)
+      observer.disconnect()
+    }
+  }, [hasMore, loadingMore, onLoadMore])
 
   return (
     <Table className={className ?? "w-full table-fixed"}>
@@ -146,6 +175,36 @@ export function TopicList({
                 </TableCell>
               </TableRow>
             ))}
+        {!loading && items.length === 0 && (
+          <TableRow>
+            <TableCell
+              colSpan={5}
+              className="text-center text-muted-foreground"
+            >
+              {tc("Table.empty")}
+            </TableCell>
+          </TableRow>
+        )}
+        {!loading && (
+          <TableRow>
+            <TableCell colSpan={5}>
+              <div className="flex w-full items-center justify-center py-4">
+                {loadingMore ? (
+                  <div className="flex items-center gap-2 text-muted-foreground">
+                    <Spinner className="size-4" />
+                    <span>{tc("Loading.loading")}</span>
+                  </div>
+                ) : hasMore ? (
+                  <div ref={sentinelRef} className="h-6 w-full" />
+                ) : (
+                  <span className="text-muted-foreground">
+                    {tc("Loading.noMore")}
+                  </span>
+                )}
+              </div>
+            </TableCell>
+          </TableRow>
+        )}
       </TableBody>
     </Table>
   )

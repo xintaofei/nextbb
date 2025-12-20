@@ -28,7 +28,12 @@
       "topic": "话题",
       "replies": "回复",
       "views": "浏览量",
-      "activity": "活动"
+      "activity": "活动",
+      "empty": "暂无数据"
+    },
+    "Loading": {
+      "loading": "加载中...",
+      "noMore": "没有更多了"
     },
     "Badge": {
       "secondary": "次要",
