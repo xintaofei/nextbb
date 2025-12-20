@@ -137,8 +137,8 @@ export default function CategoryPage() {
           <div className="flex items-center gap-3">
             {loading ? (
               <>
-                <Skeleton className="h-12 w-12 rounded-full" />
-                <Skeleton className="h-10 w-64" />
+                <Skeleton className="h-14 w-14 rounded-full" />
+                <Skeleton className="h-14 w-64" />
               </>
             ) : (
               <>
