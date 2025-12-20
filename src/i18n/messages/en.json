@@ -43,6 +43,9 @@
     },
     "Time": {
       "minutesAgo": "{count} minutes ago"
+    },
+    "Action": {
+      "cancel": "Cancel"
     }
   },
   "Category": {
