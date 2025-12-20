@@ -102,7 +102,7 @@ export async function GET(req: Request) {
       created_at: true,
       updated_at: true,
     },
-    orderBy: { created_at: "desc" },
+    orderBy: { created_at: "asc" },
   })
   const byTopic: Record<
     string,

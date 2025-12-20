@@ -119,7 +119,7 @@ export function TopicList({
               <TableRow key={t.id}>
                 <TableCell className="flex flex-col gap-2">
                   <Link href={`/topic/${t.id}`}>
-                    <span className="cursor-pointer max-w-full text-lg font-medium whitespace-normal break-words">
+                    <span className="cursor-pointer max-w-full text-lg font-medium whitespace-normal wrap-break-word">
                       {t.title}
                     </span>
                   </Link>
@@ -136,8 +136,11 @@ export function TopicList({
                 </TableCell>
                 <TableCell>
                   <div className="*:data-[slot=avatar]:ring-background flex -space-x-2 *:data-[slot=avatar]:ring-2">
-                    {t.participants.map((u) => (
-                      <Avatar key={u.id}>
+                    {dedupeAndLimit(t.participants, 5).map((u, idx) => (
+                      <Avatar
+                        key={u.id}
+                        className={`relative ${idx === 0 ? "z-50" : idx === 1 ? "z-40" : idx === 2 ? "z-30" : idx === 3 ? "z-20" : "z-10"}`}
+                      >
                         <AvatarImage src={u.avatar} alt={u.name} />
                         <AvatarFallback>
                           {u.name.slice(0, 2).toUpperCase()}
@@ -158,3 +161,18 @@ export function TopicList({
   )
 }
 
+function dedupeAndLimit<T extends { id: string }>(
+  arr: T[],
+  limit: number
+): T[] {
+  const seen = new Set<string>()
+  const result: T[] = []
+  for (const item of arr) {
+    if (!seen.has(item.id)) {
+      seen.add(item.id)
+      result.push(item)
+      if (result.length >= limit) break
+    }
+  }
+  return result
+}
