@@ -196,7 +196,7 @@ export default function Home() {
                     </div>
                   </TableCell>
                   <TableCell>
-                    <div className="*:data-[slot=avatar]:ring-background flex -space-x-2 *:data-[slot=avatar]:ring-2 *:data-[slot=avatar]:grayscale">
+                    <div className="*:data-[slot=avatar]:ring-background flex -space-x-2 *:data-[slot=avatar]:ring-2">
                       {topic.participants.map((u) => (
                         <Avatar key={u.id}>
                           <AvatarImage src={u.avatar} alt={u.name} />
