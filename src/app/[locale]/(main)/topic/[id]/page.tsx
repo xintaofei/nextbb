@@ -183,11 +183,13 @@ export default function TopicPage() {
             </Link>
             <div className="flex max-w-full flex-wrap gap-2 overflow-hidden">
               {data?.topic.category ? (
-                <Badge variant="secondary">{data.topic.category.name}</Badge>
+                <Badge variant="secondary">
+                  {data.topic.category.icon ?? "📁"} {data.topic.category.name}
+                </Badge>
               ) : null}
               {data?.topic.tags.map((tag) => (
                 <Badge key={tag.id} variant="outline">
-                  {tag.name}
+                  {tag.icon} {tag.name}
                 </Badge>
               ))}
             </div>
@@ -249,7 +251,7 @@ export default function TopicPage() {
                           {post.author.name}
                         </TimelineStepsTitle>
                         <TimelineStepsTime>
-                          {tc("Time.minutesAgo", { count: post.minutesAgo })}
+                          {formatRelative(post.createdAt)}
                         </TimelineStepsTime>
                       </div>
                       <span className="text-muted-foreground text-sm">
