@@ -85,19 +85,23 @@ export function TopicList({
   }, [hasMore, loadingMore, onLoadMore])
 
   return (
-    <Table className={className ?? "w-full table-fixed"}>
+    <Table
+      className={className ?? "w-full table-fixed max-[1300px]:table-auto"}
+    >
       <colgroup>
         <col />
-        <col className="w-40" />
-        <col className="w-20" />
-        <col className="w-20" />
-        <col className="w-20" />
+        <col className="w-40 max-[1300px]:w-16" />
+        <col className="w-20 max-[1300px]:w-16" />
+        <col className="w-20 max-[1300px]:hidden" />
+        <col className="w-20 max-[1300px]:w-16" />
       </colgroup>
       <TableHeader>
         <TableRow>
           <TableHead colSpan={2}>{tc("Table.topic")}</TableHead>
           <TableHead className="text-center">{tc("Table.replies")}</TableHead>
-          <TableHead className="text-center">{tc("Table.views")}</TableHead>
+          <TableHead className="text-center max-[1300px]:hidden">
+            {tc("Table.views")}
+          </TableHead>
           <TableHead className="text-center">{tc("Table.activity")}</TableHead>
         </TableRow>
       </TableHeader>
@@ -106,19 +110,21 @@ export function TopicList({
           ? Array.from({ length: 8 }).map((_, i) => (
               <TableRow key={`skeleton-${i}`}>
                 <TableCell className="flex flex-col gap-2">
-                  <Skeleton className="h-5 w-80" />
+                  <Skeleton className="h-6 w-72" />
                   <div className="flex max-w-full flex-wrap gap-2 overflow-hidden">
-                    <Skeleton className="h-5 w-24" />
                     <Skeleton className="h-5 w-20" />
-                    <Skeleton className="h-5 w-20" />
+                    <Skeleton className="h-5 w-16" />
+                    <Skeleton className="h-5 w-16" />
                   </div>
                 </TableCell>
-                <TableCell>
-                  <div className="flex -space-x-2">
+                <TableCell className="max-[1300px]:text-center">
+                  <div className="flex -space-x-2 max-[1300px]:justify-center">
                     {Array.from({ length: 5 }).map((_, j) => (
                       <Skeleton
                         key={j}
-                        className="h-8 w-8 rounded-full ring-2 ring-background"
+                        className={`h-8 w-8 rounded-full ring-2 ring-background ${
+                          j > 0 ? "max-[1300px]:hidden" : ""
+                        }`}
                       />
                     ))}
                   </div>
@@ -126,7 +132,7 @@ export function TopicList({
                 <TableCell className="text-center">
                   <Skeleton className="h-4 w-10 mx-auto" />
                 </TableCell>
-                <TableCell className="text-center">
+                <TableCell className="text-center max-[1300px]:hidden">
                   <Skeleton className="h-4 w-10 mx-auto" />
                 </TableCell>
                 <TableCell className="text-center">
@@ -154,11 +160,11 @@ export function TopicList({
                   </div>
                 </TableCell>
                 <TableCell>
-                  <div className="*:data-[slot=avatar]:ring-background flex -space-x-2 *:data-[slot=avatar]:ring-2">
+                  <div className="*:data-[slot=avatar]:ring-background flex -space-x-2 *:data-[slot=avatar]:ring-2 max-[1300px]:justify-center">
                     {dedupeAndLimit(t.participants, 5).map((u, idx) => (
                       <Avatar
                         key={u.id}
-                        className={`relative ${idx === 0 ? "z-50" : idx === 1 ? "z-40" : idx === 2 ? "z-30" : idx === 3 ? "z-20" : "z-10"}`}
+                        className={`relative ${idx === 0 ? "z-50" : idx === 1 ? "z-40" : idx === 2 ? "z-30" : idx === 3 ? "z-20" : "z-10"} ${idx > 0 ? "max-[1300px]:hidden" : ""}`}
                       >
                         <AvatarImage src={u.avatar} alt={u.name} />
                         <AvatarFallback>
@@ -169,7 +175,9 @@ export function TopicList({
                   </div>
                 </TableCell>
                 <TableCell className="text-center">{t.replies}</TableCell>
-                <TableCell className="text-center">{t.views}</TableCell>
+                <TableCell className="text-center max-[1300px]:hidden">
+                  {t.views}
+                </TableCell>
                 <TableCell className="text-center">
                   {formatRelative(t.activity)}
                 </TableCell>
