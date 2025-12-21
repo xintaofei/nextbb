@@ -1,4 +1,5 @@
 import Image from "next/image"
+import Link from "next/link"
 
 export function NavTop({
   width = 120,
@@ -8,12 +9,14 @@ export function NavTop({
   height?: number
 }) {
   return (
-    <Image
-      className="dark:invert"
-      src="/nextbb-logo.png"
-      alt="Vercel logomark"
-      width={width}
-      height={height}
-    />
+    <Link href="/">
+      <Image
+        className="dark:invert"
+        src="/nextbb-logo.png"
+        alt="Vercel logomark"
+        width={width}
+        height={height}
+      />
+    </Link>
   )
 }

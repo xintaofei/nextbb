@@ -33,13 +33,13 @@ export function NavMain() {
             <span>话题</span>
           </SidebarMenuButton>
         </Link>
-        <Link href="/user/activity">
+        <Link href="#">
           <SidebarMenuButton>
             <BookUser />
             <span>我的帖子</span>
           </SidebarMenuButton>
         </Link>
-        <Link href="/user/messages">
+        <Link href="#">
           <SidebarMenuButton>
             <Inbox />
             <span>我的消息</span>
