@@ -57,7 +57,9 @@ export const LinuxDoProvider: OAuthConfigWithHttp<LinuxDoProfile> = {
     const email =
       typeof profile.email === "string"
         ? profile.email
-        : (null as string | null)
+        : id !== ""
+          ? `${id}@linux.do.local`
+          : (null as string | null)
 
     let image: string | null = null
     if (typeof profile.avatar_url === "string") {
