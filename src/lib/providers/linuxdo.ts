@@ -5,7 +5,13 @@ type LinuxDoProfile = {
   sub?: string
   name?: string
   username?: string
+  preferred_username?: string
+  nickname?: string
+  login?: string
   email?: string | null
+  mail?: string | null
+  emailAddress?: string | null
+  emails?: Array<string | { value?: string }>
   avatar?: string | null
   avatar_url?: string | null
   picture?: string | null
@@ -17,11 +23,6 @@ function getEnv(name: string): string {
     throw new Error(`${name} is not set`)
   }
   return v
-}
-
-function getEnvOr(name: string, fallback: string): string {
-  const v = process.env[name]
-  return v && v.length > 0 ? v : fallback
 }
 
 type OAuthConfigWithHttp<T> = OAuthConfig<T> & {
@@ -47,6 +48,9 @@ export const LinuxDoProvider: OAuthConfigWithHttp<LinuxDoProfile> = {
   httpOptions: { timeout: 60000 },
   idToken: true,
   profile(profile: LinuxDoProfile) {
+    if (process.env.NODE_ENV !== "production") {
+      console.log("linuxdo userinfo:", profile)
+    }
     let id = ""
     if (profile.id !== undefined) {
       id = String(profile.id)
@@ -54,19 +58,9 @@ export const LinuxDoProvider: OAuthConfigWithHttp<LinuxDoProfile> = {
       id = String(profile.sub)
     }
 
-    let name = ""
-    if (typeof profile.name === "string") {
-      name = profile.name
-    } else if (typeof profile.username === "string") {
-      name = profile.username
-    }
+    const name = typeof profile.name === "string" ? profile.name : ""
 
-    const email =
-      typeof profile.email === "string"
-        ? profile.email
-        : id !== ""
-          ? `${id}@linux.do.local`
-          : (null as string | null)
+    const email = typeof profile.email === "string" ? profile.email : null
 
     let image: string | null = null
     if (typeof profile.avatar_url === "string") {
