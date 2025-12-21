@@ -1,6 +1,7 @@
 import { ReactNode } from "react"
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar"
 import { AppSidebar } from "@/components/main/app-sidebar"
+import { MobileSidebarTrigger } from "@/components/main/mobile-sidebar-trigger"
 
 export default function MainLayout({
   children,
@@ -11,7 +12,10 @@ export default function MainLayout({
     <div className="max-w-[86rem] mx-auto">
       <SidebarProvider>
         <AppSidebar />
-        <SidebarInset>{children}</SidebarInset>
+        <SidebarInset>
+          <MobileSidebarTrigger />
+          {children}
+        </SidebarInset>
       </SidebarProvider>
     </div>
   )
