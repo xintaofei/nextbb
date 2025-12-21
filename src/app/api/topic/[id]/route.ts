@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
+import { Prisma } from "@prisma/client"
 
 type Author = {
   id: string
@@ -66,6 +67,10 @@ export async function GET(
     return NextResponse.json({ error: "Not found" }, { status: 404 })
   }
 
+  await prisma.$executeRaw(
+    Prisma.sql`UPDATE topics SET views = views + 1 WHERE id = ${topic.id}`
+  )
+
   const postsDb = await prisma.posts.findMany({
     where: { topic_id: topicId },
     select: {
@@ -129,6 +134,13 @@ export async function GET(
   )
   let relatedTopics: RelatedTopicItem[] = []
   if (relatedIds.length > 0) {
+    const viewsRows = await prisma.$queryRaw<{ id: bigint; views: number }[]>(
+      Prisma.sql`SELECT id, views FROM topics WHERE id IN (${Prisma.join(
+        relatedIds
+      )})`
+    )
+    const viewsById = new Map<string, number>()
+    for (const vr of viewsRows) viewsById.set(String(vr.id), vr.views ?? 0)
     const relatedPosts = await prisma.posts.findMany({
       where: { topic_id: { in: relatedIds }, is_deleted: false },
       select: { topic_id: true, created_at: true },
@@ -169,7 +181,7 @@ export async function GET(
             })
           ),
           replies: Math.max(a.replies - 1, 0),
-          views: 0,
+          views: viewsById.get(String(t.id)) ?? 0,
           activity: a.activity ? a.activity.toISOString() : "",
         }
       }

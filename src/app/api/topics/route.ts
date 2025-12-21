@@ -85,6 +85,7 @@ export async function GET(req: Request) {
     select: {
       id: true,
       title: true,
+      views: true,
       category: { select: { id: true, name: true, icon: true } },
       tag_links: {
         select: {
@@ -99,6 +100,7 @@ export async function GET(req: Request) {
   type TopicRow = {
     id: bigint
     title: string
+    views: number
     category: { id: bigint; name: string; icon: string }
     tag_links: { tag: { id: bigint; name: string; icon: string } }[]
   }
@@ -163,7 +165,7 @@ export async function GET(req: Request) {
       tags,
       participants: agg.participants,
       replies: Math.max(agg.replies - 1, 0),
-      views: 0,
+      views: t.views ?? 0,
       activity: agg.activity ? agg.activity.toISOString() : "",
     }
   })
