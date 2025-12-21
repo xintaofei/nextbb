@@ -3,6 +3,7 @@ import GitHubProvider from "next-auth/providers/github"
 import GoogleProvider from "next-auth/providers/google"
 import { prisma } from "@/lib/prisma"
 import { generateId } from "@/lib/id"
+import { LinuxDoProvider } from "@/lib/providers/linuxdo"
 
 function getEnv(name: string): string {
   const v = process.env[name]
@@ -18,13 +19,14 @@ export const authOptions: NextAuthOptions = {
     GitHubProvider({
       clientId: getEnv("GITHUB_CLIENT_ID"),
       clientSecret: getEnv("GITHUB_CLIENT_SECRET"),
-      httpOptions: { timeout: 10000 },
+      httpOptions: { timeout: 60000 },
     }),
     GoogleProvider({
       clientId: getEnv("GOOGLE_CLIENT_ID"),
       clientSecret: getEnv("GOOGLE_CLIENT_SECRET"),
-      httpOptions: { timeout: 10000 },
+      httpOptions: { timeout: 60000 },
     }),
+    LinuxDoProvider,
   ],
   session: {
     strategy: "jwt",
@@ -33,7 +35,12 @@ export const authOptions: NextAuthOptions = {
     async signIn({ user, account, profile }) {
       if (!account) return false
       const provider = account.provider
-      if (provider !== "github" && provider !== "google") return false
+      if (
+        provider !== "github" &&
+        provider !== "google" &&
+        provider !== "linuxdo"
+      )
+        return false
       const email =
         user.email ??
         (typeof profile?.email === "string" ? profile.email : null) ??

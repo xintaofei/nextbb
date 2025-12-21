@@ -171,6 +171,17 @@ export default function RegisterPage() {
             >
               {t("oauthGoogle")}
             </Button>
+            <Button
+              variant="outline"
+              className="w-full"
+              onClick={() =>
+                signIn("linuxdo", {
+                  callbackUrl: `/api/auth/bridge?locale=${locale}`,
+                })
+              }
+            >
+              {t("oauthLinuxDo")}
+            </Button>
           </div>
           <div className="text-sm text-muted-foreground">
             {t("questionHaveAccount")}{" "}

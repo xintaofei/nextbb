@@ -158,6 +158,7 @@
       "or": "或",
       "oauthGithub": "使用 GitHub 登录",
       "oauthGoogle": "使用 Google 登录",
+      "oauthLinuxDo": "使用 LINUX.DO 登录",
       "questionNoAccount": "还没有账号？",
       "toRegister": "去注册",
       "error": {
@@ -174,9 +175,10 @@
       "usernamePlaceholder": "请输入用户名",
       "submit": "注册",
       "hintTitle": "支持社交账号一键注册",
-      "hintDesc": "使用 GitHub 或 Google 登录后，将自动创建账号并完成登录。",
+      "hintDesc": "使用 GitHub、Google 或 LINUX.DO 登录后，将自动创建账号并完成登录。",
       "oauthGithub": "使用 GitHub 一键注册",
       "oauthGoogle": "使用 Google 一键注册",
+      "oauthLinuxDo": "使用 LINUX.DO 一键注册",
       "questionHaveAccount": "已有账号？",
       "toLogin": "去登录",
       "error": {
