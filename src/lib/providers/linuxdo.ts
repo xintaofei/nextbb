@@ -37,9 +37,9 @@ export const LinuxDoProvider: OAuthConfigWithHttp<LinuxDoProfile> = {
   },
   token: getEnv("LINUXDO_TOKEN_URL"),
   userinfo: getEnv("LINUXDO_USERINFO_URL"),
-  issuer: getEnv("LINUXDO_ISSUER"),
   checks: ["pkce", "state"],
   httpOptions: { timeout: 60000 },
+  idToken: false,
   profile(profile: LinuxDoProfile) {
     let id = ""
     if (profile.id !== undefined) {
