@@ -9,7 +9,7 @@ export default function MainLayout({
   children: ReactNode
 }>) {
   return (
-    <div className="max-w-[86rem] mx-auto">
+    <div className="max-w-7xl mx-auto">
       <SidebarProvider>
         <AppSidebar />
         <SidebarInset>
