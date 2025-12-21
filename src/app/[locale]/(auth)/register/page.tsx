@@ -6,6 +6,7 @@ import { useLocale } from "next-intl"
 import { z } from "zod"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
+import { signIn } from "next-auth/react"
 import {
   Form,
   FormControl,
@@ -17,6 +18,7 @@ import {
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import Link from "next/link"
 
 const schema = z.object({
@@ -138,6 +140,36 @@ export default function RegisterPage() {
               </Button>
             </form>
           </Form>
+          <Alert>
+            <AlertTitle>支持社交账号一键注册</AlertTitle>
+            <AlertDescription>
+              使用 GitHub 或 Google 登录后，将自动创建账号并完成登录。
+            </AlertDescription>
+          </Alert>
+          <div className="grid grid-cols-1 gap-2">
+            <Button
+              variant="outline"
+              className="w-full"
+              onClick={() =>
+                signIn("github", {
+                  callbackUrl: `/api/auth/bridge?locale=${locale}`,
+                })
+              }
+            >
+              使用 GitHub 一键注册
+            </Button>
+            <Button
+              variant="outline"
+              className="w-full"
+              onClick={() =>
+                signIn("google", {
+                  callbackUrl: `/api/auth/bridge?locale=${locale}`,
+                })
+              }
+            >
+              使用 Google 一键注册
+            </Button>
+          </div>
           <div className="text-sm text-muted-foreground">
             已有账号？{" "}
             <Link href={`/${locale}/login`} className="text-primary">
