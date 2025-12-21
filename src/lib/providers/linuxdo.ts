@@ -19,6 +19,11 @@ function getEnv(name: string): string {
   return v
 }
 
+function getEnvOr(name: string, fallback: string): string {
+  const v = process.env[name]
+  return v && v.length > 0 ? v : fallback
+}
+
 type OAuthConfigWithHttp<T> = OAuthConfig<T> & {
   httpOptions?: {
     timeout?: number
@@ -37,9 +42,13 @@ export const LinuxDoProvider: OAuthConfigWithHttp<LinuxDoProfile> = {
   },
   token: getEnv("LINUXDO_TOKEN_URL"),
   userinfo: getEnv("LINUXDO_USERINFO_URL"),
+  wellKnown: getEnvOr(
+    "LINUXDO_WELL_KNOWN",
+    "https://connect.linux.do/.well-known/openid-configuration"
+  ),
   checks: ["pkce", "state"],
   httpOptions: { timeout: 60000 },
-  idToken: false,
+  idToken: true,
   profile(profile: LinuxDoProfile) {
     let id = ""
     if (profile.id !== undefined) {
