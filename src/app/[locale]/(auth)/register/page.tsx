@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import { useRouter } from "next/navigation"
-import { useLocale } from "next-intl"
+import { useLocale, useTranslations } from "next-intl"
 import { z } from "zod"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
@@ -48,6 +48,7 @@ type ApiResponse =
 export default function RegisterPage() {
   const router = useRouter()
   const locale = useLocale()
+  const t = useTranslations("Auth.Register")
   const [serverError, setServerError] = useState<string | null>(null)
 
   const form = useForm<RegisterValues>({
@@ -70,7 +71,7 @@ export default function RegisterPage() {
     })
     const data: ApiResponse = await res.json()
     if (!res.ok || "error" in data) {
-      setServerError("error" in data ? data.error : "注册失败")
+      setServerError("error" in data ? data.error : t("error.failed"))
       return
     }
     router.replace(`/${locale}`)
@@ -80,7 +81,7 @@ export default function RegisterPage() {
     <div className="min-h-screen flex items-center justify-center px-4">
       <Card className="w-full max-w-sm">
         <CardHeader>
-          <CardTitle>注册</CardTitle>
+          <CardTitle>{t("title")}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <Form {...form}>
@@ -90,11 +91,11 @@ export default function RegisterPage() {
                 name="email"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>邮箱</FormLabel>
+                    <FormLabel>{t("email")}</FormLabel>
                     <FormControl>
                       <Input
                         type="email"
-                        placeholder="name@example.com"
+                        placeholder={t("emailPlaceholder")}
                         {...field}
                       />
                     </FormControl>
@@ -107,11 +108,11 @@ export default function RegisterPage() {
                 name="password"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>密码</FormLabel>
+                    <FormLabel>{t("password")}</FormLabel>
                     <FormControl>
                       <Input
                         type="password"
-                        placeholder="请输入密码"
+                        placeholder={t("passwordPlaceholder")}
                         {...field}
                       />
                     </FormControl>
@@ -124,9 +125,12 @@ export default function RegisterPage() {
                 name="username"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>用户名</FormLabel>
+                    <FormLabel>{t("username")}</FormLabel>
                     <FormControl>
-                      <Input placeholder="请输入用户名" {...field} />
+                      <Input
+                        placeholder={t("usernamePlaceholder")}
+                        {...field}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -136,15 +140,13 @@ export default function RegisterPage() {
                 <div className="text-destructive text-sm">{serverError}</div>
               ) : null}
               <Button type="submit" className="w-full">
-                注册
+                {t("submit")}
               </Button>
             </form>
           </Form>
           <Alert>
-            <AlertTitle>支持社交账号一键注册</AlertTitle>
-            <AlertDescription>
-              使用 GitHub 或 Google 登录后，将自动创建账号并完成登录。
-            </AlertDescription>
+            <AlertTitle>{t("hintTitle")}</AlertTitle>
+            <AlertDescription>{t("hintDesc")}</AlertDescription>
           </Alert>
           <div className="grid grid-cols-1 gap-2">
             <Button
@@ -156,7 +158,7 @@ export default function RegisterPage() {
                 })
               }
             >
-              使用 GitHub 一键注册
+              {t("oauthGithub")}
             </Button>
             <Button
               variant="outline"
@@ -167,13 +169,13 @@ export default function RegisterPage() {
                 })
               }
             >
-              使用 Google 一键注册
+              {t("oauthGoogle")}
             </Button>
           </div>
           <div className="text-sm text-muted-foreground">
-            已有账号？{" "}
+            {t("questionHaveAccount")}{" "}
             <Link href={`/${locale}/login`} className="text-primary">
-              去登录
+              {t("toLogin")}
             </Link>
           </div>
         </CardContent>

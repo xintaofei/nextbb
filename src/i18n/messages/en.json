@@ -146,5 +146,42 @@
         "maxCount": "Up to 5 tags"
       }
     }
+  },
+  "Auth": {
+    "Login": {
+      "title": "Sign In",
+      "email": "Email",
+      "emailPlaceholder": "name@example.com",
+      "password": "Password",
+      "passwordPlaceholder": "Enter your password",
+      "submit": "Sign In",
+      "or": "Or",
+      "oauthGithub": "Sign in with GitHub",
+      "oauthGoogle": "Sign in with Google",
+      "questionNoAccount": "Don't have an account?",
+      "toRegister": "Go to Sign Up",
+      "error": {
+        "failed": "Sign in failed"
+      }
+    },
+    "Register": {
+      "title": "Sign Up",
+      "email": "Email",
+      "emailPlaceholder": "name@example.com",
+      "password": "Password",
+      "passwordPlaceholder": "Enter your password",
+      "username": "Username",
+      "usernamePlaceholder": "Enter your username",
+      "submit": "Sign Up",
+      "hintTitle": "Sign up with social accounts",
+      "hintDesc": "Sign in with GitHub or Google to create your account automatically.",
+      "oauthGithub": "One-click sign up with GitHub",
+      "oauthGoogle": "One-click sign up with Google",
+      "questionHaveAccount": "Already have an account?",
+      "toLogin": "Go to Sign In",
+      "error": {
+        "failed": "Sign up failed"
+      }
+    }
   }
 }

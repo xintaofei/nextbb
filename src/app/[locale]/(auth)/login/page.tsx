@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import { useRouter } from "next/navigation"
-import { useLocale } from "next-intl"
+import { useLocale, useTranslations } from "next-intl"
 import { z } from "zod"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
@@ -46,6 +46,7 @@ type ApiResponse =
 export default function LoginPage() {
   const router = useRouter()
   const locale = useLocale()
+  const t = useTranslations("Auth.Login")
   const [serverError, setServerError] = useState<string | null>(null)
 
   const form = useForm<LoginValues>({
@@ -63,7 +64,7 @@ export default function LoginPage() {
     })
     const data: ApiResponse = await res.json()
     if (!res.ok || "error" in data) {
-      setServerError("error" in data ? data.error : "登录失败")
+      setServerError("error" in data ? data.error : t("error.failed"))
       return
     }
     router.replace(`/${locale}`)
@@ -73,7 +74,7 @@ export default function LoginPage() {
     <div className="min-h-screen flex items-center justify-center px-4">
       <Card className="w-full max-w-sm">
         <CardHeader>
-          <CardTitle>登录</CardTitle>
+          <CardTitle>{t("title")}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <Form {...form}>
@@ -83,11 +84,11 @@ export default function LoginPage() {
                 name="email"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>邮箱</FormLabel>
+                    <FormLabel>{t("email")}</FormLabel>
                     <FormControl>
                       <Input
                         type="email"
-                        placeholder="name@example.com"
+                        placeholder={t("emailPlaceholder")}
                         {...field}
                       />
                     </FormControl>
@@ -100,11 +101,11 @@ export default function LoginPage() {
                 name="password"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>密码</FormLabel>
+                    <FormLabel>{t("password")}</FormLabel>
                     <FormControl>
                       <Input
                         type="password"
-                        placeholder="请输入密码"
+                        placeholder={t("passwordPlaceholder")}
                         {...field}
                       />
                     </FormControl>
@@ -116,7 +117,7 @@ export default function LoginPage() {
                 <div className="text-destructive text-sm">{serverError}</div>
               ) : null}
               <Button type="submit" className="w-full">
-                登录
+                {t("submit")}
               </Button>
             </form>
           </Form>
@@ -125,7 +126,9 @@ export default function LoginPage() {
               <span className="w-full border-t" />
             </div>
             <div className="relative flex justify-center text-xs">
-              <span className="bg-card px-2 text-muted-foreground">或</span>
+              <span className="bg-card px-2 text-muted-foreground">
+                {t("or")}
+              </span>
             </div>
           </div>
           <div className="grid grid-cols-1 gap-2">
@@ -138,7 +141,7 @@ export default function LoginPage() {
                 })
               }
             >
-              使用 GitHub 登录
+              {t("oauthGithub")}
             </Button>
             <Button
               variant="outline"
@@ -149,13 +152,13 @@ export default function LoginPage() {
                 })
               }
             >
-              使用 Google 登录
+              {t("oauthGoogle")}
             </Button>
           </div>
           <div className="text-sm text-muted-foreground">
-            还没有账号？{" "}
+            {t("questionNoAccount")}{" "}
             <Link href={`/${locale}/register`} className="text-primary">
-              去注册
+              {t("toRegister")}
             </Link>
           </div>
         </CardContent>
