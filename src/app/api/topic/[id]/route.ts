@@ -13,6 +13,7 @@ type PostItem = {
   content: string
   createdAt: string
   minutesAgo: number
+  isDeleted: boolean
 }
 
 type RelatedTopicItem = {
@@ -66,11 +67,12 @@ export async function GET(
   }
 
   const postsDb = await prisma.posts.findMany({
-    where: { topic_id: topicId, is_deleted: false },
+    where: { topic_id: topicId },
     select: {
       id: true,
       content: true,
       created_at: true,
+      is_deleted: true,
       user: { select: { id: true, name: true, avatar: true } },
     },
     orderBy: { floor_number: "asc" },
@@ -79,6 +81,7 @@ export async function GET(
     id: bigint
     content: string
     created_at: Date
+    is_deleted: boolean
     user: { id: bigint; name: string; avatar: string }
   }
   const posts: PostItem[] = postsDb.map((p: PostRow) => ({
@@ -94,6 +97,7 @@ export async function GET(
       Math.round((Date.now() - p.created_at.getTime()) / 60000),
       0
     ),
+    isDeleted: p.is_deleted,
   }))
 
   const relatedDb = await prisma.topics.findMany({

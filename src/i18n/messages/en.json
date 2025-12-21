@@ -52,14 +52,26 @@
       "minutesAgo": "{count} minutes ago"
     },
     "Action": {
-      "cancel": "Cancel"
+      "cancel": "Cancel",
+      "save": "Save",
+      "success": "Success"
     }
+  },
+  "Error": {
+    "unauthorized": "Unauthorized",
+    "forbidden": "Forbidden",
+    "requestFailed": "Request failed",
+    "network": "Network error"
   },
   "Category": {
     "defaultName": "Category {id}",
     "noDescription": "No description"
   },
   "Topic": {
+    "edit": "Edit",
+    "delete": "Delete",
+    "deleted": "This floor has been deleted",
+    "deleteConfirm": "Are you sure to delete this floor?",
     "reply": "Reply",
     "floor": {
       "op": "OP"

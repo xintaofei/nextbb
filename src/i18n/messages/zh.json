@@ -52,14 +52,26 @@
       "minutesAgo": "{count} 分钟前"
     },
     "Action": {
-      "cancel": "取消"
+      "cancel": "取消",
+      "save": "保存",
+      "success": "操作成功"
     }
+  },
+  "Error": {
+    "unauthorized": "请先登录",
+    "forbidden": "没有权限",
+    "requestFailed": "请求失败",
+    "network": "网络错误"
   },
   "Category": {
     "defaultName": "类别 {id}",
     "noDescription": "暂无描述"
   },
   "Topic": {
+    "edit": "编辑",
+    "delete": "删除",
+    "deleted": "该楼层已被删除",
+    "deleteConfirm": "确认删除当前楼层？",
     "reply": "回复",
     "floor": {
       "op": "楼主"

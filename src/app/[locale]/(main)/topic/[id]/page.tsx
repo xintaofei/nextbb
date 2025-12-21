@@ -3,7 +3,7 @@
 import { useParams } from "next/navigation"
 import Link from "next/link"
 import { Badge } from "@/components/ui/badge"
-import { Bookmark, Flag, Heart, Reply } from "lucide-react"
+import { Bookmark, Flag, Heart, Reply, Pencil, Trash } from "lucide-react"
 import {
   TimelineSteps,
   TimelineStepsAction,
@@ -17,16 +17,8 @@ import {
 } from "@/components/ui/timeline-steps"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
-import { Textarea } from "@/components/ui/textarea"
+import { DrawerEditor } from "@/components/editor/drawer-editor"
 import { TopicNavigator } from "@/components/topic/topic-navigator"
-import {
-  Drawer,
-  DrawerContent,
-  DrawerDescription,
-  DrawerFooter,
-  DrawerHeader,
-  DrawerTitle,
-} from "@/components/ui/drawer"
 import {
   Table,
   TableBody,
@@ -53,6 +45,7 @@ export default function TopicPage() {
     content: string
     createdAt: string
     minutesAgo: number
+    isDeleted: boolean
   }
   type RelatedTopicItem = {
     id: string
@@ -108,6 +101,39 @@ export default function TopicPage() {
   const [submitting, setSubmitting] = useState<boolean>(false)
   const [replyOpen, setReplyOpen] = useState<boolean>(false)
   const loading = !data
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null)
+  const [editOpen, setEditOpen] = useState<boolean>(false)
+  const [editSubmitting, setEditSubmitting] = useState<boolean>(false)
+  const [editPostId, setEditPostId] = useState<string | null>(null)
+  const [editInitial, setEditInitial] = useState<string>("")
+
+  useEffect(() => {
+    let mounted = true
+    const run = async () => {
+      try {
+        const res = await fetch("/api/auth/me", { cache: "no-store" })
+        if (res.ok) {
+          const json = (await res.json()) as {
+            user: {
+              id: string
+              email: string
+            }
+            profile: {
+              id: string
+              email: string
+              username: string
+              avatar: string
+            }
+          }
+          if (mounted) setCurrentUserId(json.user.id)
+        }
+      } catch {}
+    }
+    run()
+    return () => {
+      mounted = false
+    }
+  }, [])
 
   const onClickReply = (postId: string, authorName: string) => {
     setReplyToPostId(postId)
@@ -117,8 +143,8 @@ export default function TopicPage() {
     setReplyOpen(true)
   }
 
-  const submitReply = async () => {
-    const content = replyContent.trim()
+  const submitReply = async (overrideContent?: string) => {
+    const content = (overrideContent ?? replyContent).trim()
     if (!content) {
       toast.error(tc("Form.required"))
       return
@@ -159,6 +185,83 @@ export default function TopicPage() {
       toast.error(tc("Error.network"))
     } finally {
       setSubmitting(false)
+    }
+  }
+
+  const onClickEdit = (postId: string, initialContent: string) => {
+    setEditPostId(postId)
+    setEditInitial(initialContent)
+    setEditOpen(true)
+  }
+  const submitEdit = async (content: string) => {
+    const value = content.trim()
+    if (!value) {
+      toast.error(tc("Form.required"))
+      return
+    }
+    setEditSubmitting(true)
+    try {
+      const res = await fetch(`/api/post/${editPostId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ content: value }),
+      })
+      if (res.status === 401) {
+        toast.error(tc("Error.unauthorized"))
+        return
+      }
+      if (res.status === 403) {
+        toast.error(tc("Error.forbidden"))
+        return
+      }
+      if (!res.ok) {
+        toast.error(tc("Error.requestFailed"))
+        return
+      }
+      setEditOpen(false)
+      const detailRes = await fetch(`/api/topic/${id}`, { cache: "no-store" })
+      if (detailRes.ok) {
+        const json = (await detailRes.json()) as TopicDetail
+        setData(json)
+        toast.success(tc("Action.success"))
+        const idx = json.posts.findIndex((p) => p.id === editPostId)
+        const el = document.getElementById(`post-${idx + 1}`)
+        if (el) el.scrollIntoView({ behavior: "smooth", block: "center" })
+      } else {
+        toast.success(tc("Action.success"))
+      }
+    } catch {
+      toast.error(tc("Error.network"))
+    } finally {
+      setEditSubmitting(false)
+    }
+  }
+  const onClickDelete = async (postId: string) => {
+    if (!window.confirm(t("deleteConfirm"))) return
+    try {
+      const res = await fetch(`/api/post/${postId}`, { method: "DELETE" })
+      if (res.status === 401) {
+        toast.error(tc("Error.unauthorized"))
+        return
+      }
+      if (res.status === 403) {
+        toast.error(tc("Error.forbidden"))
+        return
+      }
+      if (!res.ok) {
+        toast.error(tc("Error.requestFailed"))
+        return
+      }
+      const detailRes = await fetch(`/api/topic/${id}`, { cache: "no-store" })
+      if (detailRes.ok) {
+        const json = (await detailRes.json()) as TopicDetail
+        setData(json)
+        toast.success(tc("Action.success"))
+      } else {
+        toast.success(tc("Action.success"))
+      }
+    } catch {
+      toast.error(tc("Error.network"))
     }
   }
 
@@ -259,25 +362,60 @@ export default function TopicPage() {
                       </span>
                     </div>
                     <TimelineStepsDescription>
-                      {post.content}
+                      {post.isDeleted ? (
+                        <span className="text-muted-foreground">
+                          {t("deleted")}
+                        </span>
+                      ) : (
+                        post.content
+                      )}
                     </TimelineStepsDescription>
                     <TimelineStepsAction>
-                      <Button variant="ghost" size="icon">
-                        <Heart />
-                      </Button>
-                      <Button variant="ghost" size="icon">
-                        <Bookmark />
-                      </Button>
-                      <Button variant="ghost" size="icon">
-                        <Flag />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        onClick={() => onClickReply(post.id, post.author.name)}
-                      >
-                        <Reply className="text-foreground" />
-                        {t("reply")}
-                      </Button>
+                      {post.isDeleted ? null : (
+                        <>
+                          {post.author.id !== currentUserId ? (
+                            <>
+                              <Button variant="ghost" size="icon">
+                                <Heart />
+                              </Button>
+                              <Button variant="ghost" size="icon">
+                                <Bookmark />
+                              </Button>
+                            </>
+                          ) : (
+                            <>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={() => {
+                                  onClickEdit(post.id, post.content)
+                                }}
+                              >
+                                <Pencil />
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={() => onClickDelete(post.id)}
+                              >
+                                <Trash />
+                              </Button>
+                            </>
+                          )}
+                          <Button variant="ghost" size="icon">
+                            <Flag />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            onClick={() => {
+                              onClickReply(post.id, post.author.name)
+                            }}
+                          >
+                            <Reply className="text-foreground" />
+                            {t("reply")}
+                          </Button>
+                        </>
+                      )}
                     </TimelineStepsAction>
                   </TimelineStepsContent>
                 </TimelineStepsItem>
@@ -293,39 +431,35 @@ export default function TopicPage() {
           <TopicNavigator total={posts.length} />
         )}
       </div>
-      <Drawer open={replyOpen} onOpenChange={setReplyOpen}>
-        <DrawerContent>
-          <DrawerHeader>
-            <DrawerTitle>{t("reply")}</DrawerTitle>
-            {replyToPostId ? (
-              <DrawerDescription>
-                #{posts.findIndex((p) => p.id === replyToPostId)}
-              </DrawerDescription>
-            ) : null}
-          </DrawerHeader>
-          <div className="px-4">
-            <Textarea
-              value={replyContent}
-              onChange={(e) => setReplyContent(e.target.value)}
-              rows={5}
-            />
-          </div>
-          <DrawerFooter>
-            <div className="flex justify-end gap-2">
-              <Button
-                variant="outline"
-                onClick={() => setReplyOpen(false)}
-                disabled={submitting}
-              >
-                {tc("Action.cancel")}
-              </Button>
-              <Button onClick={submitReply} disabled={submitting}>
-                {t("reply")}
-              </Button>
-            </div>
-          </DrawerFooter>
-        </DrawerContent>
-      </Drawer>
+      <DrawerEditor
+        key={`reply-${replyToPostId ?? "topic"}-${replyOpen ? replyContent : ""}`}
+        title={t("reply")}
+        description={
+          replyToPostId
+            ? `#${posts.findIndex((p) => p.id === replyToPostId)}`
+            : undefined
+        }
+        open={replyOpen}
+        onOpenChange={setReplyOpen}
+        initialValue={replyContent}
+        submitting={submitting}
+        onSubmit={(content: string) => {
+          submitReply(content)
+        }}
+        submitText={t("reply")}
+        cancelText={tc("Action.cancel")}
+      />
+      <DrawerEditor
+        key={`edit-${editPostId ?? "none"}-${editOpen ? editInitial : ""}`}
+        title={t("edit")}
+        open={editOpen}
+        onOpenChange={setEditOpen}
+        initialValue={editInitial}
+        submitting={editSubmitting}
+        onSubmit={submitEdit}
+        submitText={tc("Action.save")}
+        cancelText={tc("Action.cancel")}
+      />
       <div className="flex flex-col gap-4 mt-8">
         <Table className="w-full table-fixed">
           <colgroup>
