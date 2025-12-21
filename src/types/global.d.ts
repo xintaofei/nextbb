@@ -16,13 +16,11 @@ declare module "next-auth" {
     user: {
       id?: string
     } & DefaultSession["user"]
-    linuxdoProfile?: LinuxDoProfile | null
   }
 }
 
 declare module "next-auth/jwt" {
   interface JWT {
     id?: string
-    linuxdoProfile?: LinuxDoProfile | null
   }
 }

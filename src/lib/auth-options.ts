@@ -4,7 +4,6 @@ import GoogleProvider from "next-auth/providers/google"
 import { prisma } from "@/lib/prisma"
 import { generateId } from "@/lib/id"
 import { LinuxDoProvider } from "@/lib/providers/linuxdo"
-import type { LinuxDoProfile } from "@/lib/providers/linuxdo"
 
 function getEnv(name: string): string {
   const v = process.env[name]
@@ -52,10 +51,22 @@ export const authOptions: NextAuthOptions = {
       })
       if (existing) return true
       const id = generateId()
-      const name =
+      let name =
         user.name ??
-        (typeof profile?.name === "string" ? profile.name : null) ??
-        email.split("@")[0]
+        (typeof profile?.name === "string" && profile.name.length > 0
+          ? profile.name
+          : null)
+      if (!name && provider === "linuxdo") {
+        const p = profile as { username?: string; login?: string }
+        name =
+          (typeof p.username === "string" && p.username.length > 0
+            ? p.username
+            : null) ??
+          (typeof p.login === "string" && p.login.length > 0 ? p.login : null)
+      }
+      if (!name) {
+        name = email.split("@")[0]
+      }
       const avatar =
         user.image ??
         (typeof (profile as { picture?: string }).picture === "string"
@@ -75,10 +86,7 @@ export const authOptions: NextAuthOptions = {
       })
       return true
     },
-    async jwt({ token, user, account, profile }) {
-      if (account?.provider === "linuxdo" && profile) {
-        token.linuxdoProfile = profile as LinuxDoProfile
-      }
+    async jwt({ token, user }) {
       if (user?.email) {
         const u = await prisma.users.findUnique({
           where: { email: user.email },
@@ -96,9 +104,6 @@ export const authOptions: NextAuthOptions = {
     async session({ session, token }) {
       if (session.user && token) {
         session.user.id = typeof token.id === "string" ? token.id : undefined
-      }
-      if (token.linuxdoProfile) {
-        session.linuxdoProfile = token.linuxdoProfile
       }
       return session
     },

@@ -48,9 +48,6 @@ export const LinuxDoProvider: OAuthConfigWithHttp<LinuxDoProfile> = {
   httpOptions: { timeout: 60000 },
   idToken: true,
   profile(profile: LinuxDoProfile) {
-    if (process.env.NODE_ENV !== "production") {
-      console.log("linuxdo userinfo:", profile)
-    }
     let id = ""
     if (profile.id !== undefined) {
       id = String(profile.id)
@@ -58,7 +55,17 @@ export const LinuxDoProvider: OAuthConfigWithHttp<LinuxDoProfile> = {
       id = String(profile.sub)
     }
 
-    const name = typeof profile.name === "string" ? profile.name : ""
+    let name = ""
+    if (typeof profile.name === "string" && profile.name.length > 0) {
+      name = profile.name
+    } else if (
+      typeof profile.username === "string" &&
+      profile.username.length > 0
+    ) {
+      name = profile.username
+    } else if (typeof profile.login === "string" && profile.login.length > 0) {
+      name = profile.login
+    }
 
     const email = typeof profile.email === "string" ? profile.email : null
 
