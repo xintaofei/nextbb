@@ -1,6 +1,6 @@
 import type { OAuthConfig } from "next-auth/providers/oauth"
 
-type LinuxDoProfile = {
+export type LinuxDoProfile = {
   id?: string | number
   sub?: string
   name?: string
