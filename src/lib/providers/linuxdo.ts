@@ -42,10 +42,7 @@ export const LinuxDoProvider: OAuthConfigWithHttp<LinuxDoProfile> = {
   },
   token: getEnv("LINUXDO_TOKEN_URL"),
   userinfo: getEnv("LINUXDO_USERINFO_URL"),
-  wellKnown: getEnvOr(
-    "LINUXDO_WELL_KNOWN",
-    "https://connect.linux.do/.well-known/openid-configuration"
-  ),
+  wellKnown: getEnv("LINUXDO_WELL_KNOWN"),
   checks: ["pkce", "state"],
   httpOptions: { timeout: 60000 },
   idToken: true,
