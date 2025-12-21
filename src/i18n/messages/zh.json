@@ -29,7 +29,8 @@
       "replies": "回复",
       "views": "浏览量",
       "activity": "活动",
-      "empty": "暂无数据"
+      "empty": "暂无数据",
+      "related": "相关话题"
     },
     "Loading": {
       "loading": "加载中...",

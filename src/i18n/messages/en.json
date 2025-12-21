@@ -29,7 +29,8 @@
       "replies": "Replies",
       "views": "Views",
       "activity": "Activity",
-      "empty": "No data"
+      "empty": "No data",
+      "related": "Related Topics"
     },
     "Loading": {
       "loading": "Loading...",

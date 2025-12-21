@@ -326,74 +326,78 @@ export default function TopicPage() {
           </DrawerFooter>
         </DrawerContent>
       </Drawer>
-      <Table className="w-full table-fixed">
-        <colgroup>
-          <col />
-          <col className="w-20" />
-          <col className="w-20" />
-          <col className="w-20" />
-        </colgroup>
-        <TableHeader>
-          <TableRow>
-            <TableHead>{tc("Table.topic")}</TableHead>
-            <TableHead className="text-center">{tc("Table.replies")}</TableHead>
-            <TableHead className="text-center">{tc("Table.views")}</TableHead>
-            <TableHead className="text-center">
-              {tc("Table.activity")}
-            </TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {loading
-            ? Array.from({ length: 4 }, (_, i) => i).map((i) => (
-                <TableRow key={`rt-s-${i}`}>
-                  <TableCell className="max-w-full">
-                    <Skeleton className="h-5 w-80" />
-                    <div className="flex max-w-full flex-wrap gap-2 overflow-hidden mt-2">
-                      <Skeleton className="h-5 w-24" />
-                      <Skeleton className="h-5 w-20" />
-                      <Skeleton className="h-5 w-20" />
-                    </div>
-                  </TableCell>
-                  <TableCell className="text-center">
-                    <Skeleton className="h-4 w-10 mx-auto" />
-                  </TableCell>
-                  <TableCell className="text-center">
-                    <Skeleton className="h-4 w-10 mx-auto" />
-                  </TableCell>
-                  <TableCell className="text-center">
-                    <Skeleton className="h-4 w-10 mx-auto" />
-                  </TableCell>
-                </TableRow>
-              ))
-            : relatedTopics.map((t) => (
-                <TableRow key={t.id}>
-                  <TableCell className="max-w-full">
-                    <Link href={`/topic/${t.id}`}>
-                      <span className="cursor-pointer max-w-full text-lg font-medium whitespace-normal wrap-break-word">
-                        {t.title}
-                      </span>
-                    </Link>
-                    <div className="flex max-w-full flex-wrap gap-2 overflow-hidden mt-2">
-                      <Badge variant="secondary">
-                        {t.category.icon ?? "📁"} {t.category.name}
-                      </Badge>
-                      {t.tags.map((tag) => (
-                        <Badge key={tag.id} variant="outline">
-                          {tag.icon} {tag.name}
+      <div className="flex flex-col gap-4 mt-8">
+        <Table className="w-full table-fixed">
+          <colgroup>
+            <col />
+            <col className="w-20" />
+            <col className="w-20" />
+            <col className="w-20" />
+          </colgroup>
+          <TableHeader>
+            <TableRow>
+              <TableHead>{tc("Table.related")}</TableHead>
+              <TableHead className="text-center">
+                {tc("Table.replies")}
+              </TableHead>
+              <TableHead className="text-center">{tc("Table.views")}</TableHead>
+              <TableHead className="text-center">
+                {tc("Table.activity")}
+              </TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {loading
+              ? Array.from({ length: 4 }, (_, i) => i).map((i) => (
+                  <TableRow key={`rt-s-${i}`}>
+                    <TableCell className="max-w-full">
+                      <Skeleton className="h-5 w-80" />
+                      <div className="flex max-w-full flex-wrap gap-2 overflow-hidden mt-2">
+                        <Skeleton className="h-5 w-24" />
+                        <Skeleton className="h-5 w-20" />
+                        <Skeleton className="h-5 w-20" />
+                      </div>
+                    </TableCell>
+                    <TableCell className="text-center">
+                      <Skeleton className="h-4 w-10 mx-auto" />
+                    </TableCell>
+                    <TableCell className="text-center">
+                      <Skeleton className="h-4 w-10 mx-auto" />
+                    </TableCell>
+                    <TableCell className="text-center">
+                      <Skeleton className="h-4 w-10 mx-auto" />
+                    </TableCell>
+                  </TableRow>
+                ))
+              : relatedTopics.map((t) => (
+                  <TableRow key={t.id}>
+                    <TableCell className="max-w-full">
+                      <Link href={`/topic/${t.id}`}>
+                        <span className="cursor-pointer max-w-full text-lg font-medium whitespace-normal wrap-break-word">
+                          {t.title}
+                        </span>
+                      </Link>
+                      <div className="flex max-w-full flex-wrap gap-2 overflow-hidden mt-2">
+                        <Badge variant="secondary">
+                          {t.category.icon ?? "📁"} {t.category.name}
                         </Badge>
-                      ))}
-                    </div>
-                  </TableCell>
-                  <TableCell className="text-center">{t.replies}</TableCell>
-                  <TableCell className="text-center">{t.views}</TableCell>
-                  <TableCell className="text-center text-muted-foreground">
-                    {formatRelative(t.activity)}
-                  </TableCell>
-                </TableRow>
-              ))}
-        </TableBody>
-      </Table>
+                        {t.tags.map((tag) => (
+                          <Badge key={tag.id} variant="outline">
+                            {tag.icon} {tag.name}
+                          </Badge>
+                        ))}
+                      </div>
+                    </TableCell>
+                    <TableCell className="text-center">{t.replies}</TableCell>
+                    <TableCell className="text-center">{t.views}</TableCell>
+                    <TableCell className="text-center text-muted-foreground">
+                      {formatRelative(t.activity)}
+                    </TableCell>
+                  </TableRow>
+                ))}
+          </TableBody>
+        </Table>
+      </div>
     </div>
   )
 }
