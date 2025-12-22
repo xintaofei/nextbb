@@ -214,7 +214,11 @@ export default function CategoryPage() {
             className="flex flex-row gap-2"
             initialCategoryId={id}
           />
-          <TopicSortTabs />
+          <TopicSortTabs
+            onPendingChange={(p) => {
+              if (p) setTopicsLoading(true)
+            }}
+          />
         </div>
         <div className="flex flex-row gap-2">
           <NewTopicButton onClick={() => setIsNewTopicDialogOpen(true)} />

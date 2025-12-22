@@ -112,7 +112,11 @@ export default function Home() {
       <div className="flex flex-col gap-3 md:flex-row md:justify-between md:items-center">
         <div className="flex flex-col gap-3 md:flex-row">
           <TopicControls className="flex flex-row gap-2" />
-          <TopicSortTabs />
+          <TopicSortTabs
+            onPendingChange={(p) => {
+              if (p) setLoading(true)
+            }}
+          />
         </div>
         <div className="flex flex-row gap-2">
           <NewTopicButton onClick={() => setIsNewTopicDialogOpen(true)} />

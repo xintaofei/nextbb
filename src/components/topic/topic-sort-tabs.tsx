@@ -3,20 +3,28 @@
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { useTranslations } from "next-intl"
 import { usePathname, useRouter, useSearchParams } from "next/navigation"
-import { useMemo, useTransition } from "react"
+import { useEffect, useMemo, useTransition } from "react"
 
 type SortValue = "latest" | "hot"
 
 type TopicSortTabsProps = {
   className?: string
+  onPendingChange?: (pending: boolean) => void
 }
 
-export function TopicSortTabs({ className }: TopicSortTabsProps) {
+export function TopicSortTabs({
+  className,
+  onPendingChange,
+}: TopicSortTabsProps) {
   const tc = useTranslations("Common")
   const router = useRouter()
   const pathname = usePathname()
   const searchParams = useSearchParams()
   const [isPending, startTransition] = useTransition()
+
+  useEffect(() => {
+    onPendingChange?.(isPending)
+  }, [isPending, onPendingChange])
 
   const currentSort: SortValue = useMemo(() => {
     const v = searchParams.get("sort")
