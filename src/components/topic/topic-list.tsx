@@ -110,7 +110,7 @@ export function TopicList({
           ? Array.from({ length: 15 }).map((_, i) => (
               <TableRow key={`skeleton-${i}`}>
                 <TableCell className="flex flex-col gap-2">
-                  <Skeleton className="h-6 w-72" />
+                  <Skeleton className="h-7 w-72" />
                   <div className="flex max-w-full flex-wrap gap-2 overflow-hidden">
                     <Skeleton className="h-5 w-20" />
                     <Skeleton className="h-5 w-16" />
