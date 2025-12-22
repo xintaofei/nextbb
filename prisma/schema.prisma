@@ -20,6 +20,7 @@ model users {
 
   topics topics[]
   posts  posts[]
+  post_likes post_likes[] @relation("post_likes_user")
 
   @@map("users")
   @@unique([email], map: "users_email_key")
@@ -90,6 +91,7 @@ model posts {
 
   topic topics @relation(fields: [topic_id], references: [id])
   user  users  @relation(fields: [user_id], references: [id])
+  likes post_likes[] @relation("post_likes_post")
 
   @@index([topic_id], map: "posts_topic_index")
   @@index([user_id], map: "posts_user_index")
@@ -108,4 +110,18 @@ model topic_tags {
   @@index([tag_id], map: "topic_tags_tag_index")
   @@index([topic_id], map: "topic_tags_topic_index")
   @@map("topic_tags")
+}
+
+model post_likes {
+  post_id    BigInt   @db.BigInt
+  user_id    BigInt   @db.BigInt
+  created_at DateTime @default(now())
+
+  post posts @relation("post_likes_post", fields: [post_id], references: [id])
+  user users @relation("post_likes_user", fields: [user_id], references: [id])
+
+  @@id([post_id, user_id])
+  @@index([user_id], map: "post_likes_user_index")
+  @@index([post_id], map: "post_likes_post_index")
+  @@map("post_likes")
 }

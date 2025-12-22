@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
 import { Prisma } from "@prisma/client"
+import { getSessionUser } from "@/lib/auth"
 
 type Author = {
   id: string
@@ -15,6 +16,8 @@ type PostItem = {
   createdAt: string
   minutesAgo: number
   isDeleted: boolean
+  likes: number
+  liked: boolean
 }
 
 type RelatedTopicItem = {
@@ -42,6 +45,7 @@ export async function GET(
   req: Request,
   ctx: { params: Promise<{ id: string }> }
 ) {
+  const auth = await getSessionUser()
   const { id: idStr } = await ctx.params
   let topicId: bigint
   try {
@@ -89,21 +93,46 @@ export async function GET(
     is_deleted: boolean
     user: { id: bigint; name: string; avatar: string }
   }
-  const posts: PostItem[] = postsDb.map((p: PostRow) => ({
-    id: String(p.id),
-    author: {
-      id: String(p.user.id),
-      name: p.user.name,
-      avatar: p.user.avatar,
-    },
-    content: p.content,
-    createdAt: p.created_at.toISOString(),
-    minutesAgo: Math.max(
-      Math.round((Date.now() - p.created_at.getTime()) / 60000),
-      0
-    ),
-    isDeleted: p.is_deleted,
-  }))
+  const postIds = postsDb.map((p: PostRow) => p.id)
+  const countsById = new Map<string, number>()
+  if (postIds.length > 0) {
+    const counts = await prisma.post_likes.groupBy({
+      by: ["post_id"],
+      _count: { post_id: true },
+      where: { post_id: { in: postIds } },
+    })
+    for (const c of counts) {
+      countsById.set(String(c.post_id), c._count.post_id ?? 0)
+    }
+  }
+  const likedSet = new Set<string>()
+  if (auth && postIds.length > 0) {
+    const likedRows = await prisma.post_likes.findMany({
+      select: { post_id: true },
+      where: { post_id: { in: postIds }, user_id: auth.userId },
+    })
+    for (const r of likedRows) likedSet.add(String(r.post_id))
+  }
+  const posts: PostItem[] = postsDb.map((p: PostRow) => {
+    const idStr = String(p.id)
+    return {
+      id: idStr,
+      author: {
+        id: String(p.user.id),
+        name: p.user.name,
+        avatar: p.user.avatar,
+      },
+      content: p.content,
+      createdAt: p.created_at.toISOString(),
+      minutesAgo: Math.max(
+        Math.round((Date.now() - p.created_at.getTime()) / 60000),
+        0
+      ),
+      isDeleted: p.is_deleted,
+      likes: countsById.get(idStr) ?? 0,
+      liked: likedSet.has(idStr),
+    }
+  })
 
   const relatedDb = await prisma.topics.findMany({
     where: {

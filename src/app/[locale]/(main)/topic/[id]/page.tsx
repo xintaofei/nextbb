@@ -32,6 +32,7 @@ import { useEffect, useMemo, useState } from "react"
 import { toast } from "sonner"
 import { formatRelative } from "@/lib/time"
 import { Skeleton } from "@/components/ui/skeleton"
+import useSWR from "swr"
 
 export default function TopicPage() {
   const { id } = useParams<{ id: string }>()
@@ -46,6 +47,8 @@ export default function TopicPage() {
     createdAt: string
     minutesAgo: number
     isDeleted: boolean
+    likes: number
+    liked: boolean
   }
   type RelatedTopicItem = {
     id: string
@@ -67,7 +70,18 @@ export default function TopicPage() {
     relatedTopics: RelatedTopicItem[]
   }
 
-  const [data, setData] = useState<TopicDetail | null>(null)
+  const fetcher = async (url: string): Promise<TopicDetail> => {
+    const res = await fetch(url, { cache: "no-store" })
+    if (!res.ok) throw new Error("Failed to load")
+    return (await res.json()) as TopicDetail
+  }
+  const { data, mutate, isLoading } = useSWR<TopicDetail>(
+    `/api/topic/${id}`,
+    fetcher,
+    {
+      revalidateOnFocus: false,
+    }
+  )
   const topic = useMemo(
     () =>
       data?.topic ?? {
@@ -80,27 +94,13 @@ export default function TopicPage() {
 
   const relatedTopics = data?.relatedTopics ?? []
 
-  useEffect(() => {
-    let mounted = true
-    const run = async () => {
-      try {
-        const res = await fetch(`/api/topic/${id}`, { cache: "no-store" })
-        if (!res.ok) return
-        const json = (await res.json()) as TopicDetail
-        if (mounted) setData(json)
-      } catch {}
-    }
-    run()
-    return () => {
-      mounted = false
-    }
-  }, [id])
+  useEffect(() => {}, [id])
 
   const [replyContent, setReplyContent] = useState<string>("")
   const [replyToPostId, setReplyToPostId] = useState<string | null>(null)
   const [submitting, setSubmitting] = useState<boolean>(false)
   const [replyOpen, setReplyOpen] = useState<boolean>(false)
-  const loading = !data
+  const loading = isLoading
   const [currentUserId, setCurrentUserId] = useState<string | null>(null)
   const [editOpen, setEditOpen] = useState<boolean>(false)
   const [editSubmitting, setEditSubmitting] = useState<boolean>(false)
@@ -170,16 +170,12 @@ export default function TopicPage() {
       setReplyContent("")
       setReplyToPostId(null)
       setReplyOpen(false)
-      const detailRes = await fetch(`/api/topic/${id}`, { cache: "no-store" })
-      if (detailRes.ok) {
-        const json = (await detailRes.json()) as TopicDetail
-        setData(json)
-        toast.success(tc("Action.success"))
-        const newIndex = json.posts.length
+      const next = await mutate()
+      toast.success(tc("Action.success"))
+      if (next) {
+        const newIndex = next.posts.length
         const el = document.getElementById(`post-${newIndex}`)
         if (el) el.scrollIntoView({ behavior: "smooth", block: "center" })
-      } else {
-        toast.success(tc("Action.success"))
       }
     } catch {
       toast.error(tc("Error.network"))
@@ -219,16 +215,12 @@ export default function TopicPage() {
         return
       }
       setEditOpen(false)
-      const detailRes = await fetch(`/api/topic/${id}`, { cache: "no-store" })
-      if (detailRes.ok) {
-        const json = (await detailRes.json()) as TopicDetail
-        setData(json)
-        toast.success(tc("Action.success"))
-        const idx = json.posts.findIndex((p) => p.id === editPostId)
+      const next = await mutate()
+      toast.success(tc("Action.success"))
+      if (next) {
+        const idx = next.posts.findIndex((p) => p.id === editPostId)
         const el = document.getElementById(`post-${idx + 1}`)
         if (el) el.scrollIntoView({ behavior: "smooth", block: "center" })
-      } else {
-        toast.success(tc("Action.success"))
       }
     } catch {
       toast.error(tc("Error.network"))
@@ -252,14 +244,8 @@ export default function TopicPage() {
         toast.error(tc("Error.requestFailed"))
         return
       }
-      const detailRes = await fetch(`/api/topic/${id}`, { cache: "no-store" })
-      if (detailRes.ok) {
-        const json = (await detailRes.json()) as TopicDetail
-        setData(json)
-        toast.success(tc("Action.success"))
-      } else {
-        toast.success(tc("Action.success"))
-      }
+      await mutate()
+      toast.success(tc("Action.success"))
     } catch {
       toast.error(tc("Error.network"))
     }
@@ -375,8 +361,90 @@ export default function TopicPage() {
                         <>
                           {post.author.id !== currentUserId ? (
                             <>
-                              <Button variant="ghost" size="icon">
-                                <Heart />
+                              <Button
+                                variant="ghost"
+                                onClick={async () => {
+                                  const prev = data
+                                  if (!prev) return
+                                  const optimisticLiked = !post.liked
+                                  const optimisticCount =
+                                    post.likes + (optimisticLiked ? 1 : -1)
+                                  await mutate(
+                                    {
+                                      ...prev,
+                                      posts: prev.posts.map((p) =>
+                                        p.id === post.id
+                                          ? {
+                                              ...p,
+                                              liked: optimisticLiked,
+                                              likes: Math.max(
+                                                optimisticCount,
+                                                0
+                                              ),
+                                            }
+                                          : p
+                                      ),
+                                    },
+                                    { revalidate: false }
+                                  )
+                                  try {
+                                    const res = await fetch(
+                                      `/api/post/${post.id}/like`,
+                                      { method: "POST" }
+                                    )
+                                    if (res.status === 401) {
+                                      toast.error(tc("Error.unauthorized"))
+                                      if (prev)
+                                        await mutate(prev, {
+                                          revalidate: false,
+                                        })
+                                      return
+                                    }
+                                    if (!res.ok) {
+                                      toast.error(tc("Error.requestFailed"))
+                                      if (prev)
+                                        await mutate(prev, {
+                                          revalidate: false,
+                                        })
+                                      return
+                                    }
+                                    const json = (await res.json()) as {
+                                      liked: boolean
+                                      count: number
+                                    }
+                                    const latest = data
+                                    if (!latest) return
+                                    await mutate(
+                                      {
+                                        ...latest,
+                                        posts: latest.posts.map((p) =>
+                                          p.id === post.id
+                                            ? {
+                                                ...p,
+                                                liked: json.liked,
+                                                likes: json.count,
+                                              }
+                                            : p
+                                        ),
+                                      },
+                                      { revalidate: false }
+                                    )
+                                  } catch {
+                                    toast.error(tc("Error.network"))
+                                    if (prev)
+                                      await mutate(prev, { revalidate: false })
+                                  }
+                                }}
+                              >
+                                <Heart
+                                  className={
+                                    post.liked ? "text-red-500" : undefined
+                                  }
+                                  fill={post.liked ? "currentColor" : "none"}
+                                />
+                                <span className="ml-1 text-sm">
+                                  {post.likes}
+                                </span>
                               </Button>
                               <Button variant="ghost" size="icon">
                                 <Bookmark />
