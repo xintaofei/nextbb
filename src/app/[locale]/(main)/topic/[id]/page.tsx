@@ -154,7 +154,7 @@ export default function TopicPage() {
   })
   type ReplyArg = { content: string; parentId?: string }
   type ReplyResult = { postId: string; floorNumber: number }
-  const { trigger: triggerReply, isMutating: replyMutating } = useSWRMutation<
+  const { trigger: triggerReply } = useSWRMutation<
     ReplyResult,
     Error,
     string,
@@ -220,7 +220,7 @@ export default function TopicPage() {
     setSubmitting(true)
     try {
       const prev = data
-      if (!prev || !currentUserProfile) {
+      if (!prev) {
         toast.error(tc("Error.requestFailed"))
         return
       }
@@ -228,9 +228,9 @@ export default function TopicPage() {
       const optimistic: PostItem = {
         id: tempId,
         author: {
-          id: currentUserProfile.id,
-          name: currentUserProfile.username,
-          avatar: currentUserProfile.avatar,
+          id: currentUserId ?? "0",
+          name: currentUserProfile?.username ?? "",
+          avatar: currentUserProfile?.avatar ?? "",
         },
         content,
         createdAt: new Date().toISOString(),
