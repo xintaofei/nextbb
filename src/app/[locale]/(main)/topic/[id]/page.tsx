@@ -3,20 +3,7 @@
 import { useParams } from "next/navigation"
 import Link from "next/link"
 import { Badge } from "@/components/ui/badge"
-import { Bookmark, Flag, Heart, Reply, Pencil, Trash } from "lucide-react"
-import {
-  TimelineSteps,
-  TimelineStepsAction,
-  TimelineStepsConnector,
-  TimelineStepsContent,
-  TimelineStepsDescription,
-  TimelineStepsIcon,
-  TimelineStepsItem,
-  TimelineStepsTime,
-  TimelineStepsTitle,
-} from "@/components/ui/timeline-steps"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Button } from "@/components/ui/button"
+import { TimelineSteps } from "@/components/ui/timeline-steps"
 import { DrawerEditor } from "@/components/editor/drawer-editor"
 import { TopicNavigator } from "@/components/topic/topic-navigator"
 import {
@@ -35,60 +22,32 @@ import { Skeleton } from "@/components/ui/skeleton"
 import useSWR from "swr"
 import useSWRInfinite from "swr/infinite"
 import useSWRMutation from "swr/mutation"
+import { PostSkeletonList } from "@/components/topic/post-skeleton-list"
+import { TopicPostItem } from "@/components/topic/topic-post-item"
+import {
+  PostItem,
+  TopicInfoResult,
+  PostPage,
+  RelatedResult,
+} from "@/types/topic"
 
 export default function TopicPage() {
   const { id } = useParams<{ id: string }>()
   const tc = useTranslations("Common")
   const t = useTranslations("Topic")
 
-  type Author = { id: string; name: string; avatar: string }
-  type PostItem = {
-    id: string
-    author: Author
-    content: string
-    createdAt: string
-    minutesAgo: number
-    isDeleted: boolean
-    likes: number
-    liked: boolean
-  }
-  type RelatedTopicItem = {
-    id: string
-    title: string
-    category: { id: string; name: string; icon?: string }
-    tags: { id: string; name: string; icon: string }[]
-    replies: number
-    views: number
-    activity: string
-  }
-  type TopicInfo = {
-    id: string
-    title: string
-    category: { id: string; name: string; icon?: string }
-    tags: { id: string; name: string; icon: string }[]
-  }
-  type TopicInfoResult = { topic: TopicInfo }
-  type PostPage = {
-    items: PostItem[]
-    page: number
-    pageSize: number
-    total: number
-    hasMore: boolean
-  }
-  type RelatedResult = { relatedTopics: RelatedTopicItem[] }
-
   const fetcherInfo = async (url: string): Promise<TopicInfoResult> => {
     const res = await fetch(url, { cache: "no-store" })
     if (!res.ok) throw new Error("Failed to load")
     return (await res.json()) as TopicInfoResult
   }
-  const {
-    data: infoData,
-    mutate: mutateInfo,
-    isLoading: loadingInfo,
-  } = useSWR<TopicInfoResult>(`/api/topic/${id}/info`, fetcherInfo, {
-    revalidateOnFocus: false,
-  })
+  const { data: infoData, isLoading: loadingInfo } = useSWR<TopicInfoResult>(
+    `/api/topic/${id}/info`,
+    fetcherInfo,
+    {
+      revalidateOnFocus: false,
+    }
+  )
   const topic = useMemo(
     () =>
       infoData?.topic ?? {
@@ -134,13 +93,13 @@ export default function TopicPage() {
     if (!res.ok) throw new Error("Failed to load")
     return (await res.json()) as RelatedResult
   }
-  const {
-    data: relatedData,
-    isLoading: loadingRelated,
-    mutate: mutateRelated,
-  } = useSWR<RelatedResult>(`/api/topic/${id}/related`, fetcherRelated, {
-    revalidateOnFocus: false,
-  })
+  const { data: relatedData } = useSWR<RelatedResult>(
+    `/api/topic/${id}/related`,
+    fetcherRelated,
+    {
+      revalidateOnFocus: false,
+    }
+  )
 
   const relatedTopics = relatedData?.relatedTopics ?? []
 
@@ -162,6 +121,55 @@ export default function TopicPage() {
   const [editPostId, setEditPostId] = useState<string | null>(null)
   const [editInitial, setEditInitial] = useState<string>("")
   const [mutatingPostId, setMutatingPostId] = useState<string | null>(null)
+
+  const likeAction = async (postId: string) => {
+    const target = posts.find((p) => p.id === postId)
+    if (!target) return
+    setMutatingPostId(postId)
+    const optimisticLiked = !target.liked
+    const optimisticCount = target.likes + (optimisticLiked ? 1 : -1)
+    await mutatePosts(
+      (pages) =>
+        pages?.map((pg) => ({
+          ...pg,
+          items: pg.items.map((p) =>
+            p.id === postId
+              ? {
+                  ...p,
+                  liked: optimisticLiked,
+                  likes: Math.max(optimisticCount, 0),
+                }
+              : p
+          ),
+        })) ?? pages,
+      false
+    )
+    try {
+      const result = await triggerLike({ postId })
+      await mutatePosts(
+        (pages) =>
+          pages?.map((pg) => ({
+            ...pg,
+            items: pg.items.map((p) =>
+              p.id === postId
+                ? { ...p, liked: result.liked, likes: result.count }
+                : p
+            ),
+          })) ?? pages,
+        false
+      )
+    } catch (e) {
+      const status = Number((e as Error).message)
+      if (status === 401) {
+        toast.error(tc("Error.unauthorized"))
+      } else {
+        toast.error(tc("Error.requestFailed"))
+      }
+      await mutatePosts(undefined, false)
+    } finally {
+      setMutatingPostId(null)
+    }
+  }
 
   type LikeResult = { liked: boolean; count: number }
   type LikeArg = { postId: string }
@@ -458,235 +466,36 @@ export default function TopicPage() {
         <div className="flex-1">
           {loading ? (
             <TimelineSteps>
-              {Array.from({ length: 3 }, (_, i) => i).map((i) => (
-                <TimelineStepsItem key={`s-${i}`}>
-                  <TimelineStepsConnector />
-                  <TimelineStepsIcon size="lg" className="overflow-hidden p-0">
-                    <Skeleton className="h-10 w-10 rounded-full" />
-                  </TimelineStepsIcon>
-                  <TimelineStepsContent className="border-b">
-                    <div className="flex flex-row justify-between items-center w-full">
-                      <div className="flex flex-row gap-2 items-center">
-                        <Skeleton className="h-5 w-24" />
-                        <Skeleton className="h-4 w-16" />
-                      </div>
-                      <Skeleton className="h-4 w-10" />
-                    </div>
-                    <div className="mt-2 flex flex-col gap-2">
-                      <Skeleton className="h-4 w-full" />
-                      <Skeleton className="h-4 w-11/12" />
-                      <Skeleton className="h-4 w-10/12" />
-                    </div>
-                    <TimelineStepsAction>
-                      <Skeleton className="h-8 w-8 rounded-md" />
-                      <Skeleton className="h-8 w-8 rounded-md" />
-                      <Skeleton className="h-8 w-8 rounded-md" />
-                      <Skeleton className="h-8 w-16 rounded-md" />
-                    </TimelineStepsAction>
-                  </TimelineStepsContent>
-                </TimelineStepsItem>
-              ))}
+              <PostSkeletonList count={3} />
             </TimelineSteps>
           ) : (
             <TimelineSteps>
               {posts.map((post, index) => (
-                <TimelineStepsItem
-                  id={`post-${index + 1}`}
-                  data-post-anchor
+                <TopicPostItem
                   key={post.id}
-                >
-                  <TimelineStepsConnector />
-                  <TimelineStepsIcon size="lg" className="overflow-hidden p-0">
-                    <Avatar className="size-full">
-                      <AvatarImage src={post.author.avatar} alt="@shadcn" />
-                      <AvatarFallback>{post.author.name}</AvatarFallback>
-                    </Avatar>
-                  </TimelineStepsIcon>
-                  <TimelineStepsContent className="border-b">
-                    <div className="flex flex-row justify-between items-center w-full">
-                      <div className="flex flex-row gap-2">
-                        <TimelineStepsTitle>
-                          {post.author.name}
-                        </TimelineStepsTitle>
-                        <TimelineStepsTime>
-                          {formatRelative(post.createdAt)}
-                        </TimelineStepsTime>
-                      </div>
-                      <span className="text-muted-foreground text-sm">
-                        {index === 0 ? t("floor.op") : "#" + index}
-                      </span>
-                    </div>
-                    <TimelineStepsDescription>
-                      {post.isDeleted ? (
-                        <span className="text-muted-foreground">
-                          {t("deleted")}
-                        </span>
-                      ) : (
-                        post.content
-                      )}
-                    </TimelineStepsDescription>
-                    <TimelineStepsAction>
-                      {post.isDeleted ? null : (
-                        <>
-                          {post.author.id !== currentUserId ? (
-                            <>
-                              <Button
-                                variant="ghost"
-                                disabled={
-                                  mutatingPostId === post.id || likeMutating
-                                }
-                                onClick={async () => {
-                                  setMutatingPostId(post.id)
-                                  const optimisticLiked = !post.liked
-                                  const optimisticCount =
-                                    post.likes + (optimisticLiked ? 1 : -1)
-                                  await mutatePosts(
-                                    (pages) =>
-                                      pages?.map((pg) => ({
-                                        ...pg,
-                                        items: pg.items.map((p) =>
-                                          p.id === post.id
-                                            ? {
-                                                ...p,
-                                                liked: optimisticLiked,
-                                                likes: Math.max(
-                                                  optimisticCount,
-                                                  0
-                                                ),
-                                              }
-                                            : p
-                                        ),
-                                      })) ?? pages,
-                                    false
-                                  )
-                                  try {
-                                    const result = await triggerLike({
-                                      postId: post.id,
-                                    })
-                                    await mutatePosts(
-                                      (pages) =>
-                                        pages?.map((pg) => ({
-                                          ...pg,
-                                          items: pg.items.map((p) =>
-                                            p.id === post.id
-                                              ? {
-                                                  ...p,
-                                                  liked: result.liked,
-                                                  likes: result.count,
-                                                }
-                                              : p
-                                          ),
-                                        })) ?? pages,
-                                      false
-                                    )
-                                  } catch (e) {
-                                    const status = Number((e as Error).message)
-                                    if (status === 401) {
-                                      toast.error(tc("Error.unauthorized"))
-                                    } else {
-                                      toast.error(tc("Error.requestFailed"))
-                                    }
-                                    await mutatePosts(undefined, false)
-                                  } finally {
-                                    setMutatingPostId(null)
-                                  }
-                                }}
-                              >
-                                <Heart
-                                  className={
-                                    post.liked ? "text-red-500" : undefined
-                                  }
-                                  fill={post.liked ? "currentColor" : "none"}
-                                />
-                                <span className="ml-1 text-sm">
-                                  {post.likes}
-                                </span>
-                              </Button>
-                              <Button variant="ghost" size="icon">
-                                <Bookmark />
-                              </Button>
-                            </>
-                          ) : (
-                            <>
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                onClick={() => {
-                                  onClickEdit(post.id, post.content)
-                                }}
-                                disabled={
-                                  mutatingPostId === post.id || editMutating
-                                }
-                              >
-                                <Pencil />
-                              </Button>
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                onClick={() => onClickDelete(post.id)}
-                                disabled={
-                                  mutatingPostId === post.id || deleteMutating
-                                }
-                              >
-                                <Trash />
-                              </Button>
-                            </>
-                          )}
-                          <Button variant="ghost" size="icon">
-                            <Flag />
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            onClick={() => {
-                              onClickReply(post.id, post.author.name)
-                            }}
-                          >
-                            <Reply className="text-foreground" />
-                            {t("reply")}
-                          </Button>
-                        </>
-                      )}
-                    </TimelineStepsAction>
-                  </TimelineStepsContent>
-                </TimelineStepsItem>
+                  post={post}
+                  index={index}
+                  anchorId={`post-${index + 1}`}
+                  currentUserId={currentUserId}
+                  mutatingPostId={mutatingPostId}
+                  likeMutating={likeMutating}
+                  editMutating={editMutating}
+                  deleteMutating={deleteMutating}
+                  onLike={likeAction}
+                  onEdit={onClickEdit}
+                  onDelete={onClickDelete}
+                  onReply={onClickReply}
+                  floorOpText={t("floor.op")}
+                  replyText={t("reply")}
+                  deletedText={t("deleted")}
+                />
               ))}
               {hasMore && (
-                <>
-                  {Array.from({ length: 3 }, (_, i) => i).map((i) => (
-                    <TimelineStepsItem
-                      key={`next-s-${i}`}
-                      id={i === 2 ? "posts-sentinel" : undefined}
-                    >
-                      <TimelineStepsConnector />
-                      <TimelineStepsIcon
-                        size="lg"
-                        className="overflow-hidden p-0"
-                      >
-                        <Skeleton className="h-10 w-10 rounded-full" />
-                      </TimelineStepsIcon>
-                      <TimelineStepsContent className="border-b">
-                        <div className="flex flex-row justify-between items-center w-full">
-                          <div className="flex flex-row gap-2 items-center">
-                            <Skeleton className="h-5 w-24" />
-                            <Skeleton className="h-4 w-16" />
-                          </div>
-                          <Skeleton className="h-4 w-10" />
-                        </div>
-                        <div className="mt-2 flex flex-col gap-2">
-                          <Skeleton className="h-4 w-full" />
-                          <Skeleton className="h-4 w-11/12" />
-                          <Skeleton className="h-4 w-10/12" />
-                        </div>
-                        <TimelineStepsAction>
-                          <Skeleton className="h-8 w-8 rounded-md" />
-                          <Skeleton className="h-8 w-8 rounded-md" />
-                          <Skeleton className="h-8 w-8 rounded-md" />
-                          <Skeleton className="h-8 w-16 rounded-md" />
-                        </TimelineStepsAction>
-                      </TimelineStepsContent>
-                    </TimelineStepsItem>
-                  ))}
-                </>
+                <PostSkeletonList
+                  count={3}
+                  lastIsSentinel
+                  sentinelId="posts-sentinel"
+                />
               )}
             </TimelineSteps>
           )}
