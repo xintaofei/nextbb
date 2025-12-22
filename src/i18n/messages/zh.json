@@ -83,7 +83,10 @@
         "toFirst": "到首楼",
         "toLast": "到末楼"
       },
-      "counter": "{current}/{total}"
+      "counter": "{current}/{total}",
+      "replyToTopic": "回复主题",
+      "goLogin": "去登录",
+      "sort": "排序"
     },
     "New": {
       "title": "新建话题",

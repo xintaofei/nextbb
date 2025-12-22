@@ -1,6 +1,8 @@
 "use client"
 
 import { useEffect, useRef, useState } from "react"
+import { useRouter } from "next/navigation"
+import { useTranslations } from "next-intl"
 import { Slider } from "@/components/ui/slider"
 import { Button } from "@/components/ui/button"
 import {
@@ -10,16 +12,23 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip"
 import { ChevronsUp, ChevronsDown } from "lucide-react"
-import { useTranslations } from "next-intl"
 
 type TopicNavigatorProps = {
   total: number
+  isAuthenticated?: boolean
+  onReplyTopic?: () => void
 }
 
-export function TopicNavigator({ total }: TopicNavigatorProps) {
+export function TopicNavigator({
+  total,
+  isAuthenticated,
+  onReplyTopic,
+}: TopicNavigatorProps) {
   const t = useTranslations("Topic.Navigator")
+  const router = useRouter()
   const totalFloors = Math.max(total - 1, 1)
   const [current, setCurrent] = useState(1)
+  const currentRef = useRef(1)
   const [sliderValue, setSliderValue] = useState<number[]>([totalFloors])
   const anchorsRef = useRef<HTMLElement[]>([])
   const rafRef = useRef<number | null>(null)
@@ -74,7 +83,8 @@ export function TopicNavigator({ total }: TopicNavigatorProps) {
     const measure = () => {
       const anchors = anchorsRef.current
       if (!anchors.length) return
-      const refAbs = window.scrollY
+      const scroller = getScrollContainer()
+      const refAbs = scroller ? scroller.scrollTop : window.scrollY
       let firstVisible = 1
       for (let k = 1; k < anchors.length; k++) {
         const rect = anchors[k].getBoundingClientRect()
@@ -88,13 +98,14 @@ export function TopicNavigator({ total }: TopicNavigatorProps) {
       }
       const i = Math.min(Math.max(firstVisible, 1), anchors.length - 1)
       const j = Math.min(i + 1, anchors.length - 1)
-      const posI = anchors[i].offsetTop
-      const posJ = anchors[j].offsetTop
+      const posI = getRelativeTop(anchors[i], scroller)
+      const posJ = getRelativeTop(anchors[j], scroller)
       const denom = Math.max(1, posJ - posI)
       const t = Math.min(1, Math.max(0, (refAbs - posI) / denom))
       setSliderValue([totalFloors - (i - 1) - t])
       const idxReply = i
-      if (idxReply !== current) {
+      if (idxReply !== currentRef.current) {
+        currentRef.current = idxReply
         setCurrent(idxReply)
         const el = anchors[i]
         const name =
@@ -140,7 +151,7 @@ export function TopicNavigator({ total }: TopicNavigatorProps) {
         rafRef.current = null
       }
     }
-  }, [total])
+  }, [totalFloors])
 
   const scrollToPost = (n: number) => {
     const id = `post-${n}`
@@ -171,15 +182,42 @@ export function TopicNavigator({ total }: TopicNavigatorProps) {
   }
 
   const jumpFirst = () => scrollToPost(2)
-  const jumpPrev = () => scrollToPost(Math.max(current - 1, 1))
-  const jumpNext = () => scrollToPost(Math.min(current + 1, total))
   const jumpLast = () => scrollToPost(totalFloors + 1)
 
   return (
-    <div className="flex flex-col sticky top-8 w-64 h-80 shrink-0 border rounded-xl p-3 gap-3 hidden lg:flex">
-      <div className="flex flex-1 items-center justify-center">
+    <div className="hidden lg:flex lg:flex-col sticky top-8 w-44 h-80 shrink-0 gap-3">
+      <div className="flex flex-col items-center gap-3">
+        {isAuthenticated ? (
+          <Button
+            size="sm"
+            variant="secondary"
+            className="w-full"
+            onClick={() => {
+              if (onReplyTopic) onReplyTopic()
+              else jumpLast()
+            }}
+          >
+            {t("replyToTopic")}
+          </Button>
+        ) : (
+          <Button
+            size="sm"
+            variant="secondary"
+            className="w-full"
+            onClick={() => {
+              router.push(`/login`)
+            }}
+          >
+            {t("goLogin")}
+          </Button>
+        )}
+        <Button size="sm" variant="secondary" className="w-full">
+          {t("sort")}
+        </Button>
+      </div>
+      <div className="flex flex-1 items-center">
         <TooltipProvider disableHoverableContent>
-          <div className="flex flex-1 flex-col items-center gap-3">
+          <div className="flex flex-1 flex-col gap-3">
             <Tooltip>
               <TooltipTrigger asChild>
                 <Button
@@ -194,7 +232,7 @@ export function TopicNavigator({ total }: TopicNavigatorProps) {
               </TooltipTrigger>
               <TooltipContent>{t("toFirst")}</TooltipContent>
             </Tooltip>
-            <div className="flex-1 w-full flex items-center justify-center">
+            <div className="flex-1 w-full flex items-center pl-4">
               <div
                 ref={sliderWrapRef}
                 className="relative h-full flex items-center"
@@ -232,6 +270,7 @@ export function TopicNavigator({ total }: TopicNavigatorProps) {
                         scroller.scrollTo({ top: y, behavior: "auto" })
                       else window.scrollTo({ top: y, behavior: "auto" })
                       setCurrent(iReply)
+                      currentRef.current = iReply
                       const name =
                         anchors[iReply]?.querySelector<HTMLElement>(
                           "[data-slot=timeline-steps-title]"

@@ -83,7 +83,10 @@
         "toFirst": "Jump to first",
         "toLast": "Jump to last"
       },
-      "counter": "{current}/{total}"
+      "counter": "{current}/{total}",
+      "replyToTopic": "Reply to topic",
+      "goLogin": "Go to sign in",
+      "sort": "Sort"
     },
     "New": {
       "title": "New Topic",

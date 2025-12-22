@@ -501,11 +501,18 @@ export default function TopicPage() {
           )}
         </div>
         {loading ? (
-          <div className="w-48">
-            <Skeleton className="h-64 w-full" />
+          <div className="w-44">
+            <Skeleton className="h-80 w-full" />
           </div>
         ) : (
-          <TopicNavigator total={totalPosts} />
+          <TopicNavigator
+            total={totalPosts}
+            isAuthenticated={!!currentUserId}
+            onReplyTopic={() => {
+              setReplyToPostId(null)
+              setReplyOpen(true)
+            }}
+          />
         )}
       </div>
       <DrawerEditor
