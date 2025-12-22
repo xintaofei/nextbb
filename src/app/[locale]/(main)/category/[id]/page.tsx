@@ -44,7 +44,7 @@ export default function CategoryPage() {
   const [topics, setTopics] = useState<TopicListItem[]>([])
   const [topicsLoading, setTopicsLoading] = useState<boolean>(true)
   const [page, setPage] = useState<number>(1)
-  const [pageSize] = useState<number>(10)
+  const [pageSize] = useState<number>(15)
   const [total, setTotal] = useState<number>(0)
   const [loadingMore, setLoadingMore] = useState<boolean>(false)
   const hasMore = useMemo(() => topics.length < total, [topics.length, total])

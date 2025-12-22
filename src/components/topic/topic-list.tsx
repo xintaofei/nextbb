@@ -107,7 +107,7 @@ export function TopicList({
       </TableHeader>
       <TableBody>
         {loading
-          ? Array.from({ length: 10 }).map((_, i) => (
+          ? Array.from({ length: 15 }).map((_, i) => (
               <TableRow key={`skeleton-${i}`}>
                 <TableCell className="flex flex-col gap-2">
                   <Skeleton className="h-6 w-72" />
