@@ -230,7 +230,7 @@ export function TopicNavigator({
                   <ChevronsUp className="size-4" />
                 </Button>
               </TooltipTrigger>
-              <TooltipContent>{t("toFirst")}</TooltipContent>
+              <TooltipContent side="right">{t("toFirst")}</TooltipContent>
             </Tooltip>
             <div className="flex-1 w-full flex items-center pl-4.5">
               <div
@@ -314,7 +314,7 @@ export function TopicNavigator({
                   <ChevronsDown className="size-4" />
                 </Button>
               </TooltipTrigger>
-              <TooltipContent>{t("toLast")}</TooltipContent>
+              <TooltipContent side="right">{t("toLast")}</TooltipContent>
             </Tooltip>
           </div>
         </TooltipProvider>
