@@ -99,7 +99,7 @@ export default function TopicPage() {
   )
   const topicInfo = infoData?.topic
 
-  const [pageSize] = useState<number>(5)
+  const [pageSize] = useState<number>(15)
 
   const fetcherPosts = async (url: string): Promise<PostPage> => {
     const res = await fetch(url, { cache: "no-store" })
