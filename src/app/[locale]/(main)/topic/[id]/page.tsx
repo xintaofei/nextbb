@@ -569,7 +569,7 @@ export default function TopicPage() {
               ? Array.from({ length: 4 }, (_, i) => i).map((i) => (
                   <TableRow key={`rt-s-${i}`}>
                     <TableCell className="max-w-full">
-                      <Skeleton className="h-5 w-80" />
+                      <Skeleton className="h-7 w-80" />
                       <div className="flex max-w-full flex-wrap gap-2 overflow-hidden mt-2">
                         <Skeleton className="h-5 w-24" />
                         <Skeleton className="h-5 w-20" />
