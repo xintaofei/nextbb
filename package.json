@@ -15,6 +15,7 @@
     "db:push": "prisma db push"
   },
   "dependencies": {
+    "@vercel/blob": "^0.27.0",
     "@hookform/resolvers": "^5.2.2",
     "@prisma/adapter-pg": "^7.2.0",
     "@prisma/client": "^7.2.0",

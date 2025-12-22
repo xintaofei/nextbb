@@ -4,6 +4,7 @@ import GoogleProvider from "next-auth/providers/google"
 import { prisma } from "@/lib/prisma"
 import { generateId } from "@/lib/id"
 import { LinuxDoProvider } from "@/lib/providers/linuxdo"
+import { uploadAvatarFromUrl } from "@/lib/blob"
 
 function getEnv(name: string): string {
   const v = process.env[name]
@@ -49,7 +50,29 @@ export const authOptions: NextAuthOptions = {
       const existing = await prisma.users.findUnique({
         where: { email },
       })
-      if (existing) return true
+      const avatarSrc =
+        user.image ??
+        (typeof (profile as { picture?: string }).picture === "string"
+          ? (profile as { picture?: string }).picture
+          : null) ??
+        null
+      if (existing) {
+        if (avatarSrc && avatarSrc.length > 0) {
+          try {
+            const uploaded = await uploadAvatarFromUrl(existing.id, avatarSrc)
+            await prisma.users.update({
+              where: { id: existing.id },
+              data: { avatar: uploaded },
+            })
+          } catch {
+            await prisma.users.update({
+              where: { id: existing.id },
+              data: { avatar: avatarSrc },
+            })
+          }
+        }
+        return true
+      }
       const id = generateId()
       let name =
         user.name ??
@@ -67,12 +90,14 @@ export const authOptions: NextAuthOptions = {
       if (!name) {
         name = email.split("@")[0]
       }
-      const avatar =
-        user.image ??
-        (typeof (profile as { picture?: string }).picture === "string"
-          ? (profile as { picture?: string }).picture
-          : null) ??
-        ""
+      let avatar = ""
+      if (avatarSrc && avatarSrc.length > 0) {
+        try {
+          avatar = await uploadAvatarFromUrl(id, avatarSrc)
+        } catch {
+          avatar = avatarSrc
+        }
+      }
       await prisma.users.create({
         data: {
           id,
