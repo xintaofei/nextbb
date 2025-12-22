@@ -33,6 +33,7 @@ import { toast } from "sonner"
 import { formatRelative } from "@/lib/time"
 import { Skeleton } from "@/components/ui/skeleton"
 import useSWR from "swr"
+import useSWRMutation from "swr/mutation"
 
 export default function TopicPage() {
   const { id } = useParams<{ id: string }>()
@@ -102,10 +103,71 @@ export default function TopicPage() {
   const [replyOpen, setReplyOpen] = useState<boolean>(false)
   const loading = isLoading
   const [currentUserId, setCurrentUserId] = useState<string | null>(null)
+  const [currentUserProfile, setCurrentUserProfile] = useState<{
+    id: string
+    username: string
+    avatar: string
+  } | null>(null)
   const [editOpen, setEditOpen] = useState<boolean>(false)
   const [editSubmitting, setEditSubmitting] = useState<boolean>(false)
   const [editPostId, setEditPostId] = useState<string | null>(null)
   const [editInitial, setEditInitial] = useState<string>("")
+  const [mutatingPostId, setMutatingPostId] = useState<string | null>(null)
+
+  type LikeResult = { liked: boolean; count: number }
+  type LikeArg = { postId: string }
+  const { trigger: triggerLike, isMutating: likeMutating } = useSWRMutation<
+    LikeResult,
+    Error,
+    string,
+    LikeArg
+  >("/mutations/post-like", async (_key, { arg }) => {
+    const res = await fetch(`/api/post/${arg.postId}/like`, { method: "POST" })
+    if (!res.ok) throw new Error(String(res.status))
+    return (await res.json()) as LikeResult
+  })
+  type EditArg = { postId: string; content: string }
+  const { trigger: triggerEdit, isMutating: editMutating } = useSWRMutation<
+    { ok: boolean },
+    Error,
+    string,
+    EditArg
+  >("/mutations/post-edit", async (_key, { arg }) => {
+    const res = await fetch(`/api/post/${arg.postId}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ content: arg.content }),
+    })
+    if (!res.ok) throw new Error(String(res.status))
+    return { ok: true }
+  })
+  type DeleteArg = { postId: string }
+  const { trigger: triggerDelete, isMutating: deleteMutating } = useSWRMutation<
+    { ok: boolean },
+    Error,
+    string,
+    DeleteArg
+  >("/mutations/post-delete", async (_key, { arg }) => {
+    const res = await fetch(`/api/post/${arg.postId}`, { method: "DELETE" })
+    if (!res.ok) throw new Error(String(res.status))
+    return { ok: true }
+  })
+  type ReplyArg = { content: string; parentId?: string }
+  type ReplyResult = { postId: string; floorNumber: number }
+  const { trigger: triggerReply, isMutating: replyMutating } = useSWRMutation<
+    ReplyResult,
+    Error,
+    string,
+    ReplyArg
+  >(`/mutations/topic-reply-${id}`, async (_key, { arg }) => {
+    const res = await fetch(`/api/topic/${id}/reply`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(arg),
+    })
+    if (!res.ok) throw new Error(String(res.status))
+    return (await res.json()) as ReplyResult
+  })
 
   useEffect(() => {
     let mounted = true
@@ -126,6 +188,12 @@ export default function TopicPage() {
             }
           }
           if (mounted) setCurrentUserId(json.user.id)
+          if (mounted)
+            setCurrentUserProfile({
+              id: json.profile.id,
+              username: json.profile.username,
+              avatar: json.profile.avatar,
+            })
         }
       } catch {}
     }
@@ -151,25 +219,40 @@ export default function TopicPage() {
     }
     setSubmitting(true)
     try {
-      const res = await fetch(`/api/topic/${id}/reply`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          content,
-          parentId: replyToPostId ?? undefined,
-        }),
-      })
-      if (res.status === 401) {
-        toast.error(tc("Error.unauthorized"))
-        return
-      }
-      if (!res.ok) {
+      const prev = data
+      if (!prev || !currentUserProfile) {
         toast.error(tc("Error.requestFailed"))
         return
       }
+      const tempId = `temp-${Date.now()}`
+      const optimistic: PostItem = {
+        id: tempId,
+        author: {
+          id: currentUserProfile.id,
+          name: currentUserProfile.username,
+          avatar: currentUserProfile.avatar,
+        },
+        content,
+        createdAt: new Date().toISOString(),
+        minutesAgo: 0,
+        isDeleted: false,
+        likes: 0,
+        liked: false,
+      }
+      setReplyOpen(false)
       setReplyContent("")
       setReplyToPostId(null)
-      setReplyOpen(false)
+      await mutate(
+        {
+          ...prev,
+          posts: [...prev.posts, optimistic],
+        },
+        { revalidate: false }
+      )
+      await triggerReply({
+        content,
+        parentId: replyToPostId ?? undefined,
+      })
       const next = await mutate()
       toast.success(tc("Action.success"))
       if (next) {
@@ -177,8 +260,12 @@ export default function TopicPage() {
         const el = document.getElementById(`post-${newIndex}`)
         if (el) el.scrollIntoView({ behavior: "smooth", block: "center" })
       }
-    } catch {
-      toast.error(tc("Error.network"))
+    } catch (e) {
+      const status = Number((e as Error).message)
+      if (status === 401) toast.error(tc("Error.unauthorized"))
+      else toast.error(tc("Error.requestFailed"))
+      const prev = data
+      if (prev) await mutate(prev, { revalidate: false })
     } finally {
       setSubmitting(false)
     }
@@ -197,23 +284,19 @@ export default function TopicPage() {
     }
     setEditSubmitting(true)
     try {
-      const res = await fetch(`/api/post/${editPostId}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ content: value }),
-      })
-      if (res.status === 401) {
-        toast.error(tc("Error.unauthorized"))
-        return
-      }
-      if (res.status === 403) {
-        toast.error(tc("Error.forbidden"))
-        return
-      }
-      if (!res.ok) {
-        toast.error(tc("Error.requestFailed"))
-        return
-      }
+      const prev = data
+      if (!prev || !editPostId) return
+      setMutatingPostId(editPostId)
+      await mutate(
+        {
+          ...prev,
+          posts: prev.posts.map((p) =>
+            p.id === editPostId ? { ...p, content: value } : p
+          ),
+        },
+        { revalidate: false }
+      )
+      await triggerEdit({ postId: editPostId, content: value })
       setEditOpen(false)
       const next = await mutate()
       toast.success(tc("Action.success"))
@@ -222,32 +305,45 @@ export default function TopicPage() {
         const el = document.getElementById(`post-${idx + 1}`)
         if (el) el.scrollIntoView({ behavior: "smooth", block: "center" })
       }
-    } catch {
-      toast.error(tc("Error.network"))
+    } catch (e) {
+      const status = Number((e as Error).message)
+      if (status === 401) toast.error(tc("Error.unauthorized"))
+      else if (status === 403) toast.error(tc("Error.forbidden"))
+      else toast.error(tc("Error.requestFailed"))
+      const prev = data
+      if (prev && editPostId) await mutate(prev, { revalidate: false })
     } finally {
       setEditSubmitting(false)
+      setMutatingPostId(null)
     }
   }
   const onClickDelete = async (postId: string) => {
     if (!window.confirm(t("deleteConfirm"))) return
     try {
-      const res = await fetch(`/api/post/${postId}`, { method: "DELETE" })
-      if (res.status === 401) {
-        toast.error(tc("Error.unauthorized"))
-        return
-      }
-      if (res.status === 403) {
-        toast.error(tc("Error.forbidden"))
-        return
-      }
-      if (!res.ok) {
-        toast.error(tc("Error.requestFailed"))
-        return
-      }
+      const prev = data
+      if (!prev) return
+      setMutatingPostId(postId)
+      await mutate(
+        {
+          ...prev,
+          posts: prev.posts.map((p) =>
+            p.id === postId ? { ...p, isDeleted: true } : p
+          ),
+        },
+        { revalidate: false }
+      )
+      await triggerDelete({ postId })
       await mutate()
       toast.success(tc("Action.success"))
-    } catch {
-      toast.error(tc("Error.network"))
+    } catch (e) {
+      const status = Number((e as Error).message)
+      if (status === 401) toast.error(tc("Error.unauthorized"))
+      else if (status === 403) toast.error(tc("Error.forbidden"))
+      else toast.error(tc("Error.requestFailed"))
+      const prev = data
+      if (prev) await mutate(prev, { revalidate: false })
+    } finally {
+      setMutatingPostId(null)
     }
   }
 
@@ -363,9 +459,13 @@ export default function TopicPage() {
                             <>
                               <Button
                                 variant="ghost"
+                                disabled={
+                                  mutatingPostId === post.id || likeMutating
+                                }
                                 onClick={async () => {
                                   const prev = data
                                   if (!prev) return
+                                  setMutatingPostId(post.id)
                                   const optimisticLiked = !post.liked
                                   const optimisticCount =
                                     post.likes + (optimisticLiked ? 1 : -1)
@@ -388,30 +488,9 @@ export default function TopicPage() {
                                     { revalidate: false }
                                   )
                                   try {
-                                    const res = await fetch(
-                                      `/api/post/${post.id}/like`,
-                                      { method: "POST" }
-                                    )
-                                    if (res.status === 401) {
-                                      toast.error(tc("Error.unauthorized"))
-                                      if (prev)
-                                        await mutate(prev, {
-                                          revalidate: false,
-                                        })
-                                      return
-                                    }
-                                    if (!res.ok) {
-                                      toast.error(tc("Error.requestFailed"))
-                                      if (prev)
-                                        await mutate(prev, {
-                                          revalidate: false,
-                                        })
-                                      return
-                                    }
-                                    const json = (await res.json()) as {
-                                      liked: boolean
-                                      count: number
-                                    }
+                                    const result = await triggerLike({
+                                      postId: post.id,
+                                    })
                                     const latest = data
                                     if (!latest) return
                                     await mutate(
@@ -421,18 +500,25 @@ export default function TopicPage() {
                                           p.id === post.id
                                             ? {
                                                 ...p,
-                                                liked: json.liked,
-                                                likes: json.count,
+                                                liked: result.liked,
+                                                likes: result.count,
                                               }
                                             : p
                                         ),
                                       },
                                       { revalidate: false }
                                     )
-                                  } catch {
-                                    toast.error(tc("Error.network"))
+                                  } catch (e) {
+                                    const status = Number((e as Error).message)
+                                    if (status === 401) {
+                                      toast.error(tc("Error.unauthorized"))
+                                    } else {
+                                      toast.error(tc("Error.requestFailed"))
+                                    }
                                     if (prev)
                                       await mutate(prev, { revalidate: false })
+                                  } finally {
+                                    setMutatingPostId(null)
                                   }
                                 }}
                               >
@@ -458,6 +544,9 @@ export default function TopicPage() {
                                 onClick={() => {
                                   onClickEdit(post.id, post.content)
                                 }}
+                                disabled={
+                                  mutatingPostId === post.id || editMutating
+                                }
                               >
                                 <Pencil />
                               </Button>
@@ -465,6 +554,9 @@ export default function TopicPage() {
                                 variant="ghost"
                                 size="icon"
                                 onClick={() => onClickDelete(post.id)}
+                                disabled={
+                                  mutatingPostId === post.id || deleteMutating
+                                }
                               >
                                 <Trash />
                               </Button>
