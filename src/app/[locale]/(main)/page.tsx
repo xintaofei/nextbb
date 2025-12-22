@@ -91,8 +91,10 @@ export default function Home() {
   }
   useEffect(() => {
     ;(async () => {
+      setLoading(true)
       setPage(1)
       setTotal(0)
+      setTopics([])
       await loadTopics(true)
     })()
     return () => {}
@@ -113,8 +115,11 @@ export default function Home() {
         <div className="flex flex-col gap-3 md:flex-row">
           <TopicControls className="flex flex-row gap-2" />
           <TopicSortTabs
-            onPendingChange={(p) => {
-              if (p) setLoading(true)
+            onSortStart={() => {
+              setLoading(true)
+              setPage(1)
+              setTotal(0)
+              setTopics([])
             }}
           />
         </div>

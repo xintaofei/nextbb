@@ -145,11 +145,14 @@ export default function CategoryPage() {
         setTopicsLoading(true)
         setPage(1)
         setTotal(0)
+        setTopics([])
         const categoryId = searchParams.get("categoryId") ?? id
         const tagId = searchParams.get("tagId")
+        const sort = searchParams.get("sort")
         const qs = new URLSearchParams()
         if (categoryId) qs.set("categoryId", categoryId)
         if (tagId) qs.set("tagId", tagId)
+        if (sort) qs.set("sort", sort)
         qs.set("page", "1")
         qs.set("pageSize", String(pageSize))
         const res = await fetch(`/api/topics?${qs.toString()}`, {
@@ -215,8 +218,11 @@ export default function CategoryPage() {
             initialCategoryId={id}
           />
           <TopicSortTabs
-            onPendingChange={(p) => {
-              if (p) setTopicsLoading(true)
+            onSortStart={() => {
+              setTopicsLoading(true)
+              setPage(1)
+              setTotal(0)
+              setTopics([])
             }}
           />
         </div>
