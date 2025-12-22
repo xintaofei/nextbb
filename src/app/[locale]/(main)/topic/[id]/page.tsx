@@ -33,6 +33,7 @@ import { toast } from "sonner"
 import { formatRelative } from "@/lib/time"
 import { Skeleton } from "@/components/ui/skeleton"
 import useSWR from "swr"
+import useSWRInfinite from "swr/infinite"
 import useSWRMutation from "swr/mutation"
 
 export default function TopicPage() {
@@ -60,40 +61,88 @@ export default function TopicPage() {
     views: number
     activity: string
   }
-  type TopicDetail = {
-    topic: {
-      id: string
-      title: string
-      category: { id: string; name: string; icon?: string }
-      tags: { id: string; name: string; icon: string }[]
-    }
-    posts: PostItem[]
-    relatedTopics: RelatedTopicItem[]
+  type TopicInfo = {
+    id: string
+    title: string
+    category: { id: string; name: string; icon?: string }
+    tags: { id: string; name: string; icon: string }[]
   }
+  type TopicInfoResult = { topic: TopicInfo }
+  type PostPage = {
+    items: PostItem[]
+    page: number
+    pageSize: number
+    total: number
+    hasMore: boolean
+  }
+  type RelatedResult = { relatedTopics: RelatedTopicItem[] }
 
-  const fetcher = async (url: string): Promise<TopicDetail> => {
+  const fetcherInfo = async (url: string): Promise<TopicInfoResult> => {
     const res = await fetch(url, { cache: "no-store" })
     if (!res.ok) throw new Error("Failed to load")
-    return (await res.json()) as TopicDetail
+    return (await res.json()) as TopicInfoResult
   }
-  const { data, mutate, isLoading } = useSWR<TopicDetail>(
-    `/api/topic/${id}`,
-    fetcher,
-    {
-      revalidateOnFocus: false,
-    }
-  )
+  const {
+    data: infoData,
+    mutate: mutateInfo,
+    isLoading: loadingInfo,
+  } = useSWR<TopicInfoResult>(`/api/topic/${id}/info`, fetcherInfo, {
+    revalidateOnFocus: false,
+  })
   const topic = useMemo(
     () =>
-      data?.topic ?? {
+      infoData?.topic ?? {
         id: id,
         title: "",
       },
-    [data, id]
+    [infoData, id]
   )
-  const posts = data?.posts ?? []
+  const topicInfo = infoData?.topic
 
-  const relatedTopics = data?.relatedTopics ?? []
+  const [pageSize] = useState<number>(5)
+
+  const fetcherPosts = async (url: string): Promise<PostPage> => {
+    const res = await fetch(url, { cache: "no-store" })
+    if (!res.ok) throw new Error("Failed to load")
+    return (await res.json()) as PostPage
+  }
+  const getKey = (index: number) =>
+    `/api/topic/${id}/posts?page=${index + 1}&pageSize=${pageSize}`
+  const {
+    data: postsPages,
+    mutate: mutatePosts,
+    size,
+    setSize,
+    isLoading: loadingPosts,
+    isValidating: validatingPosts,
+  } = useSWRInfinite<PostPage>(getKey, fetcherPosts, {
+    revalidateOnFocus: false,
+  })
+  const posts = useMemo(
+    () => (postsPages ? postsPages.flatMap((p) => p.items) : []),
+    [postsPages]
+  )
+  const lastPage =
+    postsPages && postsPages.length > 0
+      ? postsPages[postsPages.length - 1]
+      : undefined
+  const totalPosts = lastPage?.total ?? posts.length
+  const hasMore = lastPage?.hasMore ?? false
+
+  const fetcherRelated = async (url: string): Promise<RelatedResult> => {
+    const res = await fetch(url, { cache: "no-store" })
+    if (!res.ok) throw new Error("Failed to load")
+    return (await res.json()) as RelatedResult
+  }
+  const {
+    data: relatedData,
+    isLoading: loadingRelated,
+    mutate: mutateRelated,
+  } = useSWR<RelatedResult>(`/api/topic/${id}/related`, fetcherRelated, {
+    revalidateOnFocus: false,
+  })
+
+  const relatedTopics = relatedData?.relatedTopics ?? []
 
   useEffect(() => {}, [id])
 
@@ -101,7 +150,7 @@ export default function TopicPage() {
   const [replyToPostId, setReplyToPostId] = useState<string | null>(null)
   const [submitting, setSubmitting] = useState<boolean>(false)
   const [replyOpen, setReplyOpen] = useState<boolean>(false)
-  const loading = isLoading
+  const loading = loadingInfo || (loadingPosts && posts.length === 0)
   const [currentUserId, setCurrentUserId] = useState<string | null>(null)
   const [currentUserProfile, setCurrentUserProfile] = useState<{
     id: string
@@ -219,8 +268,8 @@ export default function TopicPage() {
     }
     setSubmitting(true)
     try {
-      const prev = data
-      if (!prev) {
+      const prevPages = postsPages
+      if (!prevPages) {
         toast.error(tc("Error.requestFailed"))
         return
       }
@@ -242,30 +291,40 @@ export default function TopicPage() {
       setReplyOpen(false)
       setReplyContent("")
       setReplyToPostId(null)
-      await mutate(
-        {
-          ...prev,
-          posts: [...prev.posts, optimistic],
-        },
-        { revalidate: false }
-      )
+      await mutatePosts((pages) => {
+        if (!pages || pages.length === 0) {
+          return [
+            {
+              items: [optimistic],
+              page: 1,
+              pageSize,
+              total: 1,
+              hasMore: false,
+            },
+          ]
+        }
+        const next = [...pages]
+        const last = { ...next[next.length - 1] }
+        last.items = [...last.items, optimistic]
+        last.total = (last.total ?? posts.length) + 1
+        next[next.length - 1] = last
+        return next
+      }, false)
       await triggerReply({
         content,
         parentId: replyToPostId ?? undefined,
       })
-      const next = await mutate()
+      await mutatePosts(undefined, true)
+      const nextPosts = postsPages ? postsPages.flatMap((p) => p.items) : []
       toast.success(tc("Action.success"))
-      if (next) {
-        const newIndex = next.posts.length
-        const el = document.getElementById(`post-${newIndex}`)
-        if (el) el.scrollIntoView({ behavior: "smooth", block: "center" })
-      }
+      const newIndex = nextPosts.length
+      const el = document.getElementById(`post-${newIndex}`)
+      if (el) el.scrollIntoView({ behavior: "smooth", block: "center" })
     } catch (e) {
       const status = Number((e as Error).message)
       if (status === 401) toast.error(tc("Error.unauthorized"))
       else toast.error(tc("Error.requestFailed"))
-      const prev = data
-      if (prev) await mutate(prev, { revalidate: false })
+      await mutatePosts(undefined, false)
     } finally {
       setSubmitting(false)
     }
@@ -284,34 +343,32 @@ export default function TopicPage() {
     }
     setEditSubmitting(true)
     try {
-      const prev = data
-      if (!prev || !editPostId) return
+      if (!editPostId) return
       setMutatingPostId(editPostId)
-      await mutate(
-        {
-          ...prev,
-          posts: prev.posts.map((p) =>
-            p.id === editPostId ? { ...p, content: value } : p
-          ),
-        },
-        { revalidate: false }
+      await mutatePosts(
+        (pages) =>
+          pages?.map((pg) => ({
+            ...pg,
+            items: pg.items.map((p) =>
+              p.id === editPostId ? { ...p, content: value } : p
+            ),
+          })) ?? pages,
+        false
       )
       await triggerEdit({ postId: editPostId, content: value })
       setEditOpen(false)
-      const next = await mutate()
+      await mutatePosts(undefined, true)
+      const nextFlat = postsPages ? postsPages.flatMap((p) => p.items) : []
       toast.success(tc("Action.success"))
-      if (next) {
-        const idx = next.posts.findIndex((p) => p.id === editPostId)
-        const el = document.getElementById(`post-${idx + 1}`)
-        if (el) el.scrollIntoView({ behavior: "smooth", block: "center" })
-      }
+      const idx = nextFlat.findIndex((p) => p.id === editPostId)
+      const el = document.getElementById(`post-${idx + 1}`)
+      if (el) el.scrollIntoView({ behavior: "smooth", block: "center" })
     } catch (e) {
       const status = Number((e as Error).message)
       if (status === 401) toast.error(tc("Error.unauthorized"))
       else if (status === 403) toast.error(tc("Error.forbidden"))
       else toast.error(tc("Error.requestFailed"))
-      const prev = data
-      if (prev && editPostId) await mutate(prev, { revalidate: false })
+      await mutatePosts(undefined, false)
     } finally {
       setEditSubmitting(false)
       setMutatingPostId(null)
@@ -320,32 +377,48 @@ export default function TopicPage() {
   const onClickDelete = async (postId: string) => {
     if (!window.confirm(t("deleteConfirm"))) return
     try {
-      const prev = data
-      if (!prev) return
       setMutatingPostId(postId)
-      await mutate(
-        {
-          ...prev,
-          posts: prev.posts.map((p) =>
-            p.id === postId ? { ...p, isDeleted: true } : p
-          ),
-        },
-        { revalidate: false }
+      await mutatePosts(
+        (pages) =>
+          pages?.map((pg) => ({
+            ...pg,
+            items: pg.items.map((p) =>
+              p.id === postId ? { ...p, isDeleted: true } : p
+            ),
+          })) ?? pages,
+        false
       )
       await triggerDelete({ postId })
-      await mutate()
+      await mutatePosts(undefined, true)
       toast.success(tc("Action.success"))
     } catch (e) {
       const status = Number((e as Error).message)
       if (status === 401) toast.error(tc("Error.unauthorized"))
       else if (status === 403) toast.error(tc("Error.forbidden"))
       else toast.error(tc("Error.requestFailed"))
-      const prev = data
-      if (prev) await mutate(prev, { revalidate: false })
+      await mutatePosts(undefined, false)
     } finally {
       setMutatingPostId(null)
     }
   }
+
+  useEffect(() => {
+    const sentinel = document.getElementById("posts-sentinel")
+    if (!sentinel) return
+    const observer = new IntersectionObserver((entries) => {
+      const entry = entries[0]
+      if (
+        entry.isIntersecting &&
+        hasMore &&
+        !validatingPosts &&
+        !loadingPosts
+      ) {
+        setSize(size + 1)
+      }
+    })
+    observer.observe(sentinel)
+    return () => observer.disconnect()
+  }, [hasMore, validatingPosts, loadingPosts, size, setSize])
 
   return (
     <div className="flex min-h-screen w-full flex-col p-8 gap-8">
@@ -367,12 +440,12 @@ export default function TopicPage() {
               </span>
             </Link>
             <div className="flex max-w-full flex-wrap gap-2 overflow-hidden">
-              {data?.topic.category ? (
+              {topicInfo?.category ? (
                 <Badge variant="secondary">
-                  {data.topic.category.icon ?? "📁"} {data.topic.category.name}
+                  {topicInfo.category.icon ?? "📁"} {topicInfo.category.name}
                 </Badge>
               ) : null}
-              {data?.topic.tags.map((tag) => (
+              {(topicInfo?.tags ?? []).map((tag) => (
                 <Badge key={tag.id} variant="outline">
                   {tag.icon} {tag.name}
                 </Badge>
@@ -463,50 +536,48 @@ export default function TopicPage() {
                                   mutatingPostId === post.id || likeMutating
                                 }
                                 onClick={async () => {
-                                  const prev = data
-                                  if (!prev) return
                                   setMutatingPostId(post.id)
                                   const optimisticLiked = !post.liked
                                   const optimisticCount =
                                     post.likes + (optimisticLiked ? 1 : -1)
-                                  await mutate(
-                                    {
-                                      ...prev,
-                                      posts: prev.posts.map((p) =>
-                                        p.id === post.id
-                                          ? {
-                                              ...p,
-                                              liked: optimisticLiked,
-                                              likes: Math.max(
-                                                optimisticCount,
-                                                0
-                                              ),
-                                            }
-                                          : p
-                                      ),
-                                    },
-                                    { revalidate: false }
+                                  await mutatePosts(
+                                    (pages) =>
+                                      pages?.map((pg) => ({
+                                        ...pg,
+                                        items: pg.items.map((p) =>
+                                          p.id === post.id
+                                            ? {
+                                                ...p,
+                                                liked: optimisticLiked,
+                                                likes: Math.max(
+                                                  optimisticCount,
+                                                  0
+                                                ),
+                                              }
+                                            : p
+                                        ),
+                                      })) ?? pages,
+                                    false
                                   )
                                   try {
                                     const result = await triggerLike({
                                       postId: post.id,
                                     })
-                                    const latest = data
-                                    if (!latest) return
-                                    await mutate(
-                                      {
-                                        ...latest,
-                                        posts: latest.posts.map((p) =>
-                                          p.id === post.id
-                                            ? {
-                                                ...p,
-                                                liked: result.liked,
-                                                likes: result.count,
-                                              }
-                                            : p
-                                        ),
-                                      },
-                                      { revalidate: false }
+                                    await mutatePosts(
+                                      (pages) =>
+                                        pages?.map((pg) => ({
+                                          ...pg,
+                                          items: pg.items.map((p) =>
+                                            p.id === post.id
+                                              ? {
+                                                  ...p,
+                                                  liked: result.liked,
+                                                  likes: result.count,
+                                                }
+                                              : p
+                                          ),
+                                        })) ?? pages,
+                                      false
                                     )
                                   } catch (e) {
                                     const status = Number((e as Error).message)
@@ -515,8 +586,7 @@ export default function TopicPage() {
                                     } else {
                                       toast.error(tc("Error.requestFailed"))
                                     }
-                                    if (prev)
-                                      await mutate(prev, { revalidate: false })
+                                    await mutatePosts(undefined, false)
                                   } finally {
                                     setMutatingPostId(null)
                                   }
@@ -580,6 +650,44 @@ export default function TopicPage() {
                   </TimelineStepsContent>
                 </TimelineStepsItem>
               ))}
+              {hasMore && (
+                <>
+                  {Array.from({ length: 3 }, (_, i) => i).map((i) => (
+                    <TimelineStepsItem
+                      key={`next-s-${i}`}
+                      id={i === 2 ? "posts-sentinel" : undefined}
+                    >
+                      <TimelineStepsConnector />
+                      <TimelineStepsIcon
+                        size="lg"
+                        className="overflow-hidden p-0"
+                      >
+                        <Skeleton className="h-10 w-10 rounded-full" />
+                      </TimelineStepsIcon>
+                      <TimelineStepsContent className="border-b">
+                        <div className="flex flex-row justify-between items-center w-full">
+                          <div className="flex flex-row gap-2 items-center">
+                            <Skeleton className="h-5 w-24" />
+                            <Skeleton className="h-4 w-16" />
+                          </div>
+                          <Skeleton className="h-4 w-10" />
+                        </div>
+                        <div className="mt-2 flex flex-col gap-2">
+                          <Skeleton className="h-4 w-full" />
+                          <Skeleton className="h-4 w-11/12" />
+                          <Skeleton className="h-4 w-10/12" />
+                        </div>
+                        <TimelineStepsAction>
+                          <Skeleton className="h-8 w-8 rounded-md" />
+                          <Skeleton className="h-8 w-8 rounded-md" />
+                          <Skeleton className="h-8 w-8 rounded-md" />
+                          <Skeleton className="h-8 w-16 rounded-md" />
+                        </TimelineStepsAction>
+                      </TimelineStepsContent>
+                    </TimelineStepsItem>
+                  ))}
+                </>
+              )}
             </TimelineSteps>
           )}
         </div>
@@ -588,7 +696,7 @@ export default function TopicPage() {
             <Skeleton className="h-64 w-full" />
           </div>
         ) : (
-          <TopicNavigator total={posts.length} />
+          <TopicNavigator total={totalPosts} />
         )}
       </div>
       <DrawerEditor
