@@ -1,8 +1,12 @@
 "use client"
 
-import { Edit } from "lucide-react"
+import { useMemo } from "react"
+import { Edit, LogIn } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { useTranslations } from "next-intl"
+import { useLocale } from "next-intl"
+import { useRouter } from "next/navigation"
+import useSWR from "swr"
 
 interface NewTopicButtonProps {
   onClick: () => void
@@ -11,10 +15,41 @@ interface NewTopicButtonProps {
 
 export function NewTopicButton({ onClick, className }: NewTopicButtonProps) {
   const t = useTranslations("Topic.New")
+  const locale = useLocale()
+  const router = useRouter()
+  type MeProfile = {
+    id: string
+    email: string
+    username: string
+    avatar?: string | null
+  }
+  type MeUser = {
+    id: string
+    email?: string | null
+  }
+  type MeResponse = {
+    user: MeUser
+    profile?: MeProfile | null
+  } | null
+  const fetcher = async (url: string): Promise<MeResponse> => {
+    const res = await fetch(url, { cache: "no-store" })
+    if (!res.ok) return null
+    return (await res.json()) as MeResponse
+  }
+  const { data } = useSWR<MeResponse>("/api/auth/me", fetcher)
+  const label = useMemo(() => (data ? t("button") : t("goLogin")), [data, t])
+  const Icon = useMemo(() => (data ? Edit : LogIn), [data])
+  const handleClick = () => {
+    if (!data) {
+      router.push(`/${locale}/login`)
+      return
+    }
+    onClick()
+  }
   return (
-    <Button variant="secondary" onClick={onClick} className={className}>
-      <Edit className="mr-2 h-4 w-4" />
-      {t("button")}
+    <Button variant="secondary" onClick={handleClick} className={className}>
+      <Icon className="mr-2 h-4 w-4" />
+      {label}
     </Button>
   )
 }

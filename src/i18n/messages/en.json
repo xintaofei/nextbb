@@ -92,6 +92,7 @@
       "title": "New Topic",
       "description": "Create a topic to share with the community",
       "button": "New Topic",
+      "goLogin": "Go to sign in",
       "form": {
         "title": {
           "label": "Title",

@@ -92,6 +92,7 @@
       "title": "新建话题",
       "description": "创建新话题与社区成员分享您的想法",
       "button": "新建话题",
+      "goLogin": "去登录",
       "form": {
         "title": {
           "label": "话题标题",
