@@ -65,8 +65,13 @@ export default function TopicPage() {
     if (!res.ok) throw new Error("Failed to load")
     return (await res.json()) as PostPage
   }
-  const getKey = (index: number) =>
-    `/api/topic/${id}/posts?page=${index + 1}&pageSize=${pageSize}`
+  const getKey = (
+    index: number,
+    previousPageData: PostPage | null
+  ): string | null => {
+    if (previousPageData && !previousPageData.hasMore) return null
+    return `/api/topic/${id}/posts?page=${index + 1}&pageSize=${pageSize}`
+  }
   const {
     data: postsPages,
     mutate: mutatePosts,
@@ -421,12 +426,12 @@ export default function TopicPage() {
         !validatingPosts &&
         !loadingPosts
       ) {
-        setSize(size + 1)
+        setSize((s) => s + 1)
       }
     })
     observer.observe(sentinel)
     return () => observer.disconnect()
-  }, [hasMore, validatingPosts, loadingPosts, size, setSize])
+  }, [hasMore, validatingPosts, loadingPosts, setSize])
 
   return (
     <div className="flex min-h-screen w-full flex-col p-8 gap-8">
