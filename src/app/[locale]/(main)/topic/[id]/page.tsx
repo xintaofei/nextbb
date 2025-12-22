@@ -322,7 +322,7 @@ export default function TopicPage() {
         content,
         parentId: replyToPostId ?? undefined,
       })
-      await mutatePosts(undefined, true)
+      await mutatePosts((pages) => pages, true)
       const nextPosts = postsPages ? postsPages.flatMap((p) => p.items) : []
       toast.success(tc("Action.success"))
       const newIndex = nextPosts.length
@@ -332,7 +332,7 @@ export default function TopicPage() {
       const status = Number((e as Error).message)
       if (status === 401) toast.error(tc("Error.unauthorized"))
       else toast.error(tc("Error.requestFailed"))
-      await mutatePosts(undefined, false)
+      await mutatePosts((pages) => pages, true)
     } finally {
       setSubmitting(false)
     }
@@ -365,7 +365,7 @@ export default function TopicPage() {
       )
       await triggerEdit({ postId: editPostId, content: value })
       setEditOpen(false)
-      await mutatePosts(undefined, true)
+      await mutatePosts((pages) => pages, true)
       const nextFlat = postsPages ? postsPages.flatMap((p) => p.items) : []
       toast.success(tc("Action.success"))
       const idx = nextFlat.findIndex((p) => p.id === editPostId)
@@ -376,7 +376,7 @@ export default function TopicPage() {
       if (status === 401) toast.error(tc("Error.unauthorized"))
       else if (status === 403) toast.error(tc("Error.forbidden"))
       else toast.error(tc("Error.requestFailed"))
-      await mutatePosts(undefined, false)
+      await mutatePosts((pages) => pages, true)
     } finally {
       setEditSubmitting(false)
       setMutatingPostId(null)
@@ -397,14 +397,14 @@ export default function TopicPage() {
         false
       )
       await triggerDelete({ postId })
-      await mutatePosts(undefined, true)
+      await mutatePosts((pages) => pages, true)
       toast.success(tc("Action.success"))
     } catch (e) {
       const status = Number((e as Error).message)
       if (status === 401) toast.error(tc("Error.unauthorized"))
       else if (status === 403) toast.error(tc("Error.forbidden"))
       else toast.error(tc("Error.requestFailed"))
-      await mutatePosts(undefined, false)
+      await mutatePosts((pages) => pages, true)
     } finally {
       setMutatingPostId(null)
     }
