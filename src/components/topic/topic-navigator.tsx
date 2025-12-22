@@ -215,9 +215,9 @@ export function TopicNavigator({
           {t("sort")}
         </Button>
       </div>
-      <div className="flex flex-1 items-center">
+      <div className="flex flex-1 items-center mt-2">
         <TooltipProvider disableHoverableContent>
-          <div className="flex flex-1 flex-col gap-3">
+          <div className="flex flex-1 flex-col gap-3 border-t border-b py-2">
             <Tooltip>
               <TooltipTrigger asChild>
                 <Button
@@ -232,7 +232,7 @@ export function TopicNavigator({
               </TooltipTrigger>
               <TooltipContent>{t("toFirst")}</TooltipContent>
             </Tooltip>
-            <div className="flex-1 w-full flex items-center pl-4">
+            <div className="flex-1 w-full flex items-center pl-4.5">
               <div
                 ref={sliderWrapRef}
                 className="relative h-full flex items-center"
@@ -285,16 +285,16 @@ export function TopicNavigator({
                     isDraggingRef.current = false
                     scrollToPost(totalFloors - v[0] + 2)
                   }}
-                  className="h-full [&_[data-slot=slider-track]]:w-px [&_[data-slot=slider-track]]:bg-border [&_[data-slot=slider-range]]:bg-transparent [&_[data-slot=slider-thumb]]:w-[9px] [&_[data-slot=slider-thumb]]:h-16 [&_[data-slot=slider-thumb]]:rounded-full [&_[data-slot=slider-thumb]]:bg-primary [&_[data-slot=slider-thumb]]:border-0"
+                  className="h-full [&_[data-slot=slider-track]]:w-px [&_[data-slot=slider-track]]:bg-border [&_[data-slot=slider-range]]:bg-transparent [&_[data-slot=slider-thumb]]:w-[5px] [&_[data-slot=slider-thumb]]:h-16 [&_[data-slot=slider-thumb]]:rounded-full [&_[data-slot=slider-thumb]]:bg-primary [&_[data-slot=slider-thumb]]:border-0"
                 />
                 <div
-                  className="absolute left-full ml-2 -translate-y-1/2 flex flex-col items-start text-xs"
+                  className="absolute left-full ml-3 -translate-y-1/2 flex flex-col items-start w-32"
                   style={{
                     top: labelTop,
                   }}
                 >
-                  <span className="font-medium">
-                    {current}/{totalFloors}
+                  <span className="font-bold">
+                    {current} / {totalFloors}
                   </span>
                   <span className="text-muted-foreground max-w-[120px] truncate whitespace-nowrap">
                     {author || "-"}

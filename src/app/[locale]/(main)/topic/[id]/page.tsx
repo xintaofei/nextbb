@@ -462,7 +462,7 @@ export default function TopicPage() {
           </>
         )}
       </div>
-      <div className="flex flex-row justify-between gap-8">
+      <div className="flex flex-row justify-between gap-16">
         <div className="flex-1">
           {loading ? (
             <TimelineSteps>
