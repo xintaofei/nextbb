@@ -10,12 +10,10 @@ import {
 } from "@/components/ui/input-group"
 import { useSearchParams } from "next/navigation"
 import { useTranslations } from "next-intl"
-import { TopicControls } from "@/components/topic/topic-controls"
 import { Skeleton } from "@/components/ui/skeleton"
 import { TopicList, TopicListItem } from "@/components/topic/topic-list"
-import { NewTopicButton } from "@/components/new-topic/new-topic-button"
 import { NewTopicDialog } from "@/components/new-topic/new-topic-dialog"
-import { TopicSortTabs } from "@/components/topic/topic-sort-tabs"
+import { TopicHeaderBar } from "@/components/topic/topic-header-bar"
 import { useMemo } from "react"
 
 export default function CategoryPage() {
@@ -173,7 +171,7 @@ export default function CategoryPage() {
     return () => {
       cancelled = true
     }
-  }, [id, searchParams])
+  }, [id, pageSize, searchParams])
 
   return (
     <div className="flex min-h-screen w-full flex-col px-8 gap-4">
@@ -211,25 +209,16 @@ export default function CategoryPage() {
           </InputGroupAddon>
         </InputGroup>
       </div>
-      <div className="flex flex-col gap-3 md:flex-row md:justify-between md:items-center">
-        <div className="flex flex-col gap-3 md:flex-row">
-          <TopicControls
-            className="flex flex-row gap-2"
-            initialCategoryId={id}
-          />
-          <TopicSortTabs
-            onSortStart={() => {
-              setTopicsLoading(true)
-              setPage(1)
-              setTotal(0)
-              setTopics([])
-            }}
-          />
-        </div>
-        <div className="flex flex-row gap-2">
-          <NewTopicButton onClick={() => setIsNewTopicDialogOpen(true)} />
-        </div>
-      </div>
+      <TopicHeaderBar
+        categoryId={id}
+        onSortStart={() => {
+          setTopicsLoading(true)
+          setPage(1)
+          setTotal(0)
+          setTopics([])
+        }}
+        onNewTopicClick={() => setIsNewTopicDialogOpen(true)}
+      />
       <TopicList
         items={topics}
         loading={loading || topicsLoading}
