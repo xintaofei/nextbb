@@ -115,9 +115,6 @@ export function TopicPostItem({
                   </Button>
                 </>
               )}
-              <Button variant="ghost" size="icon">
-                <Flag />
-              </Button>
               <Button
                 variant="ghost"
                 onClick={() => {
