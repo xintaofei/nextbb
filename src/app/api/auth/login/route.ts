@@ -45,6 +45,7 @@ export async function POST(request: Request) {
       user: {
         id: user.id.toString(),
         email: user.email,
+        isAdmin: user.is_admin,
       },
       profile: {
         id: user.id.toString(),

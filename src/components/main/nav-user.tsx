@@ -2,15 +2,13 @@
 
 import { useMemo } from "react"
 import { useRouter } from "next/navigation"
-import { useLocale } from "next-intl"
+import { useLocale, useTranslations } from "next-intl"
 import useSWR from "swr"
 import {
   BadgeCheck,
-  Bell,
   ChevronsUpDown,
-  CreditCard,
+  LayoutDashboard,
   LogOut,
-  Sparkles,
 } from "lucide-react"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import {
@@ -41,6 +39,7 @@ type MeProfile = {
 type MeUser = {
   id: string
   email?: string | null
+  isAdmin: boolean
 }
 
 type MeResponse = {
@@ -57,6 +56,7 @@ const fetcher = async (url: string): Promise<MeResponse | null> => {
 export function NavUser() {
   const { isMobile } = useSidebar()
   const locale = useLocale()
+  const tAdmin = useTranslations("Admin")
   const router = useRouter()
 
   const { data, isLoading, mutate } = useSWR<MeResponse | null>(
@@ -79,6 +79,10 @@ export function NavUser() {
     return data.profile?.avatar || ""
   }, [data])
 
+  const goAdmin = () => {
+    router.push(`/admin`)
+  }
+
   const onLogout = async () => {
     await fetch("/api/auth/logout", { method: "POST" })
     await mutate()
@@ -86,11 +90,11 @@ export function NavUser() {
   }
 
   const goLogin = () => {
-    router.push(`/${locale}/login`)
+    router.push(`/login`)
   }
 
   const goRegister = () => {
-    router.push(`/${locale}/register`)
+    router.push(`/register`)
   }
 
   return (
@@ -144,44 +148,43 @@ export function NavUser() {
               </div>
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
-            <DropdownMenuGroup>
-              <DropdownMenuItem>
-                <Sparkles />
-                Upgrade to Pro
-              </DropdownMenuItem>
-            </DropdownMenuGroup>
-            <DropdownMenuSeparator />
-            <DropdownMenuGroup>
-              <DropdownMenuItem>
-                <BadgeCheck />
-                Account
-              </DropdownMenuItem>
-              <DropdownMenuItem>
-                <CreditCard />
-                Billing
-              </DropdownMenuItem>
-              <DropdownMenuItem>
-                <Bell />
-                Notifications
-              </DropdownMenuItem>
-            </DropdownMenuGroup>
-            <DropdownMenuSeparator />
+            {data && (
+              <>
+                <DropdownMenuGroup>
+                  <DropdownMenuItem>
+                    <BadgeCheck />
+                    Account
+                  </DropdownMenuItem>
+                  {data?.user?.isAdmin ? (
+                    <>
+                      <DropdownMenuItem onSelect={goAdmin}>
+                        <LayoutDashboard />
+                        {tAdmin("entry")}
+                      </DropdownMenuItem>
+                    </>
+                  ) : null}
+                </DropdownMenuGroup>
+                <DropdownMenuSeparator />
+              </>
+            )}
             <div className="flex items-center gap-2 px-2 py-2">
               <ThemeSwitcher />
               <LocaleSwitcher />
             </div>
             <DropdownMenuSeparator />
-            {!data ? (
-              <>
-                <DropdownMenuItem onSelect={goLogin}>登录</DropdownMenuItem>
-                <DropdownMenuItem onSelect={goRegister}>注册</DropdownMenuItem>
-              </>
-            ) : (
-              <DropdownMenuItem onSelect={onLogout}>
-                <LogOut />
-                Log out
-              </DropdownMenuItem>
-            )}
+            <DropdownMenuGroup>
+              {!data ? (
+                <>
+                  <DropdownMenuItem onSelect={goLogin}>登录</DropdownMenuItem>
+                  <DropdownMenuItem onSelect={goRegister}>注册</DropdownMenuItem>
+                </>
+              ) : (
+                <DropdownMenuItem onSelect={onLogout}>
+                  <LogOut />
+                  Log out
+                </DropdownMenuItem>
+              )}
+            </DropdownMenuGroup>
           </DropdownMenuContent>
         </DropdownMenu>
       </SidebarMenuItem>

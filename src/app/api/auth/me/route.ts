@@ -14,7 +14,7 @@ export async function GET() {
   }
 
   return NextResponse.json({
-    user: { id: String(user.id), email: user.email },
+    user: { id: String(user.id), email: user.email, isAdmin: user.is_admin },
     profile: {
       id: String(user.id),
       email: user.email,

@@ -15,6 +15,7 @@ model users {
   password    String   @db.VarChar(255)
   status      Int
   is_deleted  Boolean
+  is_admin    Boolean  @default(false)
   created_at  DateTime @default(now())
   updated_at  DateTime @updatedAt
 
