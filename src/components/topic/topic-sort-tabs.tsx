@@ -67,7 +67,7 @@ export function TopicSortTabs({
         <TabsTrigger className="px-4" value="top">{tc("Tabs.top")}</TabsTrigger>
         <TabsTrigger className="px-4" value="community">{tc("Tabs.community")}</TabsTrigger>
         <TabsTrigger className="px-4" value="my">{tc("Tabs.my")}</TabsTrigger>
-        <TabsTrigger className="px-4" value="follow">{tc("Tabs.follow")}</TabsTrigger>
+        <TabsTrigger className="px-4" value="bookmark">{tc("Tabs.bookmark")}</TabsTrigger>
       </TabsList>
     </Tabs>
   )
