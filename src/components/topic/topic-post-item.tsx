@@ -124,7 +124,7 @@ export function TopicPostItem({
                   onReply(post.id, post.author.name)
                 }}
               >
-                <Reply className="text-foreground" />
+                <Reply />
                 {replyText}
               </Button>
             </>
