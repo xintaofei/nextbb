@@ -1,4 +1,5 @@
 import {
+  AlignStartHorizontal,
   BookUser,
   ChevronRight,
   EllipsisVertical,
@@ -43,6 +44,12 @@ export function NavMain() {
           <SidebarMenuButton>
             <Inbox />
             <span>我的消息</span>
+          </SidebarMenuButton>
+        </Link>
+        <Link href="#">
+          <SidebarMenuButton>
+            <AlignStartHorizontal />
+            <span>排行榜</span>
           </SidebarMenuButton>
         </Link>
         <Collapsible asChild defaultOpen={false} className="group/collapsible">

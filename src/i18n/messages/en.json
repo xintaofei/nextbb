@@ -86,7 +86,7 @@
       "counter": "{current}/{total}",
       "replyToTopic": "Reply to topic",
       "goLogin": "Go to sign in",
-      "sort": "Sort"
+      "sort": "Sort by floor"
     },
     "New": {
       "title": "New Topic",

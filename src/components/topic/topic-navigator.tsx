@@ -11,7 +11,13 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip"
-import { ChevronsUp, ChevronsDown } from "lucide-react"
+import {
+  ChevronsUp,
+  ChevronsDown,
+  ArrowDown10,
+  LogIn,
+  Reply,
+} from "lucide-react"
 
 type TopicNavigatorProps = {
   total: number
@@ -197,6 +203,7 @@ export function TopicNavigator({
               else jumpLast()
             }}
           >
+            <Reply />
             {t("replyToTopic")}
           </Button>
         ) : (
@@ -208,10 +215,12 @@ export function TopicNavigator({
               router.push(`/login`)
             }}
           >
+            <LogIn />
             {t("goLogin")}
           </Button>
         )}
         <Button size="sm" variant="secondary" className="w-full">
+          <ArrowDown10 />
           {t("sort")}
         </Button>
       </div>
