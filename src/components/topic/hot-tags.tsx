@@ -59,7 +59,8 @@ export function HotTags({ className, count = 5 }: HotTagsProps) {
       <div className="flex flex-row items-center gap-2">
         <span className="inline-flex items-center gap-1 text-sm text-destructive animate-pulse">
           <Flame className="size-4" />
-          {tc("Tabs.hot")} {tc("Filters.tag")}
+          {tc("Tabs.hot")}
+          {tc("Filters.tag")}
         </span>
         <div className="flex flex-row flex-wrap items-center gap-2">
           {hotTags.map((t) => {
