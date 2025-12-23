@@ -13,6 +13,8 @@ export type PostItem = {
   isDeleted: boolean
   likes: number
   liked: boolean
+  bookmarks: number
+  bookmarked: boolean
 }
 
 export type RelatedTopicItem = {

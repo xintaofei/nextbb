@@ -21,9 +21,11 @@ export function TopicPostItem({
   currentUserId,
   mutatingPostId,
   likeMutating,
+  bookmarkMutating,
   editMutating,
   deleteMutating,
   onLike,
+  onBookmark,
   onEdit,
   onDelete,
   onReply,
@@ -37,9 +39,11 @@ export function TopicPostItem({
   currentUserId: string | null
   mutatingPostId: string | null
   likeMutating: boolean
+  bookmarkMutating: boolean
   editMutating: boolean
   deleteMutating: boolean
   onLike: (postId: string) => void | Promise<void>
+  onBookmark: (postId: string) => void | Promise<void>
   onEdit: (postId: string, initialContent: string) => void
   onDelete: (postId: string) => void | Promise<void>
   onReply: (postId: string, authorName: string) => void
@@ -91,8 +95,16 @@ export function TopicPostItem({
                     />
                     <span className="ml-1 text-sm">{post.likes}</span>
                   </Button>
-                  <Button variant="ghost" size="icon">
-                    <Bookmark />
+                  <Button
+                    variant="ghost"
+                    disabled={mutatingPostId === post.id || bookmarkMutating}
+                    onClick={() => onBookmark(post.id)}
+                  >
+                    <Bookmark
+                      className={post.bookmarked ? "text-primary" : undefined}
+                      fill={post.bookmarked ? "currentColor" : "none"}
+                    />
+                    <span className="ml-1 text-sm">{post.bookmarks}</span>
                   </Button>
                 </>
               ) : (

@@ -17,6 +17,8 @@ type PostItem = {
   isDeleted: boolean
   likes: number
   liked: boolean
+  bookmarks: number
+  bookmarked: boolean
 }
 
 type PostPage = {
@@ -72,6 +74,7 @@ export async function GET(
   }
   const postIds = postsDb.map((p: PostRow) => p.id)
   const countsById = new Map<string, number>()
+  const bookmarkCountsById = new Map<string, number>()
   if (postIds.length > 0) {
     const counts = await prisma.post_likes.groupBy({
       by: ["post_id"],
@@ -81,14 +84,28 @@ export async function GET(
     for (const c of counts) {
       countsById.set(String(c.post_id), c._count.post_id ?? 0)
     }
+    const bookmarkCounts = await prisma.post_bookmarks.groupBy({
+      by: ["post_id"],
+      _count: { post_id: true },
+      where: { post_id: { in: postIds } },
+    })
+    for (const c of bookmarkCounts) {
+      bookmarkCountsById.set(String(c.post_id), c._count.post_id ?? 0)
+    }
   }
   const likedSet = new Set<string>()
+  const bookmarkedSet = new Set<string>()
   if (auth && postIds.length > 0) {
     const likedRows = await prisma.post_likes.findMany({
       select: { post_id: true },
       where: { post_id: { in: postIds }, user_id: auth.userId },
     })
     for (const r of likedRows) likedSet.add(String(r.post_id))
+    const bookmarkedRows = await prisma.post_bookmarks.findMany({
+      select: { post_id: true },
+      where: { post_id: { in: postIds }, user_id: auth.userId },
+    })
+    for (const r of bookmarkedRows) bookmarkedSet.add(String(r.post_id))
   }
 
   const items: PostItem[] = postsDb.map((p: PostRow) => {
@@ -109,6 +126,8 @@ export async function GET(
       isDeleted: p.is_deleted,
       likes: countsById.get(idStr) ?? 0,
       liked: likedSet.has(idStr),
+      bookmarks: bookmarkCountsById.get(idStr) ?? 0,
+      bookmarked: bookmarkedSet.has(idStr),
     }
   })
 

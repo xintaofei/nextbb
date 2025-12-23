@@ -21,6 +21,7 @@ model users {
   topics topics[]
   posts  posts[]
   post_likes post_likes[] @relation("post_likes_user")
+  post_bookmarks post_bookmarks[] @relation("post_bookmarks_user")
 
   @@map("users")
   @@unique([email], map: "users_email_key")
@@ -92,6 +93,7 @@ model posts {
   topic topics @relation(fields: [topic_id], references: [id])
   user  users  @relation(fields: [user_id], references: [id])
   likes post_likes[] @relation("post_likes_post")
+  bookmarks post_bookmarks[] @relation("post_bookmarks_post")
 
   @@index([topic_id], map: "posts_topic_index")
   @@index([user_id], map: "posts_user_index")
@@ -124,4 +126,18 @@ model post_likes {
   @@index([user_id], map: "post_likes_user_index")
   @@index([post_id], map: "post_likes_post_index")
   @@map("post_likes")
+}
+
+model post_bookmarks {
+  post_id    BigInt   @db.BigInt
+  user_id    BigInt   @db.BigInt
+  created_at DateTime @default(now())
+
+  post posts @relation("post_bookmarks_post", fields: [post_id], references: [id])
+  user users @relation("post_bookmarks_user", fields: [user_id], references: [id])
+
+  @@id([post_id, user_id])
+  @@index([user_id], map: "post_bookmarks_user_index")
+  @@index([post_id], map: "post_bookmarks_post_index")
+  @@map("post_bookmarks")
 }

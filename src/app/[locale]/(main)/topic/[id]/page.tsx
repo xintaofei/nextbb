@@ -188,6 +188,71 @@ export default function TopicPage() {
     if (!res.ok) throw new Error(String(res.status))
     return (await res.json()) as LikeResult
   })
+  const bookmarkAction = async (postId: string) => {
+    const target = posts.find((p) => p.id === postId)
+    if (!target) return
+    setMutatingPostId(postId)
+    const optimisticBookmarked = !target.bookmarked
+    const optimisticCount = target.bookmarks + (optimisticBookmarked ? 1 : -1)
+    await mutatePosts(
+      (pages) =>
+        pages?.map((pg) => ({
+          ...pg,
+          items: pg.items.map((p) =>
+            p.id === postId
+              ? {
+                  ...p,
+                  bookmarked: optimisticBookmarked,
+                  bookmarks: Math.max(optimisticCount, 0),
+                }
+              : p
+          ),
+        })) ?? pages,
+      false
+    )
+    try {
+      const result = await triggerBookmark({ postId })
+      await mutatePosts(
+        (pages) =>
+          pages?.map((pg) => ({
+            ...pg,
+            items: pg.items.map((p) =>
+              p.id === postId
+                ? {
+                    ...p,
+                    bookmarked: result.bookmarked,
+                    bookmarks: result.count,
+                  }
+                : p
+            ),
+          })) ?? pages,
+        false
+      )
+    } catch (e) {
+      const status = Number((e as Error).message)
+      if (status === 401) {
+        toast.error(tc("Error.unauthorized"))
+      } else {
+        toast.error(tc("Error.requestFailed"))
+      }
+      await mutatePosts(undefined, false)
+    } finally {
+      setMutatingPostId(null)
+    }
+  }
+  type BookmarkResult = { bookmarked: boolean; count: number }
+  type BookmarkArg = { postId: string }
+  const { trigger: triggerBookmark, isMutating: bookmarkMutating } =
+    useSWRMutation<BookmarkResult, Error, string, BookmarkArg>(
+      "/mutations/post-bookmark",
+      async (_key, { arg }) => {
+        const res = await fetch(`/api/post/${arg.postId}/bookmark`, {
+          method: "POST",
+        })
+        if (!res.ok) throw new Error(String(res.status))
+        return (await res.json()) as BookmarkResult
+      }
+    )
   type EditArg = { postId: string; content: string }
   const { trigger: triggerEdit, isMutating: editMutating } = useSWRMutation<
     { ok: boolean },
@@ -300,6 +365,8 @@ export default function TopicPage() {
         isDeleted: false,
         likes: 0,
         liked: false,
+        bookmarks: 0,
+        bookmarked: false,
       }
       setReplyOpen(false)
       setReplyContent("")
@@ -476,24 +543,26 @@ export default function TopicPage() {
           ) : (
             <TimelineSteps>
               {posts.map((post, index) => (
-                <TopicPostItem
-                  key={post.id}
-                  post={post}
-                  index={index}
-                  anchorId={`post-${index + 1}`}
-                  currentUserId={currentUserId}
-                  mutatingPostId={mutatingPostId}
-                  likeMutating={likeMutating}
-                  editMutating={editMutating}
-                  deleteMutating={deleteMutating}
-                  onLike={likeAction}
-                  onEdit={onClickEdit}
-                  onDelete={onClickDelete}
-                  onReply={onClickReply}
-                  floorOpText={t("floor.op")}
-                  replyText={t("reply")}
-                  deletedText={t("deleted")}
-                />
+              <TopicPostItem
+                key={post.id}
+                post={post}
+                index={index}
+                anchorId={`post-${index + 1}`}
+                currentUserId={currentUserId}
+                mutatingPostId={mutatingPostId}
+                likeMutating={likeMutating}
+                bookmarkMutating={bookmarkMutating}
+                editMutating={editMutating}
+                deleteMutating={deleteMutating}
+                onLike={likeAction}
+                onBookmark={bookmarkAction}
+                onEdit={onClickEdit}
+                onDelete={onClickDelete}
+                onReply={onClickReply}
+                floorOpText={t("floor.op")}
+                replyText={t("reply")}
+                deletedText={t("deleted")}
+              />
               ))}
               {hasMore && (
                 <PostSkeletonList
