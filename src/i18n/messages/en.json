@@ -18,7 +18,12 @@
     },
     "Tabs": {
       "latest": "Latest",
+      "new": "New",
       "hot": "Hot",
+      "top": "Top",
+      "community": "Community",
+      "follow": "Follow",
+      "my": "My Topic",
       "leaderboard": "Leaderboard",
       "categories": "Categories",
       "myPosts": "My Posts",

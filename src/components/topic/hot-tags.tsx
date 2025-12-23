@@ -57,7 +57,7 @@ export function HotTags({ className, count = 5 }: HotTagsProps) {
   return (
     <div className={className} aria-label={tc("Filters.tag")}>
       <div className="flex flex-row items-center gap-2">
-        <span className="inline-flex items-center gap-1 text-sm text-destructive animate-pulse">
+        <span className="inline-flex items-center gap-1 text-sm text-destructive">
           <Flame className="size-4" />
           {tc("Tabs.hot")}
           {tc("Filters.tag")}

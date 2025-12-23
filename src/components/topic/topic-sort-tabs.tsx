@@ -61,8 +61,13 @@ export function TopicSortTabs({
       className={className}
     >
       <TabsList>
-        <TabsTrigger value="latest">{tc("Tabs.latest")}</TabsTrigger>
-        <TabsTrigger value="hot">{tc("Tabs.hot")}</TabsTrigger>
+        <TabsTrigger className="px-4" value="latest">{tc("Tabs.latest")}</TabsTrigger>
+        <TabsTrigger className="px-4" value="new">{tc("Tabs.new")}</TabsTrigger>
+        <TabsTrigger className="px-4" value="hot">{tc("Tabs.hot")}</TabsTrigger>
+        <TabsTrigger className="px-4" value="top">{tc("Tabs.top")}</TabsTrigger>
+        <TabsTrigger className="px-4" value="community">{tc("Tabs.community")}</TabsTrigger>
+        <TabsTrigger className="px-4" value="my">{tc("Tabs.my")}</TabsTrigger>
+        <TabsTrigger className="px-4" value="follow">{tc("Tabs.follow")}</TabsTrigger>
       </TabsList>
     </Tabs>
   )

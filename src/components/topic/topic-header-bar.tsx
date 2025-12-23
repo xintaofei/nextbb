@@ -20,15 +20,15 @@ export function TopicHeaderBar({
 }: TopicHeaderBarProps) {
   return (
     <div className={className}>
-      <div className="flex flex-col gap-3">
-        <div className="flex flex-row items-center gap-3">
+      <div className="flex flex-col gap-4">
+        <div className="flex flex-row items-center gap-4">
           <TopicControls
             className="flex flex-row gap-2"
             initialCategoryId={categoryId}
           />
           <HotTags />
         </div>
-        <div className="flex flex-row items-center justify-between gap-3">
+        <div className="flex flex-row items-center justify-between">
           <TopicSortTabs
             onSortStart={(next) => {
               onSortStart?.(next)

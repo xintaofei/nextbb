@@ -174,11 +174,11 @@ export function TopicList({
                     ))}
                   </div>
                 </TableCell>
-                <TableCell className="text-center">{t.replies}</TableCell>
-                <TableCell className="text-center max-[1300px]:hidden">
+                <TableCell className="text-center text-muted-foreground">{t.replies}</TableCell>
+                <TableCell className="text-center text-muted-foreground max-[1300px]:hidden">
                   {t.views}
                 </TableCell>
-                <TableCell className="text-center">
+                <TableCell className="text-center text-muted-foreground">
                   {formatRelative(t.activity)}
                 </TableCell>
               </TableRow>

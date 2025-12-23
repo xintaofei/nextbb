@@ -611,8 +611,8 @@ export default function TopicPage() {
                         ))}
                       </div>
                     </TableCell>
-                    <TableCell className="text-center">{t.replies}</TableCell>
-                    <TableCell className="text-center">{t.views}</TableCell>
+                    <TableCell className="text-center text-muted-foreground">{t.replies}</TableCell>
+                    <TableCell className="text-center text-muted-foreground">{t.views}</TableCell>
                     <TableCell className="text-center text-muted-foreground">
                       {formatRelative(t.activity)}
                     </TableCell>

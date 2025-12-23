@@ -18,7 +18,12 @@
     },
     "Tabs": {
       "latest": "最新",
+      "new": "新帖",
       "hot": "热门",
+      "top": "排行",
+      "community": "社区",
+      "follow": "关注",
+      "my": "我的帖子",
       "leaderboard": "排行榜",
       "categories": "分类",
       "myPosts": "我的帖子",
