@@ -10,10 +10,12 @@ import {
   Menu,
 } from "lucide-react"
 import { useState } from "react"
+import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 
 export function DashboardNav() {
   const [isOpen, setIsOpen] = useState(false)
+  const router = useRouter()
 
   const navItems = [
     { label: "Overview", icon: BarChart3 },
@@ -64,6 +66,10 @@ export function DashboardNav() {
                   className="gap-2 text-foreground/70 hover:text-foreground hover:bg-background/50 rounded-lg"
                   role="menuitem"
                   aria-current={item.label === "Overview" ? "page" : undefined}
+                  onClick={() => {
+                    if (item.label === "Users") router.push("/admin/users")
+                    else if (item.label === "Overview") router.push("/admin")
+                  }}
                 >
                   <Icon className="h-4 w-4" aria-hidden="true" />
                   <span className="text-xs uppercase tracking-widest">
@@ -94,6 +100,10 @@ export function DashboardNav() {
                   size="sm"
                   className="justify-start gap-2 text-foreground/70 hover:text-foreground hover:bg-background/50"
                   role="menuitem"
+                  onClick={() => {
+                    if (item.label === "Users") router.push("/admin/users")
+                    else if (item.label === "Overview") router.push("/admin")
+                  }}
                 >
                   <Icon className="h-4 w-4" aria-hidden="true" />
                   <span className="text-xs uppercase tracking-widest">

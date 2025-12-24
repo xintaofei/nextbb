@@ -220,5 +220,49 @@
     "entry": "Admin",
     "title": "NextBB Admin",
     "description": "NextBB Admin Page."
+  },
+  "AdminUsers": {
+    "searchPlaceholder": "Search email or username",
+    "filter": {
+      "status": {
+        "all": "All statuses",
+        "active": "Active",
+        "disabled": "Disabled"
+      },
+      "deleted": {
+        "all": "All delete states",
+        "normal": "Normal",
+        "deleted": "Deleted"
+      },
+      "apply": "Apply filters"
+    },
+    "table": {
+      "user": "User",
+      "email": "Email",
+      "role": "Role",
+      "status": "Status",
+      "deleted": "Deleted",
+      "createdAt": "Created At"
+    },
+    "role": {
+      "admin": "Admin",
+      "user": "User"
+    },
+    "status": {
+      "active": "Active",
+      "disabled": "Disabled"
+    },
+    "deleted": {
+      "deleted": "Deleted",
+      "normal": "Normal"
+    },
+    "loading": "Loading...",
+    "empty": "No data",
+    "pagination": {
+      "total": "Total {count}",
+      "page": "Page {page}",
+      "prev": "Prev",
+      "next": "Next"
+    }
   }
 }
