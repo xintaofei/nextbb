@@ -14,8 +14,9 @@ type PatchDTO = z.infer<typeof PatchSchema>
 
 export async function PATCH(
   req: Request,
-  { params }: { params: { id: string } }
+  props: { params: Promise<{ id: string }> }
 ) {
+  const params = await props.params
   const actor = await requireAdmin()
   if (!actor)
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
