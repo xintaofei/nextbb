@@ -25,7 +25,7 @@ interface TxClient {
 const TopicListQuery = z.object({
   categoryId: z.string().regex(/^\d+$/).optional(),
   tagId: z.string().regex(/^\d+$/).optional(),
-  sort: z.enum(["latest", "hot"]).optional(),
+  sort: z.enum(["latest", "hot", "community"]).optional(),
   page: z.string().regex(/^\d+$/).optional(),
   pageSize: z.string().regex(/^\d+$/).optional(),
 })
@@ -45,6 +45,7 @@ type TopicListItem = {
   replies: number
   views: number
   activity: string
+  isPinned: boolean
 }
 
 type TopicListResult = {
@@ -68,7 +69,12 @@ export async function GET(req: Request) {
   }
   const page = q.data.page ? Number(q.data.page) : 1
   const pageSize = q.data.pageSize ? Number(q.data.pageSize) : 20
-  const where = {
+  const where: {
+    is_deleted: boolean
+    category_id?: bigint
+    tag_links?: { some: { tag_id: bigint } }
+    is_community?: boolean
+  } = {
     is_deleted: false,
     ...(q.data.categoryId
       ? { category_id: BigInt(q.data.categoryId) }
@@ -77,15 +83,16 @@ export async function GET(req: Request) {
       ? { tag_links: { some: { tag_id: BigInt(q.data.tagId) } } }
       : undefined),
   }
+  const sortMode = q.success && q.data.sort ? q.data.sort : "latest"
+  if (sortMode === "community") {
+    where.is_community = true
+  }
   const total = await prisma.topics.count({
     where,
   })
   const topics = await prisma.topics.findMany({
     where,
-    select: {
-      id: true,
-      title: true,
-      views: true,
+    include: {
       category: { select: { id: true, name: true, icon: true } },
       tag_links: {
         select: {
@@ -101,10 +108,13 @@ export async function GET(req: Request) {
     id: bigint
     title: string
     views: number
+    is_pinned: boolean
+    is_community: boolean
     category: { id: bigint; name: string; icon: string }
     tag_links: { tag: { id: bigint; name: string; icon: string } }[]
   }
-  const topicIds = topics.map((t: TopicRow) => t.id)
+  const topicsX = topics as unknown as TopicRow[]
+  const topicIds = topicsX.map((t) => t.id)
   const posts = await prisma.posts.findMany({
     where: { topic_id: { in: topicIds }, is_deleted: false },
     select: {
@@ -145,7 +155,7 @@ export async function GET(req: Request) {
     const when = p.updated_at ?? p.created_at
     if (!t || when > t) byTopic[key].activity = when
   }
-  const items: TopicListItem[] = topics.map((t: TopicRow) => {
+  const items: TopicListItem[] = topicsX.map((t) => {
     const agg = byTopic[String(t.id)]
     const tags = t.tag_links.map(
       (l: { tag: { id: bigint; name: string; icon: string } }) => ({
@@ -167,12 +177,21 @@ export async function GET(req: Request) {
       replies: Math.max(agg.replies - 1, 0),
       views: t.views ?? 0,
       activity: agg.activity ? agg.activity.toISOString() : "",
+      isPinned: Boolean(t.is_pinned),
     }
   })
   let sorted = items
-  const sortMode = q.success && q.data.sort ? q.data.sort : "latest"
   if (sortMode === "hot") {
     sorted = [...items].sort((a, b) => b.replies - a.replies)
+  } else if (sortMode === "latest") {
+    sorted = [...items].sort((a, b) => {
+      const pa = a.isPinned ? 1 : 0
+      const pb = b.isPinned ? 1 : 0
+      if (pb !== pa) return pb - pa
+      const ta = a.activity ? new Date(a.activity).getTime() : 0
+      const tb = b.activity ? new Date(b.activity).getTime() : 0
+      return tb - ta
+    })
   } else {
     sorted = [...items].sort((a, b) => {
       const ta = a.activity ? new Date(a.activity).getTime() : 0

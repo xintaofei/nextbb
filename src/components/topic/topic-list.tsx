@@ -16,6 +16,8 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { formatRelative } from "@/lib/time"
 import { Spinner } from "@/components/ui/spinner"
 import { useEffect, useRef } from "react"
+import { useSearchParams } from "next/navigation"
+import { Pin } from "lucide-react"
 
 export type TopicParticipant = {
   id: string
@@ -44,6 +46,7 @@ export type TopicListItem = {
   replies: number
   views: number
   activity: string
+  isPinned: boolean
 }
 
 export function TopicList({
@@ -63,6 +66,11 @@ export function TopicList({
 }) {
   const tc = useTranslations("Common")
   const sentinelRef = useRef<HTMLDivElement | null>(null)
+  const searchParams = useSearchParams()
+  const currentSort = (searchParams.get("sort") ?? "latest") as
+    | "latest"
+    | "hot"
+    | "community"
 
   useEffect(() => {
     if (!sentinelRef.current) return
@@ -145,6 +153,9 @@ export function TopicList({
                 <TableCell className="max-w-full">
                   <Link href={`/topic/${t.id}`}>
                     <span className="max-w-full text-lg font-medium whitespace-normal wrap-break-word">
+                      {currentSort === "latest" && t.isPinned ? (
+                        <Pin className="mr-1 inline-block h-4 w-4 text-muted-foreground" />
+                      ) : null}
                       {t.title}
                     </span>
                   </Link>

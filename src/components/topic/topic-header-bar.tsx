@@ -8,7 +8,7 @@ import { HotTags } from "@/components/topic/hot-tags"
 type TopicHeaderBarProps = {
   categoryId?: string
   className?: string
-  onSortStart?: (next: "latest" | "hot") => void
+  onSortStart?: (next: "latest" | "hot" | "community") => void
   onNewTopicClick: () => void
 }
 

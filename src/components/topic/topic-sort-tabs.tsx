@@ -5,7 +5,7 @@ import { useTranslations } from "next-intl"
 import { usePathname, useRouter, useSearchParams } from "next/navigation"
 import { useEffect, useMemo, useState, useTransition } from "react"
 
-type SortValue = "latest" | "hot"
+type SortValue = "latest" | "hot" | "community"
 
 type TopicSortTabsProps = {
   className?: string
@@ -64,17 +64,17 @@ export function TopicSortTabs({
         <TabsTrigger className="md:px-4" value="latest">
           {tc("Tabs.latest")}
         </TabsTrigger>
-        <TabsTrigger className="md:px-4" value="new" disabled>
-          {tc("Tabs.new")}
-        </TabsTrigger>
         <TabsTrigger className="md:px-4" value="hot">
           {tc("Tabs.hot")}
         </TabsTrigger>
+        <TabsTrigger className="md:px-4" value="community">
+          {tc("Tabs.community")}
+        </TabsTrigger>
+        <TabsTrigger className="md:px-4" value="new" disabled>
+          {tc("Tabs.new")}
+        </TabsTrigger>
         <TabsTrigger className="md:px-4" value="top" disabled>
           {tc("Tabs.top")}
-        </TabsTrigger>
-        <TabsTrigger className="md:px-4" value="community" disabled>
-          {tc("Tabs.community")}
         </TabsTrigger>
         <TabsTrigger className="md:px-4" value="my" disabled>
           {tc("Tabs.my")}
