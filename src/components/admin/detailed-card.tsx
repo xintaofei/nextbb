@@ -21,7 +21,7 @@ export function DetailedCard({ title, items }: DetailedCardProps) {
       role="article"
       aria-label={title}
     >
-      <div className="absolute inset-0 bg-gradient-to-br from-foreground/[0.04] via-transparent to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100 -z-10" />
+      <div className="absolute inset-0 bg-linear-to-br from-foreground/4 via-transparent to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100 -z-10" />
 
       <div className="relative space-y-4">
         <h3 className="text-sm font-semibold uppercase tracking-[0.25em] text-foreground">
