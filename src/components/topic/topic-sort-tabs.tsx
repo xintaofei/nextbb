@@ -25,7 +25,9 @@ export function TopicSortTabs({
   const [isPending, startTransition] = useTransition()
   const currentSort: SortValue = useMemo(() => {
     const v = searchParams.get("sort")
-    return v === "hot" ? "hot" : "latest"
+    if (v === "hot") return "hot"
+    if (v === "community") return "community"
+    return "latest"
   }, [searchParams])
   const [selectedSort, setSelectedSort] = useState<SortValue>(currentSort)
 
