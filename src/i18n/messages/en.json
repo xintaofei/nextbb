@@ -27,7 +27,8 @@
       "leaderboard": "Leaderboard",
       "categories": "Categories",
       "myPosts": "My Posts",
-      "bookmark": "Bookmark"
+      "bookmark": "Bookmark",
+      "like": "Like"
     },
     "Table": {
       "topic": "Topic",

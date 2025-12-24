@@ -27,7 +27,8 @@
       "leaderboard": "排行榜",
       "categories": "分类",
       "myPosts": "我的帖子",
-      "bookmark": "书签"
+      "bookmark": "书签",
+      "like": "喜欢"
     },
     "Table": {
       "topic": "话题",
