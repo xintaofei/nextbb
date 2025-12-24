@@ -21,14 +21,14 @@ export function TopicHeaderBar({
   return (
     <div className={className}>
       <div className="flex flex-col gap-4">
-        <div className="flex flex-row items-center gap-4">
+        <div className="flex flex-row flex-wrap items-center gap-4">
           <TopicControls
             className="flex flex-row gap-2"
             initialCategoryId={categoryId}
           />
           <HotTags />
         </div>
-        <div className="flex flex-row items-center justify-between">
+        <div className="flex flex-row flex-wrap gap-4 items-center justify-between">
           <TopicSortTabs
             onSortStart={(next) => {
               onSortStart?.(next)
