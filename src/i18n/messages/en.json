@@ -107,7 +107,8 @@
         },
         "category": {
           "label": "Category",
-          "placeholder": "Select a category"
+          "placeholder": "Select a category",
+          "info": "Topic category"
         },
         "content": {
           "label": "Content",
@@ -117,7 +118,13 @@
         "tags": {
           "label": "Tags",
           "placeholder": "Select tags",
-          "info": "{used}/{max} tags, up to {maxLength} chars each"
+          "info": "{used}/{max} tags"
+        },
+        "isPinned": {
+          "label": "Topic Pinned"
+        },
+        "isCommunity": {
+          "label": "Topic Pushed to Community Column"
         },
         "actions": {
           "reset": "Reset",

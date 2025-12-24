@@ -107,7 +107,8 @@
         },
         "category": {
           "label": "分类",
-          "placeholder": "请选择分类"
+          "placeholder": "请选择分类",
+          "info": "话题所属分类"
         },
         "content": {
           "label": "话题内容",
@@ -117,7 +118,13 @@
         "tags": {
           "label": "标签",
           "placeholder": "选择标签",
-          "info": "{used}/{max} 标签，每个标签最多 {maxLength} 字符"
+          "info": "{used}/{max} 标签"
+        },
+        "isPinned": {
+          "label": "话题置顶"
+        },
+        "isCommunity": {
+          "label": "话题推送到社区栏目"
         },
         "actions": {
           "reset": "重置",

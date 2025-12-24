@@ -65,6 +65,8 @@ model topics {
   user_id     BigInt   @db.BigInt
   title       String   @db.VarChar(256)
   views       Int      @default(0)
+  is_pinned   Boolean  @default(false)
+  is_community Boolean @default(false)
   is_deleted  Boolean
   created_at  DateTime @default(now())
   updated_at  DateTime @updatedAt

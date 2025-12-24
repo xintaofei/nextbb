@@ -193,6 +193,8 @@ const TopicCreateSchema = z.object({
   categoryId: z.string().regex(/^\d+$/),
   content: z.string().min(1),
   tags: z.array(z.string().min(1).max(32)).max(5),
+  isPinned: z.boolean().optional(),
+  isCommunity: z.boolean().optional(),
 })
 
 type TopicCreateDTO = z.infer<typeof TopicCreateSchema>
@@ -214,6 +216,17 @@ export async function POST(req: Request) {
   } catch {
     return NextResponse.json({ error: "Invalid body" }, { status: 400 })
   }
+
+  const user = await prisma.users.findUnique({
+    where: { id: auth.userId },
+    select: { is_admin: true },
+  })
+  if (!user) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+  }
+  const isAdmin = user.is_admin === true
+  const isPinned = isAdmin ? Boolean(body.isPinned) : false
+  const isCommunity = isAdmin ? Boolean(body.isCommunity) : false
 
   let categoryId: bigint
   try {
@@ -258,6 +271,8 @@ export async function POST(req: Request) {
         category_id: categoryId,
         user_id: auth.userId,
         title: body.title,
+        is_pinned: isPinned,
+        is_community: isCommunity,
         is_deleted: false,
       },
       select: { id: true },

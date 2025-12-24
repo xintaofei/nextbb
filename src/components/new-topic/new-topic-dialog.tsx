@@ -37,6 +37,8 @@ export function NewTopicDialog({
           categoryId: data.categoryId,
           content: data.content,
           tags: data.tags,
+          isPinned: data.isPinned ?? false,
+          isCommunity: data.isCommunity ?? false,
         }),
       })
       if (!res.ok) {
