@@ -15,7 +15,7 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { useTranslations } from "next-intl"
-import { useEffect, useMemo, useState } from "react"
+import { useEffect, useMemo, useRef, useState } from "react"
 import { toast } from "sonner"
 import { formatRelative } from "@/lib/time"
 import { Skeleton } from "@/components/ui/skeleton"
@@ -75,12 +75,11 @@ export default function TopicPage() {
   const {
     data: postsPages,
     mutate: mutatePosts,
-    size,
     setSize,
     isLoading: loadingPosts,
-    isValidating: validatingPosts,
   } = useSWRInfinite<PostPage>(getKey, fetcherPosts, {
     revalidateOnFocus: false,
+    revalidateFirstPage: false,
   })
   const posts = useMemo(
     () => (postsPages ? postsPages.flatMap((p) => p.items) : []),
@@ -98,13 +97,10 @@ export default function TopicPage() {
     if (!res.ok) throw new Error("Failed to load")
     return (await res.json()) as RelatedResult
   }
-  const { data: relatedData } = useSWR<RelatedResult>(
-    `/api/topic/${id}/related`,
-    fetcherRelated,
-    {
+  const { data: relatedData, isLoading: loadingRelated } =
+    useSWR<RelatedResult>(`/api/topic/${id}/related`, fetcherRelated, {
       revalidateOnFocus: false,
-    }
-  )
+    })
 
   const relatedTopics = relatedData?.relatedTopics ?? []
 
@@ -114,7 +110,8 @@ export default function TopicPage() {
   const [replyToPostId, setReplyToPostId] = useState<string | null>(null)
   const [submitting, setSubmitting] = useState<boolean>(false)
   const [replyOpen, setReplyOpen] = useState<boolean>(false)
-  const loading = loadingInfo || (loadingPosts && posts.length === 0)
+  const postListLoading = loadingPosts && posts.length === 0
+  const sentinelRef = useRef<HTMLDivElement | null>(null)
   const [currentUserId, setCurrentUserId] = useState<string | null>(null)
   const [currentUserProfile, setCurrentUserProfile] = useState<{
     id: string
@@ -483,27 +480,22 @@ export default function TopicPage() {
   }
 
   useEffect(() => {
-    const sentinel = document.getElementById("posts-sentinel")
+    const sentinel = sentinelRef.current
     if (!sentinel) return
     const observer = new IntersectionObserver((entries) => {
       const entry = entries[0]
-      if (
-        entry.isIntersecting &&
-        hasMore &&
-        !validatingPosts &&
-        !loadingPosts
-      ) {
+      if (entry.isIntersecting && hasMore && !loadingPosts) {
         setSize((s) => s + 1)
       }
     })
     observer.observe(sentinel)
     return () => observer.disconnect()
-  }, [hasMore, validatingPosts, loadingPosts, setSize])
+  }, [hasMore, loadingPosts, setSize, sentinelRef])
 
   return (
     <div className="flex min-h-screen w-full flex-col p-8 gap-8">
       <div className="flex flex-col gap-2">
-        {loading ? (
+        {loadingInfo ? (
           <>
             <Skeleton className="h-8 w-3/4" />
             <div className="flex max-w-full flex-wrap gap-2 overflow-hidden">
@@ -536,7 +528,7 @@ export default function TopicPage() {
       </div>
       <div className="flex flex-row justify-between gap-16">
         <div className="flex-1">
-          {loading ? (
+          {postListLoading ? (
             <TimelineSteps>
               <PostSkeletonList count={3} />
             </TimelineSteps>
@@ -564,17 +556,17 @@ export default function TopicPage() {
                   deletedText={t("deleted")}
                 />
               ))}
-              {hasMore && (
+              {!postListLoading && hasMore && (
                 <PostSkeletonList
                   count={3}
                   lastIsSentinel
-                  sentinelId="posts-sentinel"
+                  sentinelRef={sentinelRef}
                 />
               )}
             </TimelineSteps>
           )}
         </div>
-        {loading ? (
+        {loadingInfo ? (
           <div className="w-44">
             <Skeleton className="h-80 w-full" />
           </div>
@@ -639,7 +631,7 @@ export default function TopicPage() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {loading
+            {loadingRelated
               ? Array.from({ length: 4 }, (_, i) => i).map((i) => (
                   <TableRow key={`rt-s-${i}`}>
                     <TableCell className="max-w-full">

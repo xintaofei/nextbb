@@ -1,3 +1,4 @@
+import * as React from "react"
 import {
   TimelineStepsItem,
   TimelineStepsConnector,
@@ -11,10 +12,12 @@ export function PostSkeletonList({
   count,
   lastIsSentinel,
   sentinelId,
+  sentinelRef,
 }: {
   count: number
   lastIsSentinel?: boolean
   sentinelId?: string
+  sentinelRef?: React.RefObject<HTMLDivElement | null>
 }) {
   return (
     <>
@@ -46,6 +49,9 @@ export function PostSkeletonList({
               <Skeleton className="h-8 w-8 rounded-md" />
               <Skeleton className="h-8 w-16 rounded-md" />
             </TimelineStepsAction>
+            {lastIsSentinel && i === count - 1 ? (
+              <div ref={sentinelRef} className="h-1 w-full" />
+            ) : null}
           </TimelineStepsContent>
         </TimelineStepsItem>
       ))}
