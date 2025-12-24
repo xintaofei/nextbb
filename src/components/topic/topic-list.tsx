@@ -142,13 +142,13 @@ export function TopicList({
             ))
           : items.map((t) => (
               <TableRow key={t.id}>
-                <TableCell className="flex flex-col gap-2">
+                <TableCell className="max-w-full">
                   <Link href={`/topic/${t.id}`}>
-                    <span className="cursor-pointer max-w-full text-lg font-medium whitespace-normal wrap-break-word">
+                    <span className="max-w-full text-lg font-medium whitespace-normal wrap-break-word">
                       {t.title}
                     </span>
                   </Link>
-                  <div className="flex max-w-full flex-wrap gap-2 overflow-hidden">
+                  <div className="flex max-w-full flex-wrap gap-2 overflow-hidden mt-2">
                     <Badge variant="secondary">
                       {t.category.icon ?? "📁"} {t.category.name}
                     </Badge>
@@ -174,7 +174,9 @@ export function TopicList({
                     ))}
                   </div>
                 </TableCell>
-                <TableCell className="text-center text-muted-foreground">{t.replies}</TableCell>
+                <TableCell className="text-center text-muted-foreground">
+                  {t.replies}
+                </TableCell>
                 <TableCell className="text-center text-muted-foreground max-[1300px]:hidden">
                   {t.views}
                 </TableCell>
