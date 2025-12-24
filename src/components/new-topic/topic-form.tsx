@@ -116,7 +116,7 @@ export function TopicForm({ onSubmit, isSubmitting = false }: TopicFormProps) {
           )}
         />
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="flex flex-row justify-between gap-4">
           <FormField
             control={form.control}
             name="categoryId"
@@ -125,6 +125,7 @@ export function TopicForm({ onSubmit, isSubmitting = false }: TopicFormProps) {
                 <FormLabel>{t("form.category.label")}</FormLabel>
                 <FormControl>
                   <CategorySelect
+                    className="w-36"
                     value={field.value}
                     onChange={(v) => field.onChange(v ?? "")}
                   />
@@ -142,6 +143,7 @@ export function TopicForm({ onSubmit, isSubmitting = false }: TopicFormProps) {
                 <FormLabel>{t("form.tags.label")}</FormLabel>
                 <FormControl>
                   <TagsMultiSelect
+                    className="w-36"
                     value={field.value}
                     onChange={field.onChange}
                     placeholder={t("form.tags.placeholder")}
