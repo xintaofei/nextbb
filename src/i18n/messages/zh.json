@@ -217,6 +217,7 @@
   }
   ,
   "Admin": {
+    "entry": "管理后台",
     "title": "NextBB 管理后台",
     "description": "NextBB 管理后台页面。"
   }

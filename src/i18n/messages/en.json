@@ -217,6 +217,7 @@
   }
   ,
   "Admin": {
+    "entry": "Admin",
     "title": "NextBB Admin",
     "description": "NextBB Admin Page."
   }
