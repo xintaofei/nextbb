@@ -93,7 +93,9 @@ export function TopicPostItem({
                       className={post.liked ? "text-red-500" : undefined}
                       fill={post.liked ? "currentColor" : "none"}
                     />
-                    <span className="ml-1 text-sm">{post.likes}</span>
+                    {post.likes > 0 && (
+                      <span className="ml-1 text-sm">{post.likes}</span>
+                    )}
                   </Button>
                   <Button
                     variant="ghost"
@@ -104,7 +106,9 @@ export function TopicPostItem({
                       className={post.bookmarked ? "text-primary" : undefined}
                       fill={post.bookmarked ? "currentColor" : "none"}
                     />
-                    <span className="ml-1 text-sm">{post.bookmarks}</span>
+                    {post.bookmarks > 0 && (
+                      <span className="ml-1 text-sm">{post.bookmarks}</span>
+                    )}
                   </Button>
                 </>
               ) : (
