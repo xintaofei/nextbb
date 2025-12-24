@@ -34,7 +34,7 @@ export default function Home() {
   const [total, setTotal] = useState<number>(0)
   const [loadingMore, setLoadingMore] = useState<boolean>(false)
   const hasMore = useMemo(() => topics.length < total, [topics.length, total])
-  async function loadTopics(initial?: boolean) {
+  async function loadTopics(initial?: boolean, overridePage?: number) {
     try {
       if (initial) {
         setLoading(true)
@@ -48,7 +48,7 @@ export default function Home() {
       if (categoryId) qs.set("categoryId", categoryId)
       if (tagId) qs.set("tagId", tagId)
       if (sort) qs.set("sort", sort)
-      qs.set("page", String(initial ? 1 : page))
+      qs.set("page", String(overridePage ?? (initial ? 1 : page)))
       qs.set("pageSize", String(pageSize))
       const res = await fetch(`/api/topics?${qs.toString()}`, {
         cache: "no-store",
@@ -127,7 +127,7 @@ export default function Home() {
           if (loadingMore || !hasMore) return
           const next = page + 1
           setPage(next)
-          await loadTopics(false)
+          await loadTopics(false, next)
         }}
       />
       <NewTopicDialog
