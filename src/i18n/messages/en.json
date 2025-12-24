@@ -217,8 +217,7 @@
   }
   ,
   "Admin": {
-    "entry": "Admin",
-    "title": "Admin",
-    "welcome": "Welcome, {name}. This is a placeholder for the admin entry."
+    "title": "NextBB Admin",
+    "description": "NextBB Admin Page."
   }
 }

@@ -217,8 +217,7 @@
   }
   ,
   "Admin": {
-    "entry": "管理后台",
-    "title": "管理后台",
-    "welcome": "欢迎，{name}。这里是管理员入口的占位页面。"
+    "title": "NextBB 管理后台",
+    "description": "NextBB 管理后台页面。"
   }
 }

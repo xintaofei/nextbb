@@ -2,7 +2,7 @@
 
 import { useMemo } from "react"
 import { useRouter } from "next/navigation"
-import { useLocale, useTranslations } from "next-intl"
+import { useTranslations } from "next-intl"
 import useSWR from "swr"
 import {
   BadgeCheck,
@@ -55,7 +55,6 @@ const fetcher = async (url: string): Promise<MeResponse | null> => {
 
 export function NavUser() {
   const { isMobile } = useSidebar()
-  const locale = useLocale()
   const tAdmin = useTranslations("Admin")
   const router = useRouter()
 
@@ -86,7 +85,7 @@ export function NavUser() {
   const onLogout = async () => {
     await fetch("/api/auth/logout", { method: "POST" })
     await mutate()
-    router.replace(`/${locale}`)
+    router.replace(`/`)
   }
 
   const goLogin = () => {
@@ -176,7 +175,9 @@ export function NavUser() {
               {!data ? (
                 <>
                   <DropdownMenuItem onSelect={goLogin}>登录</DropdownMenuItem>
-                  <DropdownMenuItem onSelect={goRegister}>注册</DropdownMenuItem>
+                  <DropdownMenuItem onSelect={goRegister}>
+                    注册
+                  </DropdownMenuItem>
                 </>
               ) : (
                 <DropdownMenuItem onSelect={onLogout}>
