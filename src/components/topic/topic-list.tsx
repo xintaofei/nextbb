@@ -94,20 +94,20 @@ export function TopicList({
 
   return (
     <Table
-      className={className ?? "w-full table-fixed max-[1300px]:table-auto"}
+      className={className ?? "w-full table-fixed max-lg:table-auto"}
     >
       <colgroup>
         <col />
-        <col className="w-32 max-[1300px]:w-16" />
-        <col className="w-20 max-[1300px]:w-16" />
-        <col className="w-20 max-[1300px]:hidden" />
-        <col className="w-20 max-[1300px]:w-16" />
+        <col className="w-32 max-lg:w-16" />
+        <col className="w-20 max-lg:w-16" />
+        <col className="w-20 max-lg:hidden" />
+        <col className="w-20 max-lg:w-16" />
       </colgroup>
       <TableHeader>
         <TableRow>
           <TableHead colSpan={2}>{tc("Table.topic")}</TableHead>
           <TableHead className="text-center">{tc("Table.replies")}</TableHead>
-          <TableHead className="text-center max-[1300px]:hidden">
+          <TableHead className="text-center max-lg:hidden">
             {tc("Table.views")}
           </TableHead>
           <TableHead className="text-center">{tc("Table.activity")}</TableHead>
@@ -118,20 +118,20 @@ export function TopicList({
           ? Array.from({ length: 15 }).map((_, i) => (
               <TableRow key={`skeleton-${i}`}>
                 <TableCell className="flex flex-col gap-2">
-                  <Skeleton className="h-7 w-72" />
+                  <Skeleton className="h-7 w-72 xl:w-96" />
                   <div className="flex max-w-full flex-wrap gap-2 overflow-hidden">
                     <Skeleton className="h-5 w-20" />
                     <Skeleton className="h-5 w-16" />
                     <Skeleton className="h-5 w-16" />
                   </div>
                 </TableCell>
-                <TableCell className="max-[1300px]:text-center">
-                  <div className="flex -space-x-2 max-[1300px]:justify-center">
+                <TableCell className="max-lg:text-center">
+                  <div className="flex -space-x-2 max-lg:justify-center">
                     {Array.from({ length: 5 }).map((_, j) => (
                       <Skeleton
                         key={j}
                         className={`size-7 rounded-full ring-2 ring-background ${
-                          j > 0 ? "max-[1300px]:hidden" : ""
+                          j > 0 ? "max-lg:hidden" : ""
                         }`}
                       />
                     ))}
@@ -140,7 +140,7 @@ export function TopicList({
                 <TableCell className="text-center">
                   <Skeleton className="h-4 w-10 mx-auto" />
                 </TableCell>
-                <TableCell className="text-center max-[1300px]:hidden">
+                <TableCell className="text-center max-lg:hidden">
                   <Skeleton className="h-4 w-10 mx-auto" />
                 </TableCell>
                 <TableCell className="text-center">
@@ -171,11 +171,11 @@ export function TopicList({
                   </div>
                 </TableCell>
                 <TableCell>
-                  <div className="*:data-[slot=avatar]:ring-background flex -space-x-2 *:data-[slot=avatar]:ring-2 max-[1300px]:justify-center">
+                  <div className="*:data-[slot=avatar]:ring-background flex lg:-space-x-2 *:data-[slot=avatar]:ring-2 max-lg:justify-center">
                     {dedupeAndLimit(t.participants, 5).map((u, idx) => (
                       <Avatar
                         key={u.id}
-                        className={`size-7 relative ${idx === 0 ? "z-50" : idx === 1 ? "z-40" : idx === 2 ? "z-30" : idx === 3 ? "z-20" : "z-10"} ${idx > 0 ? "max-[1300px]:hidden" : ""}`}
+                        className={`size-7 relative ${idx === 0 ? "z-50" : idx === 1 ? "z-40" : idx === 2 ? "z-30" : idx === 3 ? "z-20" : "z-10"} ${idx > 0 ? "max-lg:hidden" : ""}`}
                       >
                         <AvatarImage src={u.avatar} alt={u.name} />
                         <AvatarFallback>
@@ -188,7 +188,7 @@ export function TopicList({
                 <TableCell className="text-center text-muted-foreground">
                   {t.replies}
                 </TableCell>
-                <TableCell className="text-center text-muted-foreground max-[1300px]:hidden">
+                <TableCell className="text-center text-muted-foreground max-lg:hidden">
                   {t.views}
                 </TableCell>
                 <TableCell className="text-center text-muted-foreground">
