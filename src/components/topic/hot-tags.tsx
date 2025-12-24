@@ -4,6 +4,7 @@ import { useMemo, useTransition } from "react"
 import { usePathname, useRouter, useSearchParams } from "next/navigation"
 import useSWR from "swr"
 import { Badge } from "@/components/ui/badge"
+import { Skeleton } from "@/components/ui/skeleton"
 import { Flame } from "lucide-react"
 import { useTranslations } from "next-intl"
 import { cn } from "@/lib/utils"
@@ -34,10 +35,11 @@ export function HotTags({ className, count = 5 }: HotTagsProps) {
     const data = (await res.json()) as TagDTO[]
     return Array.isArray(data) ? data : []
   }
-  const { data: tags } = useSWR<TagDTO[]>("/api/tags", fetcher)
+  const { data: tags, isLoading } = useSWR<TagDTO[]>("/api/tags", fetcher)
 
   const selectedTagId = searchParams.get("tagId") ?? undefined
   const hotTags = useMemo(() => (tags ?? []).slice(0, count), [tags, count])
+  const loading = isLoading || !tags
 
   function applyTag(tagId: string) {
     const params = new URLSearchParams(searchParams.toString())
@@ -63,22 +65,32 @@ export function HotTags({ className, count = 5 }: HotTagsProps) {
           {tc("Filters.tag")}
         </span>
         <div className="flex flex-row flex-wrap items-center gap-2">
-          {hotTags.map((t) => {
-            const active = selectedTagId === t.id
-            return (
-              <Badge
-                key={t.id}
-                variant="outline"
-                className={cn(
-                  "cursor-pointer",
-                  active ? "bg-primary/10 text-primary border-primary/20" : ""
-                )}
-                onClick={() => applyTag(t.id)}
-              >
-                {t.icon} {t.name}
-              </Badge>
-            )
-          })}
+          {loading
+            ? Array.from({ length: count }).map((_, i) => {
+                const widths = ["w-20", "w-16", "w-24"]
+                return (
+                  <Skeleton
+                    key={`tag-skeleton-${i}`}
+                    className={cn("h-5", widths[i % widths.length])}
+                  />
+                )
+              })
+            : hotTags.map((t) => {
+                const active = selectedTagId === t.id
+                return (
+                  <Badge
+                    key={t.id}
+                    variant="outline"
+                    className={cn(
+                      "cursor-pointer",
+                      active && "bg-primary/10 text-primary border-primary/20"
+                    )}
+                    onClick={() => applyTag(t.id)}
+                  >
+                    {t.icon} {t.name}
+                  </Badge>
+                )
+              })}
         </div>
       </div>
     </div>

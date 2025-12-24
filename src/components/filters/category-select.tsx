@@ -1,6 +1,8 @@
 "use client"
 
 import { useEffect, useMemo, useState } from "react"
+import { cn } from "@/lib/utils"
+import { Skeleton } from "@/components/ui/skeleton"
 import {
   Select,
   SelectContent,
@@ -32,6 +34,7 @@ export function CategorySelect({
   const tc = useTranslations("Common")
   const [options, setOptions] = useState<CategoryOption[]>([])
   const [selected, setSelected] = useState<string | undefined>(value)
+  const [isLoading, setIsLoading] = useState<boolean>(true)
 
   useEffect(() => {
     let cancelled = false
@@ -53,8 +56,11 @@ export function CategorySelect({
               icon: c.icon,
             }))
           )
+          setIsLoading(false)
         }
-      } catch {}
+      } catch {
+        if (!cancelled) setIsLoading(false)
+      }
     })()
     return () => {
       cancelled = true
@@ -68,7 +74,9 @@ export function CategorySelect({
   const placeholder = useMemo(() => tc("Filters.category"), [tc])
   const allLabel = useMemo(() => tc("Filters.all"), [tc])
 
-  return (
+  return isLoading ? (
+    <Skeleton className={cn("h-9", className)} />
+  ) : (
     <Select
       value={selected ?? ""}
       onValueChange={(v) => {

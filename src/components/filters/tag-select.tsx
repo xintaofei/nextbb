@@ -1,6 +1,8 @@
 "use client"
 
 import { useEffect, useMemo, useState } from "react"
+import { cn } from "@/lib/utils"
+import { Skeleton } from "@/components/ui/skeleton"
 import {
   Select,
   SelectContent,
@@ -27,6 +29,7 @@ export function TagSelect({ value, onChange, className, clearable }: Props) {
   const tc = useTranslations("Common")
   const [options, setOptions] = useState<TagOption[]>([])
   const [selected, setSelected] = useState<string | undefined>(value)
+  const [isLoading, setIsLoading] = useState<boolean>(true)
 
   useEffect(() => {
     let cancelled = false
@@ -48,8 +51,11 @@ export function TagSelect({ value, onChange, className, clearable }: Props) {
               icon: t.icon,
             }))
           )
+          setIsLoading(false)
         }
-      } catch {}
+      } catch {
+        if (!cancelled) setIsLoading(false)
+      }
     })()
     return () => {
       cancelled = true
@@ -63,7 +69,9 @@ export function TagSelect({ value, onChange, className, clearable }: Props) {
   const placeholder = useMemo(() => tc("Filters.tag"), [tc])
   const allLabel = useMemo(() => tc("Filters.all"), [tc])
 
-  return (
+  return isLoading ? (
+    <Skeleton className={cn("h-9", className)} />
+  ) : (
     <Select
       value={selected ?? ""}
       onValueChange={(v) => {
