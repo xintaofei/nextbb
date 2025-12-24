@@ -90,7 +90,7 @@ export function TopicList({
     >
       <colgroup>
         <col />
-        <col className="w-40 max-[1300px]:w-16" />
+        <col className="w-32 max-[1300px]:w-16" />
         <col className="w-20 max-[1300px]:w-16" />
         <col className="w-20 max-[1300px]:hidden" />
         <col className="w-20 max-[1300px]:w-16" />
@@ -122,7 +122,7 @@ export function TopicList({
                     {Array.from({ length: 5 }).map((_, j) => (
                       <Skeleton
                         key={j}
-                        className={`h-8 w-8 rounded-full ring-2 ring-background ${
+                        className={`size-7 rounded-full ring-2 ring-background ${
                           j > 0 ? "max-[1300px]:hidden" : ""
                         }`}
                       />
@@ -164,7 +164,7 @@ export function TopicList({
                     {dedupeAndLimit(t.participants, 5).map((u, idx) => (
                       <Avatar
                         key={u.id}
-                        className={`relative ${idx === 0 ? "z-50" : idx === 1 ? "z-40" : idx === 2 ? "z-30" : idx === 3 ? "z-20" : "z-10"} ${idx > 0 ? "max-[1300px]:hidden" : ""}`}
+                        className={`size-7 relative ${idx === 0 ? "z-50" : idx === 1 ? "z-40" : idx === 2 ? "z-30" : idx === 3 ? "z-20" : "z-10"} ${idx > 0 ? "max-[1300px]:hidden" : ""}`}
                       >
                         <AvatarImage src={u.avatar} alt={u.name} />
                         <AvatarFallback>
