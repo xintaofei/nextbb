@@ -67,7 +67,7 @@ export function HotTags({ className, count = 5 }: HotTagsProps) {
         <div className="flex flex-row flex-wrap items-center gap-2">
           {loading
             ? Array.from({ length: count }).map((_, i) => {
-                const widths = ["w-20", "w-16", "w-24"]
+                const widths = ["w-12", "w-10", "w-14"]
                 return (
                   <Skeleton
                     key={`tag-skeleton-${i}`}

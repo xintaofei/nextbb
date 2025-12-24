@@ -543,26 +543,26 @@ export default function TopicPage() {
           ) : (
             <TimelineSteps>
               {posts.map((post, index) => (
-              <TopicPostItem
-                key={post.id}
-                post={post}
-                index={index}
-                anchorId={`post-${index + 1}`}
-                currentUserId={currentUserId}
-                mutatingPostId={mutatingPostId}
-                likeMutating={likeMutating}
-                bookmarkMutating={bookmarkMutating}
-                editMutating={editMutating}
-                deleteMutating={deleteMutating}
-                onLike={likeAction}
-                onBookmark={bookmarkAction}
-                onEdit={onClickEdit}
-                onDelete={onClickDelete}
-                onReply={onClickReply}
-                floorOpText={t("floor.op")}
-                replyText={t("reply")}
-                deletedText={t("deleted")}
-              />
+                <TopicPostItem
+                  key={post.id}
+                  post={post}
+                  index={index}
+                  anchorId={`post-${index + 1}`}
+                  currentUserId={currentUserId}
+                  mutatingPostId={mutatingPostId}
+                  likeMutating={likeMutating}
+                  bookmarkMutating={bookmarkMutating}
+                  editMutating={editMutating}
+                  deleteMutating={deleteMutating}
+                  onLike={likeAction}
+                  onBookmark={bookmarkAction}
+                  onEdit={onClickEdit}
+                  onDelete={onClickDelete}
+                  onReply={onClickReply}
+                  floorOpText={t("floor.op")}
+                  replyText={t("reply")}
+                  deletedText={t("deleted")}
+                />
               ))}
               {hasMore && (
                 <PostSkeletonList
@@ -680,8 +680,12 @@ export default function TopicPage() {
                         ))}
                       </div>
                     </TableCell>
-                    <TableCell className="text-center text-muted-foreground">{t.replies}</TableCell>
-                    <TableCell className="text-center text-muted-foreground">{t.views}</TableCell>
+                    <TableCell className="text-center text-muted-foreground">
+                      {t.replies}
+                    </TableCell>
+                    <TableCell className="text-center text-muted-foreground">
+                      {t.views}
+                    </TableCell>
                     <TableCell className="text-center text-muted-foreground">
                       {formatRelative(t.activity)}
                     </TableCell>

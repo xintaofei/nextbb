@@ -54,7 +54,10 @@ export function TopicPostItem({
   return (
     <TimelineStepsItem id={anchorId} data-post-anchor>
       <TimelineStepsConnector />
-      <TimelineStepsIcon size="lg" className="overflow-hidden p-[2px]">
+      <TimelineStepsIcon
+        size="lg"
+        className="sticky top-4 overflow-hidden p-[2px]"
+      >
         <Avatar className="size-full">
           <AvatarImage src={post.author.avatar} alt="@avatar" />
           <AvatarFallback>{post.author.name}</AvatarFallback>
