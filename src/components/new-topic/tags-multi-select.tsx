@@ -17,6 +17,7 @@ import {
   CommandList,
 } from "@/components/ui/command"
 import { cn } from "@/lib/utils"
+import { Skeleton } from "@/components/ui/skeleton"
 
 type TagOption = {
   id: string
@@ -39,6 +40,7 @@ export function TagsMultiSelect({
 }: Props) {
   const [open, setOpen] = useState(false)
   const [options, setOptions] = useState<TagOption[]>([])
+  const [isLoading, setIsLoading] = useState<boolean>(true)
 
   useEffect(() => {
     let cancelled = false
@@ -60,8 +62,11 @@ export function TagsMultiSelect({
               icon: t.icon,
             }))
           )
+          setIsLoading(false)
         }
-      } catch {}
+      } catch {
+        if (!cancelled) setIsLoading(false)
+      }
     })()
     return () => {
       cancelled = true
@@ -79,6 +84,10 @@ export function TagsMultiSelect({
     const joined = names.join(", ")
     return joined.length > 24 ? `${joined.slice(0, 24)}…` : joined
   }, [options, selectedSet, value, placeholder])
+
+  if (isLoading) {
+    return <Skeleton className={cn("h-9 w-full", className)} />
+  }
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
