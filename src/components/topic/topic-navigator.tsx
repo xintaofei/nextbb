@@ -433,8 +433,8 @@ export function TopicNavigator({
       </div>
       <div className="flex flex-1 items-center mt-2">
         {repliesLoading ? (
-          <div className="flex flex-1 items-center justify-center border-t border-b py-2">
-            <Skeleton className="h-56 w-full" />
+          <div className="flex flex-1 items-center justify-center">
+            <Skeleton className="h-72 w-full" />
           </div>
         ) : totalFloors === 0 ? (
           <div className="flex flex-1 items-center justify-center border-t border-b py-2 text-sm text-muted-foreground">
