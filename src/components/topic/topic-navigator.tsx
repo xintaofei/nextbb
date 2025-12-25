@@ -46,9 +46,14 @@ export function TopicNavigator({
   const anchorsRef = useRef<HTMLElement[]>([])
   const rafRef = useRef<number | null>(null)
   const [author, setAuthor] = useState("")
+  const authorRef = useRef<string>("")
   const sliderWrapRef = useRef<HTMLDivElement | null>(null)
-  const [labelTop, setLabelTop] = useState("0%")
+  const labelRef = useRef<HTMLDivElement | null>(null)
   const isDraggingRef = useRef(false)
+  const sliderTargetRef = useRef<number>(Math.max(totalFloors, 1))
+  const sliderCurrentRef = useRef<number>(Math.max(totalFloors, 1))
+  const sliderAnimRef = useRef<number | null>(null)
+  const scrollerRef = useRef<HTMLElement | null>(null)
 
   const getScrollContainer = () => {
     const root =
@@ -74,6 +79,10 @@ export function TopicNavigator({
     return elRect.top - cRect.top + container.scrollTop
   }
 
+  useEffect(() => {
+    authorRef.current = author
+  }, [author])
+
   const updateLabelPos = () => {
     const wrap = sliderWrapRef.current
     if (!wrap) return
@@ -86,42 +95,69 @@ export function TopicNavigator({
       wrapRect.height > 0
         ? Math.max(0, Math.min(100, (center / wrapRect.height) * 100))
         : 0
-    setLabelTop(`${pct}%`)
+    if (labelRef.current) labelRef.current.style.top = `${pct}%`
   }
 
   useEffect(() => {
     anchorsRef.current = Array.from(
       document.querySelectorAll<HTMLElement>("[data-post-anchor]")
     )
+    scrollerRef.current = getScrollContainer()
     const measure = () => {
       const anchors = anchorsRef.current
       if (!anchors.length) return
-      const scroller = getScrollContainer()
+      const scroller = scrollerRef.current
       const refAbs = scroller ? scroller.scrollTop : window.scrollY
-      let firstVisible = 1
-      for (let k = 1; k < anchors.length; k++) {
-        const yk = getRelativeTop(anchors[k], scroller)
-        if (yk >= refAbs - 0.5) {
-          firstVisible = k
-          break
-        }
-        if (k === anchors.length - 1) firstVisible = k
+      const n = anchors.length - 1
+      if (n <= 0) return
+      const positions: number[] = []
+      for (let k = 1; k <= n; k++) {
+        positions[k] = getRelativeTop(anchors[k], scroller)
       }
-      const i = Math.min(Math.max(firstVisible, 1), anchors.length - 1)
-      const j = Math.min(i + 1, anchors.length - 1)
-      const posI = getRelativeTop(anchors[i], scroller)
-      const posJ = getRelativeTop(anchors[j], scroller)
-      const denom = Math.max(1, posJ - posI)
-      const t = Math.min(1, Math.max(0, (refAbs - posI) / denom))
-      setSliderValue([totalFloors - (i - 1) - t])
-      const idxReply = i
+      let seg = 1
+      const atBottom = scroller
+        ? Math.abs(
+            scroller.scrollTop - (scroller.scrollHeight - scroller.clientHeight)
+          ) < 1
+        : window.innerHeight + window.scrollY >=
+          (document.documentElement?.scrollHeight ||
+            document.body.scrollHeight) -
+            1
+      if (!atBottom) {
+        if (refAbs <= positions[1]) {
+          seg = 1
+        } else if (refAbs >= positions[n]) {
+          seg = Math.max(1, n - 1)
+        } else {
+          for (let k = 1; k < n; k++) {
+            if (refAbs >= positions[k] && refAbs <= positions[k + 1]) {
+              seg = k
+              break
+            }
+          }
+        }
+      }
+      const yA = positions[seg]
+      const yB = positions[Math.min(seg + 1, n)]
+      const denom = Math.max(1, yB - yA)
+      const t = atBottom ? 1 : Math.min(1, Math.max(0, (refAbs - yA) / denom))
+      const frac = atBottom ? n : seg + t
+      const s = totalFloors > 0 ? totalFloors - (frac - 1) : 1
+      if (!isDraggingRef.current) {
+        setSliderValue([s])
+        sliderCurrentRef.current = s
+        sliderTargetRef.current = s
+      }
+      const idxReply = Math.max(1, Math.min(n, Math.round(frac)))
+      const el = anchors[idxReply]
+      const name =
+        el?.querySelector<HTMLElement>("[data-slot=timeline-steps-title]")
+          ?.textContent || ""
       if (idxReply !== currentRef.current) {
         currentRef.current = idxReply
         setCurrent(idxReply)
-        const el = anchors[i]
-        const name =
-          el?.querySelector<HTMLElement>("[data-slot=timeline-steps-title]")
-            ?.textContent || ""
+        setAuthor(name)
+      } else if (!authorRef.current) {
         setAuthor(name)
       }
       window.requestAnimationFrame(() => {
@@ -134,9 +170,6 @@ export function TopicNavigator({
       rafRef.current = window.requestAnimationFrame(() => {
         rafRef.current = null
         measure()
-        window.requestAnimationFrame(() => {
-          updateLabelPos()
-        })
       })
     }
     const onResize = () => {
@@ -148,43 +181,35 @@ export function TopicNavigator({
         updateLabelPos()
       })
     }
-    window.addEventListener("scroll", onScroll, { passive: true })
+    if (scrollerRef.current) {
+      scrollerRef.current.addEventListener("scroll", onScroll, {
+        passive: true,
+      })
+    } else {
+      window.addEventListener("scroll", onScroll, {
+        passive: true,
+      })
+    }
     window.addEventListener("resize", onResize)
     measure()
     window.requestAnimationFrame(() => {
       updateLabelPos()
     })
     return () => {
-      window.removeEventListener("scroll", onScroll)
+      if (scrollerRef.current)
+        scrollerRef.current.removeEventListener("scroll", onScroll)
+      else window.removeEventListener("scroll", onScroll)
       window.removeEventListener("resize", onResize)
       if (rafRef.current != null) {
         window.cancelAnimationFrame(rafRef.current)
         rafRef.current = null
       }
+      if (sliderAnimRef.current != null) {
+        window.cancelAnimationFrame(sliderAnimRef.current)
+        sliderAnimRef.current = null
+      }
     }
   }, [totalFloors, repliesLoading])
-
-  useEffect(() => {
-    if (repliesLoading) return
-    if (totalFloors <= 0) return
-    anchorsRef.current = Array.from(
-      document.querySelectorAll<HTMLElement>("[data-post-anchor]")
-    )
-    const anchors = anchorsRef.current
-    if (anchors.length >= 2) {
-      const titleEl = anchors[1]?.querySelector<HTMLElement>(
-        "[data-slot=timeline-steps-title]"
-      )
-      const name = titleEl?.textContent || ""
-      window.requestAnimationFrame(() => {
-        currentRef.current = 1
-        setCurrent(1)
-        setSliderValue([totalFloors])
-        setAuthor(name)
-        updateLabelPos()
-      })
-    }
-  }, [repliesLoading, totalFloors])
 
   const scrollToPost = (n: number) => {
     const id = `post-${n}`
@@ -208,9 +233,6 @@ export function TopicNavigator({
         anchorEl?.querySelector<HTMLElement>("[data-slot=timeline-steps-title]")
           ?.textContent || ""
       setAuthor(name)
-      window.requestAnimationFrame(() => {
-        updateLabelPos()
-      })
     }
   }
 
@@ -295,7 +317,7 @@ export function TopicNavigator({
                     orientation="vertical"
                     min={1}
                     max={totalFloors}
-                    step={0.01}
+                    step={0.001}
                     value={sliderValue}
                     onValueChange={(v) => {
                       isDraggingRef.current = true
@@ -349,9 +371,7 @@ export function TopicNavigator({
                   />
                   <div
                     className="absolute left-full ml-3 -translate-y-1/2 flex flex-col items-start w-32"
-                    style={{
-                      top: labelTop,
-                    }}
+                    ref={labelRef}
                   >
                     <span className="font-bold">
                       {current} / {totalFloors}
