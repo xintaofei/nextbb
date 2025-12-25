@@ -100,14 +100,12 @@ export function TopicNavigator({
       const refAbs = scroller ? scroller.scrollTop : window.scrollY
       let firstVisible = 1
       for (let k = 1; k < anchors.length; k++) {
-        const rect = anchors[k].getBoundingClientRect()
-        if (rect.top >= 0) {
+        const yk = getRelativeTop(anchors[k], scroller)
+        if (yk >= refAbs - 0.5) {
           firstVisible = k
           break
         }
-        if (k === anchors.length - 1) {
-          firstVisible = k
-        }
+        if (k === anchors.length - 1) firstVisible = k
       }
       const i = Math.min(Math.max(firstVisible, 1), anchors.length - 1)
       const j = Math.min(i + 1, anchors.length - 1)
