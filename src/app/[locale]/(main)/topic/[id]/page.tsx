@@ -530,7 +530,7 @@ export default function TopicPage() {
         <div className="flex-1">
           {postListLoading ? (
             <TimelineSteps>
-              <PostSkeletonList count={3} />
+              <PostSkeletonList count={8} />
             </TimelineSteps>
           ) : (
             <TimelineSteps>
@@ -566,20 +566,16 @@ export default function TopicPage() {
             </TimelineSteps>
           )}
         </div>
-        {loadingInfo ? (
-          <div className="w-44">
-            <Skeleton className="h-80 w-full" />
-          </div>
-        ) : (
-          <TopicNavigator
-            total={totalPosts}
-            isAuthenticated={!!currentUserId}
-            onReplyTopic={() => {
-              setReplyToPostId(null)
-              setReplyOpen(true)
-            }}
-          />
-        )}
+        <TopicNavigator
+          total={totalPosts}
+          isAuthenticated={!!currentUserId}
+          onReplyTopic={() => {
+            setReplyToPostId(null)
+            setReplyOpen(true)
+          }}
+          topicLoading={loadingInfo}
+          repliesLoading={postListLoading}
+        />
       </div>
       <DrawerEditor
         key={`reply-${replyToPostId ?? "topic"}-${replyOpen ? replyContent : ""}`}

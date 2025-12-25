@@ -92,7 +92,8 @@
       "counter": "{current}/{total}",
       "replyToTopic": "回复主题",
       "goLogin": "去登录",
-      "sort": "楼层排序"
+      "sort": "楼层排序",
+      "noReplies": "暂无回复，请开始你的精彩评论"
     },
     "New": {
       "title": "新建话题",

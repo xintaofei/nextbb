@@ -92,7 +92,8 @@
       "counter": "{current}/{total}",
       "replyToTopic": "Reply to topic",
       "goLogin": "Go to sign in",
-      "sort": "Sort by floor"
+      "sort": "Sort by floor",
+      "noReplies": "No replies yet — be the first to comment"
     },
     "New": {
       "title": "New Topic",
