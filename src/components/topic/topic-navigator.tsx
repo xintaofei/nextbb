@@ -275,6 +275,8 @@ export function TopicNavigator({
     const id = `post-${n}`
     const el = document.getElementById(id)
     if (el) {
+      // 设置拖动标志，防止 smooth 滚动过程中 measure() 覆盖滑块位置
+      isDraggingRef.current = true
       const scroller = getScrollContainer()
       const top = getRelativeTop(el, scroller)
       if (scroller) {
@@ -286,13 +288,28 @@ export function TopicNavigator({
         if (se && Math.abs(se.scrollTop - top) > 1) se.scrollTop = top
         if (Math.abs(window.scrollY - top) > 1) window.scrollTo(0, top)
       }
-      setCurrent(Math.max(n - 1, 1))
-      setSliderValue([totalFloors - n + 2])
+      // 帖子编号转楼层号：帖子1是主楼，帖子2是1楼，以此类推
+      const floor = Math.max(n - 1, 1)
+      setCurrent(floor)
+      currentRef.current = floor
+      // 滑块值计算：楼层号越大，滑块值越小（方向相反）
+      setSliderValue([totalFloors - floor + 1])
+      // 更新作者信息：anchorsRef[i] 对应 post-${i+1}，所以使用 n-1 索引
       const anchorEl = anchorsRef.current[n - 1]
       const name =
         anchorEl?.querySelector<HTMLElement>("[data-slot=timeline-steps-title]")
           ?.textContent || ""
       setAuthor(name)
+      // 更新标签位置：等待 React 更新 DOM 后再计算
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          updateLabelPos()
+        })
+      })
+      // 滚动完成后释放拖动标志
+      setTimeout(() => {
+        isDraggingRef.current = false
+      }, 500)
     }
   }
 
