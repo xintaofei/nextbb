@@ -130,7 +130,8 @@ export function TopicNavigator({
       // 特殊情况：仅有1楼
       if (n === 1) {
         if (!isDraggingRef.current) {
-          setSliderValue([1])
+          // 只有1楼时，滑块设置在中间位置（max=2时，1.5为中间）
+          setSliderValue([1.5])
         }
         const el = anchors[1]
         const name =
@@ -375,9 +376,10 @@ export function TopicNavigator({
                   <Slider
                     orientation="vertical"
                     min={1}
-                    max={totalFloors}
+                    max={Math.max(totalFloors, 2)} // 确保至少有2的范围，避免单楼层时滑块在底部
                     step={0.001}
                     value={sliderValue}
+                    disabled={totalFloors === 1} // 单楼层时禁用滑块
                     onValueChange={(v) => {
                       // 设置拖动标志
                       isDraggingRef.current = true
