@@ -3,17 +3,19 @@
 import { useMemo, useState } from "react"
 import useSWR from "swr"
 import { useTranslations } from "next-intl"
-import {
-  Table,
-  TableHeader,
-  TableRow,
-  TableHead,
-  TableBody,
-  TableCell,
-} from "@/components/ui/table"
+import { motion } from "framer-motion"
+import { Search, Filter } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
-import { Switch } from "@/components/ui/switch"
+import { UserStatsCard } from "@/components/admin/user-stats-card"
+import { UserCard } from "@/components/admin/user-card"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 
 type UserListItem = {
   id: string
@@ -61,6 +63,16 @@ export default function AdminUsersPage() {
 
   const { data, isLoading, mutate } = useSWR<UserListResult>(query, fetcher)
 
+  const stats = useMemo(() => {
+    if (!data) return { total: 0, active: 0, admin: 0, deleted: 0 }
+    return {
+      total: data.total,
+      active: data.items.filter((u) => u.status === 1).length,
+      admin: data.items.filter((u) => u.isAdmin).length,
+      deleted: data.items.filter((u) => u.isDeleted).length,
+    }
+  }, [data])
+
   const onToggleAdmin = async (id: string, next: boolean) => {
     const res = await fetch(`/api/admin/users/${id}`, {
       method: "PATCH",
@@ -95,124 +107,143 @@ export default function AdminUsersPage() {
   }
 
   return (
-    <div className="relative px-6 py-6">
-      <div className="mx-auto max-w-7xl space-y-4">
-        <div className="flex flex-wrap gap-2 items-center">
-          <Input
-            placeholder={t("searchPlaceholder")}
-            value={q}
-            onChange={(e) => setQ(e.target.value)}
-            className="w-64"
-          />
-          <select
-            className="border rounded-md px-2 py-1 h-9"
-            value={status ?? ""}
-            onChange={(e) => setStatus(e.target.value || undefined)}
-          >
-            <option value="">{t("filter.status.all")}</option>
-            <option value="1">{t("filter.status.active")}</option>
-            <option value="0">{t("filter.status.disabled")}</option>
-          </select>
-          <select
-            className="border rounded-md px-2 py-1 h-9"
-            value={deleted ?? ""}
-            onChange={(e) => setDeleted(e.target.value || undefined)}
-          >
-            <option value="">{t("filter.deleted.all")}</option>
-            <option value="false">{t("filter.deleted.normal")}</option>
-            <option value="true">{t("filter.deleted.deleted")}</option>
-          </select>
-          <Button variant="secondary" onClick={() => setPage(1)}>
-            {t("filter.apply")}
-          </Button>
+    <div className="relative px-6 py-8 lg:py-12">
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4 }}
+        className="mx-auto max-w-7xl space-y-6"
+      >
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">{t("title")}</h1>
+          <p className="text-sm text-foreground/60 mt-1">{t("description")}</p>
         </div>
 
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>{t("table.user")}</TableHead>
-              <TableHead>{t("table.email")}</TableHead>
-              <TableHead>{t("table.role")}</TableHead>
-              <TableHead>{t("table.status")}</TableHead>
-              <TableHead>{t("table.deleted")}</TableHead>
-              <TableHead>{t("table.createdAt")}</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {isLoading || !data ? (
-              <TableRow>
-                <TableCell colSpan={6}>{t("loading")}</TableCell>
-              </TableRow>
-            ) : data.items.length === 0 ? (
-              <TableRow>
-                <TableCell colSpan={6}>{t("empty")}</TableCell>
-              </TableRow>
-            ) : (
-              data.items.map((u) => (
-                <TableRow key={u.id}>
-                  <TableCell className="flex items-center gap-2">
-                    <img
-                      src={u.avatar}
-                      alt={u.name}
-                      className="h-8 w-8 rounded-lg object-cover"
-                    />
-                    <span className="font-medium">{u.name}</span>
-                  </TableCell>
-                  <TableCell>{u.email}</TableCell>
-                  <TableCell>
-                    <div className="flex items-center gap-2">
-                      <span>
-                        {u.isAdmin ? t("role.admin") : t("role.user")}
-                      </span>
-                      <Switch
-                        checked={u.isAdmin}
-                        onCheckedChange={(checked) =>
-                          onToggleAdmin(u.id, checked)
-                        }
-                      />
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex items-center gap-2">
-                      <span>
-                        {u.status === 1
-                          ? t("status.active")
-                          : t("status.disabled")}
-                      </span>
-                      <Switch
-                        checked={u.status === 1}
-                        onCheckedChange={(checked) =>
-                          onToggleStatus(u.id, checked)
-                        }
-                      />
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex items-center gap-2">
-                      <span>
-                        {u.isDeleted
-                          ? t("deleted.deleted")
-                          : t("deleted.normal")}
-                      </span>
-                      <Switch
-                        checked={u.isDeleted}
-                        onCheckedChange={(checked) =>
-                          onToggleDeleted(u.id, checked)
-                        }
-                      />
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    {new Date(u.createdAt).toLocaleString()}
-                  </TableCell>
-                </TableRow>
-              ))
-            )}
-          </TableBody>
-        </Table>
+        <UserStatsCard
+          totalUsers={stats.total}
+          activeUsers={stats.active}
+          adminUsers={stats.admin}
+          deletedUsers={stats.deleted}
+        />
 
-        <div className="flex items-center justify-between">
-          <span className="text-sm text-muted-foreground">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, delay: 0.1 }}
+          className="group relative overflow-hidden rounded-2xl border border-border/40 bg-background/60 p-6 backdrop-blur"
+        >
+          <div className="absolute inset-0 bg-linear-to-br from-foreground/4 via-transparent to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100 -z-10" />
+
+          <div className="relative space-y-4">
+            <div className="flex items-center gap-2">
+              <Filter className="h-5 w-5 text-foreground/60" />
+              <h2 className="text-sm font-semibold uppercase tracking-[0.25em] text-foreground">
+                {t("filter.title")}
+              </h2>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-foreground/40" />
+                <Input
+                  placeholder={t("searchPlaceholder")}
+                  value={q}
+                  onChange={(e) => setQ(e.target.value)}
+                  className="pl-9 bg-background/60 border-border/40 focus:border-border/60"
+                />
+              </div>
+
+              <Select
+                value={status ?? "all"}
+                onValueChange={(value) =>
+                  setStatus(value === "all" ? undefined : value)
+                }
+              >
+                <SelectTrigger className="bg-background/60 border-border/40 focus:border-border/60">
+                  <SelectValue placeholder={t("filter.status.all")} />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">{t("filter.status.all")}</SelectItem>
+                  <SelectItem value="1">{t("filter.status.active")}</SelectItem>
+                  <SelectItem value="0">
+                    {t("filter.status.disabled")}
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+
+              <Select
+                value={deleted ?? "all"}
+                onValueChange={(value) =>
+                  setDeleted(value === "all" ? undefined : value)
+                }
+              >
+                <SelectTrigger className="bg-background/60 border-border/40 focus:border-border/60">
+                  <SelectValue placeholder={t("filter.deleted.all")} />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">{t("filter.deleted.all")}</SelectItem>
+                  <SelectItem value="false">
+                    {t("filter.deleted.normal")}
+                  </SelectItem>
+                  <SelectItem value="true">
+                    {t("filter.deleted.deleted")}
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+
+              <Button
+                onClick={() => setPage(1)}
+                className="w-full"
+                variant="default"
+              >
+                {t("filter.apply")}
+              </Button>
+            </div>
+          </div>
+        </motion.div>
+
+        {isLoading ? (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="text-center py-12 text-foreground/60"
+          >
+            {t("loading")}
+          </motion.div>
+        ) : !data || data.items.length === 0 ? (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="text-center py-12 text-foreground/60"
+          >
+            {t("empty")}
+          </motion.div>
+        ) : (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.4, delay: 0.2 }}
+            className="grid gap-4 sm:grid-cols-1 lg:grid-cols-2 xl:grid-cols-3"
+          >
+            {data.items.map((user) => (
+              <UserCard
+                key={user.id}
+                user={user}
+                onToggleAdmin={onToggleAdmin}
+                onToggleStatus={onToggleStatus}
+                onToggleDeleted={onToggleDeleted}
+              />
+            ))}
+          </motion.div>
+        )}
+
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, delay: 0.3 }}
+          className="flex items-center justify-between rounded-2xl border border-border/40 bg-background/60 p-4 backdrop-blur"
+        >
+          <span className="text-sm text-foreground/60">
             {t("pagination.total", { count: data?.total ?? 0 })}
           </span>
           <div className="flex items-center gap-2">
@@ -223,7 +254,7 @@ export default function AdminUsersPage() {
             >
               {t("pagination.prev")}
             </Button>
-            <span className="text-sm">
+            <span className="text-sm min-w-[80px] text-center">
               {t("pagination.page", { page: data?.page ?? 1 })}
             </span>
             <Button
@@ -234,8 +265,8 @@ export default function AdminUsersPage() {
               {t("pagination.next")}
             </Button>
           </div>
-        </div>
-      </div>
+        </motion.div>
+      </motion.div>
     </div>
   )
 }

@@ -223,8 +223,25 @@
     "description": "NextBB Admin Page."
   },
   "AdminUsers": {
+    "title": "User Management",
+    "description": "Manage all users in the system, including role assignment and status management",
     "searchPlaceholder": "Search email or username",
+    "stats": {
+      "total": "Total Users",
+      "active": "Active Users",
+      "admin": "Administrators",
+      "deleted": "Deleted"
+    },
+    "card": {
+      "admin": "Admin",
+      "deleted": "Deleted",
+      "joined": "Joined",
+      "role": "Role",
+      "active": "Active",
+      "deletedStatus": "Deleted"
+    },
     "filter": {
+      "title": "Filters",
       "status": {
         "all": "All statuses",
         "active": "Active",

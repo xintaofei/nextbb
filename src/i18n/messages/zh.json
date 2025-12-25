@@ -223,8 +223,25 @@
     "description": "NextBB 管理后台页面。"
   },
   "AdminUsers": {
+    "title": "用户管理",
+    "description": "管理系统中的所有用户,包括角色分配、状态管理等",
     "searchPlaceholder": "搜索邮箱或用户名",
+    "stats": {
+      "total": "总用户数",
+      "active": "活跃用户",
+      "admin": "管理员",
+      "deleted": "已删除"
+    },
+    "card": {
+      "admin": "管理员",
+      "deleted": "已删除",
+      "joined": "加入于",
+      "role": "角色",
+      "active": "激活",
+      "deletedStatus": "删除"
+    },
     "filter": {
+      "title": "筛选",
       "status": {
         "all": "全部状态",
         "active": "正常",
