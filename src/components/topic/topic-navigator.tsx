@@ -54,6 +54,9 @@ export function TopicNavigator({
   const sliderCurrentRef = useRef<number>(Math.max(totalFloors, 1))
   const sliderAnimRef = useRef<number | null>(null)
   const scrollerRef = useRef<HTMLElement | null>(null)
+  const LAST_REGION_MAX_K = 5
+  const LAST_REGION_RESERVE_PX = 24
+  const clamp01 = (x: number) => Math.max(0, Math.min(1, x))
 
   const getScrollContainer = () => {
     const root =
@@ -118,14 +121,46 @@ export function TopicNavigator({
         ? scroller.scrollHeight - scroller.clientHeight
         : (document.documentElement?.scrollHeight ||
             document.body.scrollHeight) - window.innerHeight
-      const lastK = Math.max(1, Math.min(5, n - 1))
-      const startIdx = Math.max(1, n - lastK)
-      const startPos = positions[startIdx]
-      if (refAbs >= startPos) {
-        const denomLast = Math.max(1, maxAbs - startPos)
-        const p = Math.max(0, Math.min(1, (refAbs - startPos) / denomLast))
-        const frac = startIdx + p * lastK
-        const s = totalFloors > 0 ? totalFloors - (frac - 1) : 1
+      const useAllRegion = n <= LAST_REGION_MAX_K
+      const lastKAll = Math.max(1, n - 1)
+      const startIdxAll = 1
+      let seg = 1
+      if (refAbs <= positions[1]) {
+        seg = 1
+      } else {
+        for (let k = 1; k < n; k++) {
+          if (refAbs >= positions[k] && refAbs <= positions[k + 1]) {
+            seg = k
+            break
+          }
+          if (k === n - 1 && refAbs > positions[k + 1]) {
+            seg = n - 1
+          }
+        }
+      }
+      const remainingSegs = Math.max(0, n - seg)
+      const applyLastRegion = useAllRegion || remainingSegs <= LAST_REGION_MAX_K
+      if (applyLastRegion) {
+        let frac = 1
+        if (useAllRegion) {
+          const denomScroll = Math.max(1, maxAbs - LAST_REGION_RESERVE_PX)
+          const p = clamp01(refAbs / denomScroll)
+          frac = startIdxAll + p * lastKAll
+        } else {
+          const startIdx = seg
+          const lastK = Math.max(1, n - seg)
+          const startPosDyn = positions[startIdx]
+          let denomLast = Math.max(
+            1,
+            maxAbs - startPosDyn - LAST_REGION_RESERVE_PX
+          )
+          if (denomLast < 1)
+            denomLast = Math.max(1, (positions[n] ?? maxAbs) - startPosDyn)
+          const p = clamp01((refAbs - startPosDyn) / denomLast)
+          frac = startIdx + p * lastK
+        }
+        const sRaw = totalFloors > 0 ? totalFloors - (frac - 1) : 1
+        const s = Math.max(1, Math.min(totalFloors, sRaw))
         if (!isDraggingRef.current) {
           setSliderValue([s])
           sliderCurrentRef.current = s
@@ -148,26 +183,13 @@ export function TopicNavigator({
         })
         return
       }
-      let seg = 1
-      if (refAbs <= positions[1]) {
-        seg = 1
-      } else {
-        for (let k = 1; k < n; k++) {
-          if (refAbs >= positions[k] && refAbs <= positions[k + 1]) {
-            seg = k
-            break
-          }
-          if (k === n - 1 && refAbs > positions[k + 1]) {
-            seg = n - 1
-          }
-        }
-      }
       const yA = positions[seg]
       const yB = positions[Math.min(seg + 1, n)]
       const denom = Math.max(1, yB - yA)
-      const t = Math.min(1, Math.max(0, (refAbs - yA) / denom))
+      const t = clamp01((refAbs - yA) / denom)
       const frac = seg + t
-      const s = totalFloors > 0 ? totalFloors - (frac - 1) : 1
+      const sRaw = totalFloors > 0 ? totalFloors - (frac - 1) : 1
+      const s = Math.max(1, Math.min(totalFloors, sRaw))
       if (!isDraggingRef.current) {
         setSliderValue([s])
         sliderCurrentRef.current = s
