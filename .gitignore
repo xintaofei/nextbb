@@ -3,6 +3,8 @@
 #ide
 .idea
 .trae
+.cursor
+.vscode
 
 # dependencies
 /node_modules
