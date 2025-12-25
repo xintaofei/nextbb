@@ -100,15 +100,25 @@ export function TopicNavigator({
   }
 
   useEffect(() => {
-    // 收集所有带 data-post-anchor 属性的元素
-    anchorsRef.current = Array.from(
-      document.querySelectorAll<HTMLElement>("[data-post-anchor]")
-    )
+    /**
+     * 收集锚点函数:从 DOM 中重新收集所有帖子锚点
+     * 支持动态加载场景,确保新增的帖子节点也能被收集
+     */
+    const collectAnchors = () => {
+      const newAnchors = Array.from(
+        document.querySelectorAll<HTMLElement>("[data-post-anchor]")
+      )
+      anchorsRef.current = newAnchors
+      return newAnchors.length
+    }
+
+    // 初始收集锚点
+    collectAnchors()
     // 获取滚动容器
     scrollerRef.current = getScrollContainer()
 
     /**
-     * 核心计算函数：根据当前滚动位置计算并更新滑块状态
+     * 核心计算函数:根据当前滚动位置计算并更新滑块状态
      * 根据设计文档的统一坐标映射公式实现
      */
     const measure = () => {
@@ -233,12 +243,55 @@ export function TopicNavigator({
       })
     }
     const onResize = () => {
-      anchorsRef.current = Array.from(
-        document.querySelectorAll<HTMLElement>("[data-post-anchor]")
-      )
+      collectAnchors()
       measure()
       window.requestAnimationFrame(() => {
         updateLabelPos()
+      })
+    }
+
+    // 监听 DOM 变化,当新的帖子节点被添加时重新收集锚点
+    const observer = new MutationObserver((mutations) => {
+      let shouldUpdate = false
+      for (const mutation of mutations) {
+        if (mutation.type === "childList") {
+          // 检查是否有新增的锚点节点
+          for (const node of mutation.addedNodes) {
+            if (node instanceof HTMLElement) {
+              if (
+                node.hasAttribute("data-post-anchor") ||
+                node.querySelector("[data-post-anchor]")
+              ) {
+                shouldUpdate = true
+                break
+              }
+            }
+          }
+        }
+        if (shouldUpdate) break
+      }
+      if (shouldUpdate) {
+        const prevCount = anchorsRef.current.length
+        const newCount = collectAnchors()
+        // 只有当锚点数量变化时才重新计算
+        if (newCount !== prevCount) {
+          // 延迟执行,确保 DOM 完全更新
+          setTimeout(() => {
+            measure()
+            window.requestAnimationFrame(() => {
+              updateLabelPos()
+            })
+          }, 100)
+        }
+      }
+    })
+
+    // 观察包含帖子列表的容器
+    const container = document.querySelector('[data-slot="timeline-steps"]')
+    if (container) {
+      observer.observe(container, {
+        childList: true,
+        subtree: true,
       })
     }
     if (scrollerRef.current) {
@@ -251,11 +304,18 @@ export function TopicNavigator({
       })
     }
     window.addEventListener("resize", onResize)
-    measure()
-    window.requestAnimationFrame(() => {
-      updateLabelPos()
-    })
+
+    // 初始测量:延迟执行确保 DOM 完全渲染
+    setTimeout(() => {
+      collectAnchors()
+      measure()
+      window.requestAnimationFrame(() => {
+        updateLabelPos()
+      })
+    }, 100)
+
     return () => {
+      observer.disconnect()
       if (scrollerRef.current)
         scrollerRef.current.removeEventListener("scroll", onScroll)
       else window.removeEventListener("scroll", onScroll)
