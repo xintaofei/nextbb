@@ -568,6 +568,7 @@ export default function TopicPage() {
         </div>
         <TopicNavigator
           total={totalPosts}
+          loadedCount={posts.length}
           isAuthenticated={!!currentUserId}
           onReplyTopic={() => {
             setReplyToPostId(null)

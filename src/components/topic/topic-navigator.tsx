@@ -21,7 +21,8 @@ import {
 } from "lucide-react"
 
 type TopicNavigatorProps = {
-  total: number
+  total: number // 服务器返回的总帖子数（用于显示）
+  loadedCount?: number // 当前已加载的帖子数（用于滑块计算）
   isAuthenticated?: boolean
   onReplyTopic?: () => void
   topicLoading?: boolean
@@ -30,6 +31,7 @@ type TopicNavigatorProps = {
 
 export function TopicNavigator({
   total,
+  loadedCount,
   isAuthenticated,
   onReplyTopic,
   topicLoading,
@@ -37,7 +39,10 @@ export function TopicNavigator({
 }: TopicNavigatorProps) {
   const t = useTranslations("Topic.Navigator")
   const router = useRouter()
+  // 用于显示的总楼层数（基于服务器总数）
   const totalFloors = Math.max(total - 1, 0)
+  // 用于滑块计算的实际楼层数（基于已加载的帖子数）
+  const actualFloors = Math.max((loadedCount ?? total) - 1, 0)
   const [current, setCurrent] = useState(1)
   const currentRef = useRef(1)
   const [sliderValue, setSliderValue] = useState<number[]>([
@@ -123,7 +128,8 @@ export function TopicNavigator({
      */
     const measure = () => {
       const anchors = anchorsRef.current
-      const n = anchors.length - 1 // 总楼层数（排除主楼）
+      // 使用实际 DOM 中的锚点数量（排除主楼 post-1）
+      const n = anchors.length - 1
 
       // 边界情况处理
       if (n <= 0) return
@@ -329,7 +335,7 @@ export function TopicNavigator({
         sliderAnimRef.current = null
       }
     }
-  }, [totalFloors, repliesLoading])
+  }, [actualFloors, repliesLoading])
 
   const scrollToPost = (n: number) => {
     const id = `post-${n}`
@@ -353,7 +359,9 @@ export function TopicNavigator({
       setCurrent(floor)
       currentRef.current = floor
       // 滑块值计算：楼层号越大，滑块值越小（方向相反）
-      setSliderValue([totalFloors - floor + 1])
+      // 使用实际已加载的楼层数
+      const loadedFloors = anchorsRef.current.length - 1
+      setSliderValue([loadedFloors - floor + 1])
       // 更新作者信息：anchorsRef[i] 对应 post-${i+1}，所以使用 n-1 索引
       const anchorEl = anchorsRef.current[n - 1]
       const name =
@@ -374,7 +382,11 @@ export function TopicNavigator({
   }
 
   const jumpFirst = () => scrollToPost(2)
-  const jumpLast = () => scrollToPost(totalFloors + 1)
+  // 跳转到最后一楼：使用实际已加载的楼层数
+  const jumpLast = () => {
+    const loadedFloors = anchorsRef.current.length - 1
+    scrollToPost(loadedFloors + 1)
+  }
 
   return (
     <div className="hidden lg:flex lg:flex-col sticky top-8 w-44 h-80 shrink-0 gap-3">
@@ -453,16 +465,17 @@ export function TopicNavigator({
                   <Slider
                     orientation="vertical"
                     min={1}
-                    max={Math.max(totalFloors, 2)} // 确保至少有2的范围，避免单楼层时滑块在底部
+                    max={Math.max(actualFloors, 2)} // 确保至少有2的范围，避免单楼层时滑块在底部
                     step={0.001}
                     value={sliderValue}
-                    disabled={totalFloors === 1} // 单楼层时禁用滑块
+                    disabled={actualFloors === 1} // 单楼层时禁用滑块
                     onValueChange={(v) => {
                       // 设置拖动标志
                       isDraggingRef.current = true
                       setSliderValue(v)
 
                       const anchors = anchorsRef.current
+                      // 使用实际 DOM 中的锚点数量
                       const n = anchors.length - 1
                       if (n <= 0) return
 
@@ -525,7 +538,7 @@ export function TopicNavigator({
                       // 释放拖动标志
                       isDraggingRef.current = false
 
-                      // 计算目标楼层
+                      // 计算目标楼层：使用实际 DOM 中的锚点数量
                       const n = anchorsRef.current.length - 1
                       if (n <= 0) return
 
@@ -586,7 +599,7 @@ export function TopicNavigator({
                     size="icon"
                     aria-label={t("aria.toLast")}
                     onClick={jumpLast}
-                    disabled={current >= totalFloors}
+                    disabled={current >= actualFloors}
                   >
                     <ChevronsDown className="size-4" />
                   </Button>
