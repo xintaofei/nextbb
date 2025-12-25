@@ -5,6 +5,8 @@
 .trae
 .cursor
 .vscode
+.qoder
+.git
 
 # dependencies
 /node_modules
