@@ -114,34 +114,59 @@ export function TopicNavigator({
       for (let k = 1; k <= n; k++) {
         positions[k] = getRelativeTop(anchors[k], scroller)
       }
+      const maxAbs = scroller
+        ? scroller.scrollHeight - scroller.clientHeight
+        : (document.documentElement?.scrollHeight ||
+            document.body.scrollHeight) - window.innerHeight
+      const lastK = Math.max(1, Math.min(5, n - 1))
+      const startIdx = Math.max(1, n - lastK)
+      const startPos = positions[startIdx]
+      if (refAbs >= startPos) {
+        const denomLast = Math.max(1, maxAbs - startPos)
+        const p = Math.max(0, Math.min(1, (refAbs - startPos) / denomLast))
+        const frac = startIdx + p * lastK
+        const s = totalFloors > 0 ? totalFloors - (frac - 1) : 1
+        if (!isDraggingRef.current) {
+          setSliderValue([s])
+          sliderCurrentRef.current = s
+          sliderTargetRef.current = s
+        }
+        const idxReply = Math.max(1, Math.min(n, Math.round(frac)))
+        const el = anchors[idxReply]
+        const name =
+          el?.querySelector<HTMLElement>("[data-slot=timeline-steps-title]")
+            ?.textContent || ""
+        if (idxReply !== currentRef.current) {
+          currentRef.current = idxReply
+          setCurrent(idxReply)
+          setAuthor(name)
+        } else if (!authorRef.current) {
+          setAuthor(name)
+        }
+        window.requestAnimationFrame(() => {
+          updateLabelPos()
+        })
+        return
+      }
       let seg = 1
-      const atBottom = scroller
-        ? Math.abs(
-            scroller.scrollTop - (scroller.scrollHeight - scroller.clientHeight)
-          ) < 1
-        : window.innerHeight + window.scrollY >=
-          (document.documentElement?.scrollHeight ||
-            document.body.scrollHeight) -
-            1
-      if (!atBottom) {
-        if (refAbs <= positions[1]) {
-          seg = 1
-        } else if (refAbs >= positions[n]) {
-          seg = Math.max(1, n - 1)
-        } else {
-          for (let k = 1; k < n; k++) {
-            if (refAbs >= positions[k] && refAbs <= positions[k + 1]) {
-              seg = k
-              break
-            }
+      if (refAbs <= positions[1]) {
+        seg = 1
+      } else {
+        for (let k = 1; k < n; k++) {
+          if (refAbs >= positions[k] && refAbs <= positions[k + 1]) {
+            seg = k
+            break
+          }
+          if (k === n - 1 && refAbs > positions[k + 1]) {
+            seg = n - 1
           }
         }
       }
       const yA = positions[seg]
       const yB = positions[Math.min(seg + 1, n)]
       const denom = Math.max(1, yB - yA)
-      const t = atBottom ? 1 : Math.min(1, Math.max(0, (refAbs - yA) / denom))
-      const frac = atBottom ? n : seg + t
+      const t = Math.min(1, Math.max(0, (refAbs - yA) / denom))
+      const frac = seg + t
       const s = totalFloors > 0 ? totalFloors - (frac - 1) : 1
       if (!isDraggingRef.current) {
         setSliderValue([s])
