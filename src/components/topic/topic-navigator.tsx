@@ -50,13 +50,11 @@ export function TopicNavigator({
   const sliderWrapRef = useRef<HTMLDivElement | null>(null)
   const labelRef = useRef<HTMLDivElement | null>(null)
   const isDraggingRef = useRef(false)
-  const sliderTargetRef = useRef<number>(Math.max(totalFloors, 1))
-  const sliderCurrentRef = useRef<number>(Math.max(totalFloors, 1))
   const sliderAnimRef = useRef<number | null>(null)
   const scrollerRef = useRef<HTMLElement | null>(null)
-  const LAST_REGION_MAX_K = 5
-  const LAST_REGION_RESERVE_PX = 24
-  const clamp01 = (x: number) => Math.max(0, Math.min(1, x))
+  // 尾部楼层覆盖策略常量
+  const RESERVE_PX = 24 // 尾部保留像素
+  const TAIL_THRESHOLD_FLOORS = 5 // 触发尾部特殊处理的剩余楼层阈值
 
   const getScrollContainer = () => {
     const root =
@@ -102,78 +100,45 @@ export function TopicNavigator({
   }
 
   useEffect(() => {
+    // 收集所有带 data-post-anchor 属性的元素
     anchorsRef.current = Array.from(
       document.querySelectorAll<HTMLElement>("[data-post-anchor]")
     )
+    // 获取滚动容器
     scrollerRef.current = getScrollContainer()
+
+    /**
+     * 核心计算函数：根据当前滚动位置计算并更新滑块状态
+     * 根据设计文档的统一坐标映射公式实现
+     */
     const measure = () => {
       const anchors = anchorsRef.current
-      if (!anchors.length) return
-      const scroller = scrollerRef.current
-      const refAbs = scroller ? scroller.scrollTop : window.scrollY
-      const n = anchors.length - 1
+      const n = anchors.length - 1 // 总楼层数（排除主楼）
+
+      // 边界情况处理
       if (n <= 0) return
-      const positions: number[] = []
-      for (let k = 1; k <= n; k++) {
-        positions[k] = getRelativeTop(anchors[k], scroller)
-      }
-      const maxAbs = scroller
+
+      const scroller = scrollerRef.current
+      const scrollTop = scroller ? scroller.scrollTop : window.scrollY
+
+      // 计算最大滚动高度
+      const maxScrollHeight = scroller
         ? scroller.scrollHeight - scroller.clientHeight
         : (document.documentElement?.scrollHeight ||
             document.body.scrollHeight) - window.innerHeight
-      const useAllRegion = n <= LAST_REGION_MAX_K
-      const lastKAll = Math.max(1, n - 1)
-      const startIdxAll = 1
-      let seg = 1
-      if (refAbs <= positions[1]) {
-        seg = 1
-      } else {
-        for (let k = 1; k < n; k++) {
-          if (refAbs >= positions[k] && refAbs <= positions[k + 1]) {
-            seg = k
-            break
-          }
-          if (k === n - 1 && refAbs > positions[k + 1]) {
-            seg = n - 1
-          }
-        }
-      }
-      const remainingSegs = Math.max(0, n - seg)
-      const applyLastRegion = useAllRegion || remainingSegs <= LAST_REGION_MAX_K
-      if (applyLastRegion) {
-        let frac = 1
-        if (useAllRegion) {
-          const denomScroll = Math.max(1, maxAbs - LAST_REGION_RESERVE_PX)
-          const p = clamp01(refAbs / denomScroll)
-          frac = startIdxAll + p * lastKAll
-        } else {
-          const startIdx = seg
-          const lastK = Math.max(1, n - seg)
-          const startPosDyn = positions[startIdx]
-          let denomLast = Math.max(
-            1,
-            maxAbs - startPosDyn - LAST_REGION_RESERVE_PX
-          )
-          if (denomLast < 1)
-            denomLast = Math.max(1, (positions[n] ?? maxAbs) - startPosDyn)
-          const p = clamp01((refAbs - startPosDyn) / denomLast)
-          frac = startIdx + p * lastK
-        }
-        const sRaw = totalFloors > 0 ? totalFloors - (frac - 1) : 1
-        const s = Math.max(1, Math.min(totalFloors, sRaw))
+
+      // 特殊情况：仅有1楼
+      if (n === 1) {
         if (!isDraggingRef.current) {
-          setSliderValue([s])
-          sliderCurrentRef.current = s
-          sliderTargetRef.current = s
+          setSliderValue([1])
         }
-        const idxReply = Math.max(1, Math.min(n, Math.round(frac)))
-        const el = anchors[idxReply]
+        const el = anchors[1]
         const name =
           el?.querySelector<HTMLElement>("[data-slot=timeline-steps-title]")
             ?.textContent || ""
-        if (idxReply !== currentRef.current) {
-          currentRef.current = idxReply
-          setCurrent(idxReply)
+        if (currentRef.current !== 1) {
+          currentRef.current = 1
+          setCurrent(1)
           setAuthor(name)
         } else if (!authorRef.current) {
           setAuthor(name)
@@ -183,30 +148,77 @@ export function TopicNavigator({
         })
         return
       }
-      const yA = positions[seg]
-      const yB = positions[Math.min(seg + 1, n)]
-      const denom = Math.max(1, yB - yA)
-      const t = clamp01((refAbs - yA) / denom)
-      const frac = seg + t
-      const sRaw = totalFloors > 0 ? totalFloors - (frac - 1) : 1
-      const s = Math.max(1, Math.min(totalFloors, sRaw))
-      if (!isDraggingRef.current) {
-        setSliderValue([s])
-        sliderCurrentRef.current = s
-        sliderTargetRef.current = s
+
+      // 收集所有楼层的位置（从1楼开始）
+      const positions: number[] = []
+      for (let i = 1; i <= n; i++) {
+        positions[i] = getRelativeTop(anchors[i], scroller)
       }
-      const idxReply = Math.max(1, Math.min(n, Math.round(frac)))
-      const el = anchors[idxReply]
+
+      // 判断是否需要尾部特殊处理
+      const lastAnchorTop = positions[n]
+      const needTailHandling = lastAnchorTop > maxScrollHeight - RESERVE_PX
+
+      let floorFloat: number // 当前对应的楼层号（浮点）
+
+      if (!needTailHandling) {
+        // 全局线性映射
+        const scrollProgress =
+          maxScrollHeight > 0 ? scrollTop / maxScrollHeight : 0
+        floorFloat = 1 + scrollProgress * (n - 1)
+      } else {
+        // 双区域映射策略
+        const lastStartFloor = Math.max(1, n - TAIL_THRESHOLD_FLOORS)
+        const lastStartAnchorTop = positions[lastStartFloor]
+
+        if (scrollTop <= lastStartAnchorTop) {
+          // 常规区：线性映射
+          const scrollProgress =
+            lastStartAnchorTop > 0 ? scrollTop / lastStartAnchorTop : 0
+          floorFloat = 1 + scrollProgress * (lastStartFloor - 1)
+        } else {
+          // 尾部区：线性映射
+          const tailScrollRange = Math.max(
+            1,
+            maxScrollHeight - lastStartAnchorTop - RESERVE_PX
+          )
+          const tailProgress =
+            (scrollTop - lastStartAnchorTop) / tailScrollRange
+          const clampedTailProgress = Math.max(0, Math.min(1, tailProgress))
+          floorFloat =
+            lastStartFloor + clampedTailProgress * (n - lastStartFloor)
+        }
+      }
+
+      // 限制 floorFloat 在有效范围内
+      floorFloat = Math.max(1, Math.min(n, floorFloat))
+
+      // 转换为滑块值（注意方向相反）
+      const sliderValue = n - floorFloat + 1
+
+      // 更新滑块位置（仅在非拖动状态下）
+      if (!isDraggingRef.current) {
+        setSliderValue([sliderValue])
+      }
+
+      // 定位当前楼层的锚点索引
+      const currentFloor = Math.round(floorFloat)
+      const anchorIndex = currentFloor // anchors[i] 对应 i 楼
+      const el = anchors[anchorIndex]
       const name =
         el?.querySelector<HTMLElement>("[data-slot=timeline-steps-title]")
           ?.textContent || ""
-      if (idxReply !== currentRef.current) {
-        currentRef.current = idxReply
-        setCurrent(idxReply)
+
+      // 仅在楼层变化时更新状态（性能优化）
+      if (currentFloor !== currentRef.current) {
+        currentRef.current = currentFloor
+        setCurrent(currentFloor)
         setAuthor(name)
       } else if (!authorRef.current) {
         setAuthor(name)
       }
+
+      // 更新标签位置
       window.requestAnimationFrame(() => {
         updateLabelPos()
       })
@@ -367,52 +379,111 @@ export function TopicNavigator({
                     step={0.001}
                     value={sliderValue}
                     onValueChange={(v) => {
+                      // 设置拖动标志
                       isDraggingRef.current = true
                       setSliderValue(v)
+
                       const anchors = anchorsRef.current
-                      if (anchors.length > 0) {
-                        const s = v[0]
-                        const t =
-                          totalFloors > 1
-                            ? (totalFloors - s) / (totalFloors - 1)
-                            : 0
-                        const idxFloat = t * (totalFloors - 1)
-                        const iReply = Math.floor(idxFloat) + 1
-                        const f = Math.min(
-                          1,
-                          Math.max(0, idxFloat - Math.floor(idxFloat))
-                        )
-                        const scroller = getScrollContainer()
-                        const posIEl = anchors[iReply]
-                        const posJEl =
-                          anchors[Math.min(iReply + 1, totalFloors)] || posIEl
-                        let yI = 0
-                        if (posIEl) {
-                          yI = getRelativeTop(posIEl, scroller)
+                      const n = anchors.length - 1
+                      if (n <= 0) return
+
+                      const s = v[0] // 当前滑块值
+                      // 反推楼层号（浮点）
+                      const floorFloat = n - s + 1
+
+                      // 计算插值位置：支持中间位置的平滑滚动
+                      const lowerFloor = Math.floor(floorFloat)
+                      const upperFloor = Math.ceil(floorFloat)
+                      const fraction = floorFloat - lowerFloor
+
+                      // 确保楼层索引在有效范围内
+                      const safeLower = Math.max(1, Math.min(n, lowerFloor))
+                      const safeUpper = Math.max(1, Math.min(n, upperFloor))
+
+                      const scroller = getScrollContainer()
+                      const lowerAnchor = anchors[safeLower]
+                      const upperAnchor = anchors[safeUpper]
+
+                      if (lowerAnchor && upperAnchor) {
+                        const lowerTop = getRelativeTop(lowerAnchor, scroller)
+                        const upperTop = getRelativeTop(upperAnchor, scroller)
+                        // 插值计算目标滚动位置
+                        const targetScrollTop =
+                          lowerTop * (1 - fraction) + upperTop * fraction
+
+                        // 拖动中使用 auto 立即跳转，避免动画延迟
+                        if (scroller) {
+                          scroller.scrollTo({
+                            top: targetScrollTop,
+                            behavior: "auto",
+                          })
+                        } else {
+                          window.scrollTo({
+                            top: targetScrollTop,
+                            behavior: "auto",
+                          })
                         }
-                        let yJ = yI
-                        if (posJEl) {
-                          yJ = getRelativeTop(posJEl, scroller)
-                        }
-                        const y = yI * (1 - f) + yJ * f
-                        if (scroller)
-                          scroller.scrollTo({ top: y, behavior: "auto" })
-                        else window.scrollTo({ top: y, behavior: "auto" })
-                        setCurrent(iReply)
-                        currentRef.current = iReply
-                        const name =
-                          anchors[iReply]?.querySelector<HTMLElement>(
-                            "[data-slot=timeline-steps-title]"
-                          )?.textContent || ""
-                        setAuthor(name)
                       }
+
+                      // 更新当前楼层信息
+                      const currentFloor = Math.round(floorFloat)
+                      setCurrent(currentFloor)
+                      currentRef.current = currentFloor
+
+                      const anchorEl = anchors[currentFloor]
+                      const name =
+                        anchorEl?.querySelector<HTMLElement>(
+                          "[data-slot=timeline-steps-title]"
+                        )?.textContent || ""
+                      setAuthor(name)
+
+                      // 更新标签位置
                       window.requestAnimationFrame(() => {
                         updateLabelPos()
                       })
                     }}
                     onValueCommit={(v) => {
+                      // 释放拖动标志
                       isDraggingRef.current = false
-                      scrollToPost(totalFloors - v[0] + 2)
+
+                      // 计算目标楼层
+                      const n = anchorsRef.current.length - 1
+                      if (n <= 0) return
+
+                      const floorFloat = n - v[0] + 1
+                      const targetFloor = Math.round(floorFloat)
+                      const anchorIndex = targetFloor
+
+                      const scroller = getScrollContainer()
+                      const targetAnchor = anchorsRef.current[anchorIndex]
+
+                      if (targetAnchor) {
+                        const top = getRelativeTop(targetAnchor, scroller)
+
+                        // 释放时使用 smooth 平滑滚动
+                        if (scroller) {
+                          scroller.scrollTo({ top, behavior: "smooth" })
+                          // fallback: 确保滚动到位
+                          setTimeout(() => {
+                            if (Math.abs(scroller.scrollTop - top) > 1) {
+                              scroller.scrollTop = top
+                            }
+                          }, 300)
+                        } else {
+                          window.scrollTo({ top, behavior: "smooth" })
+                          // fallback: 确保滚动到位
+                          setTimeout(() => {
+                            const se =
+                              document.scrollingElement as HTMLElement | null
+                            if (se && Math.abs(se.scrollTop - top) > 1) {
+                              se.scrollTop = top
+                            }
+                            if (Math.abs(window.scrollY - top) > 1) {
+                              window.scrollTo(0, top)
+                            }
+                          }, 300)
+                        }
+                      }
                     }}
                     className="h-full [&_[data-slot=slider-track]]:w-px [&_[data-slot=slider-track]]:bg-border [&_[data-slot=slider-range]]:bg-transparent [&_[data-slot=slider-thumb]]:w-[5px] [&_[data-slot=slider-thumb]]:h-16 [&_[data-slot=slider-thumb]]:rounded-full [&_[data-slot=slider-thumb]]:bg-primary [&_[data-slot=slider-thumb]]:border-0"
                   />
