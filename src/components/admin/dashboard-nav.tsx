@@ -1,16 +1,7 @@
 "use client"
 
 import { motion } from "framer-motion"
-import {
-  BarChart3,
-  Activity,
-  Users,
-  TrendingUp,
-  Clock,
-  Menu,
-  Folder,
-  Tag,
-} from "lucide-react"
+import { BarChart3, Users, Menu, Folder, Tag } from "lucide-react"
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
@@ -21,12 +12,9 @@ export function DashboardNav() {
 
   const navItems = [
     { label: "Overview", icon: BarChart3, path: "/admin" },
-    { label: "Activity", icon: Activity, path: "/admin" },
     { label: "Users", icon: Users, path: "/admin/users" },
     { label: "Categories", icon: Folder, path: "/admin/categories" },
     { label: "Tags", icon: Tag, path: "/admin/tags" },
-    { label: "Analytics", icon: TrendingUp, path: "/admin" },
-    { label: "History", icon: Clock, path: "/admin" },
   ]
 
   return (
@@ -34,11 +22,11 @@ export function DashboardNav() {
       initial={{ opacity: 0, y: -10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4 }}
-      className="border-b border-border/40 bg-background/40 backdrop-blur-md"
+      className="px-6 border-b border-border/40 bg-background/40 backdrop-blur-md"
       role="navigation"
       aria-label="Main dashboard navigation"
     >
-      <div className="mx-auto max-w-7xl px-6 py-4">
+      <div className="mx-auto max-w-7xl py-4">
         <div className="flex items-center justify-between">
           <div className="text-xl font-semibold text-foreground tracking-tight">
             NextBB Admin
