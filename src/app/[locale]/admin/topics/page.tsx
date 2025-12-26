@@ -4,11 +4,11 @@ import { useMemo, useState } from "react"
 import useSWR from "swr"
 import { useTranslations } from "next-intl"
 import { motion } from "framer-motion"
-import { Search, Filter } from "lucide-react"
+import { Settings2, Search, Filter } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { TopicStatsCard } from "@/components/admin/topic-stats-card"
-import { TopicCard } from "@/components/admin/topic-card"
+import { TopicTable } from "@/components/admin/topic-table"
 import { TopicDialog } from "@/components/admin/topic-dialog"
 import {
   Select,
@@ -27,6 +27,13 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover"
+import { Label } from "@/components/ui/label"
+import { Switch } from "@/components/ui/switch"
 import { toast } from "sonner"
 
 type TopicListItem = {
@@ -122,6 +129,20 @@ export default function AdminTopicsPage() {
   const [order, setOrder] = useState("desc")
   const [page, setPage] = useState(1)
   const pageSize = 20
+
+  // 选中的主题IDs（批量操作）
+  const [selectedIds, setSelectedIds] = useState<string[]>([])
+
+  // 列显示配置
+  const [visibleColumns, setVisibleColumns] = useState({
+    select: true,
+    author: true,
+    category: true,
+    tags: true,
+    stats: true,
+    status: true,
+    time: true,
+  })
 
   const [dialogOpen, setDialogOpen] = useState(false)
   const [editingTopic, setEditingTopic] = useState<TopicListItem | undefined>(
@@ -313,6 +334,64 @@ export default function AdminTopicsPage() {
     }
   }
 
+  const handleSort = (column: string) => {
+    if (sortBy === column) {
+      setOrder(order === "asc" ? "desc" : "asc")
+    } else {
+      setSortBy(column)
+      setOrder("desc")
+    }
+  }
+
+  const handleColumnVisibilityChange = (
+    column: keyof typeof visibleColumns,
+    visible: boolean
+  ) => {
+    setVisibleColumns((prev) => ({ ...prev, [column]: visible }))
+  }
+
+  const handleBatchDelete = async () => {
+    if (selectedIds.length === 0) return
+
+    try {
+      await Promise.all(
+        selectedIds.map((id) =>
+          fetch(`/api/admin/topics/${id}`, {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ isDeleted: true }),
+          })
+        )
+      )
+      toast.success(t("message.batchDeleteSuccess"))
+      setSelectedIds([])
+      await mutate()
+    } catch {
+      toast.error(t("message.batchDeleteError"))
+    }
+  }
+
+  const handleBatchPin = async () => {
+    if (selectedIds.length === 0) return
+
+    try {
+      await Promise.all(
+        selectedIds.map((id) =>
+          fetch(`/api/admin/topics/${id}`, {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ isPinned: true }),
+          })
+        )
+      )
+      toast.success(t("message.batchPinSuccess"))
+      setSelectedIds([])
+      await mutate()
+    } catch {
+      toast.error(t("message.batchPinError"))
+    }
+  }
+
   return (
     <div className="relative px-6 py-8 lg:py-12">
       <motion.div
@@ -342,11 +421,142 @@ export default function AdminTopicsPage() {
           <div className="absolute inset-0 bg-linear-to-br from-foreground/4 via-transparent to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100 -z-10" />
 
           <div className="relative space-y-4">
-            <div className="flex items-center gap-2">
-              <Filter className="h-5 w-5 text-foreground/60" />
-              <h2 className="text-sm font-semibold uppercase tracking-[0.25em] text-foreground">
-                {t("filter.title")}
-              </h2>
+            <div className="flex items-center justify-between flex-wrap gap-4">
+              <div className="flex items-center gap-2">
+                <Filter className="h-5 w-5 text-foreground/60" />
+                <h2 className="text-sm font-semibold uppercase tracking-[0.25em] text-foreground">
+                  {t("filter.title")}
+                </h2>
+              </div>
+
+              <div className="flex items-center gap-2">
+                {/* 批量操作 */}
+                {selectedIds.length > 0 && (
+                  <div className="flex items-center gap-2 mr-4">
+                    <span className="text-sm text-foreground/60">
+                      {t("selected", { count: selectedIds.length })}
+                    </span>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={handleBatchPin}
+                    >
+                      {t("batchPin")}
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={handleBatchDelete}
+                      className="text-destructive hover:text-destructive"
+                    >
+                      {t("batchDelete")}
+                    </Button>
+                  </div>
+                )}
+
+                {/* 列配置 */}
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button variant="outline" size="sm">
+                      <Settings2 className="h-4 w-4 mr-2" />
+                      {t("columns")}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-64" align="end">
+                    <div className="space-y-4">
+                      <h4 className="font-medium text-sm">
+                        {t("columnsConfig")}
+                      </h4>
+                      <div className="space-y-3">
+                        <div className="flex items-center justify-between">
+                          <Label htmlFor="col-select" className="text-sm">
+                            {t("table.selectColumn")}
+                          </Label>
+                          <Switch
+                            id="col-select"
+                            checked={visibleColumns.select}
+                            onCheckedChange={(checked) =>
+                              handleColumnVisibilityChange("select", checked)
+                            }
+                          />
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <Label htmlFor="col-author" className="text-sm">
+                            {t("table.author")}
+                          </Label>
+                          <Switch
+                            id="col-author"
+                            checked={visibleColumns.author}
+                            onCheckedChange={(checked) =>
+                              handleColumnVisibilityChange("author", checked)
+                            }
+                          />
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <Label htmlFor="col-category" className="text-sm">
+                            {t("table.category")}
+                          </Label>
+                          <Switch
+                            id="col-category"
+                            checked={visibleColumns.category}
+                            onCheckedChange={(checked) =>
+                              handleColumnVisibilityChange("category", checked)
+                            }
+                          />
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <Label htmlFor="col-tags" className="text-sm">
+                            {t("table.tags")}
+                          </Label>
+                          <Switch
+                            id="col-tags"
+                            checked={visibleColumns.tags}
+                            onCheckedChange={(checked) =>
+                              handleColumnVisibilityChange("tags", checked)
+                            }
+                          />
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <Label htmlFor="col-stats" className="text-sm">
+                            {t("table.stats")}
+                          </Label>
+                          <Switch
+                            id="col-stats"
+                            checked={visibleColumns.stats}
+                            onCheckedChange={(checked) =>
+                              handleColumnVisibilityChange("stats", checked)
+                            }
+                          />
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <Label htmlFor="col-status" className="text-sm">
+                            {t("table.status")}
+                          </Label>
+                          <Switch
+                            id="col-status"
+                            checked={visibleColumns.status}
+                            onCheckedChange={(checked) =>
+                              handleColumnVisibilityChange("status", checked)
+                            }
+                          />
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <Label htmlFor="col-time" className="text-sm">
+                            {t("table.time")}
+                          </Label>
+                          <Switch
+                            id="col-time"
+                            checked={visibleColumns.time}
+                            onCheckedChange={(checked) =>
+                              handleColumnVisibilityChange("time", checked)
+                            }
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  </PopoverContent>
+                </Popover>
+              </div>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -487,19 +697,21 @@ export default function AdminTopicsPage() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.4, delay: 0.2 }}
-            className="grid gap-4 sm:grid-cols-1 lg:grid-cols-2 xl:grid-cols-3"
           >
-            {data.items.map((topic) => (
-              <TopicCard
-                key={topic.id}
-                topic={topic}
-                onEdit={handleEdit}
-                onDelete={handleDelete}
-                onRestore={handleRestore}
-                onTogglePin={handleTogglePin}
-                onToggleCommunity={handleToggleCommunity}
-              />
-            ))}
+            <TopicTable
+              topics={data.items}
+              selectedIds={selectedIds}
+              onSelectionChange={setSelectedIds}
+              onEdit={handleEdit}
+              onDelete={handleDelete}
+              onRestore={handleRestore}
+              onTogglePin={handleTogglePin}
+              onToggleCommunity={handleToggleCommunity}
+              visibleColumns={visibleColumns}
+              sortBy={sortBy}
+              order={order as "asc" | "desc"}
+              onSort={handleSort}
+            />
           </motion.div>
         )}
 
