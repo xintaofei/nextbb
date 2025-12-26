@@ -282,5 +282,158 @@
       "prev": "上一页",
       "next": "下一页"
     }
+  },
+  "AdminCategories": {
+    "title": "分类管理",
+    "description": "管理论坛分类，包括创建、编辑、排序等",
+    "createButton": "创建分类",
+    "searchPlaceholder": "搜索分类名称",
+    "stats": {
+      "total": "总分类数",
+      "active": "活跃分类",
+      "deleted": "已删除",
+      "hottest": "最热门"
+    },
+    "filter": {
+      "title": "筛选",
+      "deleted": {
+        "all": "全部删除状态",
+        "normal": "正常",
+        "deleted": "已删除"
+      },
+      "sortBy": "排序方式",
+      "sortByOptions": {
+        "updatedAt": "更新时间",
+        "sort": "排序值",
+        "topicCount": "话题数"
+      },
+      "apply": "应用筛选"
+    },
+    "card": {
+      "sort": "排序",
+      "topics": "话题",
+      "updatedAt": "更新于",
+      "deleted": "已删除",
+      "edit": "编辑",
+      "delete": "删除"
+    },
+    "dialog": {
+      "createTitle": "创建分类",
+      "editTitle": "编辑分类",
+      "name": "名称",
+      "namePlaceholder": "请输入分类名称",
+      "icon": "图标",
+      "iconPlaceholder": "点击选择 emoji",
+      "description": "描述",
+      "descriptionPlaceholder": "请输入分类描述",
+      "sortValue": "排序值",
+      "bgColor": "背景色",
+      "bgColorPlaceholder": "点击选择颜色",
+      "textColor": "字体颜色",
+      "textColorPlaceholder": "点击选择颜色",
+      "cancel": "取消",
+      "submit": "提交",
+      "colorPreview": "颜色预览",
+      "clearColor": "清除颜色"
+    },
+    "deleteConfirm": {
+      "title": "确认删除分类",
+      "description": "此操作将软删除该分类，相关联的话题不会受到影响。删除后可以通过筛选器查看和恢复。",
+      "cancel": "取消",
+      "confirm": "确认删除"
+    },
+    "message": {
+      "createSuccess": "分类创建成功",
+      "updateSuccess": "分类更新成功",
+      "deleteSuccess": "分类删除成功",
+      "createError": "分类创建失败",
+      "updateError": "分类更新失败",
+      "deleteError": "分类删除失败"
+    },
+    "loading": "加载中...",
+    "empty": "暂无数据",
+    "pagination": {
+      "total": "共 {count} 条",
+      "page": "第 {page} 页",
+      "prev": "上一页",
+      "next": "下一页"
+    }
+  },
+  "AdminTags": {
+    "title": "标签管理",
+    "description": "管理论坛标签，包括创建、编辑、排序等",
+    "createButton": "创建标签",
+    "searchPlaceholder": "搜索标签名称",
+    "stats": {
+      "total": "总标签数",
+      "active": "活跃标签",
+      "deleted": "已删除",
+      "hottest": "最热门"
+    },
+    "filter": {
+      "title": "筛选",
+      "deleted": {
+        "all": "全部删除状态",
+        "normal": "正常",
+        "deleted": "已删除"
+      },
+      "sortBy": "排序方式",
+      "sortByOptions": {
+        "updatedAt": "更新时间",
+        "sort": "排序值",
+        "usageCount": "使用次数"
+      },
+      "apply": "应用筛选"
+    },
+    "card": {
+      "sort": "排序",
+      "usages": "使用",
+      "times": "次",
+      "updatedAt": "更新于",
+      "deleted": "已删除",
+      "edit": "编辑",
+      "delete": "删除"
+    },
+    "dialog": {
+      "createTitle": "创建标签",
+      "editTitle": "编辑标签",
+      "name": "名称",
+      "namePlaceholder": "请输入标签名称",
+      "icon": "图标",
+      "iconPlaceholder": "点击选择 emoji",
+      "description": "描述",
+      "descriptionPlaceholder": "请输入标签描述",
+      "sortValue": "排序值",
+      "bgColor": "背景色",
+      "bgColorPlaceholder": "点击选择颜色",
+      "textColor": "字体颜色",
+      "textColorPlaceholder": "点击选择颜色",
+      "cancel": "取消",
+      "submit": "提交",
+      "colorPreview": "颜色预览",
+      "clearColor": "清除颜色"
+    },
+    "deleteConfirm": {
+      "title": "确认删除标签",
+      "description": "此操作将软删除该标签，相关联的话题不会受到影响。删除后可以通过筛选器查看和恢复。",
+      "cancel": "取消",
+      "confirm": "确认删除"
+    },
+    "message": {
+      "createSuccess": "标签创建成功",
+      "updateSuccess": "标签更新成功",
+      "deleteSuccess": "标签删除成功",
+      "createError": "标签创建失败",
+      "updateError": "标签更新失败",
+      "deleteError": "标签删除失败"
+    },
+    "loading": "加载中...",
+    "empty": "暂无数据",
+    "pagination": {
+      "total": "共 {count} 条",
+      "page": "第 {page} 页",
+      "prev": "上一页",
+      "next": "下一页"
+    }
   }
 }

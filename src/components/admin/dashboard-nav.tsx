@@ -8,6 +8,8 @@ import {
   TrendingUp,
   Clock,
   Menu,
+  Folder,
+  Tag,
 } from "lucide-react"
 import { useState } from "react"
 import { useRouter } from "next/navigation"
@@ -18,11 +20,13 @@ export function DashboardNav() {
   const router = useRouter()
 
   const navItems = [
-    { label: "Overview", icon: BarChart3 },
-    { label: "Activity", icon: Activity },
-    { label: "Users", icon: Users },
-    { label: "Analytics", icon: TrendingUp },
-    { label: "History", icon: Clock },
+    { label: "Overview", icon: BarChart3, path: "/admin" },
+    { label: "Activity", icon: Activity, path: "/admin" },
+    { label: "Users", icon: Users, path: "/admin/users" },
+    { label: "Categories", icon: Folder, path: "/admin/categories" },
+    { label: "Tags", icon: Tag, path: "/admin/tags" },
+    { label: "Analytics", icon: TrendingUp, path: "/admin" },
+    { label: "History", icon: Clock, path: "/admin" },
   ]
 
   return (
@@ -66,10 +70,7 @@ export function DashboardNav() {
                   className="gap-2 text-foreground/70 hover:text-foreground hover:bg-background/50 rounded-lg"
                   role="menuitem"
                   aria-current={item.label === "Overview" ? "page" : undefined}
-                  onClick={() => {
-                    if (item.label === "Users") router.push("/admin/users")
-                    else if (item.label === "Overview") router.push("/admin")
-                  }}
+                  onClick={() => router.push(item.path)}
                 >
                   <Icon className="h-4 w-4" aria-hidden="true" />
                   <span className="text-xs uppercase tracking-widest">
@@ -100,10 +101,7 @@ export function DashboardNav() {
                   size="sm"
                   className="justify-start gap-2 text-foreground/70 hover:text-foreground hover:bg-background/50"
                   role="menuitem"
-                  onClick={() => {
-                    if (item.label === "Users") router.push("/admin/users")
-                    else if (item.label === "Overview") router.push("/admin")
-                  }}
+                  onClick={() => router.push(item.path)}
                 >
                   <Icon className="h-4 w-4" aria-hidden="true" />
                   <span className="text-xs uppercase tracking-widest">

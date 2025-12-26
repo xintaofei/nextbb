@@ -282,5 +282,158 @@
       "prev": "Prev",
       "next": "Next"
     }
+  },
+  "AdminCategories": {
+    "title": "Category Management",
+    "description": "Manage forum categories including create, edit, sort, etc.",
+    "createButton": "Create Category",
+    "searchPlaceholder": "Search category name",
+    "stats": {
+      "total": "Total Categories",
+      "active": "Active Categories",
+      "deleted": "Deleted",
+      "hottest": "Hottest"
+    },
+    "filter": {
+      "title": "Filter",
+      "deleted": {
+        "all": "All Deletion Status",
+        "normal": "Normal",
+        "deleted": "Deleted"
+      },
+      "sortBy": "Sort By",
+      "sortByOptions": {
+        "updatedAt": "Updated Time",
+        "sort": "Sort Value",
+        "topicCount": "Topic Count"
+      },
+      "apply": "Apply Filter"
+    },
+    "card": {
+      "sort": "Sort",
+      "topics": "Topics",
+      "updatedAt": "Updated",
+      "deleted": "Deleted",
+      "edit": "Edit",
+      "delete": "Delete"
+    },
+    "dialog": {
+      "createTitle": "Create Category",
+      "editTitle": "Edit Category",
+      "name": "Name",
+      "namePlaceholder": "Enter category name",
+      "icon": "Icon",
+      "iconPlaceholder": "Click to select emoji",
+      "description": "Description",
+      "descriptionPlaceholder": "Enter category description",
+      "sortValue": "Sort Value",
+      "bgColor": "Background Color",
+      "bgColorPlaceholder": "Click to select color",
+      "textColor": "Text Color",
+      "textColorPlaceholder": "Click to select color",
+      "cancel": "Cancel",
+      "submit": "Submit",
+      "colorPreview": "Color Preview",
+      "clearColor": "Clear Color"
+    },
+    "deleteConfirm": {
+      "title": "Confirm Delete Category",
+      "description": "This will soft delete the category. Related topics will not be affected. You can view and restore it through filters.",
+      "cancel": "Cancel",
+      "confirm": "Confirm Delete"
+    },
+    "message": {
+      "createSuccess": "Category created successfully",
+      "updateSuccess": "Category updated successfully",
+      "deleteSuccess": "Category deleted successfully",
+      "createError": "Failed to create category",
+      "updateError": "Failed to update category",
+      "deleteError": "Failed to delete category"
+    },
+    "loading": "Loading...",
+    "empty": "No data",
+    "pagination": {
+      "total": "Total {count} items",
+      "page": "Page {page}",
+      "prev": "Previous",
+      "next": "Next"
+    }
+  },
+  "AdminTags": {
+    "title": "Tag Management",
+    "description": "Manage forum tags including create, edit, sort, etc.",
+    "createButton": "Create Tag",
+    "searchPlaceholder": "Search tag name",
+    "stats": {
+      "total": "Total Tags",
+      "active": "Active Tags",
+      "deleted": "Deleted",
+      "hottest": "Hottest"
+    },
+    "filter": {
+      "title": "Filter",
+      "deleted": {
+        "all": "All Deletion Status",
+        "normal": "Normal",
+        "deleted": "Deleted"
+      },
+      "sortBy": "Sort By",
+      "sortByOptions": {
+        "updatedAt": "Updated Time",
+        "sort": "Sort Value",
+        "usageCount": "Usage Count"
+      },
+      "apply": "Apply Filter"
+    },
+    "card": {
+      "sort": "Sort",
+      "usages": "Usages",
+      "times": "times",
+      "updatedAt": "Updated",
+      "deleted": "Deleted",
+      "edit": "Edit",
+      "delete": "Delete"
+    },
+    "dialog": {
+      "createTitle": "Create Tag",
+      "editTitle": "Edit Tag",
+      "name": "Name",
+      "namePlaceholder": "Enter tag name",
+      "icon": "Icon",
+      "iconPlaceholder": "Click to select emoji",
+      "description": "Description",
+      "descriptionPlaceholder": "Enter tag description",
+      "sortValue": "Sort Value",
+      "bgColor": "Background Color",
+      "bgColorPlaceholder": "Click to select color",
+      "textColor": "Text Color",
+      "textColorPlaceholder": "Click to select color",
+      "cancel": "Cancel",
+      "submit": "Submit",
+      "colorPreview": "Color Preview",
+      "clearColor": "Clear Color"
+    },
+    "deleteConfirm": {
+      "title": "Confirm Delete Tag",
+      "description": "This will soft delete the tag. Related topics will not be affected. You can view and restore it through filters.",
+      "cancel": "Cancel",
+      "confirm": "Confirm Delete"
+    },
+    "message": {
+      "createSuccess": "Tag created successfully",
+      "updateSuccess": "Tag updated successfully",
+      "deleteSuccess": "Tag deleted successfully",
+      "createError": "Failed to create tag",
+      "updateError": "Failed to update tag",
+      "deleteError": "Failed to delete tag"
+    },
+    "loading": "Loading...",
+    "empty": "No data",
+    "pagination": {
+      "total": "Total {count} items",
+      "page": "Page {page}",
+      "prev": "Previous",
+      "next": "Next"
+    }
   }
 }
