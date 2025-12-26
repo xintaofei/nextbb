@@ -191,7 +191,7 @@ export function TopicTable({
                 </div>
               </TableHead>
               {visibleColumns.author && (
-                <TableHead className="min-w-30">{t("author")}</TableHead>
+                <TableHead className="min-w-24">{t("author")}</TableHead>
               )}
               {visibleColumns.category && (
                 <TableHead className="min-w-24">{t("category")}</TableHead>
@@ -201,7 +201,7 @@ export function TopicTable({
               )}
               {visibleColumns.stats && (
                 <TableHead
-                  className="text-center cursor-pointer select-none min-w-35"
+                  className="text-center cursor-pointer select-none min-w-28"
                   onClick={() => handleHeaderClick("replies")}
                 >
                   <div className="flex items-center justify-center">
