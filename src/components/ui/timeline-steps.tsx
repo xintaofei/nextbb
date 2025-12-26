@@ -58,7 +58,7 @@ const timelineStepsItemVariants = cva("relative flex flex-row w-full gap-4", {
   variants: {
     orientation: {
       vertical:
-        "pt-4 first:pt-0 first:[&>div:first-child]:top-[var(--timeline-steps-icon-size,2.5rem)] first:[&>div:first-child]:h-[calc(100%-var(--timeline-steps-icon-size,2.5rem)+1rem)]",
+        "pt-4 first:pt-0 first:[&>div:first-child]:top-[var(--timeline-steps-icon-size,2.5rem)] first:[&>div:first-child]:h-[calc(100%-var(--timeline-steps-icon-size,2.5rem)+1rem)] last:[&>div:first-child]:h-[calc(100%-var(--timeline-steps-icon-size,2.5rem)-1rem)]",
       horizontal: "flex-1 items-center",
     },
     status: {
