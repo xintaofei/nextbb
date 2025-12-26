@@ -185,7 +185,7 @@ export function TagDialog({
                     color: formData.textColor || "inherit",
                   }}
                 >
-                  {formData.icon || formData.name || "预览"}
+                  {(formData.icon || "") + " " + (formData.name || "预览")}
                 </div>
               </div>
             )}
