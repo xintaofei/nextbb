@@ -226,7 +226,8 @@
       "topics": "Topics",
       "users": "Users",
       "categories": "Categories",
-      "tags": "Tags"
+      "tags": "Tags",
+      "badges": "Badges"
     }
   },
   "AdminUsers": {
@@ -589,6 +590,123 @@
     "empty": "No data",
     "pagination": {
       "total": "{count} topics in total",
+      "page": "Page {page}",
+      "prev": "Previous",
+      "next": "Next"
+    }
+  },
+  "AdminBadges": {
+    "title": "Badge Management",
+    "description": "Manage forum badge system, create and configure achievement badges",
+    "createButton": "Create Badge",
+    "loading": "Loading...",
+    "empty": "No badge data",
+    "stats": {
+      "total": "Total Badges",
+      "enabled": "Enabled",
+      "disabled": "Disabled",
+      "deleted": "Deleted",
+      "byType": "By Type"
+    },
+    "filter": {
+      "title": "Filters",
+      "badgeType": "Badge Type",
+      "level": "Badge Level",
+      "status": "Status",
+      "sortBy": "Sort By",
+      "apply": "Apply Filters",
+      "badgeTypeOptions": {
+        "all": "All Types",
+        "achievement": "Achievement",
+        "honor": "Honor",
+        "role": "Role",
+        "event": "Event",
+        "special": "Special"
+      },
+      "levelOptions": {
+        "all": "All Levels",
+        "1": "Common",
+        "2": "Excellent",
+        "3": "Rare",
+        "4": "Epic",
+        "5": "Legendary"
+      },
+      "statusOptions": {
+        "all": "All Status",
+        "enabled": "Enabled",
+        "disabled": "Disabled",
+        "deleted": "Deleted"
+      },
+      "sortByOptions": {
+        "updatedAt": "Updated Time",
+        "sort": "Sort Value",
+        "level": "Level"
+      }
+    },
+    "searchPlaceholder": "Search badge name or description",
+    "badgeType": {
+      "achievement": "Achievement",
+      "honor": "Honor",
+      "role": "Role",
+      "event": "Event",
+      "special": "Special"
+    },
+    "level": {
+      "common": "Common",
+      "excellent": "Excellent",
+      "rare": "Rare",
+      "epic": "Epic",
+      "legendary": "Legendary"
+    },
+    "card": {
+      "enabled": "Enabled",
+      "disabled": "Disabled",
+      "deleted": "Deleted",
+      "visible": "Visible",
+      "hidden": "Hidden",
+      "edit": "Edit",
+      "delete": "Delete"
+    },
+    "dialog": {
+      "createTitle": "Create Badge",
+      "editTitle": "Edit Badge",
+      "name": "Badge Name",
+      "namePlaceholder": "Enter badge name",
+      "icon": "Badge Icon",
+      "iconPlaceholder": "Choose an emoji",
+      "description": "Badge Description",
+      "descriptionPlaceholder": "Enter badge description",
+      "badgeType": "Badge Type",
+      "badgeTypePlaceholder": "Select badge type",
+      "level": "Badge Level",
+      "levelPlaceholder": "Select badge level",
+      "sortValue": "Sort Value",
+      "bgColor": "Background Color",
+      "bgColorPlaceholder": "Select background color",
+      "textColor": "Text Color",
+      "textColorPlaceholder": "Select text color",
+      "isEnabled": "Enable Badge",
+      "isVisible": "Visible on Frontend",
+      "colorPreview": "Color Preview",
+      "cancel": "Cancel",
+      "submit": "Save"
+    },
+    "deleteConfirm": {
+      "title": "Confirm Delete Badge",
+      "description": "This operation will soft delete the badge, data will still be retained. Continue?",
+      "cancel": "Cancel",
+      "confirm": "Confirm Delete"
+    },
+    "message": {
+      "createSuccess": "Badge created successfully",
+      "createError": "Failed to create badge",
+      "updateSuccess": "Badge updated successfully",
+      "updateError": "Failed to update badge",
+      "deleteSuccess": "Badge deleted successfully",
+      "deleteError": "Failed to delete badge"
+    },
+    "pagination": {
+      "total": "{count} badges in total",
       "page": "Page {page}",
       "prev": "Previous",
       "next": "Next"

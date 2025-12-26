@@ -148,3 +148,24 @@ model post_bookmarks {
   @@index([post_id], map: "post_bookmarks_post_index")
   @@map("post_bookmarks")
 }
+
+model badges {
+  id          BigInt   @id @db.BigInt
+  name        String   @db.VarChar(32)
+  icon        String   @db.VarChar(32)
+  description String?  @db.VarChar(256)
+  badge_type  String   @db.VarChar(32)
+  level       Int      @default(1)
+  sort        Int      @default(0)
+  bg_color    String?  @db.VarChar(16)
+  text_color  String?  @db.VarChar(16)
+  is_enabled  Boolean  @default(true)
+  is_visible  Boolean  @default(true)
+  is_deleted  Boolean  @default(false)
+  created_at  DateTime @default(now())
+  updated_at  DateTime @updatedAt
+
+  @@index([badge_type], map: "badges_type_index")
+  @@index([is_deleted, is_enabled], map: "badges_status_index")
+  @@map("badges")
+}

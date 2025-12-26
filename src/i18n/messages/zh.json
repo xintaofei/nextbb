@@ -226,7 +226,8 @@
       "topics": "话题",
       "users": "用户",
       "categories": "分类",
-      "tags": "标签"
+      "tags": "标签",
+      "badges": "徽章"
     }
   },
   "AdminUsers": {
@@ -589,6 +590,123 @@
     "empty": "暂无数据",
     "pagination": {
       "total": "共 {count} 个主题",
+      "page": "第 {page} 页",
+      "prev": "上一页",
+      "next": "下一页"
+    }
+  },
+  "AdminBadges": {
+    "title": "徽章管理",
+    "description": "管理论坛徽章系统，创建和配置各类成就徽章",
+    "createButton": "创建徽章",
+    "loading": "加载中...",
+    "empty": "暂无徽章数据",
+    "stats": {
+      "total": "徽章总数",
+      "enabled": "已启用",
+      "disabled": "已禁用",
+      "deleted": "已删除",
+      "byType": "按类型统计"
+    },
+    "filter": {
+      "title": "筛选条件",
+      "badgeType": "徽章类型",
+      "level": "徽章等级",
+      "status": "状态",
+      "sortBy": "排序方式",
+      "apply": "应用筛选",
+      "badgeTypeOptions": {
+        "all": "全部类型",
+        "achievement": "成就徽章",
+        "honor": "荣誉徽章",
+        "role": "角色徽章",
+        "event": "活动徽章",
+        "special": "特殊徽章"
+      },
+      "levelOptions": {
+        "all": "全部等级",
+        "1": "普通",
+        "2": "优秀",
+        "3": "稀有",
+        "4": "史诗",
+        "5": "传说"
+      },
+      "statusOptions": {
+        "all": "全部状态",
+        "enabled": "已启用",
+        "disabled": "已禁用",
+        "deleted": "已删除"
+      },
+      "sortByOptions": {
+        "updatedAt": "更新时间",
+        "sort": "排序值",
+        "level": "等级"
+      }
+    },
+    "searchPlaceholder": "搜索徽章名称或描述",
+    "badgeType": {
+      "achievement": "成就徽章",
+      "honor": "荣誉徽章",
+      "role": "角色徽章",
+      "event": "活动徽章",
+      "special": "特殊徽章"
+    },
+    "level": {
+      "common": "普通",
+      "excellent": "优秀",
+      "rare": "稀有",
+      "epic": "史诗",
+      "legendary": "传说"
+    },
+    "card": {
+      "enabled": "已启用",
+      "disabled": "已禁用",
+      "deleted": "已删除",
+      "visible": "可见",
+      "hidden": "隐藏",
+      "edit": "编辑",
+      "delete": "删除"
+    },
+    "dialog": {
+      "createTitle": "创建徽章",
+      "editTitle": "编辑徽章",
+      "name": "徽章名称",
+      "namePlaceholder": "请输入徽章名称",
+      "icon": "徽章图标",
+      "iconPlaceholder": "选择一个表情符号",
+      "description": "徽章描述",
+      "descriptionPlaceholder": "请输入徽章描述",
+      "badgeType": "徽章类型",
+      "badgeTypePlaceholder": "选择徽章类型",
+      "level": "徽章等级",
+      "levelPlaceholder": "选择徽章等级",
+      "sortValue": "排序值",
+      "bgColor": "背景颜色",
+      "bgColorPlaceholder": "选择背景颜色",
+      "textColor": "文字颜色",
+      "textColorPlaceholder": "选择文字颜色",
+      "isEnabled": "启用徽章",
+      "isVisible": "前台可见",
+      "colorPreview": "颜色预览",
+      "cancel": "取消",
+      "submit": "保存"
+    },
+    "deleteConfirm": {
+      "title": "确认删除徽章",
+      "description": "此操作将软删除该徽章，数据仍会保留。确认继续？",
+      "cancel": "取消",
+      "confirm": "确认删除"
+    },
+    "message": {
+      "createSuccess": "徽章创建成功",
+      "createError": "徽章创建失败",
+      "updateSuccess": "徽章更新成功",
+      "updateError": "徽章更新失败",
+      "deleteSuccess": "徽章删除成功",
+      "deleteError": "徽章删除失败"
+    },
+    "pagination": {
+      "total": "共 {count} 个徽章",
       "page": "第 {page} 页",
       "prev": "上一页",
       "next": "下一页"
