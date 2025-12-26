@@ -5,8 +5,20 @@ import { Prisma } from "@prisma/client"
 type RelatedTopicItem = {
   id: string
   title: string
-  category: { id: string; name: string; icon?: string }
-  tags: { id: string; name: string; icon: string }[]
+  category: {
+    id: string
+    name: string
+    icon?: string
+    bgColor?: string | null
+    textColor?: string | null
+  }
+  tags: {
+    id: string
+    name: string
+    icon: string
+    bgColor?: string | null
+    textColor?: string | null
+  }[]
   replies: number
   views: number
   activity: string
@@ -41,10 +53,26 @@ export async function GET(
     select: {
       id: true,
       title: true,
-      category: { select: { id: true, name: true, icon: true } },
+      category: {
+        select: {
+          id: true,
+          name: true,
+          icon: true,
+          bg_color: true,
+          text_color: true,
+        },
+      },
       tag_links: {
         select: {
-          tag: { select: { id: true, name: true, icon: true } },
+          tag: {
+            select: {
+              id: true,
+              name: true,
+              icon: true,
+              bg_color: true,
+              text_color: true,
+            },
+          },
         },
       },
     },
@@ -87,11 +115,15 @@ export async function GET(
           id: String(t.category.id),
           name: t.category.name,
           icon: t.category.icon ?? undefined,
+          bgColor: t.category.bg_color,
+          textColor: t.category.text_color,
         },
         tags: t.tag_links.map((l) => ({
           id: String(l.tag.id),
           name: l.tag.name,
           icon: l.tag.icon,
+          bgColor: l.tag.bg_color,
+          textColor: l.tag.text_color,
         })),
         replies: Math.max(a.replies - 1, 0),
         views: viewsById.get(String(t.id)) ?? 0,

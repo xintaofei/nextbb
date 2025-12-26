@@ -10,7 +10,6 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
-import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Skeleton } from "@/components/ui/skeleton"
 import { formatRelative } from "@/lib/time"
@@ -18,6 +17,8 @@ import { Spinner } from "@/components/ui/spinner"
 import { useEffect, useRef, useState } from "react"
 import { useSearchParams } from "next/navigation"
 import { Pin } from "lucide-react"
+import { CategoryBadge } from "@/components/common/category-badge"
+import { TagBadge } from "@/components/common/tag-badge"
 
 export type TopicParticipant = {
   id: string
@@ -29,12 +30,16 @@ export type TopicCategory = {
   id: string
   name: string
   icon?: string
+  bgColor?: string | null
+  textColor?: string | null
 }
 
 export type TopicTag = {
   id: string
   name: string
   icon: string
+  bgColor?: string | null
+  textColor?: string | null
 }
 
 export type TopicListItem = {
@@ -181,13 +186,20 @@ export function TopicList({
                     </span>
                   </Link>
                   <div className="flex max-w-full flex-wrap gap-2 overflow-hidden mt-2">
-                    <Badge variant="secondary">
-                      {t.category.icon ?? "📁"} {t.category.name}
-                    </Badge>
+                    <CategoryBadge
+                      icon={t.category.icon}
+                      name={t.category.name}
+                      bgColor={t.category.bgColor}
+                      textColor={t.category.textColor}
+                    />
                     {t.tags.map((tag) => (
-                      <Badge key={tag.id} variant="outline">
-                        {tag.icon} {tag.name}
-                      </Badge>
+                      <TagBadge
+                        key={tag.id}
+                        icon={tag.icon}
+                        name={tag.name}
+                        bgColor={tag.bgColor}
+                        textColor={tag.textColor}
+                      />
                     ))}
                   </div>
                 </TableCell>

@@ -3,11 +3,11 @@
 import { useMemo, useTransition } from "react"
 import { usePathname, useRouter, useSearchParams } from "next/navigation"
 import useSWR from "swr"
-import { Badge } from "@/components/ui/badge"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Flame } from "lucide-react"
 import { useTranslations } from "next-intl"
 import { cn } from "@/lib/utils"
+import { TagBadge } from "@/components/common/tag-badge"
 
 type TagDTO = {
   id: string
@@ -15,6 +15,8 @@ type TagDTO = {
   icon: string
   description: string
   sort: number
+  bgColor?: string | null
+  textColor?: string | null
 }
 
 type HotTagsProps = {
@@ -78,17 +80,15 @@ export function HotTags({ className, count = 5 }: HotTagsProps) {
             : hotTags.map((t) => {
                 const active = selectedTagId === t.id
                 return (
-                  <Badge
+                  <TagBadge
                     key={t.id}
-                    variant="outline"
-                    className={cn(
-                      "cursor-pointer",
-                      active && "bg-primary/10 text-primary border-primary/20"
-                    )}
+                    icon={t.icon}
+                    name={t.name}
+                    bgColor={t.bgColor}
+                    textColor={t.textColor}
+                    active={active}
                     onClick={() => applyTag(t.id)}
-                  >
-                    {t.icon} {t.name}
-                  </Badge>
+                  />
                 )
               })}
         </div>

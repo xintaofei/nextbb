@@ -20,8 +20,20 @@ export type PostItem = {
 export type RelatedTopicItem = {
   id: string
   title: string
-  category: { id: string; name: string; icon?: string }
-  tags: { id: string; name: string; icon: string }[]
+  category: {
+    id: string
+    name: string
+    icon?: string
+    bgColor?: string | null
+    textColor?: string | null
+  }
+  tags: {
+    id: string
+    name: string
+    icon: string
+    bgColor?: string | null
+    textColor?: string | null
+  }[]
   replies: number
   views: number
   activity: string
@@ -30,8 +42,20 @@ export type RelatedTopicItem = {
 export type TopicInfo = {
   id: string
   title: string
-  category: { id: string; name: string; icon?: string }
-  tags: { id: string; name: string; icon: string }[]
+  category: {
+    id: string
+    name: string
+    icon?: string
+    bgColor?: string | null
+    textColor?: string | null
+  }
+  tags: {
+    id: string
+    name: string
+    icon: string
+    bgColor?: string | null
+    textColor?: string | null
+  }[]
 }
 
 export type TopicInfoResult = { topic: TopicInfo }

@@ -7,6 +7,8 @@ type TagDTO = {
   icon: string
   description: string
   sort: number
+  bgColor?: string | null
+  textColor?: string | null
 }
 
 export async function GET() {
@@ -18,6 +20,8 @@ export async function GET() {
       icon: true,
       description: true,
       sort: true,
+      bg_color: true,
+      text_color: true,
     },
     orderBy: [{ sort: "desc" }, { id: "asc" }],
   })
@@ -28,6 +32,8 @@ export async function GET() {
     icon: string
     description: string
     sort: number
+    bg_color: string | null
+    text_color: string | null
   }
 
   const result: TagDTO[] = tags.map((t: TagRow) => ({
@@ -36,6 +42,8 @@ export async function GET() {
     icon: t.icon,
     description: t.description,
     sort: t.sort,
+    bgColor: t.bg_color,
+    textColor: t.text_color,
   }))
 
   return NextResponse.json(result)

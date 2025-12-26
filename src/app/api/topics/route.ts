@@ -39,8 +39,20 @@ type TopicParticipant = {
 type TopicListItem = {
   id: string
   title: string
-  category: { id: string; name: string; icon?: string }
-  tags: { id: string; name: string; icon: string }[]
+  category: {
+    id: string
+    name: string
+    icon?: string
+    bgColor?: string | null
+    textColor?: string | null
+  }
+  tags: {
+    id: string
+    name: string
+    icon: string
+    bgColor?: string | null
+    textColor?: string | null
+  }[]
   participants: TopicParticipant[]
   replies: number
   views: number
@@ -93,10 +105,26 @@ export async function GET(req: Request) {
   const topics = await prisma.topics.findMany({
     where,
     include: {
-      category: { select: { id: true, name: true, icon: true } },
+      category: {
+        select: {
+          id: true,
+          name: true,
+          icon: true,
+          bg_color: true,
+          text_color: true,
+        },
+      },
       tag_links: {
         select: {
-          tag: { select: { id: true, name: true, icon: true } },
+          tag: {
+            select: {
+              id: true,
+              name: true,
+              icon: true,
+              bg_color: true,
+              text_color: true,
+            },
+          },
         },
       },
     },
@@ -110,8 +138,22 @@ export async function GET(req: Request) {
     views: number
     is_pinned: boolean
     is_community: boolean
-    category: { id: bigint; name: string; icon: string }
-    tag_links: { tag: { id: bigint; name: string; icon: string } }[]
+    category: {
+      id: bigint
+      name: string
+      icon: string
+      bg_color: string | null
+      text_color: string | null
+    }
+    tag_links: {
+      tag: {
+        id: bigint
+        name: string
+        icon: string
+        bg_color: string | null
+        text_color: string | null
+      }
+    }[]
   }
   const topicsX = topics as unknown as TopicRow[]
   const topicIds = topicsX.map((t) => t.id)
@@ -158,10 +200,20 @@ export async function GET(req: Request) {
   const items: TopicListItem[] = topicsX.map((t) => {
     const agg = byTopic[String(t.id)]
     const tags = t.tag_links.map(
-      (l: { tag: { id: bigint; name: string; icon: string } }) => ({
+      (l: {
+        tag: {
+          id: bigint
+          name: string
+          icon: string
+          bg_color: string | null
+          text_color: string | null
+        }
+      }) => ({
         id: String(l.tag.id),
         name: l.tag.name,
         icon: l.tag.icon,
+        bgColor: l.tag.bg_color,
+        textColor: l.tag.text_color,
       })
     )
     return {
@@ -171,6 +223,8 @@ export async function GET(req: Request) {
         id: String(t.category.id),
         name: t.category.name,
         icon: t.category.icon ?? undefined,
+        bgColor: t.category.bg_color,
+        textColor: t.category.text_color,
       },
       tags,
       participants: agg.participants,

@@ -6,8 +6,20 @@ import { getSessionUser } from "@/lib/auth"
 type TopicInfo = {
   id: string
   title: string
-  category: { id: string; name: string; icon?: string }
-  tags: { id: string; name: string; icon: string }[]
+  category: {
+    id: string
+    name: string
+    icon?: string
+    bgColor?: string | null
+    textColor?: string | null
+  }
+  tags: {
+    id: string
+    name: string
+    icon: string
+    bgColor?: string | null
+    textColor?: string | null
+  }[]
 }
 
 export async function GET(
@@ -28,10 +40,26 @@ export async function GET(
     select: {
       id: true,
       title: true,
-      category: { select: { id: true, name: true, icon: true } },
+      category: {
+        select: {
+          id: true,
+          name: true,
+          icon: true,
+          bg_color: true,
+          text_color: true,
+        },
+      },
       tag_links: {
         select: {
-          tag: { select: { id: true, name: true, icon: true } },
+          tag: {
+            select: {
+              id: true,
+              name: true,
+              icon: true,
+              bg_color: true,
+              text_color: true,
+            },
+          },
         },
       },
     },
@@ -51,12 +79,24 @@ export async function GET(
       id: String(topic.category.id),
       name: topic.category.name,
       icon: topic.category.icon ?? undefined,
+      bgColor: topic.category.bg_color,
+      textColor: topic.category.text_color,
     },
     tags: topic.tag_links.map(
-      (l: { tag: { id: bigint; name: string; icon: string } }) => ({
+      (l: {
+        tag: {
+          id: bigint
+          name: string
+          icon: string
+          bg_color: string | null
+          text_color: string | null
+        }
+      }) => ({
         id: String(l.tag.id),
         name: l.tag.name,
         icon: l.tag.icon,
+        bgColor: l.tag.bg_color,
+        textColor: l.tag.text_color,
       })
     ),
   }
