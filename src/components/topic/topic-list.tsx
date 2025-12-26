@@ -15,7 +15,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Skeleton } from "@/components/ui/skeleton"
 import { formatRelative } from "@/lib/time"
 import { Spinner } from "@/components/ui/spinner"
-import { useEffect, useRef } from "react"
+import { useEffect, useRef, useState } from "react"
 import { useSearchParams } from "next/navigation"
 import { Pin } from "lucide-react"
 
@@ -72,6 +72,22 @@ export function TopicList({
     | "hot"
     | "community"
 
+  const [highlightIndex, setHighlightIndex] = useState<number | null>(null)
+  const previousItemsLengthRef = useRef<number>(0)
+
+  useEffect(() => {
+    const prevLength = previousItemsLengthRef.current
+    if (items.length > prevLength && prevLength > 0) {
+      setHighlightIndex(prevLength)
+      const timer = setTimeout(() => {
+        setHighlightIndex(null)
+      }, 2000)
+      previousItemsLengthRef.current = items.length
+      return () => clearTimeout(timer)
+    }
+    previousItemsLengthRef.current = items.length
+  }, [items.length])
+
   useEffect(() => {
     if (!sentinelRef.current) return
     if (!hasMore || loadingMore) return
@@ -93,9 +109,7 @@ export function TopicList({
   }, [hasMore, loadingMore, onLoadMore])
 
   return (
-    <Table
-      className={className ?? "w-full table-fixed max-lg:table-auto"}
-    >
+    <Table className={className ?? "w-full table-fixed max-lg:table-auto"}>
       <colgroup>
         <col />
         <col className="w-32 max-lg:w-16" />
@@ -148,8 +162,15 @@ export function TopicList({
                 </TableCell>
               </TableRow>
             ))
-          : items.map((t) => (
-              <TableRow key={t.id}>
+          : items.map((t, index) => (
+              <TableRow
+                key={t.id}
+                className={
+                  highlightIndex === index
+                    ? "animate-(--animate-highlight-fade)"
+                    : ""
+                }
+              >
                 <TableCell className="max-w-full">
                   <Link href={`/topic/${t.id}`}>
                     <span className="max-w-full text-lg font-medium whitespace-normal wrap-break-word">
