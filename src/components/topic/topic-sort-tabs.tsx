@@ -78,13 +78,25 @@ export function TopicSortTabs({
         <TabsTrigger className="md:px-4" value="top" disabled>
           {tc("Tabs.top")}
         </TabsTrigger>
-        <TabsTrigger className="md:px-4" value="my" disabled>
+        <TabsTrigger
+          className="hidden md:px-4 md:inline-flex"
+          value="my"
+          disabled
+        >
           {tc("Tabs.my")}
         </TabsTrigger>
-        <TabsTrigger className="md:px-4" value="bookmark" disabled>
+        <TabsTrigger
+          className="hidden md:px-4 md:inline-flex"
+          value="bookmark"
+          disabled
+        >
           {tc("Tabs.bookmark")}
         </TabsTrigger>
-        <TabsTrigger className="md:px-4" value="like" disabled>
+        <TabsTrigger
+          className="hidden md:px-4 md:inline-flex"
+          value="like"
+          disabled
+        >
           {tc("Tabs.like")}
         </TabsTrigger>
       </TabsList>
