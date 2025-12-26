@@ -77,6 +77,7 @@ export default function TopicPage() {
     mutate: mutatePosts,
     setSize,
     isLoading: loadingPosts,
+    isValidating: validatingPosts,
   } = useSWRInfinite<PostPage>(getKey, fetcherPosts, {
     revalidateOnFocus: false,
     revalidateFirstPage: false,
@@ -556,14 +557,11 @@ export default function TopicPage() {
                   deletedText={t("deleted")}
                 />
               ))}
-              {!postListLoading && hasMore && (
-                <PostSkeletonList
-                  count={3}
-                  lastIsSentinel
-                  sentinelRef={sentinelRef}
-                />
-              )}
+              {validatingPosts && hasMore && <PostSkeletonList count={3} />}
             </TimelineSteps>
+          )}
+          {!postListLoading && hasMore && (
+            <div ref={sentinelRef} className="h-1 w-full" />
           )}
         </div>
         <TopicNavigator
