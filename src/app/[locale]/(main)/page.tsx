@@ -102,7 +102,7 @@ export default function Home() {
     <div className="flex min-h-screen w-full flex-col px-8 gap-4">
       <div className="flex flex-row justify-between items-center py-8">
         <h1 className="text-5xl">{t("title")}</h1>
-        <InputGroup className="w-80">
+        <InputGroup className="w-80 hidden md:flex">
           <InputGroupInput placeholder={tc("Search.placeholder")} />
           <InputGroupAddon>
             <SearchIcon />

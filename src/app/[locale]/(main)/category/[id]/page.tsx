@@ -202,7 +202,7 @@ export default function CategoryPage() {
             </span>
           )}
         </div>
-        <InputGroup className="w-80">
+        <InputGroup className="w-80 hidden md:flex">
           <InputGroupInput placeholder={tc("Search.placeholder")} />
           <InputGroupAddon>
             <SearchIcon />
