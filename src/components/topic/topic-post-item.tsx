@@ -62,7 +62,7 @@ export function TopicPostItem({
       <TimelineStepsConnector />
       <TimelineStepsIcon
         size="lg"
-        className="sticky top-4 overflow-hidden p-0.5"
+        className="sticky top-18 md:top-4 overflow-hidden p-0.5"
       >
         <Avatar className="size-full">
           <AvatarImage src={post.author.avatar} alt="@avatar" />
