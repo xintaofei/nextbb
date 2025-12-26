@@ -1,7 +1,7 @@
 "use client"
 
 import { motion } from "framer-motion"
-import { BarChart3, Users, Menu, Folder, Tag } from "lucide-react"
+import { BarChart3, Users, Menu, Folder, Tag, FileText } from "lucide-react"
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
@@ -12,6 +12,7 @@ export function DashboardNav() {
 
   const navItems = [
     { label: "Overview", icon: BarChart3, path: "/admin" },
+    { label: "Topics", icon: FileText, path: "/admin/topics" },
     { label: "Users", icon: Users, path: "/admin/users" },
     { label: "Categories", icon: Folder, path: "/admin/categories" },
     { label: "Tags", icon: Tag, path: "/admin/tags" },

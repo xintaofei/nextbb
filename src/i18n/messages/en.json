@@ -435,5 +435,114 @@
       "prev": "Previous",
       "next": "Next"
     }
+  },
+  "AdminTopics": {
+    "title": "Topic Management",
+    "description": "Manage all forum topics including edit, pin, delete, etc.",
+    "createButton": "Create Topic",
+    "searchPlaceholder": "Search topic title",
+    "stats": {
+      "total": "Total Topics",
+      "pinned": "Pinned Topics",
+      "community": "Recommended Topics",
+      "deleted": "Deleted"
+    },
+    "filter": {
+      "title": "Filter",
+      "category": {
+        "all": "All Categories"
+      },
+      "tag": {
+        "all": "All Tags"
+      },
+      "status": {
+        "all": "All Status",
+        "pinned": "Pinned",
+        "community": "Recommended",
+        "deleted": "Deleted",
+        "normal": "Normal"
+      },
+      "sortBy": "Sort By",
+      "sortByOptions": {
+        "createdAt": "Created Time",
+        "updatedAt": "Updated Time",
+        "views": "Views",
+        "replies": "Replies"
+      },
+      "order": "Order",
+      "orderOptions": {
+        "desc": "Descending",
+        "asc": "Ascending"
+      },
+      "apply": "Apply Filter"
+    },
+    "card": {
+      "author": "Author",
+      "category": "Category",
+      "replies": "Replies",
+      "views": "Views",
+      "created": "Created",
+      "lastActivity": "Last Activity",
+      "pinned": "Pinned",
+      "community": "Recommended",
+      "deleted": "Deleted",
+      "edit": "Edit",
+      "delete": "Delete",
+      "restore": "Restore",
+      "pin": "Pin",
+      "unpin": "Unpin",
+      "recommend": "Recommend",
+      "unrecommend": "Unrecommend"
+    },
+    "dialog": {
+      "createTitle": "Create New Topic",
+      "editTitle": "Edit Topic",
+      "titleLabel": "Title",
+      "titlePlaceholder": "Enter topic title",
+      "categoryLabel": "Category",
+      "categoryPlaceholder": "Select category",
+      "tagsLabel": "Tags",
+      "tagsPlaceholder": "Select tags",
+      "pinnedLabel": "Pinned",
+      "communityLabel": "Recommended",
+      "cancel": "Cancel",
+      "submit": "Submit"
+    },
+    "deleteConfirm": {
+      "title": "Confirm Delete",
+      "description": "This will soft delete the topic. The topic will not be displayed on the front page, but can be restored. Are you sure to continue?",
+      "cancel": "Cancel",
+      "confirm": "Confirm Delete"
+    },
+    "restoreConfirm": {
+      "title": "Confirm Restore",
+      "description": "This will restore the deleted topic. The topic will be displayed on the front page again. Are you sure to continue?",
+      "cancel": "Cancel",
+      "confirm": "Confirm Restore"
+    },
+    "message": {
+      "updateSuccess": "Topic updated successfully",
+      "updateError": "Failed to update topic",
+      "deleteSuccess": "Topic deleted successfully",
+      "deleteError": "Failed to delete topic",
+      "restoreSuccess": "Topic restored successfully",
+      "restoreError": "Failed to restore topic",
+      "pinSuccess": "Topic pinned successfully",
+      "pinError": "Failed to pin topic",
+      "unpinSuccess": "Topic unpinned successfully",
+      "unpinError": "Failed to unpin topic",
+      "recommendSuccess": "Topic recommended successfully",
+      "recommendError": "Failed to recommend topic",
+      "unrecommendSuccess": "Topic unrecommended successfully",
+      "unrecommendError": "Failed to unrecommend topic"
+    },
+    "loading": "Loading...",
+    "empty": "No data",
+    "pagination": {
+      "total": "{count} topics in total",
+      "page": "Page {page}",
+      "prev": "Previous",
+      "next": "Next"
+    }
   }
 }

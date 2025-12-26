@@ -435,5 +435,114 @@
       "prev": "上一页",
       "next": "下一页"
     }
+  },
+  "AdminTopics": {
+    "title": "主题管理",
+    "description": "管理论坛中的所有主题，包括编辑、置顶、删除等",
+    "createButton": "创建主题",
+    "searchPlaceholder": "搜索主题标题",
+    "stats": {
+      "total": "总主题数",
+      "pinned": "置顶主题",
+      "community": "推荐主题",
+      "deleted": "已删除"
+    },
+    "filter": {
+      "title": "筛选",
+      "category": {
+        "all": "全部分类"
+      },
+      "tag": {
+        "all": "全部标签"
+      },
+      "status": {
+        "all": "全部状态",
+        "pinned": "置顶",
+        "community": "推荐",
+        "deleted": "已删除",
+        "normal": "正常"
+      },
+      "sortBy": "排序方式",
+      "sortByOptions": {
+        "createdAt": "创建时间",
+        "updatedAt": "更新时间",
+        "views": "浏览数",
+        "replies": "回复数"
+      },
+      "order": "排序方向",
+      "orderOptions": {
+        "desc": "降序",
+        "asc": "升序"
+      },
+      "apply": "应用筛选"
+    },
+    "card": {
+      "author": "作者",
+      "category": "分类",
+      "replies": "回复",
+      "views": "浏览",
+      "created": "创建于",
+      "lastActivity": "最后活跃",
+      "pinned": "置顶",
+      "community": "推荐",
+      "deleted": "已删除",
+      "edit": "编辑",
+      "delete": "删除",
+      "restore": "恢复",
+      "pin": "置顶",
+      "unpin": "取消置顶",
+      "recommend": "推荐",
+      "unrecommend": "取消推荐"
+    },
+    "dialog": {
+      "createTitle": "创建新主题",
+      "editTitle": "编辑主题",
+      "titleLabel": "标题",
+      "titlePlaceholder": "请输入主题标题",
+      "categoryLabel": "分类",
+      "categoryPlaceholder": "请选择分类",
+      "tagsLabel": "标签",
+      "tagsPlaceholder": "选择标签",
+      "pinnedLabel": "置顶",
+      "communityLabel": "推荐",
+      "cancel": "取消",
+      "submit": "提交"
+    },
+    "deleteConfirm": {
+      "title": "确认删除",
+      "description": "此操作将软删除该主题，主题将不会在前台显示，但可以恢复。确定要继续吗？",
+      "cancel": "取消",
+      "confirm": "确认删除"
+    },
+    "restoreConfirm": {
+      "title": "确认恢复",
+      "description": "此操作将恢复已删除的主题，主题将重新在前台显示。确定要继续吗？",
+      "cancel": "取消",
+      "confirm": "确认恢复"
+    },
+    "message": {
+      "updateSuccess": "主题更新成功",
+      "updateError": "主题更新失败",
+      "deleteSuccess": "主题删除成功",
+      "deleteError": "主题删除失败",
+      "restoreSuccess": "主题恢复成功",
+      "restoreError": "主题恢复失败",
+      "pinSuccess": "置顶成功",
+      "pinError": "置顶失败",
+      "unpinSuccess": "取消置顶成功",
+      "unpinError": "取消置顶失败",
+      "recommendSuccess": "推荐成功",
+      "recommendError": "推荐失败",
+      "unrecommendSuccess": "取消推荐成功",
+      "unrecommendError": "取消推荐失败"
+    },
+    "loading": "加载中...",
+    "empty": "暂无数据",
+    "pagination": {
+      "total": "共 {count} 个主题",
+      "page": "第 {page} 页",
+      "prev": "上一页",
+      "next": "下一页"
+    }
   }
 }
