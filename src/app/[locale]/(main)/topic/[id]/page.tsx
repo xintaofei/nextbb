@@ -59,6 +59,23 @@ export default function TopicPage() {
   const topicInfo = infoData?.topic
 
   const [pageSize] = useState<number>(15)
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null)
+  const [currentUserProfile, setCurrentUserProfile] = useState<{
+    id: string
+    username: string
+    avatar: string
+  } | null>(null)
+  const [replyContent, setReplyContent] = useState<string>("")
+  const [replyToPostId, setReplyToPostId] = useState<string | null>(null)
+  const [submitting, setSubmitting] = useState<boolean>(false)
+  const [replyOpen, setReplyOpen] = useState<boolean>(false)
+  const [editOpen, setEditOpen] = useState<boolean>(false)
+  const [editSubmitting, setEditSubmitting] = useState<boolean>(false)
+  const [editPostId, setEditPostId] = useState<string | null>(null)
+  const [editInitial, setEditInitial] = useState<string>("")
+  const [mutatingPostId, setMutatingPostId] = useState<string | null>(null)
+  const [previousPostsLength, setPreviousPostsLength] = useState<number>(0)
+  const [highlightIndex, setHighlightIndex] = useState<number | null>(null)
 
   const fetcherPosts = async (url: string): Promise<PostPage> => {
     const res = await fetch(url, { cache: "no-store" })
@@ -86,6 +103,18 @@ export default function TopicPage() {
     () => (postsPages ? postsPages.flatMap((p) => p.items) : []),
     [postsPages]
   )
+
+  useEffect(() => {
+    if (posts.length > previousPostsLength && previousPostsLength > 0) {
+      setHighlightIndex(previousPostsLength)
+      const timer = setTimeout(() => {
+        setHighlightIndex(null)
+      }, 2000)
+      return () => clearTimeout(timer)
+    }
+    setPreviousPostsLength(posts.length)
+  }, [posts.length, previousPostsLength])
+
   const lastPage =
     postsPages && postsPages.length > 0
       ? postsPages[postsPages.length - 1]
@@ -107,23 +136,8 @@ export default function TopicPage() {
 
   useEffect(() => {}, [id])
 
-  const [replyContent, setReplyContent] = useState<string>("")
-  const [replyToPostId, setReplyToPostId] = useState<string | null>(null)
-  const [submitting, setSubmitting] = useState<boolean>(false)
-  const [replyOpen, setReplyOpen] = useState<boolean>(false)
   const postListLoading = loadingPosts && posts.length === 0
   const sentinelRef = useRef<HTMLDivElement | null>(null)
-  const [currentUserId, setCurrentUserId] = useState<string | null>(null)
-  const [currentUserProfile, setCurrentUserProfile] = useState<{
-    id: string
-    username: string
-    avatar: string
-  } | null>(null)
-  const [editOpen, setEditOpen] = useState<boolean>(false)
-  const [editSubmitting, setEditSubmitting] = useState<boolean>(false)
-  const [editPostId, setEditPostId] = useState<string | null>(null)
-  const [editInitial, setEditInitial] = useState<string>("")
-  const [mutatingPostId, setMutatingPostId] = useState<string | null>(null)
 
   const likeAction = async (postId: string) => {
     const target = posts.find((p) => p.id === postId)
@@ -555,6 +569,7 @@ export default function TopicPage() {
                   floorOpText={t("floor.op")}
                   replyText={t("reply")}
                   deletedText={t("deleted")}
+                  highlight={highlightIndex === index}
                 />
               ))}
               {validatingPosts && hasMore && <PostSkeletonList count={3} />}

@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/timeline-steps"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
-import { Bookmark, Flag, Heart, Reply, Pencil, Trash } from "lucide-react"
+import { Bookmark, Heart, Reply, Pencil, Trash } from "lucide-react"
 import { formatRelative } from "@/lib/time"
 import { PostItem } from "@/types/topic"
 
@@ -32,6 +32,7 @@ export function TopicPostItem({
   floorOpText,
   replyText,
   deletedText,
+  highlight = false,
 }: {
   post: PostItem
   index: number
@@ -50,20 +51,25 @@ export function TopicPostItem({
   floorOpText: string
   replyText: string
   deletedText: string
+  highlight?: boolean
 }) {
   return (
-    <TimelineStepsItem id={anchorId} data-post-anchor>
+    <TimelineStepsItem
+      id={anchorId}
+      data-post-anchor
+      className={highlight ? "animate-(--animate-highlight-fade)" : ""}
+    >
       <TimelineStepsConnector />
       <TimelineStepsIcon
         size="lg"
-        className="sticky top-4 overflow-hidden p-[2px]"
+        className="sticky top-4 overflow-hidden p-0.5"
       >
         <Avatar className="size-full">
           <AvatarImage src={post.author.avatar} alt="@avatar" />
           <AvatarFallback>{post.author.name}</AvatarFallback>
         </Avatar>
       </TimelineStepsIcon>
-      <TimelineStepsContent className="border-b">
+      <TimelineStepsContent className={`border-b`}>
         <div className="flex flex-row justify-between items-center w-full">
           <div className="flex flex-row gap-2">
             <TimelineStepsTitle>{post.author.name}</TimelineStepsTitle>

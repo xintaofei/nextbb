@@ -57,7 +57,8 @@ function TimelineSteps({
 const timelineStepsItemVariants = cva("relative flex flex-row w-full gap-4", {
   variants: {
     orientation: {
-      vertical: "pb-4 last:pb-0",
+      vertical:
+        "pt-4 first:pt-0 first:[&>div:first-child]:top-[var(--timeline-steps-icon-size,2.5rem)] first:[&>div:first-child]:h-[calc(100%-var(--timeline-steps-icon-size,2.5rem)+1rem)]",
       horizontal: "flex-1 items-center",
     },
     status: {
@@ -105,7 +106,7 @@ const timelineStepsConnectorVariants = cva("", {
   variants: {
     orientation: {
       vertical:
-        "absolute left-[calc(var(--timeline-steps-icon-size,3rem)/2)] top-[var(--timeline-steps-icon-size,2.5rem)] h-[calc(100%-var(--timeline-steps-icon-size,2.5rem))] w-px -translate-x-1/2",
+        "absolute left-[calc(var(--timeline-steps-icon-size,3rem)/2)] top-[calc(var(--timeline-steps-icon-size,2.5rem)+1rem)] h-[calc(100%-var(--timeline-steps-icon-size,2.5rem))] w-px -translate-x-1/2",
       horizontal:
         "absolute top-3 left-[calc(50%+0.75rem)] h-px w-[calc(100%-1.5rem)]",
     },
