@@ -91,7 +91,7 @@ export function UserCard({
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
           <div className="flex items-center justify-between gap-2 rounded-lg border border-border/20 bg-background/40 p-3 transition-all hover:border-border/40 hover:bg-background/60">
             <div className="flex items-center gap-2 flex-1 min-w-0">
-              <Shield className="h-4 w-4 text-violet-600 dark:text-violet-400 flex-shrink-0" />
+              <Shield className="h-4 w-4 text-violet-600 dark:text-violet-400 shrink-0" />
               <span className="text-xs font-medium truncate">{t("role")}</span>
             </div>
             <Switch
@@ -103,7 +103,7 @@ export function UserCard({
           <div className="flex items-center justify-between gap-2 rounded-lg border border-border/20 bg-background/40 p-3 transition-all hover:border-border/40 hover:bg-background/60">
             <div className="flex items-center gap-2 flex-1 min-w-0">
               <User
-                className={`h-4 w-4 flex-shrink-0 ${
+                className={`h-4 w-4 shrink-0 ${
                   user.status === 1
                     ? "text-emerald-600 dark:text-emerald-400"
                     : "text-foreground/40"
@@ -122,7 +122,7 @@ export function UserCard({
           <div className="flex items-center justify-between gap-2 rounded-lg border border-border/20 bg-background/40 p-3 transition-all hover:border-border/40 hover:bg-background/60">
             <div className="flex items-center gap-2 flex-1 min-w-0">
               <User
-                className={`h-4 w-4 flex-shrink-0 ${
+                className={`h-4 w-4 shrink-0 ${
                   user.isDeleted
                     ? "text-red-600 dark:text-red-400"
                     : "text-foreground/40"

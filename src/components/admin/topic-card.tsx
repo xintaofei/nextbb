@@ -198,7 +198,7 @@ export function TopicCard({
             size="sm"
             variant="ghost"
             onClick={() => onEdit(topic.id)}
-            className="flex-1 min-w-[80px]"
+            className="flex-1 min-w-20"
           >
             <Edit className="mr-2 h-4 w-4" />
             {t("edit")}
@@ -208,7 +208,7 @@ export function TopicCard({
             size="sm"
             variant="ghost"
             onClick={() => onTogglePin(topic.id, !topic.isPinned)}
-            className="flex-1 min-w-[80px]"
+            className="flex-1 min-w-20"
           >
             {topic.isPinned ? (
               <>
@@ -227,7 +227,7 @@ export function TopicCard({
             size="sm"
             variant="ghost"
             onClick={() => onToggleCommunity(topic.id, !topic.isCommunity)}
-            className="flex-1 min-w-[80px]"
+            className="flex-1 min-w-20"
           >
             {topic.isCommunity ? (
               <>
@@ -247,7 +247,7 @@ export function TopicCard({
               size="sm"
               variant="ghost"
               onClick={() => onRestore(topic.id)}
-              className="flex-1 min-w-[80px]"
+              className="flex-1 min-w-20"
             >
               <RefreshCcw className="mr-2 h-4 w-4" />
               {t("restore")}
@@ -257,7 +257,7 @@ export function TopicCard({
               size="sm"
               variant="ghost"
               onClick={() => onDelete(topic.id)}
-              className="flex-1 min-w-[80px] text-destructive hover:text-destructive"
+              className="flex-1 min-w-20 text-destructive hover:text-destructive"
             >
               <Trash2 className="mr-2 h-4 w-4" />
               {t("delete")}

@@ -1,8 +1,6 @@
 "use client"
 
-import { useState } from "react"
 import { useTranslations } from "next-intl"
-import { motion } from "framer-motion"
 import {
   Edit,
   Trash2,
@@ -203,7 +201,7 @@ export function TopicTable({
               )}
               {visibleColumns.stats && (
                 <TableHead
-                  className="text-center cursor-pointer select-none min-w-[140px]"
+                  className="text-center cursor-pointer select-none min-w-35"
                   onClick={() => handleHeaderClick("replies")}
                 >
                   <div className="flex items-center justify-center">
