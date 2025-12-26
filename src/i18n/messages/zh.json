@@ -220,7 +220,14 @@
   "Admin": {
     "entry": "管理后台",
     "title": "NextBB 管理后台",
-    "description": "NextBB 管理后台页面。"
+    "description": "NextBB 管理后台页面。",
+    "nav": {
+      "overview": "概览",
+      "topics": "话题",
+      "users": "用户",
+      "categories": "分类",
+      "tags": "标签"
+    }
   },
   "AdminUsers": {
     "title": "用户管理",

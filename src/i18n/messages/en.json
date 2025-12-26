@@ -220,7 +220,14 @@
   "Admin": {
     "entry": "Admin",
     "title": "NextBB Admin",
-    "description": "NextBB Admin Page."
+    "description": "NextBB Admin Page.",
+    "nav": {
+      "overview": "Overview",
+      "topics": "Topics",
+      "users": "Users",
+      "categories": "Categories",
+      "tags": "Tags"
+    }
   },
   "AdminUsers": {
     "title": "User Management",

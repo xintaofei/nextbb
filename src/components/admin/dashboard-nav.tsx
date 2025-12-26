@@ -4,18 +4,20 @@ import { motion } from "framer-motion"
 import { BarChart3, Users, Menu, Folder, Tag, FileText } from "lucide-react"
 import { useState } from "react"
 import { useRouter } from "next/navigation"
+import { useTranslations } from "next-intl"
 import { Button } from "@/components/ui/button"
 
 export function DashboardNav() {
   const [isOpen, setIsOpen] = useState(false)
   const router = useRouter()
+  const t = useTranslations("Admin.nav")
 
   const navItems = [
-    { label: "Overview", icon: BarChart3, path: "/admin" },
-    { label: "Topics", icon: FileText, path: "/admin/topics" },
-    { label: "Users", icon: Users, path: "/admin/users" },
-    { label: "Categories", icon: Folder, path: "/admin/categories" },
-    { label: "Tags", icon: Tag, path: "/admin/tags" },
+    { label: t("overview"), icon: BarChart3, path: "/admin" },
+    { label: t("topics"), icon: FileText, path: "/admin/topics" },
+    { label: t("users"), icon: Users, path: "/admin/users" },
+    { label: t("categories"), icon: Folder, path: "/admin/categories" },
+    { label: t("tags"), icon: Tag, path: "/admin/tags" },
   ]
 
   return (
@@ -58,7 +60,7 @@ export function DashboardNav() {
                   size="sm"
                   className="gap-2 text-foreground/70 hover:text-foreground hover:bg-background/50 rounded-lg"
                   role="menuitem"
-                  aria-current={item.label === "Overview" ? "page" : undefined}
+                  aria-current={item.path === "/admin" ? "page" : undefined}
                   onClick={() => router.push(item.path)}
                 >
                   <Icon className="h-4 w-4" aria-hidden="true" />
