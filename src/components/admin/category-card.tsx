@@ -1,0 +1,129 @@
+"use client"
+
+import { motion } from "framer-motion"
+import { useTranslations } from "next-intl"
+import { Edit, Trash2, FolderOpen } from "lucide-react"
+import { Button } from "@/components/ui/button"
+import { Badge } from "@/components/ui/badge"
+import { formatRelative } from "@/lib/time"
+
+type CategoryCardProps = {
+  category: {
+    id: string
+    name: string
+    icon: string
+    description: string | null
+    sort: number
+    bgColor: string | null
+    textColor: string | null
+    isDeleted: boolean
+    createdAt: string
+    updatedAt: string
+    topicCount: number
+  }
+  onEdit: (id: string) => void
+  onDelete: (id: string) => void
+}
+
+export function CategoryCard({
+  category,
+  onEdit,
+  onDelete,
+}: CategoryCardProps) {
+  const t = useTranslations("AdminCategories")
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, scale: 0.95 }}
+      animate={{ opacity: 1, scale: 1 }}
+      transition={{ duration: 0.2 }}
+      className="group relative overflow-hidden rounded-2xl border border-border/40 bg-background/60 p-6 backdrop-blur transition-all hover:border-border/60 hover:shadow-lg"
+    >
+      <div
+        className="absolute inset-0 bg-gradient-to-br from-foreground/4 via-transparent to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100 -z-10"
+        style={
+          category.bgColor
+            ? {
+                background: `linear-gradient(135deg, ${category.bgColor}15 0%, transparent 100%)`,
+              }
+            : undefined
+        }
+      />
+
+      <div className="relative space-y-4">
+        <div className="flex items-start justify-between">
+          <div className="flex items-start gap-3">
+            {category.icon ? (
+              <div
+                className="flex h-12 w-12 items-center justify-center rounded-xl border border-border/40 text-2xl"
+                style={{
+                  backgroundColor: category.bgColor || "transparent",
+                  color: category.textColor || "inherit",
+                }}
+              >
+                {category.icon}
+              </div>
+            ) : (
+              <div className="flex h-12 w-12 items-center justify-center rounded-xl border border-border/40 bg-muted/30">
+                <FolderOpen className="h-6 w-6 text-muted-foreground" />
+              </div>
+            )}
+            <div className="flex-1 space-y-1">
+              <h3 className="font-semibold text-lg leading-tight">
+                {category.name}
+              </h3>
+              {category.description && (
+                <p className="text-sm text-muted-foreground line-clamp-2">
+                  {category.description}
+                </p>
+              )}
+            </div>
+          </div>
+          {category.isDeleted && (
+            <Badge variant="destructive" className="shrink-0">
+              {t("card.deleted")}
+            </Badge>
+          )}
+        </div>
+
+        <div className="flex items-center gap-4 text-sm text-muted-foreground">
+          <div className="flex items-center gap-1">
+            <span className="font-medium">{t("card.sort")}:</span>
+            <span>{category.sort}</span>
+          </div>
+          <div className="flex items-center gap-1">
+            <span className="font-medium">{t("card.topics")}:</span>
+            <span className="font-semibold text-foreground">
+              {category.topicCount}
+            </span>
+          </div>
+        </div>
+
+        <div className="text-xs text-muted-foreground">
+          {t("card.updatedAt")} {formatRelative(category.updatedAt)}
+        </div>
+
+        <div className="flex items-center gap-2 pt-2 border-t border-border/40">
+          <Button
+            size="sm"
+            variant="ghost"
+            onClick={() => onEdit(category.id)}
+            className="flex-1"
+          >
+            <Edit className="mr-2 h-4 w-4" />
+            {t("card.edit")}
+          </Button>
+          <Button
+            size="sm"
+            variant="ghost"
+            onClick={() => onDelete(category.id)}
+            className="flex-1 text-destructive hover:text-destructive"
+          >
+            <Trash2 className="mr-2 h-4 w-4" />
+            {t("card.delete")}
+          </Button>
+        </div>
+      </div>
+    </motion.div>
+  )
+}
