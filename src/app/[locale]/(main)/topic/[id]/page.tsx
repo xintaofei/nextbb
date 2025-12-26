@@ -344,9 +344,7 @@ export default function TopicPage() {
 
   const onClickReply = (postId: string, authorName: string) => {
     setReplyToPostId(postId)
-    if (!replyContent.trim()) {
-      setReplyContent(`@${authorName} `)
-    }
+    setReplyContent(`@${authorName} `)
     setReplyOpen(true)
   }
 
