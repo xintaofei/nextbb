@@ -17,6 +17,7 @@ import {
   ChevronUp,
   ChevronDown,
   ChevronsUpDown,
+  EllipsisVertical,
 } from "lucide-react"
 import {
   Table,
@@ -212,11 +213,11 @@ export function TopicTable({
                 </TableHead>
               )}
               {visibleColumns.status && (
-                <TableHead className="w-40">{t("status")}</TableHead>
+                <TableHead className="w-36">{t("status")}</TableHead>
               )}
               {visibleColumns.time && (
                 <TableHead
-                  className="min-w-16 cursor-pointer select-none"
+                  className="w-16 cursor-pointer select-none"
                   onClick={() => handleHeaderClick("created_at")}
                 >
                   <div className="flex items-center">
@@ -225,7 +226,7 @@ export function TopicTable({
                   </div>
                 </TableHead>
               )}
-              <TableHead className="text-right min-w-16">
+              <TableHead className="text-center min-w-16">
                 {t("actions")}
               </TableHead>
             </TableRow>
@@ -404,11 +405,11 @@ export function TopicTable({
                       </div>
                     </TableCell>
                   )}
-                  <TableCell className="text-right">
+                  <TableCell className="text-center">
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="sm">
-                          {t("more")}
+                        <Button variant="ghost" size="icon" className="h-8 w-8">
+                          <EllipsisVertical className="h-4 w-4" />
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end" className="w-40">
