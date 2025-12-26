@@ -130,7 +130,10 @@ export async function GET(req: Request) {
     },
     skip: (page - 1) * pageSize,
     take: pageSize,
-    orderBy: { id: "desc" },
+    orderBy:
+      sortMode === "latest"
+        ? [{ is_pinned: "desc" }, { id: "desc" }]
+        : { id: "desc" },
   })
   type TopicRow = {
     id: bigint
@@ -237,22 +240,14 @@ export async function GET(req: Request) {
   let sorted = items
   if (sortMode === "hot") {
     sorted = [...items].sort((a, b) => b.replies - a.replies)
-  } else if (sortMode === "latest") {
-    sorted = [...items].sort((a, b) => {
-      const pa = a.isPinned ? 1 : 0
-      const pb = b.isPinned ? 1 : 0
-      if (pb !== pa) return pb - pa
-      const ta = a.activity ? new Date(a.activity).getTime() : 0
-      const tb = b.activity ? new Date(b.activity).getTime() : 0
-      return tb - ta
-    })
-  } else {
+  } else if (sortMode === "community") {
     sorted = [...items].sort((a, b) => {
       const ta = a.activity ? new Date(a.activity).getTime() : 0
       const tb = b.activity ? new Date(b.activity).getTime() : 0
       return tb - ta
     })
   }
+  // latest模式下数据库已经按置顶+ID排序，不需要额外排序
   const result: TopicListResult = {
     items: sorted,
     page,
