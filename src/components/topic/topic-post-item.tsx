@@ -12,7 +12,7 @@ import { Button } from "@/components/ui/button"
 import { Bookmark, Heart, Reply, Pencil, Trash, Clock } from "lucide-react"
 import { formatRelative } from "@/lib/time"
 import { PostItem } from "@/types/topic"
-import { UserBadge } from "@/components/common/user-badge"
+import { UserBadgesDisplay } from "@/components/common/user-badges-display"
 import { Separator } from "@/components/ui/separator"
 
 export function TopicPostItem({
@@ -75,19 +75,11 @@ export function TopicPostItem({
           <div className="flex flex-row gap-2 items-center">
             <TimelineStepsTitle>{post.author.name}</TimelineStepsTitle>
             {post.badges && post.badges.length > 0 && (
-              <div className="flex flex-wrap gap-1.5">
-                {post.badges.map((badge) => (
-                  <UserBadge
-                    key={badge.id}
-                    icon={badge.icon}
-                    name={badge.name}
-                    bgColor={badge.bgColor}
-                    textColor={badge.textColor}
-                    level={badge.level}
-                    size="sm"
-                  />
-                ))}
-              </div>
+              <UserBadgesDisplay
+                badges={post.badges}
+                maxDisplay={3}
+                size="sm"
+              />
             )}
           </div>
           <span className="text-muted-foreground text-sm">

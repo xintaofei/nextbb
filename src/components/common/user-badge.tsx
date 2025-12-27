@@ -1,6 +1,11 @@
 "use client"
 
 import { Badge } from "@/components/ui/badge"
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip"
 import { cn } from "@/lib/utils"
 
 export type UserBadgeProps = {
@@ -11,6 +16,7 @@ export type UserBadgeProps = {
   level?: number
   className?: string
   size?: "sm" | "md" | "lg"
+  description?: string | null
 }
 
 export function UserBadge({
@@ -21,6 +27,7 @@ export function UserBadge({
   level = 1,
   className,
   size = "md",
+  description,
 }: UserBadgeProps) {
   const sizeClasses = {
     sm: "text-xs px-1.5 py-0.5",
@@ -36,7 +43,7 @@ export function UserBadge({
     5: "border-2 shadow-lg ring-2 ring-offset-2 animate-pulse",
   }
 
-  return (
+  const badge = (
     <Badge
       variant="secondary"
       className={cn(
@@ -53,4 +60,17 @@ export function UserBadge({
       {icon} {name}
     </Badge>
   )
+
+  if (description) {
+    return (
+      <Tooltip>
+        <TooltipTrigger asChild>{badge}</TooltipTrigger>
+        <TooltipContent>
+          <p className="max-w-xs">{description}</p>
+        </TooltipContent>
+      </Tooltip>
+    )
+  }
+
+  return badge
 }

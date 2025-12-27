@@ -15,6 +15,7 @@ type BadgeItem = {
   level: number
   bgColor: string | null
   textColor: string | null
+  description: string | null
 }
 
 type PostItem = {
@@ -109,6 +110,7 @@ export async function GET(
             level: true,
             bg_color: true,
             text_color: true,
+            description: true,
           },
         },
       },
@@ -127,6 +129,7 @@ export async function GET(
         level: ub.badge.level,
         bgColor: ub.badge.bg_color,
         textColor: ub.badge.text_color,
+        description: ub.badge.description,
       })
     }
   }

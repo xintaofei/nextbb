@@ -6,6 +6,7 @@ export type BadgeItem = {
   level: number
   bgColor: string | null
   textColor: string | null
+  description?: string | null
   awardedAt?: string
 }
 
@@ -29,4 +30,3 @@ export type BadgeAssignResponse = {
   success: boolean
   count: number
 }
-
