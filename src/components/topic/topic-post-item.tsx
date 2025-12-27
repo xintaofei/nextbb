@@ -5,14 +5,15 @@ import {
   TimelineStepsContent,
   TimelineStepsAction,
   TimelineStepsTitle,
-  TimelineStepsTime,
   TimelineStepsDescription,
 } from "@/components/ui/timeline-steps"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
-import { Bookmark, Heart, Reply, Pencil, Trash } from "lucide-react"
+import { Bookmark, Heart, Reply, Pencil, Trash, Clock } from "lucide-react"
 import { formatRelative } from "@/lib/time"
 import { PostItem } from "@/types/topic"
+import { UserBadge } from "@/components/common/user-badge"
+import { Separator } from "@/components/ui/separator"
 
 export function TopicPostItem({
   post,
@@ -71,11 +72,23 @@ export function TopicPostItem({
       </TimelineStepsIcon>
       <TimelineStepsContent className={`border-b`}>
         <div className="flex flex-row justify-between items-center w-full">
-          <div className="flex flex-row gap-2">
+          <div className="flex flex-row gap-2 items-center">
             <TimelineStepsTitle>{post.author.name}</TimelineStepsTitle>
-            <TimelineStepsTime>
-              {formatRelative(post.createdAt)}
-            </TimelineStepsTime>
+            {post.badges && post.badges.length > 0 && (
+              <div className="flex flex-wrap gap-1.5">
+                {post.badges.map((badge) => (
+                  <UserBadge
+                    key={badge.id}
+                    icon={badge.icon}
+                    name={badge.name}
+                    bgColor={badge.bgColor}
+                    textColor={badge.textColor}
+                    level={badge.level}
+                    size="sm"
+                  />
+                ))}
+              </div>
+            )}
           </div>
           <span className="text-muted-foreground text-sm">
             {index === 0 ? floorOpText : "#" + index}
@@ -149,6 +162,12 @@ export function TopicPostItem({
                 <Reply />
                 {replyText}
               </Button>
+              <div className="flex gap-3 h-6">
+                <Separator orientation="vertical" />
+                <div className="flex flex-row gap-1 items-center text-muted-foreground">
+                  {formatRelative(post.createdAt)}
+                </div>
+              </div>
             </>
           )}
         </TimelineStepsAction>

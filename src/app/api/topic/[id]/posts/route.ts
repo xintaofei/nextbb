@@ -8,6 +8,15 @@ type Author = {
   avatar: string
 }
 
+type BadgeItem = {
+  id: string
+  name: string
+  icon: string
+  level: number
+  bgColor: string | null
+  textColor: string | null
+}
+
 type PostItem = {
   id: string
   author: Author
@@ -19,6 +28,7 @@ type PostItem = {
   liked: boolean
   bookmarks: number
   bookmarked: boolean
+  badges?: BadgeItem[]
 }
 
 type PostPage = {
@@ -73,6 +83,54 @@ export async function GET(
     user: { id: bigint; name: string; avatar: string }
   }
   const postIds = postsDb.map((p: PostRow) => p.id)
+
+  // 获取用户 ID 列表
+  const userIds = [...new Set(postsDb.map((p: PostRow) => p.user.id))]
+
+  // 获取用户徽章
+  const userBadgesMap = new Map<string, BadgeItem[]>()
+  if (userIds.length > 0) {
+    const userBadges = await prisma.user_badges.findMany({
+      where: {
+        user_id: { in: userIds },
+        is_deleted: false,
+        badge: {
+          is_visible: true,
+          is_enabled: true,
+          is_deleted: false,
+        },
+      },
+      include: {
+        badge: {
+          select: {
+            id: true,
+            name: true,
+            icon: true,
+            level: true,
+            bg_color: true,
+            text_color: true,
+          },
+        },
+      },
+      orderBy: [{ badge: { level: "desc" } }, { awarded_at: "desc" }],
+    })
+
+    for (const ub of userBadges) {
+      const userId = String(ub.user_id)
+      if (!userBadgesMap.has(userId)) {
+        userBadgesMap.set(userId, [])
+      }
+      userBadgesMap.get(userId)!.push({
+        id: String(ub.badge.id),
+        name: ub.badge.name,
+        icon: ub.badge.icon,
+        level: ub.badge.level,
+        bgColor: ub.badge.bg_color,
+        textColor: ub.badge.text_color,
+      })
+    }
+  }
+
   const countsById = new Map<string, number>()
   const bookmarkCountsById = new Map<string, number>()
   if (postIds.length > 0) {
@@ -110,10 +168,11 @@ export async function GET(
 
   const items: PostItem[] = postsDb.map((p: PostRow) => {
     const idStr = String(p.id)
+    const userId = String(p.user.id)
     return {
       id: idStr,
       author: {
-        id: String(p.user.id),
+        id: userId,
         name: p.user.name,
         avatar: p.user.avatar,
       },
@@ -128,6 +187,7 @@ export async function GET(
       liked: likedSet.has(idStr),
       bookmarks: bookmarkCountsById.get(idStr) ?? 0,
       bookmarked: bookmarkedSet.has(idStr),
+      badges: userBadgesMap.get(userId) ?? [],
     }
   })
 

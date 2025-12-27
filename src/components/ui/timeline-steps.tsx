@@ -290,7 +290,7 @@ function TimelineStepsAction({
     <div
       data-slot="timeline-steps-action"
       className={cn(
-        "flex flex-row justify-end gap-2 text-muted-foreground text-sm my-4",
+        "flex flex-row justify-end items-center gap-2 text-muted-foreground text-sm my-4",
         className
       )}
       {...props}

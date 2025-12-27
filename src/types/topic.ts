@@ -4,6 +4,15 @@ export type Author = {
   avatar: string
 }
 
+export type BadgeItem = {
+  id: string
+  name: string
+  icon: string
+  level: number
+  bgColor: string | null
+  textColor: string | null
+}
+
 export type PostItem = {
   id: string
   author: Author
@@ -15,6 +24,7 @@ export type PostItem = {
   liked: boolean
   bookmarks: number
   bookmarked: boolean
+  badges?: BadgeItem[]
 }
 
 export type RelatedTopicItem = {
