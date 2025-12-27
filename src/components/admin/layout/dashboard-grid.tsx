@@ -1,4 +1,4 @@
-import { motion, Variants } from "framer-motion"
+import { motion, Variants, stagger } from "framer-motion"
 import { Users, Zap, Percent, DollarSign } from "lucide-react"
 import { ChartCard } from "@/components/admin/cards/chat-card"
 import { DetailedCard } from "@/components/admin/cards/detailed-card"
@@ -41,8 +41,7 @@ const containerVariants: Variants = {
   visible: {
     opacity: 1,
     transition: {
-      staggerChildren: 0.1,
-      delayChildren: 0.2,
+      delayChildren: stagger(0.1, { startDelay: 0.2 }),
     },
   },
 }
