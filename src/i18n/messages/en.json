@@ -289,6 +289,29 @@
       "page": "Page {page}",
       "prev": "Prev",
       "next": "Next"
+    },
+    "badges": {
+      "title": "User Badges",
+      "manage": "Manage Badges",
+      "assigned": "Assigned",
+      "empty": "No badges"
+    },
+    "badgeDialog": {
+      "title": "Manage User Badges",
+      "assignTitle": "Assign badges to {name}",
+      "currentBadges": "Current Badges",
+      "availableBadges": "Available Badges",
+      "search": "Search badges",
+      "filterByType": "Filter by type",
+      "assign": "Assign Selected",
+      "remove": "Remove Selected",
+      "cancel": "Cancel",
+      "confirm": "Confirm",
+      "success": "Operation successful",
+      "error": "Operation failed",
+      "alreadyOwned": "Already owned",
+      "selectAtLeastOne": "Please select at least one badge",
+      "empty": "No badges"
     }
   },
   "AdminCategories": {

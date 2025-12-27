@@ -289,6 +289,29 @@
       "page": "第 {page} 页",
       "prev": "上一页",
       "next": "下一页"
+    },
+    "badges": {
+      "title": "用户徽章",
+      "manage": "管理徽章",
+      "assigned": "已赋予",
+      "empty": "暂无徽章"
+    },
+    "badgeDialog": {
+      "title": "管理用户徽章",
+      "assignTitle": "为 {name} 赋予徽章",
+      "currentBadges": "当前徽章",
+      "availableBadges": "可赋予徽章",
+      "search": "搜索徽章",
+      "filterByType": "按类型筛选",
+      "assign": "赋予选中徽章",
+      "remove": "移除选中徽章",
+      "cancel": "取消",
+      "confirm": "确认",
+      "success": "操作成功",
+      "error": "操作失败",
+      "alreadyOwned": "已拥有",
+      "selectAtLeastOne": "请至少选择一个徽章",
+      "empty": "暂无徽章"
     }
   },
   "AdminCategories": {

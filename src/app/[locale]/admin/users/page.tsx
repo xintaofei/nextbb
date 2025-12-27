@@ -10,6 +10,8 @@ import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { UserStatsCard } from "@/components/admin/stats/user-stats-card"
 import { UserCard } from "@/components/admin/cards/user-card"
+import { BadgeAssignDialog } from "@/components/admin/dialogs/badge-assign-dialog"
+import { BadgeItem } from "@/types/badge"
 import {
   Select,
   SelectContent,
@@ -51,6 +53,14 @@ export default function AdminUsersPage() {
   const [deleted, setDeleted] = useState<string | undefined>(undefined)
   const [page, setPage] = useState(1)
   const pageSize = 20
+
+  // 徽章管理对话框状态
+  const [badgeDialogOpen, setBadgeDialogOpen] = useState(false)
+  const [selectedUser, setSelectedUser] = useState<{
+    id: string
+    name: string
+    badges: BadgeItem[]
+  } | null>(null)
 
   const query = useMemo(() => {
     const params = new URLSearchParams()
@@ -105,6 +115,19 @@ export default function AdminUsersPage() {
     if (res.ok) {
       await mutate()
     }
+  }
+
+  const handleManageBadges = (
+    userId: string,
+    userName: string,
+    badges: BadgeItem[]
+  ) => {
+    setSelectedUser({ id: userId, name: userName, badges })
+    setBadgeDialogOpen(true)
+  }
+
+  const handleBadgeDialogSuccess = () => {
+    mutate()
   }
 
   return (
@@ -213,6 +236,7 @@ export default function AdminUsersPage() {
               onToggleAdmin={onToggleAdmin}
               onToggleStatus={onToggleStatus}
               onToggleDeleted={onToggleDeleted}
+              onManageBadges={handleManageBadges}
             />
           ))}
         </AdminPageSection>
@@ -245,6 +269,18 @@ export default function AdminUsersPage() {
           </Button>
         </div>
       </AdminPageSection>
+
+      {/* 徽章管理对话框 */}
+      {selectedUser && (
+        <BadgeAssignDialog
+          userId={selectedUser.id}
+          userName={selectedUser.name}
+          currentBadges={selectedUser.badges}
+          open={badgeDialogOpen}
+          onOpenChange={setBadgeDialogOpen}
+          onSuccess={handleBadgeDialogSuccess}
+        />
+      )}
     </AdminPageContainer>
   )
 }

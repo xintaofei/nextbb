@@ -23,6 +23,8 @@ model users {
   posts  posts[]
   post_likes post_likes[] @relation("post_likes_user")
   post_bookmarks post_bookmarks[] @relation("post_bookmarks_user")
+  user_badges user_badges[] @relation("user_badges_user")
+  awarded_badges user_badges[] @relation("user_badges_awarder")
 
   @@map("users")
   @@unique([email], map: "users_email_key")
@@ -165,7 +167,27 @@ model badges {
   created_at  DateTime @default(now())
   updated_at  DateTime @updatedAt
 
+  user_badges user_badges[] @relation("user_badges_badge")
+
   @@index([badge_type], map: "badges_type_index")
   @@index([is_deleted, is_enabled], map: "badges_status_index")
   @@map("badges")
+}
+
+model user_badges {
+  user_id    BigInt   @db.BigInt
+  badge_id   BigInt   @db.BigInt
+  awarded_at DateTime @default(now())
+  awarded_by BigInt?  @db.BigInt
+  is_deleted Boolean  @default(false)
+
+  user    users  @relation("user_badges_user", fields: [user_id], references: [id])
+  badge   badges @relation("user_badges_badge", fields: [badge_id], references: [id])
+  awarder users? @relation("user_badges_awarder", fields: [awarded_by], references: [id])
+
+  @@id([user_id, badge_id])
+  @@index([user_id, is_deleted], map: "user_badges_user_index")
+  @@index([badge_id, is_deleted], map: "user_badges_badge_index")
+  @@index([is_deleted], map: "user_badges_deleted_index")
+  @@map("user_badges")
 }

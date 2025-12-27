@@ -1,10 +1,14 @@
 import { motion } from "framer-motion"
-import { Mail, Calendar, Shield, User } from "lucide-react"
+import { Mail, Calendar, Shield, User, Award } from "lucide-react"
 import { Switch } from "@/components/ui/switch"
 import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
 import { Avatar } from "@/components/ui/avatar"
+import { UserBadge } from "@/components/common/user-badge"
 import { useTranslations } from "next-intl"
 import Image from "next/image"
+import { BadgeItem } from "@/types/badge"
+import useSWR from "swr"
 
 export interface UserCardProps {
   user: {
@@ -20,6 +24,11 @@ export interface UserCardProps {
   onToggleAdmin: (id: string, value: boolean) => void
   onToggleStatus: (id: string, value: boolean) => void
   onToggleDeleted: (id: string, value: boolean) => void
+  onManageBadges?: (
+    userId: string,
+    userName: string,
+    badges: BadgeItem[]
+  ) => void
 }
 
 export function UserCard({
@@ -27,8 +36,25 @@ export function UserCard({
   onToggleAdmin,
   onToggleStatus,
   onToggleDeleted,
+  onManageBadges,
 }: UserCardProps) {
   const t = useTranslations("AdminUsers.card")
+  const badgeT = useTranslations("AdminUsers.badges")
+
+  const fetcher = async (url: string) => {
+    const res = await fetch(url)
+    if (!res.ok) throw new Error("Failed")
+    return res.json()
+  }
+
+  const { data: badgesData } = useSWR<{ items: BadgeItem[] }>(
+    `/api/admin/users/${user.id}/badges`,
+    fetcher
+  )
+
+  const userBadges = badgesData?.items || []
+  const displayBadges = userBadges.slice(0, 3)
+  const remainingCount = userBadges.length - 3
 
   return (
     <motion.div
@@ -87,6 +113,58 @@ export function UserCard({
           <span>
             {t("joined")} {new Date(user.createdAt).toLocaleDateString()}
           </span>
+        </div>
+
+        <div className="border-t border-border/40" />
+
+        {/* 徽章展示区域 */}
+        <div className="space-y-2">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-1.5 text-xs text-foreground/60">
+              <Award className="h-3.5 w-3.5" />
+              <span>{badgeT("title")}</span>
+              {userBadges.length > 0 && (
+                <span className="text-foreground/40">
+                  ({userBadges.length})
+                </span>
+              )}
+            </div>
+            {onManageBadges && (
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-6 text-xs"
+                onClick={() => onManageBadges(user.id, user.name, userBadges)}
+              >
+                {badgeT("manage")}
+              </Button>
+            )}
+          </div>
+          {displayBadges.length > 0 ? (
+            <div className="flex flex-wrap gap-1.5">
+              {displayBadges.map((badge) => (
+                <UserBadge
+                  key={badge.id}
+                  icon={badge.icon}
+                  name={badge.name}
+                  bgColor={badge.bgColor}
+                  textColor={badge.textColor}
+                  level={badge.level}
+                  size="sm"
+                />
+              ))}
+              {remainingCount > 0 && (
+                <Badge
+                  variant="outline"
+                  className="text-xs px-1.5 py-0.5 text-muted-foreground"
+                >
+                  +{remainingCount}
+                </Badge>
+              )}
+            </div>
+          ) : (
+            <p className="text-xs text-muted-foreground">{badgeT("empty")}</p>
+          )}
         </div>
 
         <div className="border-t border-border/40" />
