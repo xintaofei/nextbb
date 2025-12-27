@@ -191,3 +191,21 @@ model user_badges {
   @@index([is_deleted], map: "user_badges_deleted_index")
   @@map("user_badges")
 }
+
+model system_configs {
+  id            BigInt   @id @db.BigInt
+  config_key    String   @unique @db.VarChar(64)
+  config_value  String   @db.Text
+  config_type   String   @db.VarChar(16)
+  category      String   @db.VarChar(32)
+  description   String?  @db.VarChar(255)
+  is_public     Boolean  @default(false)
+  is_sensitive  Boolean  @default(false)
+  default_value String   @db.Text
+  created_at    DateTime @default(now())
+  updated_at    DateTime @updatedAt
+
+  @@index([category], map: "system_configs_category_index")
+  @@index([is_public], map: "system_configs_public_index")
+  @@map("system_configs")
+}

@@ -1,0 +1,369 @@
+import { config } from "dotenv"
+import { PrismaClient } from "@prisma/client"
+import { PrismaPg } from "@prisma/adapter-pg"
+import { Pool } from "pg"
+import { generateId } from "../src/lib/id"
+import process from "node:process"
+
+// 加载环境变量
+config()
+
+// 使用与应用相同的配置方式
+const pooled =
+  process.env.POSTGRES_PRISMA_URL ?? process.env.POSTGRES_URL ?? null
+let url = pooled ?? process.env.POSTGRES_URL_NON_POOLING ?? ""
+if (!url || url.length === 0) {
+  throw new Error(
+    "Database connection string is empty: set POSTGRES_URL_NON_POOLING or POSTGRES_URL or POSTGRES_PRISMA_URL"
+  )
+}
+if (pooled) {
+  try {
+    const u = new URL(url)
+    if (!u.searchParams.has("pgbouncer")) {
+      u.searchParams.set("pgbouncer", "true")
+      url = u.toString()
+    }
+  } catch {}
+}
+const pool = new Pool({
+  connectionString: url,
+  ssl: true,
+  max: parseInt(process.env.POSTGRES_POOL_MAX ?? "1", 10),
+  idleTimeoutMillis: 10000,
+})
+const adapter = new PrismaPg(pool)
+const prisma = new PrismaClient({ adapter })
+
+type ConfigItem = {
+  configKey: string
+  configValue: string
+  configType: "string" | "number" | "boolean" | "json"
+  category: string
+  description: string
+  isPublic: boolean
+  isSensitive: boolean
+  defaultValue: string
+}
+
+const defaultConfigs: ConfigItem[] = [
+  // 基础信息配置
+  {
+    configKey: "basic.name",
+    configValue: "NextBB",
+    configType: "string",
+    category: "basic",
+    description: "论坛名称",
+    isPublic: true,
+    isSensitive: false,
+    defaultValue: "NextBB",
+  },
+  {
+    configKey: "basic.description",
+    configValue: "一个现代化的论坛系统",
+    configType: "string",
+    category: "basic",
+    description: "论坛描述",
+    isPublic: true,
+    isSensitive: false,
+    defaultValue: "一个现代化的论坛系统",
+  },
+  {
+    configKey: "basic.logo",
+    configValue: "/logo.png",
+    configType: "string",
+    category: "basic",
+    description: "论坛 Logo",
+    isPublic: true,
+    isSensitive: false,
+    defaultValue: "/logo.png",
+  },
+  {
+    configKey: "basic.contact_email",
+    configValue: "",
+    configType: "string",
+    category: "basic",
+    description: "联系邮箱",
+    isPublic: true,
+    isSensitive: false,
+    defaultValue: "",
+  },
+  {
+    configKey: "basic.icp",
+    configValue: "",
+    configType: "string",
+    category: "basic",
+    description: "网站备案号",
+    isPublic: true,
+    isSensitive: false,
+    defaultValue: "",
+  },
+
+  // 用户注册配置
+  {
+    configKey: "registration.enabled",
+    configValue: "true",
+    configType: "boolean",
+    category: "registration",
+    description: "是否允许注册",
+    isPublic: true,
+    isSensitive: false,
+    defaultValue: "true",
+  },
+  {
+    configKey: "registration.email_verify",
+    configValue: "false",
+    configType: "boolean",
+    category: "registration",
+    description: "是否需要邮箱验证",
+    isPublic: true,
+    isSensitive: false,
+    defaultValue: "false",
+  },
+  {
+    configKey: "registration.username_min_length",
+    configValue: "3",
+    configType: "number",
+    category: "registration",
+    description: "用户名最小长度",
+    isPublic: true,
+    isSensitive: false,
+    defaultValue: "3",
+  },
+  {
+    configKey: "registration.username_max_length",
+    configValue: "32",
+    configType: "number",
+    category: "registration",
+    description: "用户名最大长度",
+    isPublic: true,
+    isSensitive: false,
+    defaultValue: "32",
+  },
+
+  // OAuth 认证配置
+  {
+    configKey: "oauth.github.enabled",
+    configValue: "true",
+    configType: "boolean",
+    category: "oauth",
+    description: "GitHub OAuth 是否启用",
+    isPublic: true,
+    isSensitive: false,
+    defaultValue: "true",
+  },
+  {
+    configKey: "oauth.github.client_id",
+    configValue: "",
+    configType: "string",
+    category: "oauth",
+    description: "GitHub OAuth Client ID",
+    isPublic: false,
+    isSensitive: false,
+    defaultValue: "",
+  },
+  {
+    configKey: "oauth.github.client_secret",
+    configValue: "",
+    configType: "string",
+    category: "oauth",
+    description: "GitHub OAuth Client Secret",
+    isPublic: false,
+    isSensitive: true,
+    defaultValue: "",
+  },
+  {
+    configKey: "oauth.google.enabled",
+    configValue: "true",
+    configType: "boolean",
+    category: "oauth",
+    description: "Google OAuth 是否启用",
+    isPublic: true,
+    isSensitive: false,
+    defaultValue: "true",
+  },
+  {
+    configKey: "oauth.google.client_id",
+    configValue: "",
+    configType: "string",
+    category: "oauth",
+    description: "Google OAuth Client ID",
+    isPublic: false,
+    isSensitive: false,
+    defaultValue: "",
+  },
+  {
+    configKey: "oauth.google.client_secret",
+    configValue: "",
+    configType: "string",
+    category: "oauth",
+    description: "Google OAuth Client Secret",
+    isPublic: false,
+    isSensitive: true,
+    defaultValue: "",
+  },
+  {
+    configKey: "oauth.linuxdo.enabled",
+    configValue: "true",
+    configType: "boolean",
+    category: "oauth",
+    description: "LinuxDo OAuth 是否启用",
+    isPublic: true,
+    isSensitive: false,
+    defaultValue: "true",
+  },
+  {
+    configKey: "oauth.linuxdo.client_id",
+    configValue: "",
+    configType: "string",
+    category: "oauth",
+    description: "LinuxDo OAuth Client ID",
+    isPublic: false,
+    isSensitive: false,
+    defaultValue: "",
+  },
+  {
+    configKey: "oauth.linuxdo.client_secret",
+    configValue: "",
+    configType: "string",
+    category: "oauth",
+    description: "LinuxDo OAuth Client Secret",
+    isPublic: false,
+    isSensitive: true,
+    defaultValue: "",
+  },
+
+  // 内容管理配置
+  {
+    configKey: "content.topic.publish_permission",
+    configValue: "all",
+    configType: "string",
+    category: "content",
+    description: "话题发布权限（all/verified/admin）",
+    isPublic: true,
+    isSensitive: false,
+    defaultValue: "all",
+  },
+  {
+    configKey: "content.post.reply_permission",
+    configValue: "all",
+    configType: "string",
+    category: "content",
+    description: "回复权限（all/verified/admin）",
+    isPublic: true,
+    isSensitive: false,
+    defaultValue: "all",
+  },
+  {
+    configKey: "content.moderation.enabled",
+    configValue: "false",
+    configType: "boolean",
+    category: "content",
+    description: "是否启用内容审核",
+    isPublic: false,
+    isSensitive: false,
+    defaultValue: "false",
+  },
+  {
+    configKey: "content.filter.enabled",
+    configValue: "false",
+    configType: "boolean",
+    category: "content",
+    description: "是否启用敏感词过滤",
+    isPublic: false,
+    isSensitive: false,
+    defaultValue: "false",
+  },
+  {
+    configKey: "content.upload.max_size",
+    configValue: "10",
+    configType: "number",
+    category: "content",
+    description: "上传文件最大大小（MB）",
+    isPublic: true,
+    isSensitive: false,
+    defaultValue: "10",
+  },
+
+  // 系统运行配置
+  {
+    configKey: "system.pagination.page_size",
+    configValue: "20",
+    configType: "number",
+    category: "system",
+    description: "默认分页大小",
+    isPublic: true,
+    isSensitive: false,
+    defaultValue: "20",
+  },
+  {
+    configKey: "system.cache.ttl",
+    configValue: "3600",
+    configType: "number",
+    category: "system",
+    description: "缓存过期时间（秒）",
+    isPublic: false,
+    isSensitive: false,
+    defaultValue: "3600",
+  },
+  {
+    configKey: "system.maintenance.enabled",
+    configValue: "false",
+    configType: "boolean",
+    category: "system",
+    description: "是否开启维护模式",
+    isPublic: true,
+    isSensitive: false,
+    defaultValue: "false",
+  },
+  {
+    configKey: "system.maintenance.message",
+    configValue: "系统维护中，请稍后访问",
+    configType: "string",
+    category: "system",
+    description: "维护模式提示信息",
+    isPublic: true,
+    isSensitive: false,
+    defaultValue: "系统维护中，请稍后访问",
+  },
+]
+
+async function seedConfigs() {
+  console.log("开始初始化系统配置...")
+
+  for (const config of defaultConfigs) {
+    const existing = await prisma.system_configs.findUnique({
+      where: { config_key: config.configKey },
+    })
+
+    if (!existing) {
+      await prisma.system_configs.create({
+        data: {
+          id: generateId(),
+          config_key: config.configKey,
+          config_value: config.configValue,
+          config_type: config.configType,
+          category: config.category,
+          description: config.description,
+          is_public: config.isPublic,
+          is_sensitive: config.isSensitive,
+          default_value: config.defaultValue,
+        },
+      })
+      console.log(`✓ 创建配置: ${config.configKey}`)
+    } else {
+      console.log(`- 跳过已存在配置: ${config.configKey}`)
+    }
+  }
+
+  console.log("系统配置初始化完成！")
+}
+
+seedConfigs()
+  .catch((e) => {
+    console.error(e)
+    process.exit(1)
+  })
+  .finally(async () => {
+    await prisma.$disconnect()
+  })

@@ -227,7 +227,27 @@
       "users": "用户",
       "categories": "分类",
       "tags": "标签",
-      "badges": "徽章"
+      "badges": "徽章",
+      "settings": "系统配置"
+    },
+    "settings": {
+      "title": "系统配置",
+      "description": "管理论坛的系统配置项",
+      "save": "保存配置",
+      "reset": "重置",
+      "resetAll": "全部重置",
+      "saving": "保存中...",
+      "basic": "基础信息",
+      "registration": "用户注册",
+      "oauth": "OAuth 认证",
+      "content": "内容管理",
+      "system": "系统运行",
+      "message": {
+        "saveSuccess": "配置保存成功",
+        "saveError": "配置保存失败",
+        "resetSuccess": "配置已重置",
+        "resetError": "配置重置失败"
+      }
     }
   },
   "AdminUsers": {
@@ -733,6 +753,148 @@
       "page": "第 {page} 页",
       "prev": "上一页",
       "next": "下一页"
+    }
+  },
+  "Config": {
+    "basic": {
+      "name": {
+        "label": "论坛名称",
+        "description": "显示在网站标题、页眉等位置"
+      },
+      "description": {
+        "label": "论坛描述",
+        "description": "SEO 元数据描述"
+      },
+      "logo": {
+        "label": "论坛 Logo",
+        "description": "用于网站标识的图片地址"
+      },
+      "contact_email": {
+        "label": "联系邮箱",
+        "description": "管理员联系邮箱"
+      },
+      "icp": {
+        "label": "网站备案信息",
+        "description": "ICP 备案号等"
+      }
+    },
+    "registration": {
+      "enabled": {
+        "label": "允许注册",
+        "description": "全局开关，控制是否开放新用户注册"
+      },
+      "email_verify": {
+        "label": "邮箱验证",
+        "description": "注册后是否必须验证邮箱"
+      },
+      "username_min_length": {
+        "label": "用户名最小长度",
+        "description": "用户名允许的最小字符数"
+      },
+      "username_max_length": {
+        "label": "用户名最大长度",
+        "description": "用户名允许的最大字符数"
+      }
+    },
+    "oauth": {
+      "github": {
+        "enabled": {
+          "label": "启用 GitHub OAuth",
+          "description": "是否允许使用 GitHub 账号登录"
+        },
+        "client_id": {
+          "label": "GitHub Client ID",
+          "description": "GitHub OAuth 应用的 Client ID"
+        },
+        "client_secret": {
+          "label": "GitHub Client Secret",
+          "description": "GitHub OAuth 应用的 Client Secret"
+        }
+      },
+      "google": {
+        "enabled": {
+          "label": "启用 Google OAuth",
+          "description": "是否允许使用 Google 账号登录"
+        },
+        "client_id": {
+          "label": "Google Client ID",
+          "description": "Google OAuth 应用的 Client ID"
+        },
+        "client_secret": {
+          "label": "Google Client Secret",
+          "description": "Google OAuth 应用的 Client Secret"
+        }
+      },
+      "linuxdo": {
+        "enabled": {
+          "label": "启用 LinuxDo OAuth",
+          "description": "是否允许使用 LinuxDo 账号登录"
+        },
+        "client_id": {
+          "label": "LinuxDo Client ID",
+          "description": "LinuxDo OAuth 应用的 Client ID"
+        },
+        "client_secret": {
+          "label": "LinuxDo Client Secret",
+          "description": "LinuxDo OAuth 应用的 Client Secret"
+        }
+      }
+    },
+    "content": {
+      "topic": {
+        "publish_permission": {
+          "label": "话题发布权限",
+          "description": "控制哪些用户可以发布话题（all/verified/admin）"
+        }
+      },
+      "post": {
+        "reply_permission": {
+          "label": "回复权限",
+          "description": "控制哪些用户可以回复帖子（all/verified/admin）"
+        }
+      },
+      "moderation": {
+        "enabled": {
+          "label": "内容审核",
+          "description": "是否启用内容审核机制"
+        }
+      },
+      "filter": {
+        "enabled": {
+          "label": "敏感词过滤",
+          "description": "是否启用敏感词过滤功能"
+        }
+      },
+      "upload": {
+        "max_size": {
+          "label": "上传文件大小限制",
+          "description": "上传文件的最大大小（MB）"
+        }
+      }
+    },
+    "system": {
+      "pagination": {
+        "page_size": {
+          "label": "分页大小",
+          "description": "列表页面每页显示的条目数"
+        }
+      },
+      "cache": {
+        "ttl": {
+          "label": "缓存过期时间",
+          "description": "缓存数据的过期时间（秒）"
+        }
+      },
+      "maintenance": {
+        "enabled": {
+          "label": "维护模式",
+          "description": "是否开启网站维护模式"
+        },
+        "message": {
+          "label": "维护提示信息",
+          "description": "维护模式下显示的提示文字"
+        }
+      }
     }
   }
 }

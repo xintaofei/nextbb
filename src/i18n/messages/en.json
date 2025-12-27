@@ -227,7 +227,27 @@
       "users": "Users",
       "categories": "Categories",
       "tags": "Tags",
-      "badges": "Badges"
+      "badges": "Badges",
+      "settings": "Settings"
+    },
+    "settings": {
+      "title": "System Settings",
+      "description": "Manage system configuration items",
+      "save": "Save Settings",
+      "reset": "Reset",
+      "resetAll": "Reset All",
+      "saving": "Saving...",
+      "basic": "Basic Info",
+      "registration": "Registration",
+      "oauth": "OAuth",
+      "content": "Content",
+      "system": "System",
+      "message": {
+        "saveSuccess": "Settings saved successfully",
+        "saveError": "Failed to save settings",
+        "resetSuccess": "Settings reset successfully",
+        "resetError": "Failed to reset settings"
+      }
     }
   },
   "AdminUsers": {
