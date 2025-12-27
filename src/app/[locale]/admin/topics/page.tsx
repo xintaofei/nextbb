@@ -735,7 +735,7 @@ export default function AdminTopicsPage() {
             >
               {t("pagination.prev")}
             </Button>
-            <span className="text-sm min-w-[80px] text-center">
+            <span className="text-sm min-w-20 text-center">
               {t("pagination.page", { page: data?.page ?? 1 })}
             </span>
             <Button

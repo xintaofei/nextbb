@@ -240,18 +240,24 @@ export default function AdminBadgesPage() {
           </div>
         </motion.div>
 
-        <BadgeStatsCard
-          totalBadges={stats.total}
-          enabledBadges={stats.enabled}
-          disabledBadges={stats.disabled}
-          deletedBadges={stats.deleted}
-          typeDistribution={stats.typeDistribution}
-        />
-
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4, delay: 0.1 }}
+        >
+          <BadgeStatsCard
+            totalBadges={stats.total}
+            enabledBadges={stats.enabled}
+            disabledBadges={stats.disabled}
+            deletedBadges={stats.deleted}
+            typeDistribution={stats.typeDistribution}
+          />
+        </motion.div>
+
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, delay: 0.2 }}
           className="group relative overflow-hidden rounded-2xl border border-border/40 bg-background/60 p-6 backdrop-blur"
         >
           <div className="absolute inset-0 bg-linear-to-br from-foreground/4 via-transparent to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100 -z-10" />
@@ -402,7 +408,7 @@ export default function AdminBadgesPage() {
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            transition={{ duration: 0.4, delay: 0.2 }}
+            transition={{ duration: 0.4, delay: 0.3 }}
             className="grid gap-4 sm:grid-cols-1 lg:grid-cols-2 xl:grid-cols-3"
           >
             {data.items.map((badge) => (
@@ -419,7 +425,7 @@ export default function AdminBadgesPage() {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4, delay: 0.3 }}
+          transition={{ duration: 0.4, delay: 0.4 }}
           className="flex items-center justify-between rounded-2xl border border-border/40 bg-background/60 p-4 backdrop-blur"
         >
           <span className="text-sm text-foreground/60">
