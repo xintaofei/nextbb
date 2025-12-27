@@ -14,6 +14,7 @@ import { formatRelative } from "@/lib/time"
 import { PostItem } from "@/types/topic"
 import { UserBadgesDisplay } from "@/components/common/user-badges-display"
 import { Separator } from "@/components/ui/separator"
+import { useIsMobile } from "@/hooks/use-mobile"
 
 export function TopicPostItem({
   post,
@@ -54,6 +55,8 @@ export function TopicPostItem({
   deletedText: string
   highlight?: boolean
 }) {
+  const isMobile = useIsMobile()
+
   return (
     <TimelineStepsItem
       id={anchorId}
@@ -77,7 +80,7 @@ export function TopicPostItem({
             {post.badges && post.badges.length > 0 && (
               <UserBadgesDisplay
                 badges={post.badges}
-                maxDisplay={3}
+                maxDisplay={isMobile ? 1 : 3}
                 size="sm"
               />
             )}
