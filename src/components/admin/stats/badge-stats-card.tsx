@@ -2,11 +2,11 @@
 
 import { useTranslations } from "next-intl"
 import { Award, Check, X, Trash2, BarChart3 } from "lucide-react"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import {
   StatsMetricGrid,
   StatsMetricCard,
 } from "@/components/admin/stats/stats-metric-card"
+import { AdminPageSection } from "@/components/admin/layout/admin-page-section"
 
 type BadgeStatsCardProps = {
   totalBadges: number
@@ -57,44 +57,54 @@ export function BadgeStatsCard({
   ]
 
   return (
-    <div className="space-y-4">
-      <StatsMetricGrid>
-        {stats.map((stat) => (
-          <StatsMetricCard
-            key={stat.label}
-            label={stat.label}
-            value={stat.value}
-            icon={stat.icon}
-            iconColor={stat.color}
-          />
-        ))}
-      </StatsMetricGrid>
+    <>
+      <AdminPageSection delay={0.1}>
+        <StatsMetricGrid>
+          {stats.map((stat) => (
+            <StatsMetricCard
+              key={stat.label}
+              label={stat.label}
+              value={stat.value}
+              icon={stat.icon}
+              iconColor={stat.color}
+            />
+          ))}
+        </StatsMetricGrid>
+      </AdminPageSection>
 
       {typeDistribution && Object.keys(typeDistribution).length > 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-base">
-              <BarChart3 className="h-4 w-4" />
-              {t("stats.byType")}
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
+        <AdminPageSection
+          delay={0.15}
+          className="group relative overflow-hidden rounded-2xl border border-border/40 bg-background/60 p-6 backdrop-blur"
+        >
+          <div className="absolute inset-0 bg-linear-to-br from-foreground/4 via-transparent to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100 -z-10" />
+
+          <div className="relative space-y-4">
+            <div className="flex items-center gap-2">
+              <BarChart3 className="h-5 w-5 text-foreground/60" />
+              <h2 className="text-sm font-semibold uppercase tracking-[0.25em] text-foreground">
+                {t("stats.byType")}
+              </h2>
+            </div>
+
             <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
               {Object.entries(typeDistribution).map(([type, count]) => (
                 <div
                   key={type}
-                  className="flex items-center justify-between rounded-lg border border-border/40 bg-background/60 px-3 py-2"
+                  className="flex items-center justify-between rounded-lg border border-border/40 bg-background/60 px-3 py-2.5 transition-colors hover:bg-background/80"
                 >
                   <span className="text-sm text-foreground/70">
                     {t(`badgeType.${type}`)}
                   </span>
-                  <span className="text-sm font-semibold">{count}</span>
+                  <span className="text-sm font-semibold tabular-nums">
+                    {count}
+                  </span>
                 </div>
               ))}
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        </AdminPageSection>
       )}
-    </div>
+    </>
   )
 }
