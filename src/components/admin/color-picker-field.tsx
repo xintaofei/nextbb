@@ -76,7 +76,7 @@ export function ColorPickerField({
             <Button
               type="button"
               variant="outline"
-              className="h-10 min-w-[120px] justify-start gap-2"
+              className="h-10 min-w-30 justify-start gap-2"
             >
               {value ? (
                 <>

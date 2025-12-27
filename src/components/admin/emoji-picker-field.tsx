@@ -44,7 +44,7 @@ export function EmojiPickerField({
             <Button
               type="button"
               variant="outline"
-              className="h-10 min-w-[120px] justify-start"
+              className="h-10 min-w-30 justify-start"
             >
               {value ? (
                 <span className="text-2xl">{value}</span>

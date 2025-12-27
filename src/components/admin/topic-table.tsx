@@ -1,6 +1,7 @@
 "use client"
 
 import { useTranslations } from "next-intl"
+import Image from "next/image"
 import {
   Edit,
   Trash2,
@@ -258,7 +259,7 @@ export function TopicTable({
                       />
                     </TableCell>
                   )}
-                  <TableCell className="max-w-[200px]">
+                  <TableCell className="max-w-50">
                     <TooltipProvider>
                       <Tooltip>
                         <TooltipTrigger asChild>
@@ -271,12 +272,12 @@ export function TopicTable({
                             >
                               {topic.title}
                             </div>
-                            <ExternalLink className="h-4 w-4 text-foreground/40 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0 mt-0.5" />
+                            <ExternalLink className="h-4 w-4 text-foreground/40 opacity-0 group-hover:opacity-100 transition-opacity shrink-0 mt-0.5" />
                           </div>
                         </TooltipTrigger>
                         <TooltipContent
                           side="top"
-                          className="max-w-md break-words"
+                          className="max-w-md wrap-break-word"
                         >
                           {topic.title}
                         </TooltipContent>
@@ -287,10 +288,12 @@ export function TopicTable({
                     <TableCell>
                       <div className="flex items-center gap-2">
                         <Avatar className="h-6 w-6 rounded-full border border-border/40">
-                          <img
+                          <Image
                             src={topic.author.avatar}
                             alt={topic.author.name}
-                            className="h-full w-full object-cover"
+                            width={24}
+                            height={24}
+                            className="h-full w-full object-cover rounded-full"
                           />
                         </Avatar>
                         <span className="text-sm text-foreground/80 truncate">

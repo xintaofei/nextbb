@@ -36,7 +36,7 @@ export function TagCard({ tag, onEdit, onDelete }: TagCardProps) {
       className="group relative overflow-hidden rounded-2xl border border-border/40 bg-background/60 p-6 backdrop-blur transition-all hover:border-border/60 hover:shadow-lg"
     >
       <div
-        className="absolute inset-0 bg-gradient-to-br from-foreground/4 via-transparent to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100 -z-10"
+        className="absolute inset-0 bg-linear-to-br from-foreground/4 via-transparent to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100 -z-10"
         style={
           tag.bgColor
             ? {

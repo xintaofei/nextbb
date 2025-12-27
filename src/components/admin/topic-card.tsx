@@ -14,6 +14,7 @@ import {
   User,
 } from "lucide-react"
 import { useTranslations } from "next-intl"
+import Image from "next/image"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Avatar } from "@/components/ui/avatar"
@@ -125,12 +126,14 @@ export function TopicCard({
         {/* 中间：作者、分类、标签 */}
         <div className="space-y-3">
           <div className="flex items-center gap-2 text-sm">
-            <User className="h-4 w-4 text-foreground/40 flex-shrink-0" />
+            <User className="h-4 w-4 text-foreground/40 shrink-0" />
             <Avatar className="h-6 w-6 rounded-full border border-border/40">
-              <img
+              <Image
                 src={topic.author.avatar}
                 alt={topic.author.name}
-                className="h-full w-full object-cover"
+                width={24}
+                height={24}
+                className="h-full w-full object-cover rounded-full"
               />
             </Avatar>
             <span className="text-foreground/80 truncate">

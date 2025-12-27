@@ -61,7 +61,7 @@ export function BadgeCard({ badge, onEdit, onDelete }: BadgeCardProps) {
       animate={{ opacity: 1, y: 0 }}
       className={`group relative overflow-hidden rounded-2xl border border-border/40 bg-background/60 backdrop-blur transition-all hover:border-border/60 hover:shadow-lg ${cardOpacity}`}
     >
-      <div className="absolute inset-0 bg-gradient-to-br from-foreground/4 via-transparent to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100 -z-10" />
+      <div className="absolute inset-0 bg-linear-to-br from-foreground/4 via-transparent to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100 -z-10" />
 
       <div className="relative p-6 space-y-4">
         {/* 头部：徽章图标和名称 */}

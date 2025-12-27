@@ -4,6 +4,7 @@ import { Switch } from "@/components/ui/switch"
 import { Badge } from "@/components/ui/badge"
 import { Avatar } from "@/components/ui/avatar"
 import { useTranslations } from "next-intl"
+import Image from "next/image"
 
 export interface UserCardProps {
   user: {
@@ -43,10 +44,12 @@ export function UserCard({
         <div className="flex items-start justify-between gap-4">
           <div className="flex items-center gap-3 flex-1 min-w-0">
             <Avatar className="h-12 w-12 rounded-xl border-2 border-border/40">
-              <img
+              <Image
                 src={user.avatar}
                 alt={user.name}
-                className="h-full w-full object-cover"
+                width={48}
+                height={48}
+                className="h-full w-full object-cover rounded-xl"
               />
             </Avatar>
             <div className="flex-1 min-w-0">
