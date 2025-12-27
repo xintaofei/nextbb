@@ -154,7 +154,7 @@ export function TopicPostItem({
                 <Reply />
                 {replyText}
               </Button>
-              <div className="flex gap-3 h-6">
+              <div className="flex gap-5 h-5">
                 <Separator orientation="vertical" />
                 <div className="flex flex-row gap-1 items-center text-muted-foreground">
                   {formatRelative(post.createdAt)}
