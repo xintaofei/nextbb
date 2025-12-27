@@ -394,16 +394,19 @@ export default function AdminTopicsPage() {
 
   return (
     <div className="relative px-6 py-8 lg:py-12">
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.4 }}
-        className="mx-auto max-w-7xl space-y-6"
-      >
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">{t("title")}</h1>
-          <p className="text-sm text-foreground/60 mt-1">{t("description")}</p>
-        </div>
+      <div className="mx-auto max-w-7xl space-y-6">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4 }}
+        >
+          <div>
+            <h1 className="text-3xl font-bold tracking-tight">{t("title")}</h1>
+            <p className="text-sm text-foreground/60 mt-1">
+              {t("description")}
+            </p>
+          </div>
+        </motion.div>
 
         <TopicStatsCard
           totalTopics={stats.total}
@@ -744,53 +747,56 @@ export default function AdminTopicsPage() {
             </Button>
           </div>
         </motion.div>
-      </motion.div>
 
-      <TopicDialog
-        open={dialogOpen}
-        onOpenChange={setDialogOpen}
-        topic={editingTopic}
-        categories={categories || []}
-        tags={tags || []}
-        onSubmit={handleSubmit}
-      />
+        <TopicDialog
+          open={dialogOpen}
+          onOpenChange={setDialogOpen}
+          topic={editingTopic}
+          categories={categories || []}
+          tags={tags || []}
+          onSubmit={handleSubmit}
+        />
 
-      <AlertDialog open={confirmDialogOpen} onOpenChange={setConfirmDialogOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>
-              {t(
-                operationType === "delete"
-                  ? "deleteConfirm.title"
-                  : "restoreConfirm.title"
-              )}
-            </AlertDialogTitle>
-            <AlertDialogDescription>
-              {t(
-                operationType === "delete"
-                  ? "deleteConfirm.description"
-                  : "restoreConfirm.description"
-              )}
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>
-              {t(
-                operationType === "delete"
-                  ? "deleteConfirm.cancel"
-                  : "restoreConfirm.cancel"
-              )}
-            </AlertDialogCancel>
-            <AlertDialogAction onClick={confirmOperation}>
-              {t(
-                operationType === "delete"
-                  ? "deleteConfirm.confirm"
-                  : "restoreConfirm.confirm"
-              )}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+        <AlertDialog
+          open={confirmDialogOpen}
+          onOpenChange={setConfirmDialogOpen}
+        >
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>
+                {t(
+                  operationType === "delete"
+                    ? "deleteConfirm.title"
+                    : "restoreConfirm.title"
+                )}
+              </AlertDialogTitle>
+              <AlertDialogDescription>
+                {t(
+                  operationType === "delete"
+                    ? "deleteConfirm.description"
+                    : "restoreConfirm.description"
+                )}
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>
+                {t(
+                  operationType === "delete"
+                    ? "deleteConfirm.cancel"
+                    : "restoreConfirm.cancel"
+                )}
+              </AlertDialogCancel>
+              <AlertDialogAction onClick={confirmOperation}>
+                {t(
+                  operationType === "delete"
+                    ? "deleteConfirm.confirm"
+                    : "restoreConfirm.confirm"
+                )}
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+      </div>
     </div>
   )
 }

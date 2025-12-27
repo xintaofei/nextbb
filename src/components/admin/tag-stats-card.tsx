@@ -1,8 +1,11 @@
 "use client"
 
-import { motion } from "framer-motion"
 import { useTranslations } from "next-intl"
 import { Tag, TagIcon, Trash2, TrendingUp } from "lucide-react"
+import {
+  StatsMetricGrid,
+  StatsMetricCard,
+} from "@/components/admin/stats-metric-card"
 
 type TagStatsCardProps = {
   totalTags: number
@@ -54,37 +57,16 @@ export function TagStatsCard({
   ]
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.4, delay: 0.1 }}
-      className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4"
-    >
-      {stats.map((stat, index) => (
-        <motion.div
+    <StatsMetricGrid>
+      {stats.map((stat) => (
+        <StatsMetricCard
           key={stat.label}
-          initial={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.3, delay: 0.1 + index * 0.05 }}
-          className="group relative overflow-hidden rounded-2xl border border-border/40 bg-background/60 p-6 backdrop-blur transition-all hover:border-border/60 hover:shadow-lg"
-        >
-          <div className="absolute inset-0 bg-linear-to-br from-foreground/4 via-transparent to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100 -z-10" />
-
-          <div className="flex items-start gap-4">
-            <div
-              className={`flex h-12 w-12 items-center justify-center rounded-xl ${stat.bgColor}`}
-            >
-              <stat.icon className={`h-6 w-6 ${stat.color}`} />
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-sm text-muted-foreground mb-1">{stat.label}</p>
-              <p className="text-2xl font-bold tracking-tight truncate">
-                {stat.value}
-              </p>
-            </div>
-          </div>
-        </motion.div>
+          label={stat.label}
+          value={stat.value}
+          icon={stat.icon}
+          iconColor={stat.color}
+        />
       ))}
-    </motion.div>
+    </StatsMetricGrid>
   )
 }

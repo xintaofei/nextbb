@@ -198,24 +198,27 @@ export default function AdminCategoriesPage() {
 
   return (
     <div className="relative px-6 py-8 lg:py-12">
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.4 }}
-        className="mx-auto max-w-7xl space-y-6"
-      >
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold tracking-tight">{t("title")}</h1>
-            <p className="text-sm text-foreground/60 mt-1">
-              {t("description")}
-            </p>
+      <div className="mx-auto max-w-7xl space-y-6">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4 }}
+        >
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-3xl font-bold tracking-tight">
+                {t("title")}
+              </h1>
+              <p className="text-sm text-foreground/60 mt-1">
+                {t("description")}
+              </p>
+            </div>
+            <Button onClick={handleCreate}>
+              <Plus className="mr-2 h-4 w-4" />
+              {t("createButton")}
+            </Button>
           </div>
-          <Button onClick={handleCreate}>
-            <Plus className="mr-2 h-4 w-4" />
-            {t("createButton")}
-          </Button>
-        </div>
+        </motion.div>
 
         <CategoryStatsCard
           totalCategories={stats.total}
@@ -362,31 +365,31 @@ export default function AdminCategoriesPage() {
             </Button>
           </div>
         </motion.div>
-      </motion.div>
 
-      <CategoryDialog
-        open={dialogOpen}
-        onOpenChange={setDialogOpen}
-        category={editingCategory}
-        onSubmit={handleSubmit}
-      />
+        <CategoryDialog
+          open={dialogOpen}
+          onOpenChange={setDialogOpen}
+          category={editingCategory}
+          onSubmit={handleSubmit}
+        />
 
-      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>{t("deleteConfirm.title")}</AlertDialogTitle>
-            <AlertDialogDescription>
-              {t("deleteConfirm.description")}
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>{t("deleteConfirm.cancel")}</AlertDialogCancel>
-            <AlertDialogAction onClick={confirmDelete}>
-              {t("deleteConfirm.confirm")}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+        <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>{t("deleteConfirm.title")}</AlertDialogTitle>
+              <AlertDialogDescription>
+                {t("deleteConfirm.description")}
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>{t("deleteConfirm.cancel")}</AlertDialogCancel>
+              <AlertDialogAction onClick={confirmDelete}>
+                {t("deleteConfirm.confirm")}
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+      </div>
     </div>
   )
 }
