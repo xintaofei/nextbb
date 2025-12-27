@@ -3,14 +3,14 @@
 import { useMemo, useState } from "react"
 import useSWR from "swr"
 import { useTranslations } from "next-intl"
-import { AdminPageContainer } from "@/components/admin/admin-page-container"
-import { AdminPageSection } from "@/components/admin/admin-page-section"
+import { AdminPageContainer } from "@/components/admin/layout/admin-page-container"
+import { AdminPageSection } from "@/components/admin/layout/admin-page-section"
 import { Search, Filter, Plus } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
-import { BadgeStatsCard } from "@/components/admin/badge-stats-card"
-import { BadgeCard } from "@/components/admin/badge-card"
-import { BadgeDialog } from "@/components/admin/badge-dialog"
+import { BadgeStatsCard } from "@/components/admin/stats/badge-stats-card"
+import { BadgeCard } from "@/components/admin/cards/badge-card"
+import { BadgeDialog } from "@/components/admin/dialogs/badge-dialog"
 import {
   Select,
   SelectContent,

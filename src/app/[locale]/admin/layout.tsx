@@ -1,5 +1,5 @@
 import { ReactNode } from "react"
-import { DashboardNav } from "@/components/admin/dashboard-nav"
+import { DashboardNav } from "@/components/admin/layout/dashboard-nav"
 import { getSessionUser } from "@/lib/auth"
 import { redirect } from "next/navigation"
 import { prisma } from "@/lib/prisma"

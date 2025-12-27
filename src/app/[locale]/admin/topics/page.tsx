@@ -6,11 +6,11 @@ import { useTranslations } from "next-intl"
 import { Settings2, Search, Filter } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
-import { AdminPageContainer } from "@/components/admin/admin-page-container"
-import { AdminPageSection } from "@/components/admin/admin-page-section"
-import { TopicStatsCard } from "@/components/admin/topic-stats-card"
-import { TopicTable } from "@/components/admin/topic-table"
-import { TopicDialog } from "@/components/admin/topic-dialog"
+import { AdminPageContainer } from "@/components/admin/layout/admin-page-container"
+import { AdminPageSection } from "@/components/admin/layout/admin-page-section"
+import { TopicStatsCard } from "@/components/admin/stats/topic-stats-card"
+import { TopicTable } from "@/components/admin/tables/topic-table"
+import { TopicDialog } from "@/components/admin/dialogs/topic-dialog"
 import {
   Select,
   SelectContent,

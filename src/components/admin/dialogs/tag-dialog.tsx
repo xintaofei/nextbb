@@ -12,10 +12,10 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
-import { ColorPickerField } from "./color-picker-field"
-import { EmojiPickerField } from "./emoji-picker-field"
+import { ColorPickerField } from "../fields/color-picker-field"
+import { EmojiPickerField } from "../fields/emoji-picker-field"
 
-type CategoryFormData = {
+type TagFormData = {
   name: string
   icon: string
   description: string
@@ -24,29 +24,29 @@ type CategoryFormData = {
   textColor: string | null
 }
 
-type CategoryDialogProps = {
+type TagDialogProps = {
   open: boolean
   onOpenChange: (open: boolean) => void
-  category?: {
+  tag?: {
     id: string
     name: string
     icon: string
-    description: string | null
+    description: string
     sort: number
     bgColor: string | null
     textColor: string | null
   }
-  onSubmit: (data: CategoryFormData) => Promise<void>
+  onSubmit: (data: TagFormData) => Promise<void>
 }
 
-export function CategoryDialog({
+export function TagDialog({
   open,
   onOpenChange,
-  category,
+  tag,
   onSubmit,
-}: CategoryDialogProps) {
-  const t = useTranslations("AdminCategories")
-  const [formData, setFormData] = useState<CategoryFormData>({
+}: TagDialogProps) {
+  const t = useTranslations("AdminTags")
+  const [formData, setFormData] = useState<TagFormData>({
     name: "",
     icon: "",
     description: "",
@@ -57,14 +57,14 @@ export function CategoryDialog({
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   useEffect(() => {
-    if (category) {
+    if (tag) {
       setFormData({
-        name: category.name,
-        icon: category.icon,
-        description: category.description || "",
-        sort: category.sort,
-        bgColor: category.bgColor,
-        textColor: category.textColor,
+        name: tag.name,
+        icon: tag.icon,
+        description: tag.description,
+        sort: tag.sort,
+        bgColor: tag.bgColor,
+        textColor: tag.textColor,
       })
     } else {
       setFormData({
@@ -76,7 +76,7 @@ export function CategoryDialog({
         textColor: null,
       })
     }
-  }, [category, open])
+  }, [tag, open])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -94,7 +94,7 @@ export function CategoryDialog({
       <DialogContent className="max-w-2xl max-h-screen overflow-y-auto">
         <DialogHeader>
           <DialogTitle>
-            {category ? t("dialog.editTitle") : t("dialog.createTitle")}
+            {tag ? t("dialog.editTitle") : t("dialog.createTitle")}
           </DialogTitle>
         </DialogHeader>
 
@@ -150,7 +150,7 @@ export function CategoryDialog({
                   setFormData({ ...formData, description: e.target.value })
                 }
                 placeholder={t("dialog.descriptionPlaceholder")}
-                maxLength={255}
+                maxLength={256}
                 rows={3}
               />
             </div>

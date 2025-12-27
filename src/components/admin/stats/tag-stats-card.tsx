@@ -1,57 +1,55 @@
 "use client"
 
 import { useTranslations } from "next-intl"
-import { FolderOpen, FolderCheck, Trash2, TrendingUp } from "lucide-react"
+import { Tag, TagIcon, Trash2, TrendingUp } from "lucide-react"
 import {
   StatsMetricGrid,
   StatsMetricCard,
-} from "@/components/admin/stats-metric-card"
+} from "@/components/admin/stats/stats-metric-card"
 
-type CategoryStatsCardProps = {
-  totalCategories: number
-  activeCategories: number
-  deletedCategories: number
-  hottestCategory?: {
+type TagStatsCardProps = {
+  totalTags: number
+  activeTags: number
+  deletedTags: number
+  hottestTag?: {
     name: string
-    topicCount: number
+    usageCount: number
   }
 }
 
-export function CategoryStatsCard({
-  totalCategories,
-  activeCategories,
-  deletedCategories,
-  hottestCategory,
-}: CategoryStatsCardProps) {
-  const t = useTranslations("AdminCategories")
+export function TagStatsCard({
+  totalTags,
+  activeTags,
+  deletedTags,
+  hottestTag,
+}: TagStatsCardProps) {
+  const t = useTranslations("AdminTags")
 
   const stats = [
     {
       label: t("stats.total"),
-      value: totalCategories,
-      icon: FolderOpen,
+      value: totalTags,
+      icon: Tag,
       color: "text-blue-500",
       bgColor: "bg-blue-500/10",
     },
     {
       label: t("stats.active"),
-      value: activeCategories,
-      icon: FolderCheck,
+      value: activeTags,
+      icon: TagIcon,
       color: "text-green-500",
       bgColor: "bg-green-500/10",
     },
     {
       label: t("stats.deleted"),
-      value: deletedCategories,
+      value: deletedTags,
       icon: Trash2,
       color: "text-red-500",
       bgColor: "bg-red-500/10",
     },
     {
       label: t("stats.hottest"),
-      value: hottestCategory
-        ? `${hottestCategory.name} (${hottestCategory.topicCount})`
-        : "-",
+      value: hottestTag ? `${hottestTag.name} (${hottestTag.usageCount})` : "-",
       icon: TrendingUp,
       color: "text-orange-500",
       bgColor: "bg-orange-500/10",

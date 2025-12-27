@@ -3,7 +3,7 @@ import { Users, UserCheck, Shield, UserX } from "lucide-react"
 import {
   StatsMetricGrid,
   StatsMetricCard,
-} from "@/components/admin/stats-metric-card"
+} from "@/components/admin/stats/stats-metric-card"
 
 export interface UserStatsCardProps {
   totalUsers: number

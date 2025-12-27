@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import {
   StatsMetricGrid,
   StatsMetricCard,
-} from "@/components/admin/stats-metric-card"
+} from "@/components/admin/stats/stats-metric-card"
 
 type BadgeStatsCardProps = {
   totalBadges: number

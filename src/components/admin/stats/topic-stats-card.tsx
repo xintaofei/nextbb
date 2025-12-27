@@ -3,7 +3,7 @@ import { FileText, Pin, Star, Trash2 } from "lucide-react"
 import {
   StatsMetricGrid,
   StatsMetricCard,
-} from "@/components/admin/stats-metric-card"
+} from "@/components/admin/stats/stats-metric-card"
 
 export interface TopicStatsCardProps {
   totalTopics: number

@@ -1,8 +1,8 @@
 import { motion, Variants } from "framer-motion"
 import { Users, Zap, Percent, DollarSign } from "lucide-react"
-import { ChartCard } from "@/components/admin/chat-card"
-import { DetailedCard } from "@/components/admin/detailed-card"
-import { MetricCard } from "@/components/admin/metric-card"
+import { ChartCard } from "@/components/admin/cards/chat-card"
+import { DetailedCard } from "@/components/admin/cards/detailed-card"
+import { MetricCard } from "@/components/admin/stats/metric-card"
 
 const USER_GROWTH_DATA = [
   { name: "Week 1", value: 2400 },

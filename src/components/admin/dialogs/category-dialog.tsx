@@ -12,99 +12,71 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
-import { Switch } from "@/components/ui/switch"
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
-import { ColorPickerField } from "./color-picker-field"
-import { EmojiPickerField } from "./emoji-picker-field"
+import { ColorPickerField } from "../fields/color-picker-field"
+import { EmojiPickerField } from "../fields/emoji-picker-field"
 
-type BadgeFormData = {
+type CategoryFormData = {
   name: string
   icon: string
   description: string
-  badgeType: string
-  level: number
   sort: number
   bgColor: string | null
   textColor: string | null
-  isEnabled: boolean
-  isVisible: boolean
 }
 
-type BadgeDialogProps = {
+type CategoryDialogProps = {
   open: boolean
   onOpenChange: (open: boolean) => void
-  badge?: {
+  category?: {
     id: string
     name: string
     icon: string
     description: string | null
-    badgeType: string
-    level: number
     sort: number
     bgColor: string | null
     textColor: string | null
-    isEnabled: boolean
-    isVisible: boolean
   }
-  onSubmit: (data: BadgeFormData) => Promise<void>
+  onSubmit: (data: CategoryFormData) => Promise<void>
 }
 
-export function BadgeDialog({
+export function CategoryDialog({
   open,
   onOpenChange,
-  badge,
+  category,
   onSubmit,
-}: BadgeDialogProps) {
-  const t = useTranslations("AdminBadges")
-  const [formData, setFormData] = useState<BadgeFormData>({
+}: CategoryDialogProps) {
+  const t = useTranslations("AdminCategories")
+  const [formData, setFormData] = useState<CategoryFormData>({
     name: "",
     icon: "",
     description: "",
-    badgeType: "achievement",
-    level: 1,
     sort: 0,
     bgColor: null,
     textColor: null,
-    isEnabled: true,
-    isVisible: true,
   })
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   useEffect(() => {
-    if (badge) {
+    if (category) {
       setFormData({
-        name: badge.name,
-        icon: badge.icon,
-        description: badge.description || "",
-        badgeType: badge.badgeType,
-        level: badge.level,
-        sort: badge.sort,
-        bgColor: badge.bgColor,
-        textColor: badge.textColor,
-        isEnabled: badge.isEnabled,
-        isVisible: badge.isVisible,
+        name: category.name,
+        icon: category.icon,
+        description: category.description || "",
+        sort: category.sort,
+        bgColor: category.bgColor,
+        textColor: category.textColor,
       })
     } else {
       setFormData({
         name: "",
         icon: "",
         description: "",
-        badgeType: "achievement",
-        level: 1,
         sort: 0,
         bgColor: null,
         textColor: null,
-        isEnabled: true,
-        isVisible: true,
       })
     }
-  }, [badge, open])
+  }, [category, open])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -117,28 +89,17 @@ export function BadgeDialog({
     }
   }
 
-  const badgeTypes = [
-    "achievement",
-    "honor",
-    "role",
-    "event",
-    "special",
-  ] as const
-
-  const badgeLevels = [1, 2, 3, 4, 5] as const
-
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl max-h-screen overflow-y-auto">
         <DialogHeader>
           <DialogTitle>
-            {badge ? t("dialog.editTitle") : t("dialog.createTitle")}
+            {category ? t("dialog.editTitle") : t("dialog.createTitle")}
           </DialogTitle>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="space-y-4">
-            {/* 徽章名称 */}
             <div className="space-y-2">
               <Label htmlFor="name">{t("dialog.name")}</Label>
               <Input
@@ -153,7 +114,6 @@ export function BadgeDialog({
               />
             </div>
 
-            {/* 图标和排序值 */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <EmojiPickerField
                 label={t("dialog.icon")}
@@ -181,7 +141,6 @@ export function BadgeDialog({
               </div>
             </div>
 
-            {/* 徽章描述 */}
             <div className="space-y-2">
               <Label htmlFor="description">{t("dialog.description")}</Label>
               <Textarea
@@ -191,59 +150,11 @@ export function BadgeDialog({
                   setFormData({ ...formData, description: e.target.value })
                 }
                 placeholder={t("dialog.descriptionPlaceholder")}
-                maxLength={256}
+                maxLength={255}
                 rows={3}
               />
             </div>
 
-            {/* 徽章类型和等级 */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="badgeType">{t("dialog.badgeType")}</Label>
-                <Select
-                  value={formData.badgeType}
-                  onValueChange={(value) =>
-                    setFormData({ ...formData, badgeType: value })
-                  }
-                >
-                  <SelectTrigger>
-                    <SelectValue
-                      placeholder={t("dialog.badgeTypePlaceholder")}
-                    />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {badgeTypes.map((type) => (
-                      <SelectItem key={type} value={type}>
-                        {t(`badgeType.${type}`)}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="level">{t("dialog.level")}</Label>
-                <Select
-                  value={String(formData.level)}
-                  onValueChange={(value) =>
-                    setFormData({ ...formData, level: parseInt(value) })
-                  }
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder={t("dialog.levelPlaceholder")} />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {badgeLevels.map((level) => (
-                      <SelectItem key={level} value={String(level)}>
-                        {t(`filter.levelOptions.${level}`)}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-
-            {/* 背景色和文字色 */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <ColorPickerField
                 label={t("dialog.bgColor")}
@@ -264,7 +175,6 @@ export function BadgeDialog({
               />
             </div>
 
-            {/* 颜色预览 */}
             {(formData.bgColor || formData.textColor) && (
               <div className="space-y-2">
                 <Label>{t("dialog.colorPreview")}</Label>
@@ -275,46 +185,12 @@ export function BadgeDialog({
                     color: formData.textColor || "inherit",
                   }}
                 >
-                  {(formData.icon || "🏆") + " " + (formData.name || "预览")}
+                  {(formData.icon || "") + " " + (formData.name || "预览")}
                 </div>
               </div>
             )}
-
-            {/* 状态开关 */}
-            <div className="space-y-4 pt-2">
-              <div className="flex items-center justify-between rounded-lg border border-border/40 bg-background/60 p-4">
-                <div className="space-y-0.5">
-                  <Label htmlFor="isEnabled" className="text-base">
-                    {t("dialog.isEnabled")}
-                  </Label>
-                </div>
-                <Switch
-                  id="isEnabled"
-                  checked={formData.isEnabled}
-                  onCheckedChange={(checked) =>
-                    setFormData({ ...formData, isEnabled: checked })
-                  }
-                />
-              </div>
-
-              <div className="flex items-center justify-between rounded-lg border border-border/40 bg-background/60 p-4">
-                <div className="space-y-0.5">
-                  <Label htmlFor="isVisible" className="text-base">
-                    {t("dialog.isVisible")}
-                  </Label>
-                </div>
-                <Switch
-                  id="isVisible"
-                  checked={formData.isVisible}
-                  onCheckedChange={(checked) =>
-                    setFormData({ ...formData, isVisible: checked })
-                  }
-                />
-              </div>
-            </div>
           </div>
 
-          {/* 操作按钮 */}
           <div className="flex items-center gap-2 pt-4 border-t">
             <Button
               type="button"
