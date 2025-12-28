@@ -1,7 +1,6 @@
 "use client"
 
 import Link from "next/link"
-import { useParams } from "next/navigation"
 import { Badge } from "@/components/ui/badge"
 import { cn } from "@/lib/utils"
 import { buildRoutePath } from "@/lib/route-utils"
@@ -29,8 +28,6 @@ export function TagBadge({
   active,
   onClick,
 }: TagBadgeProps) {
-  const params = useParams<{ locale?: string }>()
-
   // 如果有自定义 onClick，使用按钮模式
   if (onClick) {
     return (
@@ -64,7 +61,7 @@ export function TagBadge({
 
   // 如果有 id，使用 Link 模式（SEO 友好）
   if (id) {
-    const href = buildRoutePath({ tagId: id }, params.locale)
+    const href = buildRoutePath({ tagId: id })
     return (
       <Link href={href}>
         <Badge

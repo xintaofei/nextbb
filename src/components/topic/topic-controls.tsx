@@ -1,7 +1,7 @@
 "use client"
 
 import { useCallback, useMemo, useTransition } from "react"
-import { usePathname, useRouter, useParams } from "next/navigation"
+import { useRouter, useParams } from "next/navigation"
 import { CategorySelect } from "@/components/filters/category-select"
 import { TagSelect } from "@/components/filters/tag-select"
 import {
@@ -29,9 +29,8 @@ export function TopicControls({
   onChange,
 }: TopicControlsProps) {
   const router = useRouter()
-  const pathname = usePathname()
-  const params = useParams<{ segments?: string[]; locale?: string }>()
-  const [isPending, startTransition] = useTransition()
+  const params = useParams<{ segments?: string[] }>()
+  const [, startTransition] = useTransition()
 
   // 从路由段中提取当前参数
   const routeParams = useMemo(() => {
@@ -58,7 +57,7 @@ export function TopicControls({
       }
 
       // 生成新路由路径
-      const newPath = buildRoutePath(newParams, params.locale)
+      const newPath = buildRoutePath(newParams)
 
       startTransition(() => {
         router.push(newPath)
@@ -66,7 +65,7 @@ export function TopicControls({
       })
       onChange?.(next)
     },
-    [routeParams, params.locale, router, onChange, startTransition]
+    [routeParams, router, onChange, startTransition]
   )
 
   const navigateToCategory = useCallback(
@@ -78,7 +77,7 @@ export function TopicControls({
       }
 
       // 生成新路由路径
-      const newPath = buildRoutePath(newParams, params.locale)
+      const newPath = buildRoutePath(newParams)
 
       startTransition(() => {
         router.push(newPath)
@@ -86,7 +85,7 @@ export function TopicControls({
       })
       onChange?.({ categoryId: nextCategoryId, tagId })
     },
-    [routeParams, params.locale, router, startTransition, tagId, onChange]
+    [routeParams, router, startTransition, tagId, onChange]
   )
 
   return (

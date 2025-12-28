@@ -2,7 +2,7 @@
 
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { useTranslations } from "next-intl"
-import { usePathname, useRouter, useParams } from "next/navigation"
+import { useRouter, useParams } from "next/navigation"
 import { useEffect, useMemo, useState, useTransition } from "react"
 import {
   parseRouteSegments,
@@ -26,8 +26,7 @@ export function TopicSortTabs({
 }: TopicSortTabsProps) {
   const tc = useTranslations("Common")
   const router = useRouter()
-  const pathname = usePathname()
-  const params = useParams<{ segments?: string[]; locale?: string }>()
+  const params = useParams<{ segments?: string[] }>()
   const [isPending, startTransition] = useTransition()
 
   // 从路由段中提取当前排序
@@ -75,7 +74,7 @@ export function TopicSortTabs({
     }
 
     // 生成新路由路径
-    const newPath = buildRoutePath(newParams, params.locale)
+    const newPath = buildRoutePath(newParams)
 
     startTransition(() => {
       router.push(newPath)

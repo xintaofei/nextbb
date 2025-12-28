@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useTransition, useEffect, useMemo, useRef } from "react"
+import { useState, useTransition, useEffect, useMemo } from "react"
 import {
   Drawer,
   DrawerContent,
@@ -11,7 +11,7 @@ import {
 import { Separator } from "@/components/ui/separator"
 import { ChevronsUpDown, Check } from "lucide-react"
 import { useTranslations } from "next-intl"
-import { usePathname, useRouter, useParams } from "next/navigation"
+import { useRouter, useParams } from "next/navigation"
 import { Label } from "../ui/label"
 import { cn } from "@/lib/utils"
 import {
@@ -36,8 +36,7 @@ export function TopicSortDrawer({
 }: TopicSortDrawerProps) {
   const tc = useTranslations("Common")
   const router = useRouter()
-  const pathname = usePathname()
-  const params = useParams<{ segments?: string[]; locale?: string }>()
+  const params = useParams<{ segments?: string[] }>()
   const [isPending, startTransition] = useTransition()
   const [open, setOpen] = useState(false)
 
@@ -85,7 +84,7 @@ export function TopicSortDrawer({
     }
 
     // 生成新路由路径
-    const newPath = buildRoutePath(newParams, params.locale)
+    const newPath = buildRoutePath(newParams)
 
     startTransition(() => {
       router.push(newPath)

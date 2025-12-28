@@ -118,10 +118,9 @@ export function parseRouteSegments(
 /**
  * 根据路由参数生成规范化的 URL 路径
  * @param params 路由参数
- * @param locale 语言区域（可选，默认不添加前缀）
  * @returns URL 路径字符串
  */
-export function buildRoutePath(params: RouteParams, locale?: string): string {
+export function buildRoutePath(params: RouteParams): string {
   const segments: string[] = []
 
   // 判断是否只有排序参数（没有分类和标签）
@@ -129,8 +128,7 @@ export function buildRoutePath(params: RouteParams, locale?: string): string {
 
   // 如果只有排序，使用简化格式 /latest、/new、/top
   if (onlySort) {
-    const path = `/${params.sort}`
-    return locale ? `/${locale}${path}` : path
+    return `/${params.sort}`
   }
 
   // 如果有分类或标签，使用完整格式 /i/sort/c/id
@@ -148,12 +146,11 @@ export function buildRoutePath(params: RouteParams, locale?: string): string {
 
   // 如果没有任何参数，返回主页路径
   if (segments.length === 0) {
-    return locale ? `/${locale}` : "/"
+    return "/"
   }
 
   // 构建完整路径
-  const path = `/${segments.join("/")}`
-  return locale ? `/${locale}${path}` : path
+  return `/${segments.join("/")}`
 }
 
 /**
@@ -199,24 +196,11 @@ export function routeParamsToApiQuery(params: RouteParams): {
 /**
  * 从路径名中提取当前的路由参数
  * @param pathname 当前路径名
- * @param locale 语言区域
  * @returns 路由参数
  */
-export function extractRouteParamsFromPathname(
-  pathname: string,
-  locale?: string
-): RouteParams {
-  // 移除语言前缀
-  let path = pathname
-  if (locale) {
-    const localePrefix = `/${locale}`
-    if (path.startsWith(localePrefix)) {
-      path = path.slice(localePrefix.length)
-    }
-  }
-
+export function extractRouteParamsFromPathname(pathname: string): RouteParams {
   // 移除前后斜杠
-  path = path.replace(/^\/|\/$/g, "")
+  const path = pathname.replace(/^\/|\/$/g, "")
 
   // 如果是空路径，返回空参数
   if (!path) {
