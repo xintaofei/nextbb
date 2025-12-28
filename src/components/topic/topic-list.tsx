@@ -145,12 +145,13 @@ export function TopicList({
         {loading
           ? Array.from({ length: 15 }).map((_, i) => (
               <TableRow key={`skeleton-${i}`}>
-                <TableCell className="flex flex-col gap-2">
-                  <Skeleton className="h-7 w-72 xl:w-96" />
+                <TableCell className="flex flex-col gap-2 max-sm:px-0">
+                  <Skeleton className="h-7 w-72 xl:w-96 max-sm:w-56" />
                   <div className="flex max-w-full flex-wrap gap-2 overflow-hidden">
-                    <Skeleton className="h-5 w-20" />
-                    <Skeleton className="h-5 w-16" />
-                    <Skeleton className="h-5 w-16" />
+                    <Skeleton className="size-5 rounded-full hidden max-sm:block" />
+                    <Skeleton className="h-5 w-20 max-sm:w-16" />
+                    <Skeleton className="h-5 w-16 max-sm:w-10" />
+                    <Skeleton className="h-5 w-16 max-sm:w-10" />
                   </div>
                 </TableCell>
                 <TableCell className="max-lg:text-center max-sm:hidden">
@@ -171,7 +172,7 @@ export function TopicList({
                 <TableCell className="text-center max-lg:hidden">
                   <Skeleton className="h-4 w-10 mx-auto" />
                 </TableCell>
-                <TableCell className="text-center">
+                <TableCell className="text-center max-sm:px-0">
                   <Skeleton className="h-4 w-10 mx-auto" />
                 </TableCell>
               </TableRow>
@@ -185,7 +186,7 @@ export function TopicList({
                     : ""
                 }
               >
-                <TableCell className="max-w-full">
+                <TableCell className="max-w-full max-sm:px-0">
                   <Link href={`/topic/${t.id}`}>
                     <span className="max-w-full text-lg font-medium whitespace-normal wrap-break-word">
                       {currentSort === "latest" && t.isPinned ? (
@@ -246,10 +247,10 @@ export function TopicList({
                   {formatRelative(t.activity)}
                 </TableCell>
                 <TableCell className="text-center text-muted-foreground hidden max-sm:table-cell relative">
-                  <span className="absolute top-2 right-2 text-primary">
+                  <span className="absolute top-2 right-0 text-primary">
                     {t.replies}
                   </span>
-                  <span className="absolute bottom-2 right-2">
+                  <span className="absolute bottom-2 right-0">
                     {formatRelative(t.activity)}
                   </span>
                 </TableCell>
