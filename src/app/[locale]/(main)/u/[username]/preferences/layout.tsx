@@ -2,6 +2,7 @@ import { ReactNode } from "react"
 import { redirect } from "next/navigation"
 import { getSessionUser } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
+import { decodeUsername, encodeUsername } from "@/lib/utils"
 
 type PreferencesLayoutProps = {
   children: ReactNode
@@ -13,6 +14,7 @@ export default async function PreferencesLayout({
   params,
 }: PreferencesLayoutProps) {
   const { username } = await params
+  const decodedUsername = decodeUsername(username)
 
   // 权限验证：仅本人可访问偏好设置
   const session = await getSessionUser()
@@ -25,8 +27,8 @@ export default async function PreferencesLayout({
     select: { name: true },
   })
 
-  if (currentUser?.name !== username) {
-    redirect(`/u/${username}`)
+  if (currentUser?.name !== decodedUsername) {
+    redirect(`/u/${encodeUsername(decodedUsername)}`)
   }
 
   return <>{children}</>

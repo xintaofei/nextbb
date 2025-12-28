@@ -2,6 +2,7 @@ import { Metadata } from "next"
 import { redirect } from "next/navigation"
 import { getSessionUser } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
+import { decodeUsername, encodeUsername } from "@/lib/utils"
 
 type PreferencesPageProps = {
   params: Promise<{ username: string }>
@@ -11,8 +12,9 @@ export async function generateMetadata({
   params,
 }: PreferencesPageProps): Promise<Metadata> {
   const { username } = await params
+  const decodedUsername = decodeUsername(username)
   return {
-    title: `${username} - 设置`,
+    title: `${decodedUsername} - 设置`,
   }
 }
 
@@ -20,6 +22,7 @@ export default async function PreferencesPage({
   params,
 }: PreferencesPageProps) {
   const { username } = await params
+  const decodedUsername = decodeUsername(username)
 
   // 权限验证：仅本人可访问
   const session = await getSessionUser()
@@ -32,8 +35,8 @@ export default async function PreferencesPage({
     select: { name: true },
   })
 
-  if (currentUser?.name !== username) {
-    redirect(`/u/${username}`)
+  if (currentUser?.name !== decodedUsername) {
+    redirect(`/u/${encodeUsername(decodedUsername)}`)
   }
 
   return (

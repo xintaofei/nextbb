@@ -27,6 +27,7 @@ import {
   CollapsibleTrigger,
 } from "@/components/ui/collapsible"
 import Link from "next/link"
+import { encodeUsername } from "@/lib/utils"
 
 type MeResponse = {
   user: {
@@ -55,6 +56,9 @@ export function NavMain() {
     if (!data) return null
     return data.profile?.username || null
   }, [data])
+
+  const encodedUsername = username ? encodeUsername(username) : null
+
   return (
     <SidebarGroup>
       <SidebarMenu>
@@ -64,13 +68,21 @@ export function NavMain() {
             <span>话题</span>
           </SidebarMenuButton>
         </Link>
-        <Link href={username ? `/u/${username}/activity/posts` : "/login"}>
+        <Link
+          href={
+            encodedUsername ? `/u/${encodedUsername}/activity/posts` : "/login"
+          }
+        >
           <SidebarMenuButton>
             <BookUser />
             <span>我的帖子</span>
           </SidebarMenuButton>
         </Link>
-        <Link href={username ? `/u/${username}/notifications` : "/login"}>
+        <Link
+          href={
+            encodedUsername ? `/u/${encodedUsername}/notifications` : "/login"
+          }
+        >
           <SidebarMenuButton>
             <Inbox />
             <span>我的消息</span>

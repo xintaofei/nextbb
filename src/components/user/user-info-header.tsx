@@ -4,6 +4,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { Settings, Shield } from "lucide-react"
 import Link from "next/link"
+import { encodeUsername } from "@/lib/utils"
 
 type UserInfoHeaderProps = {
   user: {
@@ -66,7 +67,7 @@ export function UserInfoHeader({
               <div className="flex gap-2 mt-2">
                 {isOwnProfile && (
                   <Button variant="outline" size="sm" asChild>
-                    <Link href={`/u/${user.name}/preferences`}>
+                    <Link href={`/u/${encodeUsername(user.name)}/preferences`}>
                       <Settings className="h-4 w-4 mr-1" />
                       编辑资料
                     </Link>

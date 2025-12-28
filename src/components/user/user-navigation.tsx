@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { cn } from "@/lib/utils"
+import { cn, encodeUsername } from "@/lib/utils"
 import { Activity, Award, Bell, Settings, User } from "lucide-react"
 
 type UserNavigationProps = {
@@ -22,35 +22,36 @@ export function UserNavigation({
   isOwnProfile,
 }: UserNavigationProps) {
   const pathname = usePathname()
+  const encodedUsername = encodeUsername(username)
 
   const navItems: NavItem[] = [
     {
       label: "概览",
-      href: `/u/${username}`,
+      href: `/u/${encodedUsername}`,
       icon: User,
       requiresAuth: false,
     },
     {
       label: "活动",
-      href: `/u/${username}/activity`,
+      href: `/u/${encodedUsername}/activity`,
       icon: Activity,
       requiresAuth: false,
     },
     {
       label: "徽章",
-      href: `/u/${username}/badges`,
+      href: `/u/${encodedUsername}/badges`,
       icon: Award,
       requiresAuth: false,
     },
     {
       label: "通知",
-      href: `/u/${username}/notifications`,
+      href: `/u/${encodedUsername}/notifications`,
       icon: Bell,
       requiresAuth: true,
     },
     {
       label: "设置",
-      href: `/u/${username}/preferences`,
+      href: `/u/${encodedUsername}/preferences`,
       icon: Settings,
       requiresAuth: true,
     },
@@ -69,7 +70,8 @@ export function UserNavigation({
             const Icon = item.icon
             const isActive =
               pathname === item.href ||
-              (item.href !== `/u/${username}` && pathname.startsWith(item.href))
+              (item.href !== `/u/${encodedUsername}` &&
+                pathname.startsWith(item.href))
 
             return (
               <Link

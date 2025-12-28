@@ -1,5 +1,6 @@
 import { Metadata } from "next"
 import { prisma } from "@/lib/prisma"
+import { decodeUsername } from "@/lib/utils"
 
 type UserOverviewPageProps = {
   params: Promise<{ username: string }>
@@ -9,8 +10,9 @@ export async function generateMetadata({
   params,
 }: UserOverviewPageProps): Promise<Metadata> {
   const { username } = await params
+  const decodedUsername = decodeUsername(username)
   return {
-    title: `${username} - 用户主页`,
+    title: `${decodedUsername} - 用户主页`,
   }
 }
 
@@ -18,11 +20,12 @@ export default async function UserOverviewPage({
   params,
 }: UserOverviewPageProps) {
   const { username } = await params
+  const decodedUsername = decodeUsername(username)
 
   // 查询用户统计数据
   const user = await prisma.users.findFirst({
     where: {
-      name: username,
+      name: decodedUsername,
       is_deleted: false,
     },
     select: {

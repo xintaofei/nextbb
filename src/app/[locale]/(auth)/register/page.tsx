@@ -24,7 +24,29 @@ import Link from "next/link"
 const schema = z.object({
   email: z.email(),
   password: z.string().min(8).max(72),
-  username: z.string().min(2).max(32),
+  username: z
+    .string()
+    .min(2)
+    .max(32)
+    .regex(
+      /^[a-zA-Z0-9_\u4e00-\u9fa5-]+$/,
+      "用户名只能包含字母、数字、下划线、中文和连字符"
+    )
+    .refine(
+      (val) => {
+        // 禁止URL路径分隔符和特殊字符
+        const dangerousChars = /[\/\\?#@%&=+\s.,:;'"<>{}\[\]|`~!$^*()]/
+        if (dangerousChars.test(val)) return false
+        // 禁止以连字符开头或结尾(避免命令行参数注入)
+        if (val.startsWith("-") || val.endsWith("-")) return false
+        // 禁止连续连字符
+        if (/--/.test(val)) return false
+        return true
+      },
+      {
+        message: "用户名包含不允许的字符或格式不正确",
+      }
+    ),
 })
 
 type RegisterValues = z.infer<typeof schema>

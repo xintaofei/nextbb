@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma"
 import { getSessionUser } from "@/lib/auth"
 import { UserInfoHeader } from "@/components/user/user-info-header"
 import { UserNavigation } from "@/components/user/user-navigation"
+import { decodeUsername } from "@/lib/utils"
 
 type UserProfileLayoutProps = {
   children: ReactNode
@@ -15,11 +16,12 @@ export default async function UserProfileLayout({
   params,
 }: UserProfileLayoutProps) {
   const { username } = await params
+  const decodedUsername = decodeUsername(username)
 
   // 查询用户信息
   const user = await prisma.users.findFirst({
     where: {
-      name: username,
+      name: decodedUsername,
       is_deleted: false,
     },
     select: {
