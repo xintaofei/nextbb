@@ -2,6 +2,7 @@ import { Metadata } from "next"
 import { redirect } from "next/navigation"
 import { getSessionUser } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
+import { decodeUsername, encodeUsername } from "@/lib/utils"
 
 type BookmarksPageProps = {
   params: Promise<{ username: string }>
@@ -18,6 +19,7 @@ export async function generateMetadata({
 
 export default async function BookmarksPage({ params }: BookmarksPageProps) {
   const { username } = await params
+  const decodedUsername = decodeUsername(username)
 
   // 权限验证：仅本人或管理员可访问
   const session = await getSessionUser()
@@ -30,11 +32,11 @@ export default async function BookmarksPage({ params }: BookmarksPageProps) {
     select: { name: true, is_admin: true },
   })
 
-  const isOwner = currentUser?.name === username
+  const isOwner = currentUser?.name === decodedUsername
   const isAdmin = currentUser?.is_admin || false
 
   if (!isOwner && !isAdmin) {
-    redirect(`/u/${username}`)
+    redirect(`/u/${encodeUsername(decodedUsername)}`)
   }
 
   return (

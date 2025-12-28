@@ -32,6 +32,7 @@ import {
 import Link from "next/link"
 import { ThemeSwitcher } from "@/components/common/theme-switcher"
 import { LocaleSwitcher } from "@/components/common/locale-switcher"
+import { encodeUsername } from "@/lib/utils"
 
 type MeProfile = {
   id: string
@@ -80,6 +81,11 @@ export function NavUser() {
   const displayAvatar = useMemo(() => {
     if (!data) return ""
     return data.profile?.avatar || ""
+  }, [data])
+
+  const encodedUsername = useMemo(() => {
+    if (!data?.profile?.username) return null
+    return encodeUsername(data.profile.username)
   }, [data])
 
   const goAdmin = () => {
@@ -155,25 +161,47 @@ export function NavUser() {
               <>
                 <DropdownMenuGroup>
                   <DropdownMenuItem asChild>
-                    <Link href={`/u/${displayName}`}>
+                    <Link
+                      href={
+                        encodedUsername ? `/u/${encodedUsername}` : "/login"
+                      }
+                    >
                       <User />
                       我的主页
                     </Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild>
-                    <Link href={`/u/${displayName}/activity`}>
+                    <Link
+                      href={
+                        encodedUsername
+                          ? `/u/${encodedUsername}/activity`
+                          : "/login"
+                      }
+                    >
                       <Activity />
                       我的活动
                     </Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild>
-                    <Link href={`/u/${displayName}/notifications`}>
+                    <Link
+                      href={
+                        encodedUsername
+                          ? `/u/${encodedUsername}/notifications`
+                          : "/login"
+                      }
+                    >
                       <Bell />
                       我的通知
                     </Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild>
-                    <Link href={`/u/${displayName}/preferences`}>
+                    <Link
+                      href={
+                        encodedUsername
+                          ? `/u/${encodedUsername}/preferences`
+                          : "/login"
+                      }
+                    >
                       <Settings />
                       个人设置
                     </Link>
