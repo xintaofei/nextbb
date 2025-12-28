@@ -507,7 +507,7 @@ export default function TopicPage() {
   }, [hasMore, loadingPosts, setSize, sentinelRef])
 
   return (
-    <div className="flex min-h-screen w-full flex-col p-8 gap-8">
+    <div className="flex min-h-screen w-full flex-col p-8 max-sm:p-4 gap-8">
       <div className="flex flex-col gap-2">
         {loadingInfo ? (
           <>

@@ -174,7 +174,7 @@ export default function CategoryPage() {
   }, [id, pageSize, searchParams])
 
   return (
-    <div className="flex min-h-screen w-full flex-col px-8 gap-4">
+    <div className="flex min-h-screen w-full flex-col px-8 max-sm:p-4 gap-4">
       <div className="flex flex-row justify-between items-start py-8">
         <div className="flex flex-col">
           <div className="flex items-center gap-3">
