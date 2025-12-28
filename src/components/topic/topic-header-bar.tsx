@@ -5,11 +5,12 @@ import { TopicSortTabs } from "@/components/topic/topic-sort-tabs"
 import { TopicSortDrawer } from "@/components/topic/topic-sort-drawer"
 import { NewTopicButton } from "@/components/new-topic/new-topic-button"
 import { HotTags } from "@/components/topic/hot-tags"
+import { type SortValue } from "@/lib/route-utils"
 
 type TopicHeaderBarProps = {
   categoryId?: string
   className?: string
-  onSortStart?: (next: "latest" | "hot" | "community") => void
+  onSortStart?: (next: SortValue) => void
   onNewTopicClick: () => void
 }
 

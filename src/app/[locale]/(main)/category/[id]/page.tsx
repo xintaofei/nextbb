@@ -1,6 +1,6 @@
 "use client"
 
-import { useParams } from "next/navigation"
+import { useParams, useRouter } from "next/navigation"
 import { useEffect, useState } from "react"
 import { SearchIcon } from "lucide-react"
 import {
@@ -15,13 +15,32 @@ import { TopicList, TopicListItem } from "@/components/topic/topic-list"
 import { NewTopicDialog } from "@/components/new-topic/new-topic-dialog"
 import { TopicHeaderBar } from "@/components/topic/topic-header-bar"
 import { useMemo } from "react"
+import { extractRouteParamsFromQuery, buildRoutePath } from "@/lib/route-utils"
 
 export default function CategoryPage() {
-  const { id } = useParams<{ id: string }>()
+  const { id } = useParams<{ id: string; locale?: string }>()
   const tc = useTranslations("Common")
   const tCat = useTranslations("Category")
   const searchParams = useSearchParams()
+  const router = useRouter()
+  const params = useParams<{ locale?: string }>()
   const [isNewTopicDialogOpen, setIsNewTopicDialogOpen] = useState(false)
+
+  // 向后兼容：将分类页重定向到新路由
+  useEffect(() => {
+    const hasQueryParams =
+      searchParams.has("sort") ||
+      searchParams.has("tagId") ||
+      searchParams.has("categoryId")
+
+    if (hasQueryParams || id) {
+      const routeParams = extractRouteParamsFromQuery(searchParams)
+      // 使用 URL 中的分类 ID
+      routeParams.categoryId = id
+      const newPath = buildRoutePath(routeParams, params.locale)
+      router.replace(newPath)
+    }
+  }, [id, searchParams, router, params.locale])
 
   type TopicListResult = {
     items: TopicListItem[]

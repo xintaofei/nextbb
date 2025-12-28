@@ -2,15 +2,21 @@
 
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { useTranslations } from "next-intl"
-import { usePathname, useRouter, useSearchParams } from "next/navigation"
+import { usePathname, useRouter, useParams } from "next/navigation"
 import { useEffect, useMemo, useState, useTransition } from "react"
+import {
+  parseRouteSegments,
+  buildRoutePath,
+  type RouteParams,
+  type SortValue as RouteSortValue,
+} from "@/lib/route-utils"
 
-type SortValue = "latest" | "hot" | "community"
+type SortValue = "latest" | "hot" | "community" | RouteSortValue
 
 type TopicSortTabsProps = {
   className?: string
   onPendingChange?: (pending: boolean) => void
-  onSortStart?: (next: SortValue) => void
+  onSortStart?: (next: RouteSortValue) => void
 }
 
 export function TopicSortTabs({
@@ -21,14 +27,23 @@ export function TopicSortTabs({
   const tc = useTranslations("Common")
   const router = useRouter()
   const pathname = usePathname()
-  const searchParams = useSearchParams()
+  const params = useParams<{ segments?: string[]; locale?: string }>()
   const [isPending, startTransition] = useTransition()
+
+  // 从路由段中提取当前排序
+  const routeParams = useMemo(() => {
+    const parsed = parseRouteSegments(params.segments)
+    return parsed.valid ? (parsed as RouteParams) : {}
+  }, [params.segments])
+
   const currentSort: SortValue = useMemo(() => {
-    const v = searchParams.get("sort")
-    if (v === "hot") return "hot"
-    if (v === "community") return "community"
+    // 优先使用路由中的排序参数
+    if (routeParams.sort === "top") return "top"
+    if (routeParams.sort === "new") return "new"
+    if (routeParams.sort === "latest") return "latest"
     return "latest"
-  }, [searchParams])
+  }, [routeParams])
+
   const [selectedSort, setSelectedSort] = useState<SortValue>(currentSort)
 
   useEffect(() => {
@@ -44,14 +59,26 @@ export function TopicSortTabs({
       setSelectedSort(next)
       return
     }
-    onSortStart?.(next)
+
+    // 只处理新路由支持的排序值
+    if (next !== "top" && next !== "new" && next !== "latest") {
+      return
+    }
+
+    onSortStart?.(next as RouteSortValue)
     setSelectedSort(next)
-    const params = new URLSearchParams(searchParams.toString())
-    params.set("sort", next)
-    params.delete("page")
-    const url = `${pathname}?${params.toString()}`
+
+    // 构建新路由参数
+    const newParams: RouteParams = {
+      ...routeParams,
+      sort: next as RouteSortValue,
+    }
+
+    // 生成新路由路径
+    const newPath = buildRoutePath(newParams, params.locale)
+
     startTransition(() => {
-      router.replace(url)
+      router.push(newPath)
       router.refresh()
     })
   }
@@ -66,17 +93,17 @@ export function TopicSortTabs({
         <TabsTrigger className="md:px-4" value="latest">
           {tc("Tabs.latest")}
         </TabsTrigger>
-        <TabsTrigger className="md:px-4" value="hot">
-          {tc("Tabs.hot")}
+        <TabsTrigger className="md:px-4" value="top">
+          {tc("Tabs.top")}
         </TabsTrigger>
-        <TabsTrigger className="md:px-4" value="community">
-          {tc("Tabs.community")}
-        </TabsTrigger>
-        <TabsTrigger className="md:px-4" value="new" disabled>
+        <TabsTrigger className="md:px-4" value="new">
           {tc("Tabs.new")}
         </TabsTrigger>
-        <TabsTrigger className="md:px-4" value="top" disabled>
-          {tc("Tabs.top")}
+        <TabsTrigger className="md:px-4" value="hot" disabled>
+          {tc("Tabs.hot")}
+        </TabsTrigger>
+        <TabsTrigger className="md:px-4" value="community" disabled>
+          {tc("Tabs.community")}
         </TabsTrigger>
         <TabsTrigger
           className="hidden md:px-4 md:inline-flex"

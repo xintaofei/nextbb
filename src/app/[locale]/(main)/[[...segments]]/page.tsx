@@ -1,18 +1,23 @@
 "use client"
 
 import { useTranslations } from "next-intl"
-import { useEffect, useState } from "react"
+import { useEffect, useState, useMemo } from "react"
 import { SearchIcon } from "lucide-react"
 import {
   InputGroup,
   InputGroupAddon,
   InputGroupInput,
 } from "@/components/ui/input-group"
-import { useSearchParams } from "next/navigation"
+import { useParams } from "next/navigation"
 import { TopicList, TopicListItem } from "@/components/topic/topic-list"
 import { NewTopicDialog } from "@/components/new-topic/new-topic-dialog"
 import { TopicHeaderBar } from "@/components/topic/topic-header-bar"
-import { useMemo } from "react"
+import {
+  parseRouteSegments,
+  routeParamsToApiQuery,
+  type RouteParams,
+} from "@/lib/route-utils"
+import { notFound } from "next/navigation"
 
 type TopicListResult = {
   items: TopicListItem[]
@@ -21,11 +26,21 @@ type TopicListResult = {
   total: number
 }
 
-export default function Home() {
+export default function DynamicRoutePage() {
   const t = useTranslations("Index")
   const tc = useTranslations("Common")
-  const searchParams = useSearchParams()
+  const params = useParams<{ segments?: string[] }>()
   const [isNewTopicDialogOpen, setIsNewTopicDialogOpen] = useState(false)
+
+  // 解析路由参数
+  const routeParams = useMemo(() => {
+    const parsed = parseRouteSegments(params.segments)
+    if (!parsed.valid) {
+      // 无效路由，返回 404
+      notFound()
+    }
+    return parsed as RouteParams
+  }, [params.segments])
 
   const [loading, setLoading] = useState<boolean>(true)
   const [topics, setTopics] = useState<TopicListItem[]>([])
@@ -34,6 +49,7 @@ export default function Home() {
   const [total, setTotal] = useState<number>(0)
   const [loadingMore, setLoadingMore] = useState<boolean>(false)
   const hasMore = useMemo(() => topics.length < total, [topics.length, total])
+
   async function loadTopics(initial?: boolean, overridePage?: number) {
     try {
       if (initial) {
@@ -41,20 +57,24 @@ export default function Home() {
       } else {
         setLoadingMore(true)
       }
-      const categoryId = searchParams.get("categoryId")
-      const tagId = searchParams.get("tagId")
-      const sort = searchParams.get("sort")
+
+      // 将路由参数转换为 API 查询参数
+      const apiQuery = routeParamsToApiQuery(routeParams)
       const qs = new URLSearchParams()
-      if (categoryId) qs.set("categoryId", categoryId)
-      if (tagId) qs.set("tagId", tagId)
-      if (sort) qs.set("sort", sort)
+
+      if (apiQuery.categoryId) qs.set("categoryId", apiQuery.categoryId)
+      if (apiQuery.tagId) qs.set("tagId", apiQuery.tagId)
+      if (apiQuery.sort) qs.set("sort", apiQuery.sort)
+
       qs.set("page", String(overridePage ?? (initial ? 1 : page)))
       qs.set("pageSize", String(pageSize))
+
       const res = await fetch(`/api/topics?${qs.toString()}`, {
         cache: "no-store",
       })
       if (!res.ok) return
       const data: TopicListResult = await res.json()
+
       if (initial) {
         const unique = (() => {
           const seen = new Set<string>()
@@ -87,6 +107,7 @@ export default function Home() {
       }
     }
   }
+
   useEffect(() => {
     ;(async () => {
       setLoading(true)
@@ -96,7 +117,7 @@ export default function Home() {
       await loadTopics(true)
     })()
     return () => {}
-  }, [searchParams])
+  }, [routeParams])
 
   return (
     <div className="flex min-h-screen w-full flex-col px-8 max-sm:p-4 gap-4 max-sm:gap-2">

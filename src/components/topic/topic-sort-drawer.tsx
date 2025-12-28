@@ -11,11 +11,17 @@ import {
 import { Separator } from "@/components/ui/separator"
 import { ChevronsUpDown, Check } from "lucide-react"
 import { useTranslations } from "next-intl"
-import { useSearchParams, usePathname, useRouter } from "next/navigation"
+import { usePathname, useRouter, useParams } from "next/navigation"
 import { Label } from "../ui/label"
 import { cn } from "@/lib/utils"
+import {
+  parseRouteSegments,
+  buildRoutePath,
+  type RouteParams,
+  type SortValue as RouteSortValue,
+} from "@/lib/route-utils"
 
-type SortValue = "latest" | "hot" | "community"
+type SortValue = RouteSortValue
 
 type TopicSortDrawerProps = {
   className?: string
@@ -31,16 +37,23 @@ export function TopicSortDrawer({
   const tc = useTranslations("Common")
   const router = useRouter()
   const pathname = usePathname()
-  const searchParams = useSearchParams()
+  const params = useParams<{ segments?: string[]; locale?: string }>()
   const [isPending, startTransition] = useTransition()
   const [open, setOpen] = useState(false)
 
+  // 从路由段中提取当前排序
+  const routeParams = useMemo(() => {
+    const parsed = parseRouteSegments(params.segments)
+    return parsed.valid ? (parsed as RouteParams) : {}
+  }, [params.segments])
+
   const currentSort: SortValue = useMemo(() => {
-    const v = searchParams.get("sort")
-    if (v === "hot") return "hot"
-    if (v === "community") return "community"
+    // 优先使用路由中的排序参数
+    if (routeParams.sort === "top") return "top"
+    if (routeParams.sort === "new") return "new"
+    if (routeParams.sort === "latest") return "latest"
     return "latest"
-  }, [searchParams])
+  }, [routeParams])
 
   const sortLabels: Record<string, string> = {
     latest: tc("Tabs.latest"),
@@ -64,25 +77,31 @@ export function TopicSortDrawer({
     }
     onSortStart?.(next)
     setOpen(false)
-    const params = new URLSearchParams(searchParams.toString())
-    params.set("sort", next)
-    params.delete("page")
-    const url = `${pathname}?${params.toString()}`
+
+    // 构建新路由参数
+    const newParams: RouteParams = {
+      ...routeParams,
+      sort: next,
+    }
+
+    // 生成新路由路径
+    const newPath = buildRoutePath(newParams, params.locale)
+
     startTransition(() => {
-      router.replace(url)
+      router.push(newPath)
       router.refresh()
     })
   }
 
   const sortOptions = [
     { value: "latest" as SortValue, label: sortLabels.latest },
-    { value: "hot" as SortValue, label: sortLabels.hot },
-    { value: "community" as SortValue, label: sortLabels.community },
+    { value: "top" as SortValue, label: sortLabels.top },
+    { value: "new" as SortValue, label: sortLabels.new },
   ]
 
   const disabledOptions = [
-    { value: "new" as const, label: sortLabels.new },
-    { value: "top" as const, label: sortLabels.top },
+    { value: "hot" as const, label: sortLabels.hot },
+    { value: "community" as const, label: sortLabels.community },
   ]
 
   const userOptions = [
@@ -92,7 +111,7 @@ export function TopicSortDrawer({
   ]
 
   return (
-    <Drawer open={open}>
+    <Drawer open={open} onOpenChange={setOpen}>
       <DrawerTrigger asChild>
         <Label className={className}>
           <span>{sortLabels[currentSort]}</span>

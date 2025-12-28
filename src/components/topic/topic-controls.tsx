@@ -1,9 +1,14 @@
 "use client"
 
 import { useCallback, useMemo, useTransition } from "react"
-import { usePathname, useRouter, useSearchParams } from "next/navigation"
+import { usePathname, useRouter, useParams } from "next/navigation"
 import { CategorySelect } from "@/components/filters/category-select"
 import { TagSelect } from "@/components/filters/tag-select"
+import {
+  parseRouteSegments,
+  buildRoutePath,
+  type RouteParams,
+} from "@/lib/route-utils"
 
 type TopicControlsState = {
   categoryId?: string
@@ -25,67 +30,63 @@ export function TopicControls({
 }: TopicControlsProps) {
   const router = useRouter()
   const pathname = usePathname()
-  const searchParams = useSearchParams()
+  const params = useParams<{ segments?: string[]; locale?: string }>()
   const [isPending, startTransition] = useTransition()
 
-  const categoryFromUrl = searchParams.get("categoryId") ?? undefined
-  const tagFromUrl = searchParams.get("tagId") ?? undefined
+  // 从路由段中提取当前参数
+  const routeParams = useMemo(() => {
+    const parsed = parseRouteSegments(params.segments)
+    return parsed.valid ? (parsed as RouteParams) : {}
+  }, [params.segments])
 
   const categoryId = useMemo(
-    () => categoryFromUrl ?? initialCategoryId,
-    [categoryFromUrl, initialCategoryId]
+    () => routeParams.categoryId ?? initialCategoryId,
+    [routeParams.categoryId, initialCategoryId]
   )
   const tagId = useMemo(
-    () => tagFromUrl ?? initialTagId,
-    [tagFromUrl, initialTagId]
+    () => routeParams.tagId ?? initialTagId,
+    [routeParams.tagId, initialTagId]
   )
 
   const updateQuery = useCallback(
     (next: TopicControlsState) => {
-      const params = new URLSearchParams(searchParams.toString())
-      if (next.tagId) {
-        params.set("tagId", next.tagId)
-      } else {
-        params.delete("tagId")
+      // 构建新路由参数
+      const newParams: RouteParams = {
+        ...routeParams,
+        categoryId: next.categoryId,
+        tagId: next.tagId,
       }
-      params.delete("page")
-      const url = `${pathname}?${params.toString()}`
+
+      // 生成新路由路径
+      const newPath = buildRoutePath(newParams, params.locale)
+
       startTransition(() => {
-        router.replace(url)
+        router.push(newPath)
         router.refresh()
       })
       onChange?.(next)
     },
-    [pathname, router, searchParams, onChange, startTransition]
+    [routeParams, params.locale, router, onChange, startTransition]
   )
 
   const navigateToCategory = useCallback(
     (nextCategoryId: string | undefined) => {
-      const params = new URLSearchParams(searchParams.toString())
-      params.delete("categoryId")
-      if (tagId) params.set("tagId", tagId)
-      params.delete("page")
+      // 构建新路由参数
+      const newParams: RouteParams = {
+        ...routeParams,
+        categoryId: nextCategoryId,
+      }
 
-      const idx = pathname.indexOf("/category/")
-      const root =
-        idx >= 0 ? pathname.slice(0, idx) : pathname.replace(/\/$/, "")
-      const base = root.length > 0 ? root : "/"
-
-      const target =
-        nextCategoryId && nextCategoryId.length > 0
-          ? `${base}${base.endsWith("/") ? "" : "/"}category/${nextCategoryId}`
-          : base
-
-      const url =
-        params.toString().length > 0 ? `${target}?${params.toString()}` : target
+      // 生成新路由路径
+      const newPath = buildRoutePath(newParams, params.locale)
 
       startTransition(() => {
-        router.push(url)
+        router.push(newPath)
         router.refresh()
       })
       onChange?.({ categoryId: nextCategoryId, tagId })
     },
-    [pathname, router, searchParams, startTransition, tagId, onChange]
+    [routeParams, params.locale, router, startTransition, tagId, onChange]
   )
 
   return (
