@@ -33,6 +33,17 @@ export function parseRouteSegments(
   const result: RouteParams = {}
   const seen = new Set<string>()
 
+  // 特殊处理：如果第一个段是排序值（不带前缀），且只有一个段
+  if (segments.length === 1) {
+    const value = segments[0]
+    if (value === "top" || value === "new" || value === "latest") {
+      return {
+        sort: value as SortValue,
+        valid: true,
+      }
+    }
+  }
+
   let i = 0
   while (i < segments.length) {
     const prefix = segments[i]
@@ -113,7 +124,16 @@ export function parseRouteSegments(
 export function buildRoutePath(params: RouteParams, locale?: string): string {
   const segments: string[] = []
 
-  // 按优先级顺序添加段：sort > categoryId > tagId
+  // 判断是否只有排序参数（没有分类和标签）
+  const onlySort = params.sort && !params.categoryId && !params.tagId
+
+  // 如果只有排序，使用简化格式 /latest、/new、/top
+  if (onlySort) {
+    const path = `/${params.sort}`
+    return locale ? `/${locale}${path}` : path
+  }
+
+  // 如果有分类或标签，使用完整格式 /i/sort/c/id
   if (params.sort) {
     segments.push("i", params.sort)
   }
