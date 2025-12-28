@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useTransition, useEffect, useMemo } from "react"
+import { useState, useTransition, useEffect, useMemo, useRef } from "react"
 import {
   Drawer,
   DrawerContent,
@@ -92,7 +92,7 @@ export function TopicSortDrawer({
   ]
 
   return (
-    <Drawer open={open} onOpenChange={setOpen}>
+    <Drawer open={open}>
       <DrawerTrigger asChild>
         <Label className={className}>
           <span>{sortLabels[currentSort]}</span>
