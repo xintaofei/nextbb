@@ -114,7 +114,11 @@ export function TopicList({
   }, [hasMore, loadingMore, onLoadMore])
 
   return (
-    <Table className={className ?? "w-full table-fixed max-lg:table-auto"}>
+    <Table
+      className={
+        className ?? "w-full table-fixed max-lg:table-auto max-sm:border-t"
+      }
+    >
       <colgroup>
         <col />
         <col className="w-32 max-lg:w-16" />
