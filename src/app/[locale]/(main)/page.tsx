@@ -99,7 +99,7 @@ export default function Home() {
   }, [searchParams])
 
   return (
-    <div className="flex min-h-screen w-full flex-col px-8 max-sm:p-4 gap-4">
+    <div className="flex min-h-screen w-full flex-col px-8 max-sm:p-4 gap-4 max-sm:gap-2">
       <div className="flex flex-row justify-between items-center py-8">
         <h1 className="text-5xl">{t("title")}</h1>
         <InputGroup className="w-80 hidden md:flex">

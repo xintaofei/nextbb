@@ -2,6 +2,7 @@
 
 import { TopicControls } from "@/components/topic/topic-controls"
 import { TopicSortTabs } from "@/components/topic/topic-sort-tabs"
+import { TopicSortDrawer } from "@/components/topic/topic-sort-drawer"
 import { NewTopicButton } from "@/components/new-topic/new-topic-button"
 import { HotTags } from "@/components/topic/hot-tags"
 
@@ -21,7 +22,7 @@ export function TopicHeaderBar({
   return (
     <div className={className}>
       <div className="flex flex-col gap-4">
-        <div className="flex flex-row flex-wrap items-center gap-4">
+        <div className="flex flex-row flex-wrap items-center gap-4 max-sm:hidden">
           <TopicControls
             className="flex flex-row gap-2"
             initialCategoryId={categoryId}
@@ -30,6 +31,13 @@ export function TopicHeaderBar({
         </div>
         <div className="flex flex-row flex-wrap gap-4 items-center justify-between">
           <TopicSortTabs
+            className="max-sm:hidden flex-1"
+            onSortStart={(next) => {
+              onSortStart?.(next)
+            }}
+          />
+          <TopicSortDrawer
+            className="hidden max-sm:flex flex-1"
             onSortStart={(next) => {
               onSortStart?.(next)
             }}
