@@ -905,15 +905,17 @@
       "badges": "徽章",
       "preferences": "设置",
       "notifications": "通知",
+      "joinedAt": "加入于",
       "statistics": {
-        "topics": "发布话题",
-        "posts": "回复帖子",
-        "likes": "获得点赞",
-        "bookmarks": "收藏数",
-        "badges": "徽章数"
+        "topics": "话题",
+        "posts": "回复",
+        "likes": "点赞",
+        "bookmarks": "收藏",
+        "badges": "徽章"
       },
       "actions": {
         "edit": "编辑资料",
+        "manage": "管理用户",
         "message": "发送私信",
         "follow": "关注",
         "unfollow": "取消关注"

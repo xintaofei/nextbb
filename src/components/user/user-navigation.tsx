@@ -4,6 +4,7 @@ import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { cn, encodeUsername } from "@/lib/utils"
 import { Activity, Award, Bell, Settings, User } from "lucide-react"
+import { useTranslations } from "next-intl"
 
 type UserNavigationProps = {
   username: string
@@ -23,34 +24,35 @@ export function UserNavigation({
 }: UserNavigationProps) {
   const pathname = usePathname()
   const encodedUsername = encodeUsername(username)
+  const t = useTranslations("User.profile")
 
   const navItems: NavItem[] = [
     {
-      label: "概览",
+      label: t("overview"),
       href: `/u/${encodedUsername}`,
       icon: User,
       requiresAuth: false,
     },
     {
-      label: "活动",
+      label: t("activity"),
       href: `/u/${encodedUsername}/activity`,
       icon: Activity,
       requiresAuth: false,
     },
     {
-      label: "徽章",
+      label: t("badges"),
       href: `/u/${encodedUsername}/badges`,
       icon: Award,
       requiresAuth: false,
     },
     {
-      label: "通知",
+      label: t("notifications"),
       href: `/u/${encodedUsername}/notifications`,
       icon: Bell,
       requiresAuth: true,
     },
     {
-      label: "设置",
+      label: t("preferences"),
       href: `/u/${encodedUsername}/preferences`,
       icon: Settings,
       requiresAuth: true,

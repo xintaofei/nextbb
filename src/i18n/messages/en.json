@@ -763,15 +763,17 @@
       "badges": "Badges",
       "preferences": "Settings",
       "notifications": "Notifications",
+      "joinedAt": "Joined",
       "statistics": {
         "topics": "Topics",
         "posts": "Posts",
-        "likes": "Likes Received",
+        "likes": "Likes",
         "bookmarks": "Bookmarks",
         "badges": "Badges"
       },
       "actions": {
         "edit": "Edit Profile",
+        "manage": "Manage User",
         "message": "Send Message",
         "follow": "Follow",
         "unfollow": "Unfollow"

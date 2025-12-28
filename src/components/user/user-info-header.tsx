@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button"
 import { Settings, Shield } from "lucide-react"
 import Link from "next/link"
 import { encodeUsername } from "@/lib/utils"
+import { useTranslations } from "next-intl"
 
 type UserInfoHeaderProps = {
   user: {
@@ -33,10 +34,12 @@ export function UserInfoHeader({
   isOwnProfile,
   isAdmin,
 }: UserInfoHeaderProps) {
+  const t = useTranslations("User.profile")
+
   return (
     <div className="w-full border-b bg-background">
-      <div className="max-w-5xl mx-auto py-6">
-        <div className="flex flex-col md:flex-row gap-6">
+      <div className="max-w-5xl mx-auto pb-6">
+        <div className="flex flex-col gap-6">
           {/* 头像和基本信息 */}
           <div className="flex flex-col md:flex-row items-center md:items-start gap-4">
             <Avatar className="h-24 w-24 md:h-32 md:w-32">
@@ -46,7 +49,7 @@ export function UserInfoHeader({
               </AvatarFallback>
             </Avatar>
 
-            <div className="flex flex-col items-center md:items-start gap-2">
+            <div className="flex flex-col items-center md:items-start gap-2 md:flex-1">
               <div className="flex items-center gap-2">
                 <h1 className="text-2xl md:text-3xl font-bold">{user.name}</h1>
                 {user.is_admin && (
@@ -55,7 +58,7 @@ export function UserInfoHeader({
               </div>
 
               <div className="text-sm text-muted-foreground text-center md:text-left">
-                加入于{" "}
+                {t("joinedAt")}{" "}
                 {new Date(user.created_at).toLocaleDateString("zh-CN", {
                   year: "numeric",
                   month: "long",
@@ -69,7 +72,7 @@ export function UserInfoHeader({
                   <Button variant="outline" size="sm" asChild>
                     <Link href={`/u/${encodeUsername(user.name)}/preferences`}>
                       <Settings className="h-4 w-4 mr-1" />
-                      编辑资料
+                      {t("actions.edit")}
                     </Link>
                   </Button>
                 )}
@@ -77,7 +80,7 @@ export function UserInfoHeader({
                   <Button variant="outline" size="sm" asChild>
                     <Link href="/admin/users">
                       <Shield className="h-4 w-4 mr-1" />
-                      管理用户
+                      {t("actions.manage")}
                     </Link>
                   </Button>
                 )}
@@ -86,30 +89,46 @@ export function UserInfoHeader({
           </div>
 
           {/* 统计数据 */}
-          <div className="flex-1 grid grid-cols-2 md:grid-cols-5 gap-4 md:gap-6">
+          <div className="grid grid-cols-5 gap-2 md:gap-6">
             <div className="text-center">
-              <div className="text-2xl font-bold">{statistics.topicsCount}</div>
-              <div className="text-sm text-muted-foreground">话题</div>
+              <div className="text-lg md:text-2xl font-bold">
+                {statistics.topicsCount}
+              </div>
+              <div className="text-xs md:text-sm text-muted-foreground">
+                {t("statistics.topics")}
+              </div>
             </div>
             <div className="text-center">
-              <div className="text-2xl font-bold">{statistics.postsCount}</div>
-              <div className="text-sm text-muted-foreground">回复</div>
+              <div className="text-lg md:text-2xl font-bold">
+                {statistics.postsCount}
+              </div>
+              <div className="text-xs md:text-sm text-muted-foreground">
+                {t("statistics.posts")}
+              </div>
             </div>
             <div className="text-center">
-              <div className="text-2xl font-bold">
+              <div className="text-lg md:text-2xl font-bold">
                 {statistics.likesReceived}
               </div>
-              <div className="text-sm text-muted-foreground">点赞</div>
+              <div className="text-xs md:text-sm text-muted-foreground">
+                {t("statistics.likes")}
+              </div>
             </div>
             <div className="text-center">
-              <div className="text-2xl font-bold">
+              <div className="text-lg md:text-2xl font-bold">
                 {statistics.bookmarksCount}
               </div>
-              <div className="text-sm text-muted-foreground">收藏</div>
+              <div className="text-xs md:text-sm text-muted-foreground">
+                {t("statistics.bookmarks")}
+              </div>
             </div>
             <div className="text-center">
-              <div className="text-2xl font-bold">{statistics.badgesCount}</div>
-              <div className="text-sm text-muted-foreground">徽章</div>
+              <div className="text-lg md:text-2xl font-bold">
+                {statistics.badgesCount}
+              </div>
+              <div className="text-xs md:text-sm text-muted-foreground">
+                {t("statistics.badges")}
+              </div>
             </div>
           </div>
         </div>
