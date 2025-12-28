@@ -34,10 +34,15 @@ type TopicFormData = {
 interface TopicFormProps {
   onSubmit: (data: TopicFormData) => void
   isSubmitting?: boolean
+  onCancel?: () => void
 }
 
 export type { TopicFormData }
-export function TopicForm({ onSubmit, isSubmitting = false }: TopicFormProps) {
+export function TopicForm({
+  onSubmit,
+  isSubmitting = false,
+  onCancel,
+}: TopicFormProps) {
   const t = useTranslations("Topic.New")
   const tv = useTranslations("Topic.Validation")
 
@@ -226,14 +231,16 @@ export function TopicForm({ onSubmit, isSubmitting = false }: TopicFormProps) {
         )}
 
         <div className="flex justify-end gap-2">
-          <Button
-            type="button"
-            variant="outline"
-            onClick={() => form.reset()}
-            disabled={isSubmitting}
-          >
-            {t("form.actions.reset")}
-          </Button>
+          {onCancel && (
+            <Button
+              type="button"
+              variant="outline"
+              onClick={onCancel}
+              disabled={isSubmitting}
+            >
+              {t("form.actions.cancel")}
+            </Button>
+          )}
           <Button type="submit" disabled={isSubmitting}>
             {isSubmitting
               ? t("form.actions.publishing")

@@ -74,7 +74,11 @@ export function NewTopicDialog({
           <DialogTitle>{t("title")}</DialogTitle>
           <DialogDescription>{t("description")}</DialogDescription>
         </DialogHeader>
-        <TopicForm onSubmit={handleSubmit} isSubmitting={isSubmitting} />
+        <TopicForm
+          onSubmit={handleSubmit}
+          isSubmitting={isSubmitting}
+          onCancel={() => onOpenChange(false)}
+        />
       </DialogContent>
     </Dialog>
   )

@@ -128,7 +128,7 @@
           "label": "Topic Pushed to Community Column"
         },
         "actions": {
-          "reset": "Reset",
+          "cancel": "Cancel",
           "preview": "Preview",
           "publish": "Publish Topic",
           "publishing": "Publishing..."
