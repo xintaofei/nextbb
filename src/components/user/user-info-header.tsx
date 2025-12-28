@@ -35,7 +35,7 @@ export function UserInfoHeader({
 }: UserInfoHeaderProps) {
   return (
     <div className="w-full border-b bg-background">
-      <div className="max-w-5xl mx-auto px-4 py-6">
+      <div className="max-w-5xl mx-auto py-6">
         <div className="flex flex-col md:flex-row gap-6">
           {/* 头像和基本信息 */}
           <div className="flex flex-col md:flex-row items-center md:items-start gap-4">

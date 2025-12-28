@@ -81,7 +81,7 @@ export default async function UserProfileLayout({
     ])
 
   return (
-    <div className="flex flex-col w-full">
+    <div className="flex flex-col w-full p-8 max-sm:p-4">
       {/* 用户信息头部区域 */}
       <UserInfoHeader
         user={user}
@@ -101,7 +101,7 @@ export default async function UserProfileLayout({
 
       {/* 内容展示区 */}
       <div className="w-full">
-        <div className="max-w-5xl mx-auto px-4 py-6">{children}</div>
+        <div className="max-w-5xl mx-auto py-6">{children}</div>
       </div>
     </div>
   )

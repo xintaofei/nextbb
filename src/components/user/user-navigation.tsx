@@ -64,7 +64,7 @@ export function UserNavigation({
 
   return (
     <div className="w-full border-b bg-background">
-      <div className="max-w-5xl mx-auto px-4">
+      <div className="max-w-5xl mx-auto">
         <nav className="flex gap-1 overflow-x-auto scrollbar-hide">
           {visibleNavItems.map((item) => {
             const Icon = item.icon
