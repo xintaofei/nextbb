@@ -60,7 +60,8 @@
     "Action": {
       "cancel": "Cancel",
       "save": "Save",
-      "success": "Success"
+      "success": "Success",
+      "goBack": "Go Back"
     }
   },
   "Error": {
@@ -215,8 +216,7 @@
         "failed": "Sign up failed"
       }
     }
-  }
-  ,
+  },
   "Admin": {
     "entry": "Admin",
     "title": "NextBB Admin",
@@ -776,7 +776,9 @@
         "follow": "Follow",
         "unfollow": "Unfollow"
       },
-      "notFound": "User not found",
+      "notFound": "User Not Found or Disabled",
+      "notFoundDescription": "This user may have been deleted, disabled, or never existed.",
+      "backToHome": "Back to Home",
       "unauthorized": "You do not have permission to access this page",
       "empty": {
         "activity": "No activity yet",

@@ -60,7 +60,8 @@
     "Action": {
       "cancel": "取消",
       "save": "保存",
-      "success": "操作成功"
+      "success": "操作成功",
+      "goBack": "返回上一页"
     }
   },
   "Error": {
@@ -215,8 +216,7 @@
         "failed": "注册失败"
       }
     }
-  }
-  ,
+  },
   "Admin": {
     "entry": "管理后台",
     "title": "NextBB 管理后台",
@@ -918,7 +918,9 @@
         "follow": "关注",
         "unfollow": "取消关注"
       },
-      "notFound": "用户不存在",
+      "notFound": "用户不存在或已被禁用",
+      "notFoundDescription": "该用户可能已被删除、禁用或从未存在。",
+      "backToHome": "返回首页",
       "unauthorized": "您无权访问此页面",
       "empty": {
         "activity": "暂无活动记录",

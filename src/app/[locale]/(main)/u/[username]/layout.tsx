@@ -1,10 +1,10 @@
 import { ReactNode } from "react"
-import { notFound, redirect } from "next/navigation"
 import { prisma } from "@/lib/prisma"
 import { getSessionUser } from "@/lib/auth"
 import { UserInfoHeader } from "@/components/user/user-info-header"
 import { UserNavigation } from "@/components/user/user-navigation"
 import { decodeUsername } from "@/lib/utils"
+import UserNotFound from "./not-found"
 
 type UserProfileLayoutProps = {
   children: ReactNode
@@ -35,14 +35,9 @@ export default async function UserProfileLayout({
     },
   })
 
-  // 用户不存在
-  if (!user) {
-    notFound()
-  }
-
-  // 用户被禁用
-  if (user.status !== 1) {
-    notFound()
+  // 用户不存在或被禁用 - 直接渲染错误页面
+  if (!user || user.status !== 1) {
+    return <UserNotFound />
   }
 
   // 获取当前登录用户
