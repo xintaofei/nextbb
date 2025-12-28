@@ -1,7 +1,7 @@
 "use client"
 
 import { useMemo, useTransition } from "react"
-import { useRouter, useParams } from "next/navigation"
+import { useRouter, useParams, usePathname } from "next/navigation"
 import useSWR from "swr"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Flame } from "lucide-react"
@@ -30,6 +30,7 @@ type HotTagsProps = {
 
 export function HotTags({ className, count = 5 }: HotTagsProps) {
   const router = useRouter()
+  const pathname = usePathname()
   const params = useParams<{ locale?: string; segments?: string[] }>()
   const [isPending, startTransition] = useTransition()
   const tc = useTranslations("Common")
@@ -44,11 +45,8 @@ export function HotTags({ className, count = 5 }: HotTagsProps) {
 
   // 从当前路径提取路由参数
   const currentRouteParams = useMemo(() => {
-    return extractRouteParamsFromPathname(
-      typeof window !== "undefined" ? window.location.pathname : "/",
-      params.locale
-    )
-  }, [params])
+    return extractRouteParamsFromPathname(pathname, params.locale)
+  }, [pathname, params.locale])
 
   const selectedTagId = currentRouteParams.tagId
   const hotTags = useMemo(() => (tags ?? []).slice(0, count), [tags, count])
