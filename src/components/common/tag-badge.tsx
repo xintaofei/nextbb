@@ -1,7 +1,7 @@
 "use client"
 
-import { useRouter, useParams } from "next/navigation"
-import { useTransition } from "react"
+import Link from "next/link"
+import { useParams } from "next/navigation"
 import { Badge } from "@/components/ui/badge"
 import { cn } from "@/lib/utils"
 import { buildRoutePath } from "@/lib/route-utils"
@@ -29,30 +29,77 @@ export function TagBadge({
   active,
   onClick,
 }: TagBadgeProps) {
-  const router = useRouter()
   const params = useParams<{ locale?: string }>()
-  const [, startTransition] = useTransition()
 
-  const handleClick = () => {
-    if (onClick) {
-      onClick()
-      return
-    }
-
-    if (id) {
-      // 构建标签路由
-      const newPath = buildRoutePath({ tagId: id }, params.locale)
-      startTransition(() => {
-        router.push(newPath)
-      })
-    }
+  // 如果有自定义 onClick，使用按钮模式
+  if (onClick) {
+    return (
+      <Badge
+        variant="outline"
+        className={cn(
+          "cursor-pointer",
+          active && "bg-primary/10 text-primary border-primary/20",
+          className
+        )}
+        style={
+          !active
+            ? {
+                backgroundColor: bgColor || undefined,
+                color: textColor || undefined,
+                borderColor: bgColor
+                  ? `${bgColor}40`
+                  : textColor
+                    ? `${textColor}40`
+                    : undefined,
+              }
+            : undefined
+        }
+        onClick={onClick}
+        title={description || undefined}
+      >
+        {icon} {name}
+      </Badge>
+    )
   }
 
+  // 如果有 id，使用 Link 模式（SEO 友好）
+  if (id) {
+    const href = buildRoutePath({ tagId: id }, params.locale)
+    return (
+      <Link href={href}>
+        <Badge
+          variant="outline"
+          className={cn(
+            "cursor-pointer",
+            active && "bg-primary/10 text-primary border-primary/20",
+            className
+          )}
+          style={
+            !active
+              ? {
+                  backgroundColor: bgColor || undefined,
+                  color: textColor || undefined,
+                  borderColor: bgColor
+                    ? `${bgColor}40`
+                    : textColor
+                      ? `${textColor}40`
+                      : undefined,
+                }
+              : undefined
+          }
+          title={description || undefined}
+        >
+          {icon} {name}
+        </Badge>
+      </Link>
+    )
+  }
+
+  // 无交互的纯展示模式
   return (
     <Badge
       variant="outline"
       className={cn(
-        (onClick || id) && "cursor-pointer",
         active && "bg-primary/10 text-primary border-primary/20",
         className
       )}
@@ -69,7 +116,6 @@ export function TagBadge({
             }
           : undefined
       }
-      onClick={onClick || id ? handleClick : undefined}
       title={description || undefined}
     >
       {icon} {name}

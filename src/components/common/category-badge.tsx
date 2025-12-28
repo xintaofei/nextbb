@@ -1,7 +1,7 @@
 "use client"
 
-import { useRouter, useParams } from "next/navigation"
-import { useTransition } from "react"
+import Link from "next/link"
+import { useParams } from "next/navigation"
 import { Badge } from "@/components/ui/badge"
 import { cn } from "@/lib/utils"
 import { buildRoutePath } from "@/lib/route-utils"
@@ -27,35 +27,58 @@ export function CategoryBadge({
   className,
   onClick,
 }: CategoryBadgeProps) {
-  const router = useRouter()
   const params = useParams<{ locale?: string }>()
-  const [, startTransition] = useTransition()
 
-  const handleClick = () => {
-    if (onClick) {
-      onClick()
-      return
-    }
-
-    if (id) {
-      // 构建分类路由
-      const newPath = buildRoutePath({ categoryId: id }, params.locale)
-      startTransition(() => {
-        router.push(newPath)
-      })
-    }
+  // 如果有自定义 onClick，使用按钮模式
+  if (onClick) {
+    return (
+      <Badge
+        variant="secondary"
+        className={cn("cursor-pointer", className)}
+        style={{
+          backgroundColor: bgColor || undefined,
+          color: textColor || undefined,
+          borderColor: bgColor ? `${bgColor}40` : undefined,
+        }}
+        onClick={onClick}
+        title={description || undefined}
+      >
+        {icon ?? "📁"} {name}
+      </Badge>
+    )
   }
 
+  // 如果有 id，使用 Link 模式（SEO 友好）
+  if (id) {
+    const href = buildRoutePath({ categoryId: id }, params.locale)
+    return (
+      <Link href={href}>
+        <Badge
+          variant="secondary"
+          className={cn("cursor-pointer", className)}
+          style={{
+            backgroundColor: bgColor || undefined,
+            color: textColor || undefined,
+            borderColor: bgColor ? `${bgColor}40` : undefined,
+          }}
+          title={description || undefined}
+        >
+          {icon ?? "📁"} {name}
+        </Badge>
+      </Link>
+    )
+  }
+
+  // 无交互的纯展示模式
   return (
     <Badge
       variant="secondary"
-      className={cn(id && "cursor-pointer", className)}
+      className={className}
       style={{
         backgroundColor: bgColor || undefined,
         color: textColor || undefined,
         borderColor: bgColor ? `${bgColor}40` : undefined,
       }}
-      onClick={id ? handleClick : undefined}
       title={description || undefined}
     >
       {icon ?? "📁"} {name}

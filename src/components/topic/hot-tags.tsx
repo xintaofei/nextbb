@@ -32,7 +32,7 @@ export function HotTags({ className, count = 5 }: HotTagsProps) {
   const router = useRouter()
   const pathname = usePathname()
   const params = useParams<{ locale?: string; segments?: string[] }>()
-  const [isPending, startTransition] = useTransition()
+  const [, startTransition] = useTransition()
   const tc = useTranslations("Common")
 
   const fetcher = async (url: string): Promise<TagDTO[]> => {
@@ -52,14 +52,11 @@ export function HotTags({ className, count = 5 }: HotTagsProps) {
   const hotTags = useMemo(() => (tags ?? []).slice(0, count), [tags, count])
   const loading = isLoading || !tags
 
-  function applyTag(tagId: string) {
-    // 如果点击的是已选中的标签，则取消选中（移除tagId）
-    const isAlreadySelected = selectedTagId === tagId
-
-    // 构建新的路由参数
+  function cancelTag() {
+    // 取消选中标签（移除tagId）
     const newParams = {
       ...currentRouteParams,
-      tagId: isAlreadySelected ? undefined : tagId,
+      tagId: undefined,
     }
 
     // 使用新路由模式
@@ -90,16 +87,19 @@ export function HotTags({ className, count = 5 }: HotTagsProps) {
               })
             : hotTags.map((t) => {
                 const active = selectedTagId === t.id
+                // 已选中的标签：使用 onClick 支持取消选中
+                // 未选中的标签：使用 id 让其渲染为 Link（SEO 友好）
                 return (
                   <TagBadge
                     key={t.id}
+                    id={active ? undefined : t.id}
                     icon={t.icon}
                     name={t.name}
                     description={t.description}
                     bgColor={t.bgColor}
                     textColor={t.textColor}
                     active={active}
-                    onClick={() => applyTag(t.id)}
+                    onClick={active ? cancelTag : undefined}
                   />
                 )
               })}
