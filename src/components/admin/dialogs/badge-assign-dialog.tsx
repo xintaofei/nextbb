@@ -134,7 +134,7 @@ export function BadgeAssignDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[80vh] flex flex-col">
+      <DialogContent className="max-w-2xl max-h-screen max-sm:h-screen overflow-y-auto">
         <DialogHeader>
           <DialogTitle>{t("assignTitle", { name: userName })}</DialogTitle>
         </DialogHeader>

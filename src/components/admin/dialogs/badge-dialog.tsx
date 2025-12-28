@@ -129,7 +129,7 @@ export function BadgeDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl max-h-screen overflow-y-auto">
+      <DialogContent className="max-w-2xl max-h-screen max-sm:h-screen overflow-y-auto">
         <DialogHeader>
           <DialogTitle>
             {badge ? t("dialog.editTitle") : t("dialog.createTitle")}
