@@ -118,18 +118,27 @@ export function TopicList({
       <colgroup>
         <col />
         <col className="w-32 max-lg:w-16" />
-        <col className="w-20 max-lg:w-16" />
+        <col className="w-20 max-lg:w-16 max-sm:hidden" />
         <col className="w-20 max-lg:hidden" />
-        <col className="w-20 max-lg:w-16" />
+        <col className="w-20 max-lg:w-16 max-sm:hidden" />
+        <col className="w-16 hidden max-sm:table-cell" />
       </colgroup>
-      <TableHeader>
+      <TableHeader className="max-sm:hidden">
         <TableRow>
-          <TableHead colSpan={2}>{tc("Table.topic")}</TableHead>
-          <TableHead className="text-center">{tc("Table.replies")}</TableHead>
+          <TableHead>{tc("Table.topic")}</TableHead>
+          <TableHead className="max-sm:hidden"></TableHead>
+          <TableHead className="text-center max-sm:hidden">
+            {tc("Table.replies")}
+          </TableHead>
           <TableHead className="text-center max-lg:hidden">
             {tc("Table.views")}
           </TableHead>
-          <TableHead className="text-center">{tc("Table.activity")}</TableHead>
+          <TableHead className="text-center max-sm:hidden">
+            {tc("Table.activity")}
+          </TableHead>
+          <TableHead className="text-right hidden max-sm:table-cell">
+            <span>{tc("Table.activity")}</span>
+          </TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>
@@ -144,8 +153,8 @@ export function TopicList({
                     <Skeleton className="h-5 w-16" />
                   </div>
                 </TableCell>
-                <TableCell className="max-lg:text-center">
-                  <div className="flex -space-x-2 max-lg:justify-center">
+                <TableCell className="max-lg:text-center max-sm:hidden">
+                  <div className="flex lg:-space-x-2 max-lg:justify-center">
                     {Array.from({ length: 5 }).map((_, j) => (
                       <Skeleton
                         key={j}
@@ -156,7 +165,7 @@ export function TopicList({
                     ))}
                   </div>
                 </TableCell>
-                <TableCell className="text-center">
+                <TableCell className="text-center max-sm:hidden">
                   <Skeleton className="h-4 w-10 mx-auto" />
                 </TableCell>
                 <TableCell className="text-center max-lg:hidden">
@@ -185,7 +194,16 @@ export function TopicList({
                       {t.title}
                     </span>
                   </Link>
-                  <div className="flex max-w-full flex-wrap gap-2 overflow-hidden mt-2">
+                  <div className="flex max-w-full flex-wrap items-center gap-2 overflow-hidden mt-2">
+                    <Avatar className="hidden max-sm:flex size-5">
+                      <AvatarImage
+                        src={t.participants[0].avatar}
+                        alt={t.participants[0].name}
+                      />
+                      <AvatarFallback>
+                        {t.participants[0].name.slice(0, 2).toUpperCase()}
+                      </AvatarFallback>
+                    </Avatar>
                     <CategoryBadge
                       icon={t.category.icon}
                       name={t.category.name}
@@ -203,7 +221,7 @@ export function TopicList({
                     ))}
                   </div>
                 </TableCell>
-                <TableCell>
+                <TableCell className="max-sm:hidden">
                   <div className="*:data-[slot=avatar]:ring-background flex lg:-space-x-2 *:data-[slot=avatar]:ring-2 max-lg:justify-center">
                     {dedupeAndLimit(t.participants, 5).map((u, idx) => (
                       <Avatar
@@ -218,14 +236,22 @@ export function TopicList({
                     ))}
                   </div>
                 </TableCell>
-                <TableCell className="text-center text-muted-foreground">
+                <TableCell className="text-center text-muted-foreground max-sm:hidden">
                   {t.replies}
                 </TableCell>
                 <TableCell className="text-center text-muted-foreground max-lg:hidden">
                   {t.views}
                 </TableCell>
-                <TableCell className="text-center text-muted-foreground">
+                <TableCell className="text-center text-muted-foreground max-sm:hidden">
                   {formatRelative(t.activity)}
+                </TableCell>
+                <TableCell className="text-center text-muted-foreground hidden max-sm:table-cell relative">
+                  <span className="absolute top-2 right-2 text-primary">
+                    {t.replies}
+                  </span>
+                  <span className="absolute bottom-2 right-2">
+                    {formatRelative(t.activity)}
+                  </span>
                 </TableCell>
               </TableRow>
             ))}
