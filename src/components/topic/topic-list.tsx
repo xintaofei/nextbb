@@ -208,7 +208,7 @@ export function TopicList({
                     {dedupeAndLimit(t.participants, 5).map((u, idx) => (
                       <Avatar
                         key={u.id}
-                        className={`size-7 relative ${idx === 0 ? "z-50" : idx === 1 ? "z-40" : idx === 2 ? "z-30" : idx === 3 ? "z-20" : "z-10"} ${idx > 0 ? "max-lg:hidden" : ""}`}
+                        className={`size-7 relative ${idx === 0 ? "z-5" : idx === 1 ? "z-4" : idx === 2 ? "z-3" : idx === 3 ? "z-2" : "z-1"} ${idx > 0 ? "max-lg:hidden" : ""}`}
                       >
                         <AvatarImage src={u.avatar} alt={u.name} />
                         <AvatarFallback>
