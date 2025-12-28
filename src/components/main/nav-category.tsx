@@ -26,7 +26,7 @@ export function NavCategory({ categories }: { categories: CategoryItem[] }) {
         {categories.map((category) => (
           <SidebarMenuItem key={category.id}>
             <SidebarMenuButton asChild>
-              <Link href={`/category/${category.id}`}>
+              <Link href={`/c/${category.id}`}>
                 <span>{category.icon ?? "📁"}</span>
                 <span>{category.name}</span>
               </Link>
