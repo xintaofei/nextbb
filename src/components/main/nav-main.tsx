@@ -1,3 +1,7 @@
+"use client"
+
+import { useMemo } from "react"
+import useSWR from "swr"
 import {
   AlignStartHorizontal,
   BookUser,
@@ -24,7 +28,33 @@ import {
 } from "@/components/ui/collapsible"
 import Link from "next/link"
 
+type MeResponse = {
+  user: {
+    id: string
+    email?: string | null
+    isAdmin: boolean
+  }
+  profile?: {
+    id: string
+    email: string
+    username: string
+    avatar?: string | null
+  } | null
+}
+
+const fetcher = async (url: string): Promise<MeResponse | null> => {
+  const res = await fetch(url, { cache: "no-store" })
+  if (!res.ok) return null
+  return res.json()
+}
+
 export function NavMain() {
+  const { data } = useSWR<MeResponse | null>("/api/auth/me", fetcher)
+
+  const username = useMemo(() => {
+    if (!data) return null
+    return data.profile?.username || null
+  }, [data])
   return (
     <SidebarGroup>
       <SidebarMenu>
@@ -34,13 +64,13 @@ export function NavMain() {
             <span>话题</span>
           </SidebarMenuButton>
         </Link>
-        <Link href="#">
+        <Link href={username ? `/u/${username}/activity/posts` : "/login"}>
           <SidebarMenuButton>
             <BookUser />
             <span>我的帖子</span>
           </SidebarMenuButton>
         </Link>
-        <Link href="#">
+        <Link href={username ? `/u/${username}/notifications` : "/login"}>
           <SidebarMenuButton>
             <Inbox />
             <span>我的消息</span>

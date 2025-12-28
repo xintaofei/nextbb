@@ -5,10 +5,13 @@ import { useRouter } from "next/navigation"
 import { useTranslations } from "next-intl"
 import useSWR from "swr"
 import {
-  BadgeCheck,
+  Bell,
   ChevronsUpDown,
   LayoutDashboard,
   LogOut,
+  Settings,
+  User,
+  Activity,
 } from "lucide-react"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import {
@@ -26,6 +29,7 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar"
+import Link from "next/link"
 import { ThemeSwitcher } from "@/components/common/theme-switcher"
 import { LocaleSwitcher } from "@/components/common/locale-switcher"
 
@@ -150,17 +154,35 @@ export function NavUser() {
             {data && (
               <>
                 <DropdownMenuGroup>
-                  <DropdownMenuItem>
-                    <BadgeCheck />
-                    Account
+                  <DropdownMenuItem asChild>
+                    <Link href={`/u/${displayName}`}>
+                      <User />
+                      我的主页
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link href={`/u/${displayName}/activity`}>
+                      <Activity />
+                      我的活动
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link href={`/u/${displayName}/notifications`}>
+                      <Bell />
+                      我的通知
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link href={`/u/${displayName}/preferences`}>
+                      <Settings />
+                      个人设置
+                    </Link>
                   </DropdownMenuItem>
                   {data?.user?.isAdmin ? (
-                    <>
-                      <DropdownMenuItem onSelect={goAdmin}>
-                        <LayoutDashboard />
-                        {tAdmin("entry")}
-                      </DropdownMenuItem>
-                    </>
+                    <DropdownMenuItem onSelect={goAdmin}>
+                      <LayoutDashboard />
+                      {tAdmin("entry")}
+                    </DropdownMenuItem>
                   ) : null}
                 </DropdownMenuGroup>
                 <DropdownMenuSeparator />

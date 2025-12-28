@@ -896,5 +896,62 @@
         }
       }
     }
+  },
+  "User": {
+    "profile": {
+      "title": "用户主页",
+      "overview": "概览",
+      "activity": "活动",
+      "badges": "徽章",
+      "preferences": "设置",
+      "notifications": "通知",
+      "statistics": {
+        "topics": "发布话题",
+        "posts": "回复帖子",
+        "likes": "获得点赞",
+        "bookmarks": "收藏数",
+        "badges": "徽章数"
+      },
+      "actions": {
+        "edit": "编辑资料",
+        "message": "发送私信",
+        "follow": "关注",
+        "unfollow": "取消关注"
+      },
+      "notFound": "用户不存在",
+      "unauthorized": "您无权访问此页面",
+      "empty": {
+        "activity": "暂无活动记录",
+        "topics": "暂无发布的话题",
+        "posts": "暂无回复的帖子",
+        "likes": "暂无点赞记录",
+        "bookmarks": "暂无收藏内容",
+        "badges": "暂未获得徽章"
+      }
+    },
+    "activity": {
+      "all": "全部活动",
+      "topics": "发布话题",
+      "posts": "回复帖子",
+      "likes": "点赞记录",
+      "bookmarks": "收藏夹"
+    },
+    "preferences": {
+      "account": {
+        "title": "账户设置"
+      },
+      "security": {
+        "title": "安全设置"
+      },
+      "interface": {
+        "title": "界面设置"
+      },
+      "notifications": {
+        "title": "通知偏好"
+      },
+      "privacy": {
+        "title": "隐私设置"
+      }
+    }
   }
 }

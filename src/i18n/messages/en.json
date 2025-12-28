@@ -754,5 +754,62 @@
       "prev": "Previous",
       "next": "Next"
     }
+  },
+  "User": {
+    "profile": {
+      "title": "User Profile",
+      "overview": "Overview",
+      "activity": "Activity",
+      "badges": "Badges",
+      "preferences": "Settings",
+      "notifications": "Notifications",
+      "statistics": {
+        "topics": "Topics",
+        "posts": "Posts",
+        "likes": "Likes Received",
+        "bookmarks": "Bookmarks",
+        "badges": "Badges"
+      },
+      "actions": {
+        "edit": "Edit Profile",
+        "message": "Send Message",
+        "follow": "Follow",
+        "unfollow": "Unfollow"
+      },
+      "notFound": "User not found",
+      "unauthorized": "You do not have permission to access this page",
+      "empty": {
+        "activity": "No activity yet",
+        "topics": "No topics yet",
+        "posts": "No posts yet",
+        "likes": "No liked posts yet",
+        "bookmarks": "No bookmarks yet",
+        "badges": "No badges yet"
+      }
+    },
+    "activity": {
+      "all": "All Activity",
+      "topics": "Topics",
+      "posts": "Posts",
+      "likes": "Liked",
+      "bookmarks": "Bookmarks"
+    },
+    "preferences": {
+      "account": {
+        "title": "Account Settings"
+      },
+      "security": {
+        "title": "Security Settings"
+      },
+      "interface": {
+        "title": "Interface Settings"
+      },
+      "notifications": {
+        "title": "Notification Preferences"
+      },
+      "privacy": {
+        "title": "Privacy Settings"
+      }
+    }
   }
 }
