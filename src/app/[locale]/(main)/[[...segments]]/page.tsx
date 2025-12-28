@@ -18,6 +18,7 @@ import {
   type RouteParams,
 } from "@/lib/route-utils"
 import { notFound } from "next/navigation"
+import { Skeleton } from "@/components/ui/skeleton"
 
 type TopicListResult = {
   items: TopicListItem[]
@@ -26,11 +27,21 @@ type TopicListResult = {
   total: number
 }
 
+type CategoryDTO = {
+  id: string
+  name: string
+  icon: string
+  description: string | null
+}
+
 export default function DynamicRoutePage() {
   const t = useTranslations("Index")
   const tc = useTranslations("Common")
+  const tCat = useTranslations("Category")
   const params = useParams<{ segments?: string[] }>()
   const [isNewTopicDialogOpen, setIsNewTopicDialogOpen] = useState(false)
+  const [category, setCategory] = useState<CategoryDTO | null>(null)
+  const [categoryLoading, setCategoryLoading] = useState(false)
 
   // 解析路由参数
   const routeParams = useMemo(() => {
@@ -119,10 +130,68 @@ export default function DynamicRoutePage() {
     return () => {}
   }, [routeParams])
 
+  // 加载分类信息
+  useEffect(() => {
+    if (routeParams.categoryId) {
+      ;(async () => {
+        setCategoryLoading(true)
+        try {
+          const res = await fetch(`/api/category/${routeParams.categoryId}`, {
+            cache: "no-store",
+          })
+          if (res.ok) {
+            const data = await res.json()
+            setCategory(data)
+          } else {
+            setCategory(null)
+          }
+        } catch {
+          setCategory(null)
+        } finally {
+          setCategoryLoading(false)
+        }
+      })()
+    } else {
+      setCategory(null)
+    }
+  }, [routeParams.categoryId])
+
   return (
     <div className="flex min-h-screen w-full flex-col px-8 max-sm:p-4 gap-4 max-sm:gap-2">
-      <div className="flex flex-row justify-between items-center py-8">
-        <h1 className="text-5xl">{t("title")}</h1>
+      <div className="flex flex-row justify-between items-start py-8">
+        {routeParams.categoryId ? (
+          <div className="flex flex-col">
+            <div className="flex items-center gap-3">
+              {categoryLoading ? (
+                <>
+                  <Skeleton className="h-14 w-14 rounded-full" />
+                  <Skeleton className="h-14 w-64" />
+                </>
+              ) : (
+                <>
+                  <span className="text-5xl leading-none">
+                    {category?.icon ?? "📁"}
+                  </span>
+                  <h1 className="text-5xl">
+                    {category?.name ??
+                      tCat("defaultName", { id: routeParams.categoryId })}
+                  </h1>
+                </>
+              )}
+            </div>
+            {categoryLoading ? (
+              <Skeleton className="h-4 w-96 mt-2" />
+            ) : (
+              category?.description && (
+                <span className="text-muted-foreground mt-2">
+                  {category.description}
+                </span>
+              )
+            )}
+          </div>
+        ) : (
+          <h1 className="text-5xl">{t("title")}</h1>
+        )}
         <InputGroup className="w-80 hidden md:flex">
           <InputGroupInput placeholder={tc("Search.placeholder")} />
           <InputGroupAddon>
