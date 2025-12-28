@@ -39,57 +39,54 @@ export function UserInfoHeader({
   return (
     <div className="w-full border-b bg-background">
       <div className="max-w-5xl mx-auto pb-6">
-        <div className="flex flex-col gap-6">
-          {/* 头像和基本信息 */}
-          <div className="flex flex-col md:flex-row items-center md:items-start gap-4">
-            <Avatar className="h-24 w-24 md:h-32 md:w-32">
-              <AvatarImage src={user.avatar} alt={user.name} />
-              <AvatarFallback className="text-2xl md:text-4xl">
-                {user.name.slice(0, 1).toUpperCase()}
-              </AvatarFallback>
-            </Avatar>
+        <div className="flex flex-col gap-6 md:flex-row md:items-start md:gap-6">
+          {/* 头像 */}
+          <Avatar className="h-24 w-24 md:h-32 md:w-32 shrink-0 mx-auto md:mx-0">
+            <AvatarImage src={user.avatar} alt={user.name} />
+            <AvatarFallback className="text-2xl md:text-4xl">
+              {user.name.slice(0, 1).toUpperCase()}
+            </AvatarFallback>
+          </Avatar>
 
-            <div className="flex flex-col items-center md:items-start gap-2 md:flex-1">
-              <div className="flex items-center gap-2">
-                <h1 className="text-2xl md:text-3xl font-bold">{user.name}</h1>
-                {user.is_admin && (
-                  <Shield className="h-5 w-5 text-orange-500" />
-                )}
-              </div>
+          {/* 基本信息 */}
+          <div className="flex flex-col items-center md:items-start gap-2 md:flex-1">
+            <div className="flex items-center gap-2">
+              <h1 className="text-2xl md:text-3xl font-bold">{user.name}</h1>
+              {user.is_admin && <Shield className="h-5 w-5 text-orange-500" />}
+            </div>
 
-              <div className="text-sm text-muted-foreground text-center md:text-left">
-                {t("joinedAt")}{" "}
-                {new Date(user.created_at).toLocaleDateString("zh-CN", {
-                  year: "numeric",
-                  month: "long",
-                  day: "numeric",
-                })}
-              </div>
+            <div className="text-sm text-muted-foreground text-center md:text-left">
+              {t("joinedAt")}{" "}
+              {new Date(user.created_at).toLocaleDateString("zh-CN", {
+                year: "numeric",
+                month: "long",
+                day: "numeric",
+              })}
+            </div>
 
-              {/* 操作按钮 */}
-              <div className="flex gap-2 mt-2">
-                {isOwnProfile && (
-                  <Button variant="outline" size="sm" asChild>
-                    <Link href={`/u/${encodeUsername(user.name)}/preferences`}>
-                      <Settings className="h-4 w-4 mr-1" />
-                      {t("actions.edit")}
-                    </Link>
-                  </Button>
-                )}
-                {isAdmin && !isOwnProfile && (
-                  <Button variant="outline" size="sm" asChild>
-                    <Link href="/admin/users">
-                      <Shield className="h-4 w-4 mr-1" />
-                      {t("actions.manage")}
-                    </Link>
-                  </Button>
-                )}
-              </div>
+            {/* 操作按钮 */}
+            <div className="flex gap-2 mt-2">
+              {isOwnProfile && (
+                <Button variant="outline" size="sm" asChild>
+                  <Link href={`/u/${encodeUsername(user.name)}/preferences`}>
+                    <Settings className="h-4 w-4 mr-1" />
+                    {t("actions.edit")}
+                  </Link>
+                </Button>
+              )}
+              {isAdmin && !isOwnProfile && (
+                <Button variant="outline" size="sm" asChild>
+                  <Link href="/admin/users">
+                    <Shield className="h-4 w-4 mr-1" />
+                    {t("actions.manage")}
+                  </Link>
+                </Button>
+              )}
             </div>
           </div>
 
           {/* 统计数据 */}
-          <div className="grid grid-cols-5 gap-2 md:gap-6">
+          <div className="grid grid-cols-5 gap-2 md:gap-6 lg:gap-12 md:shrink-0 w-full md:w-auto">
             <div className="text-center">
               <div className="text-lg md:text-2xl font-bold">
                 {statistics.topicsCount}
