@@ -177,40 +177,6 @@ export function routeParamsToApiQuery(params: RouteParams): {
 }
 
 /**
- * 从查询参数提取路由参数（用于向后兼容）
- * @param searchParams URLSearchParams 对象
- * @returns 路由参数
- */
-export function extractRouteParamsFromQuery(
-  searchParams: URLSearchParams
-): RouteParams {
-  const params: RouteParams = {}
-
-  const sort = searchParams.get("sort")
-  const categoryId = searchParams.get("categoryId")
-  const tagId = searchParams.get("tagId")
-
-  // 映射排序参数（反向映射）
-  if (sort === "hot") {
-    params.sort = "top"
-  } else if (sort === "latest") {
-    params.sort = "new"
-  } else if (sort === "community") {
-    // community 不映射到新路由，保持默认
-  }
-
-  if (categoryId) {
-    params.categoryId = categoryId
-  }
-
-  if (tagId) {
-    params.tagId = tagId
-  }
-
-  return params
-}
-
-/**
  * 从路径名中提取当前的路由参数
  * @param pathname 当前路径名
  * @param locale 语言区域
