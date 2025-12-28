@@ -63,6 +63,7 @@ export function TopicSortDrawer({
       return
     }
     onSortStart?.(next)
+    setOpen(false)
     const params = new URLSearchParams(searchParams.toString())
     params.set("sort", next)
     params.delete("page")
@@ -71,7 +72,6 @@ export function TopicSortDrawer({
       router.replace(url)
       router.refresh()
     })
-    setOpen(false)
   }
 
   const sortOptions = [
