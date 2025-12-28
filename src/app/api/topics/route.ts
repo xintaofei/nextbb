@@ -43,6 +43,7 @@ type TopicListItem = {
     id: string
     name: string
     icon?: string
+    description?: string | null
     bgColor?: string | null
     textColor?: string | null
   }
@@ -50,6 +51,7 @@ type TopicListItem = {
     id: string
     name: string
     icon: string
+    description?: string | null
     bgColor?: string | null
     textColor?: string | null
   }[]
@@ -110,6 +112,7 @@ export async function GET(req: Request) {
           id: true,
           name: true,
           icon: true,
+          description: true,
           bg_color: true,
           text_color: true,
         },
@@ -121,6 +124,7 @@ export async function GET(req: Request) {
               id: true,
               name: true,
               icon: true,
+              description: true,
               bg_color: true,
               text_color: true,
             },
@@ -145,6 +149,7 @@ export async function GET(req: Request) {
       id: bigint
       name: string
       icon: string
+      description: string | null
       bg_color: string | null
       text_color: string | null
     }
@@ -153,6 +158,7 @@ export async function GET(req: Request) {
         id: bigint
         name: string
         icon: string
+        description: string
         bg_color: string | null
         text_color: string | null
       }
@@ -208,6 +214,7 @@ export async function GET(req: Request) {
           id: bigint
           name: string
           icon: string
+          description: string
           bg_color: string | null
           text_color: string | null
         }
@@ -215,6 +222,7 @@ export async function GET(req: Request) {
         id: String(l.tag.id),
         name: l.tag.name,
         icon: l.tag.icon,
+        description: l.tag.description,
         bgColor: l.tag.bg_color,
         textColor: l.tag.text_color,
       })
@@ -226,6 +234,7 @@ export async function GET(req: Request) {
         id: String(t.category.id),
         name: t.category.name,
         icon: t.category.icon ?? undefined,
+        description: t.category.description,
         bgColor: t.category.bg_color,
         textColor: t.category.text_color,
       },

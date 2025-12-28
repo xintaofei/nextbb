@@ -30,6 +30,7 @@ export type TopicCategory = {
   id: string
   name: string
   icon?: string
+  description?: string | null
   bgColor?: string | null
   textColor?: string | null
 }
@@ -38,6 +39,7 @@ export type TopicTag = {
   id: string
   name: string
   icon: string
+  description?: string | null
   bgColor?: string | null
   textColor?: string | null
 }
@@ -210,16 +212,20 @@ export function TopicList({
                       </AvatarFallback>
                     </Avatar>
                     <CategoryBadge
+                      id={t.category.id}
                       icon={t.category.icon}
                       name={t.category.name}
+                      description={t.category.description}
                       bgColor={t.category.bgColor}
                       textColor={t.category.textColor}
                     />
                     {t.tags.map((tag) => (
                       <TagBadge
                         key={tag.id}
+                        id={tag.id}
                         icon={tag.icon}
                         name={tag.name}
+                        description={tag.description}
                         bgColor={tag.bgColor}
                         textColor={tag.textColor}
                       />

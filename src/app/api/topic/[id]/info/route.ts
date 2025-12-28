@@ -10,6 +10,7 @@ type TopicInfo = {
     id: string
     name: string
     icon?: string
+    description?: string | null
     bgColor?: string | null
     textColor?: string | null
   }
@@ -17,6 +18,7 @@ type TopicInfo = {
     id: string
     name: string
     icon: string
+    description?: string | null
     bgColor?: string | null
     textColor?: string | null
   }[]
@@ -45,6 +47,7 @@ export async function GET(
           id: true,
           name: true,
           icon: true,
+          description: true,
           bg_color: true,
           text_color: true,
         },
@@ -56,6 +59,7 @@ export async function GET(
               id: true,
               name: true,
               icon: true,
+              description: true,
               bg_color: true,
               text_color: true,
             },
@@ -79,6 +83,7 @@ export async function GET(
       id: String(topic.category.id),
       name: topic.category.name,
       icon: topic.category.icon ?? undefined,
+      description: topic.category.description,
       bgColor: topic.category.bg_color,
       textColor: topic.category.text_color,
     },
@@ -88,6 +93,7 @@ export async function GET(
           id: bigint
           name: string
           icon: string
+          description: string
           bg_color: string | null
           text_color: string | null
         }
@@ -95,6 +101,7 @@ export async function GET(
         id: String(l.tag.id),
         name: l.tag.name,
         icon: l.tag.icon,
+        description: l.tag.description,
         bgColor: l.tag.bg_color,
         textColor: l.tag.text_color,
       })

@@ -95,6 +95,7 @@ export function HotTags({ className, count = 5 }: HotTagsProps) {
                     key={t.id}
                     icon={t.icon}
                     name={t.name}
+                    description={t.description}
                     bgColor={t.bgColor}
                     textColor={t.textColor}
                     active={active}

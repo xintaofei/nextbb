@@ -528,8 +528,10 @@ export default function TopicPage() {
             <div className="flex max-w-full flex-wrap gap-2 overflow-hidden">
               {topicInfo?.category ? (
                 <CategoryBadge
+                  id={topicInfo.category.id}
                   icon={topicInfo.category.icon}
                   name={topicInfo.category.name}
+                  description={topicInfo.category.description}
                   bgColor={topicInfo.category.bgColor}
                   textColor={topicInfo.category.textColor}
                 />
@@ -537,8 +539,10 @@ export default function TopicPage() {
               {(topicInfo?.tags ?? []).map((tag) => (
                 <TagBadge
                   key={tag.id}
+                  id={tag.id}
                   icon={tag.icon}
                   name={tag.name}
+                  description={tag.description}
                   bgColor={tag.bgColor}
                   textColor={tag.textColor}
                 />
@@ -679,16 +683,20 @@ export default function TopicPage() {
                       </Link>
                       <div className="flex max-w-full flex-wrap gap-2 overflow-hidden mt-2">
                         <CategoryBadge
+                          id={t.category.id}
                           icon={t.category.icon}
                           name={t.category.name}
+                          description={t.category.description}
                           bgColor={t.category.bgColor}
                           textColor={t.category.textColor}
                         />
                         {t.tags.map((tag) => (
                           <TagBadge
                             key={tag.id}
+                            id={tag.id}
                             icon={tag.icon}
                             name={tag.name}
+                            description={tag.description}
                             bgColor={tag.bgColor}
                             textColor={tag.textColor}
                           />

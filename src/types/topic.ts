@@ -35,6 +35,7 @@ export type RelatedTopicItem = {
     id: string
     name: string
     icon?: string
+    description?: string | null
     bgColor?: string | null
     textColor?: string | null
   }
@@ -42,6 +43,7 @@ export type RelatedTopicItem = {
     id: string
     name: string
     icon: string
+    description?: string | null
     bgColor?: string | null
     textColor?: string | null
   }[]
@@ -57,6 +59,7 @@ export type TopicInfo = {
     id: string
     name: string
     icon?: string
+    description?: string | null
     bgColor?: string | null
     textColor?: string | null
   }
@@ -64,6 +67,7 @@ export type TopicInfo = {
     id: string
     name: string
     icon: string
+    description?: string | null
     bgColor?: string | null
     textColor?: string | null
   }[]
