@@ -53,10 +53,13 @@ export function HotTags({ className, count = 5 }: HotTagsProps) {
   const loading = isLoading || !tags
 
   function applyTag(tagId: string) {
+    // 如果点击的是已选中的标签，则取消选中（移除tagId）
+    const isAlreadySelected = selectedTagId === tagId
+
     // 构建新的路由参数
     const newParams = {
       ...currentRouteParams,
-      tagId: tagId && tagId.length > 0 ? tagId : undefined,
+      tagId: isAlreadySelected ? undefined : tagId,
     }
 
     // 使用新路由模式
