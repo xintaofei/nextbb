@@ -9,10 +9,11 @@ import {
 } from "@/components/ui/timeline-steps"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
-import { Bookmark, Heart, Reply, Pencil, Trash, Clock } from "lucide-react"
+import { Bookmark, Heart, Reply, Pencil, Trash } from "lucide-react"
 import { formatRelative } from "@/lib/time"
 import { PostItem } from "@/types/topic"
 import { UserBadgesDisplay } from "@/components/common/user-badges-display"
+import { UserInfoCard } from "@/components/common/user-info-card"
 import { Separator } from "@/components/ui/separator"
 import { useIsMobile } from "@/hooks/use-mobile"
 
@@ -68,10 +69,17 @@ export function TopicPostItem({
         size="lg"
         className="sticky top-18 md:top-4 overflow-hidden p-0.5"
       >
-        <Avatar className="size-full">
-          <AvatarImage src={post.author.avatar} alt="@avatar" />
-          <AvatarFallback>{post.author.name}</AvatarFallback>
-        </Avatar>
+        <UserInfoCard
+          userId={post.author.id}
+          userName={post.author.name}
+          userAvatar={post.author.avatar}
+          side="right"
+        >
+          <Avatar className="size-full cursor-pointer">
+            <AvatarImage src={post.author.avatar} alt="@avatar" />
+            <AvatarFallback>{post.author.name}</AvatarFallback>
+          </Avatar>
+        </UserInfoCard>
       </TimelineStepsIcon>
       <TimelineStepsContent className={`border-b`}>
         <div className="flex flex-row justify-between items-center w-full">

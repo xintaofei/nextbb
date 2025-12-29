@@ -957,5 +957,18 @@
         "title": "隐私设置"
       }
     }
+  },
+  "UserCard": {
+    "viewProfile": "查看主页",
+    "follow": "关注",
+    "message": "私信",
+    "admin": "管理员",
+    "badges": "徽章",
+    "statistics": {
+      "topics": "主题",
+      "posts": "帖子",
+      "likes": "点赞"
+    },
+    "loading": "加载中..."
   }
 }

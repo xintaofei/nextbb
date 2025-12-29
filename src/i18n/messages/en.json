@@ -815,5 +815,18 @@
         "title": "Privacy Settings"
       }
     }
+  },
+  "UserCard": {
+    "viewProfile": "View Profile",
+    "follow": "Follow",
+    "message": "Message",
+    "admin": "Admin",
+    "badges": "Badges",
+    "statistics": {
+      "topics": "Topics",
+      "posts": "Posts",
+      "likes": "Likes"
+    },
+    "loading": "Loading..."
   }
 }

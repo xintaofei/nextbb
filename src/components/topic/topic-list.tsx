@@ -19,6 +19,7 @@ import { useSearchParams } from "next/navigation"
 import { Pin } from "lucide-react"
 import { CategoryBadge } from "@/components/common/category-badge"
 import { TagBadge } from "@/components/common/tag-badge"
+import { UserInfoCard } from "@/components/common/user-info-card"
 
 export type TopicParticipant = {
   id: string
@@ -202,15 +203,22 @@ export function TopicList({
                     </span>
                   </Link>
                   <div className="flex max-w-full flex-wrap items-center gap-2 overflow-hidden mt-2">
-                    <Avatar className="hidden max-sm:flex size-5">
-                      <AvatarImage
-                        src={t.participants[0].avatar}
-                        alt={t.participants[0].name}
-                      />
-                      <AvatarFallback>
-                        {t.participants[0].name.slice(0, 2).toUpperCase()}
-                      </AvatarFallback>
-                    </Avatar>
+                    <UserInfoCard
+                      userId={t.participants[0].id}
+                      userName={t.participants[0].name}
+                      userAvatar={t.participants[0].avatar}
+                      side="right"
+                    >
+                      <Avatar className="hidden max-sm:flex size-5 cursor-pointer">
+                        <AvatarImage
+                          src={t.participants[0].avatar}
+                          alt={t.participants[0].name}
+                        />
+                        <AvatarFallback>
+                          {t.participants[0].name.slice(0, 2).toUpperCase()}
+                        </AvatarFallback>
+                      </Avatar>
+                    </UserInfoCard>
                     <CategoryBadge
                       id={t.category.id}
                       icon={t.category.icon}
@@ -235,15 +243,23 @@ export function TopicList({
                 <TableCell className="max-sm:hidden">
                   <div className="*:data-[slot=avatar]:ring-background flex lg:-space-x-2 *:data-[slot=avatar]:ring-2 max-lg:justify-center">
                     {dedupeAndLimit(t.participants, 5).map((u, idx) => (
-                      <Avatar
+                      <UserInfoCard
                         key={u.id}
-                        className={`size-7 relative ${idx === 0 ? "z-5" : idx === 1 ? "z-4" : idx === 2 ? "z-3" : idx === 3 ? "z-2" : "z-1"} ${idx > 0 ? "max-lg:hidden" : ""}`}
+                        userId={u.id}
+                        userName={u.name}
+                        userAvatar={u.avatar}
+                        side="top"
+                        align="center"
                       >
-                        <AvatarImage src={u.avatar} alt={u.name} />
-                        <AvatarFallback>
-                          {u.name.slice(0, 2).toUpperCase()}
-                        </AvatarFallback>
-                      </Avatar>
+                        <Avatar
+                          className={`size-7 relative cursor-pointer ${idx === 0 ? "z-5" : idx === 1 ? "z-4" : idx === 2 ? "z-3" : idx === 3 ? "z-2" : "z-1"} ${idx > 0 ? "max-lg:hidden" : ""}`}
+                        >
+                          <AvatarImage src={u.avatar} alt={u.name} />
+                          <AvatarFallback>
+                            {u.name.slice(0, 2).toUpperCase()}
+                          </AvatarFallback>
+                        </Avatar>
+                      </UserInfoCard>
                     ))}
                   </div>
                 </TableCell>
