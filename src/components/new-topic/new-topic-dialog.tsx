@@ -8,7 +8,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
-import { TopicForm, TopicFormData } from "@/components/new-topic/topic-form"
+import { TopicForm } from "@/components/new-topic/topic-form"
+import { type TopicFormData } from "@/lib/topic-validation"
 import { useTranslations } from "next-intl"
 import { toast } from "sonner"
 
@@ -32,14 +33,7 @@ export function NewTopicDialog({
       const res = await fetch("/api/topics", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          title: data.title,
-          categoryId: data.categoryId,
-          content: data.content,
-          tags: data.tags,
-          isPinned: data.isPinned ?? false,
-          isCommunity: data.isCommunity ?? false,
-        }),
+        body: JSON.stringify(data),
       })
       if (!res.ok) {
         if (res.status === 401) {
