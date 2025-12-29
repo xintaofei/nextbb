@@ -961,14 +961,22 @@
   "UserCard": {
     "viewProfile": "查看主页",
     "follow": "关注",
+    "following": "已关注",
     "message": "私信",
     "admin": "管理员",
     "badges": "徽章",
+    "joinedAt": "加入于",
     "statistics": {
       "topics": "主题",
-      "posts": "帖子",
-      "likes": "点赞"
+      "posts": "回复",
+      "likes": "点赞",
+      "followers": "粉丝"
     },
-    "loading": "加载中..."
+    "loading": "加载中...",
+    "loadingStats": "加载统计中...",
+    "followSuccess": "关注成功",
+    "unfollowSuccess": "已取消关注",
+    "followError": "操作失败，请稍后再试",
+    "messageError": "创建会话失败，请稍后再试"
   }
 }

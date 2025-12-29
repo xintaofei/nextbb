@@ -25,6 +25,11 @@ model users {
   post_bookmarks post_bookmarks[] @relation("post_bookmarks_user")
   user_badges user_badges[] @relation("user_badges_user")
   awarded_badges user_badges[] @relation("user_badges_awarder")
+  followers user_follows[] @relation("user_follows_following")
+  following user_follows[] @relation("user_follows_follower")
+  conversations_initiated conversations[] @relation("conversations_user1")
+  conversations_received conversations[] @relation("conversations_user2")
+  messages messages[] @relation("messages_sender")
 
   @@map("users")
   @@unique([email], map: "users_email_key")
@@ -208,4 +213,55 @@ model system_configs {
   @@index([category], map: "system_configs_category_index")
   @@index([is_public], map: "system_configs_public_index")
   @@map("system_configs")
+}
+
+model user_follows {
+  follower_id  BigInt   @db.BigInt
+  following_id BigInt   @db.BigInt
+  created_at   DateTime @default(now())
+
+  follower  users @relation("user_follows_follower", fields: [follower_id], references: [id])
+  following users @relation("user_follows_following", fields: [following_id], references: [id])
+
+  @@id([follower_id, following_id])
+  @@index([follower_id], map: "user_follows_follower_index")
+  @@index([following_id], map: "user_follows_following_index")
+  @@map("user_follows")
+}
+
+model conversations {
+  id         BigInt   @id @db.BigInt
+  user1_id   BigInt   @db.BigInt
+  user2_id   BigInt   @db.BigInt
+  is_deleted Boolean  @default(false)
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  user1    users      @relation("conversations_user1", fields: [user1_id], references: [id])
+  user2    users      @relation("conversations_user2", fields: [user2_id], references: [id])
+  messages messages[] @relation("messages_conversation")
+
+  @@index([user1_id], map: "conversations_user1_index")
+  @@index([user2_id], map: "conversations_user2_index")
+  @@index([user1_id, user2_id], map: "conversations_users_index")
+  @@map("conversations")
+}
+
+model messages {
+  id              BigInt   @id @db.BigInt
+  conversation_id BigInt   @db.BigInt
+  sender_id       BigInt   @db.BigInt
+  content         String   @db.Text
+  is_read         Boolean  @default(false)
+  is_deleted      Boolean  @default(false)
+  created_at      DateTime @default(now())
+  updated_at      DateTime @updatedAt
+
+  conversation conversations @relation("messages_conversation", fields: [conversation_id], references: [id])
+  sender       users         @relation("messages_sender", fields: [sender_id], references: [id])
+
+  @@index([conversation_id], map: "messages_conversation_index")
+  @@index([sender_id], map: "messages_sender_index")
+  @@index([is_read], map: "messages_read_index")
+  @@map("messages")
 }

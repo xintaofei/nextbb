@@ -2,8 +2,10 @@
 
 import { ReactNode, useState } from "react"
 import Link from "next/link"
+import { useRouter } from "next/navigation"
 import { useTranslations } from "next-intl"
-import useSWR from "swr"
+import useSWR, { mutate } from "swr"
+import { toast } from "sonner"
 import {
   Popover,
   PopoverContent,
@@ -16,7 +18,13 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { UserBadgesDisplay } from "@/components/common/user-badges-display"
 import { useIsMobile } from "@/hooks/use-mobile"
 import { encodeUsername } from "@/lib/utils"
-import { Shield } from "lucide-react"
+import {
+  Shield,
+  MessageCircle,
+  UserPlus,
+  UserCheck,
+  Calendar,
+} from "lucide-react"
 
 type BadgeItem = {
   id: string
@@ -32,6 +40,14 @@ type BadgeListResponse = {
   items: BadgeItem[]
 }
 
+type UserStatistics = {
+  topicsCount: number
+  postsCount: number
+  likesReceived: number
+  followersCount: number
+  joinedAt: string
+}
+
 type UserInfoCardProps = {
   userId: string
   userName: string
@@ -40,7 +56,7 @@ type UserInfoCardProps = {
   isAdmin?: boolean
   side?: "top" | "right" | "bottom" | "left"
   align?: "start" | "center" | "end"
-  showStatistics?: boolean // 预留，未来用于显示统计数据
+  showStatistics?: boolean
 }
 
 export function UserInfoCard({
@@ -51,12 +67,31 @@ export function UserInfoCard({
   isAdmin = false,
   side = "right",
   align = "center",
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  showStatistics: _showStatistics = false,
+  showStatistics = true,
 }: UserInfoCardProps) {
   const t = useTranslations("UserCard")
+  const router = useRouter()
   const isMobile = useIsMobile()
   const [open, setOpen] = useState(false)
+  const [isFollowLoading, setIsFollowLoading] = useState(false)
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null)
+
+  // 获取当前用户ID
+  const { data: sessionData } = useSWR<{ userId: string }>(
+    open ? "/api/auth/session" : null,
+    {
+      revalidateOnFocus: false,
+      dedupingInterval: 300000, // 5分钟缓存
+    }
+  )
+
+  // 更新当前用户ID
+  if (sessionData?.userId && currentUserId !== sessionData.userId) {
+    setCurrentUserId(sessionData.userId)
+  }
+
+  // 判断是否是自己的卡片
+  const isOwnCard = currentUserId === userId
 
   // 使用 SWR 获取徽章数据，仅在卡片打开时才请求
   const { data: badgesData, isLoading: badgesLoading } =
@@ -65,8 +100,96 @@ export function UserInfoCard({
       dedupingInterval: 300000, // 5分钟缓存
     })
 
+  // 使用 SWR 获取用户统计数据，仅在需要显示统计且卡片打开时才请求
+  const { data: statisticsData, isLoading: statisticsLoading } =
+    useSWR<UserStatistics>(
+      open && showStatistics ? `/api/users/${userId}/statistics` : null,
+      {
+        revalidateOnFocus: false,
+        dedupingInterval: 300000, // 5分钟缓存
+      }
+    )
+
+  // 获取关注状态
+  const { data: followStatusData } = useSWR<{ isFollowing: boolean }>(
+    open ? `/api/users/${userId}/follow/status` : null,
+    {
+      revalidateOnFocus: false,
+      dedupingInterval: 60000, // 1分钟缓存
+    }
+  )
+
   const badges = badgesData?.items || []
-  const maxBadgeDisplay = isMobile ? 2 : 3
+  const maxBadgeDisplay = isMobile ? 3 : 6
+  const isFollowing = followStatusData?.isFollowing || false
+
+  // 处理关注/取消关注
+  const handleFollowClick = async () => {
+    if (isFollowLoading) return
+
+    setIsFollowLoading(true)
+    try {
+      const response = await fetch(`/api/users/${userId}/follow`, {
+        method: "POST",
+      })
+
+      if (!response.ok) {
+        throw new Error("Failed to toggle follow")
+      }
+
+      const data = await response.json()
+
+      // 更新关注状态缓存
+      mutate(`/api/users/${userId}/follow/status`, {
+        isFollowing: data.isFollowing,
+      })
+
+      toast.success(
+        data.isFollowing ? t("followSuccess") : t("unfollowSuccess")
+      )
+    } catch (error) {
+      console.error("Error toggling follow:", error)
+      toast.error(t("followError"))
+    } finally {
+      setIsFollowLoading(false)
+    }
+  }
+
+  // 处理私信点击
+  const handleMessageClick = async () => {
+    try {
+      // 创建或获取会话
+      const response = await fetch("/api/conversations", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ targetUserId: userId }),
+      })
+
+      if (!response.ok) {
+        throw new Error("Failed to create conversation")
+      }
+
+      const data = await response.json()
+      const conversationId = data.conversation.id
+
+      // 跳转到私信页面
+      router.push(`/messages/${conversationId}`)
+      setOpen(false)
+    } catch (error) {
+      console.error("Error creating conversation:", error)
+      toast.error(t("messageError"))
+    }
+  }
+
+  // 格式化加入时间
+  const formatJoinedDate = (dateString: string) => {
+    const date = new Date(dateString)
+    const year = date.getFullYear()
+    const month = String(date.getMonth() + 1).padStart(2, "0")
+    return `${year}-${month}`
+  }
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -74,9 +197,9 @@ export function UserInfoCard({
       <PopoverContent
         side={side}
         align={align}
-        className="w-80 max-sm:w-70 p-0 overflow-hidden"
+        className="w-96 max-sm:w-80 p-0 overflow-hidden"
       >
-        <div className="flex flex-col gap-4 p-4">
+        <div className="flex flex-col gap-3 p-4">
           {/* 头像区域 */}
           <div className="flex justify-center">
             <div className="relative">
@@ -91,7 +214,7 @@ export function UserInfoCard({
           </div>
 
           {/* 用户信息区域 */}
-          <div className="flex flex-col items-center gap-2">
+          <div className="flex flex-col items-center gap-1">
             <div className="flex items-center gap-2">
               <h3 className="text-lg max-sm:text-base font-semibold">
                 {userName}
@@ -106,7 +229,77 @@ export function UserInfoCard({
                 </Badge>
               )}
             </div>
+            {/* 加入时间 */}
+            {statisticsData?.joinedAt && (
+              <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                <Calendar className="h-3 w-3" />
+                <span>
+                  {t("joinedAt")} {formatJoinedDate(statisticsData.joinedAt)}
+                </span>
+              </div>
+            )}
           </div>
+
+          {/* 统计数据区域 */}
+          {showStatistics && (
+            <div className="grid grid-cols-4 gap-2 py-2 border-y">
+              {statisticsLoading ? (
+                <>
+                  <div className="text-center">
+                    <Skeleton className="h-5 w-8 mx-auto mb-1" />
+                    <Skeleton className="h-3 w-12 mx-auto" />
+                  </div>
+                  <div className="text-center">
+                    <Skeleton className="h-5 w-8 mx-auto mb-1" />
+                    <Skeleton className="h-3 w-12 mx-auto" />
+                  </div>
+                  <div className="text-center">
+                    <Skeleton className="h-5 w-8 mx-auto mb-1" />
+                    <Skeleton className="h-3 w-12 mx-auto" />
+                  </div>
+                  <div className="text-center">
+                    <Skeleton className="h-5 w-8 mx-auto mb-1" />
+                    <Skeleton className="h-3 w-12 mx-auto" />
+                  </div>
+                </>
+              ) : statisticsData ? (
+                <>
+                  <div className="text-center">
+                    <div className="text-base font-semibold">
+                      {statisticsData.topicsCount}
+                    </div>
+                    <div className="text-xs text-muted-foreground">
+                      {t("statistics.topics")}
+                    </div>
+                  </div>
+                  <div className="text-center">
+                    <div className="text-base font-semibold">
+                      {statisticsData.postsCount}
+                    </div>
+                    <div className="text-xs text-muted-foreground">
+                      {t("statistics.posts")}
+                    </div>
+                  </div>
+                  <div className="text-center">
+                    <div className="text-base font-semibold">
+                      {statisticsData.likesReceived}
+                    </div>
+                    <div className="text-xs text-muted-foreground">
+                      {t("statistics.likes")}
+                    </div>
+                  </div>
+                  <div className="text-center">
+                    <div className="text-base font-semibold">
+                      {statisticsData.followersCount}
+                    </div>
+                    <div className="text-xs text-muted-foreground">
+                      {t("statistics.followers")}
+                    </div>
+                  </div>
+                </>
+              ) : null}
+            </div>
+          )}
 
           {/* 徽章展示区域 */}
           {badgesLoading ? (
@@ -126,7 +319,47 @@ export function UserInfoCard({
           ) : null}
 
           {/* 操作按钮区域 */}
-          <div className="flex justify-center pt-2 border-t">
+          <div className="flex flex-col gap-2 pt-1">
+            {/* 关注和私信按钮行 - 只在不是自己的卡片时显示 */}
+            {!isOwnCard && (
+              <div className="grid grid-cols-2 gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={(e) => {
+                    e.preventDefault()
+                    handleFollowClick()
+                  }}
+                  disabled={isFollowLoading}
+                  className="w-full"
+                >
+                  {isFollowing ? (
+                    <>
+                      <UserCheck className="h-4 w-4 mr-1" />
+                      {t("following")}
+                    </>
+                  ) : (
+                    <>
+                      <UserPlus className="h-4 w-4 mr-1" />
+                      {t("follow")}
+                    </>
+                  )}
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={(e) => {
+                    e.preventDefault()
+                    handleMessageClick()
+                  }}
+                  className="w-full"
+                >
+                  <MessageCircle className="h-4 w-4 mr-1" />
+                  {t("message")}
+                </Button>
+              </div>
+            )}
+            {/* 查看主页按钮 */}
             <Link
               href={`/u/${encodeUsername(userName)}`}
               onClick={() => setOpen(false)}

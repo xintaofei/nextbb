@@ -819,14 +819,22 @@
   "UserCard": {
     "viewProfile": "View Profile",
     "follow": "Follow",
+    "following": "Following",
     "message": "Message",
     "admin": "Admin",
     "badges": "Badges",
+    "joinedAt": "Joined",
     "statistics": {
       "topics": "Topics",
       "posts": "Posts",
-      "likes": "Likes"
+      "likes": "Likes",
+      "followers": "Followers"
     },
-    "loading": "Loading..."
+    "loading": "Loading...",
+    "loadingStats": "Loading statistics...",
+    "followSuccess": "Followed successfully",
+    "unfollowSuccess": "Unfollowed successfully",
+    "followError": "Operation failed, please try again later",
+    "messageError": "Failed to create conversation, please try again later"
   }
 }
