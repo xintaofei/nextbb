@@ -80,7 +80,7 @@ export function UserInfoCard({
           {/* 头像区域 */}
           <div className="flex justify-center">
             <div className="relative">
-              <div className="absolute inset-0 rounded-full bg-gradient-to-br from-primary to-accent opacity-20 blur-sm" />
+              <div className="absolute inset-0 rounded-full bg-linear-to-br from-primary to-accent opacity-20 blur-sm" />
               <Avatar className="h-16 w-16 max-sm:h-14 max-sm:w-14 relative border-2 border-primary/30">
                 <AvatarImage src={userAvatar} alt={userName} />
                 <AvatarFallback className="text-xl max-sm:text-lg">
