@@ -15,7 +15,6 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { formatRelative } from "@/lib/time"
 import { Spinner } from "@/components/ui/spinner"
 import { useEffect, useRef, useState } from "react"
-import { useSearchParams } from "next/navigation"
 import { CategoryBadge } from "@/components/common/category-badge"
 import { TagBadge } from "@/components/common/tag-badge"
 import { TopicStatusTags } from "@/components/common/topic-status-tags"
@@ -76,12 +75,6 @@ export function TopicList({
 }) {
   const tc = useTranslations("Common")
   const sentinelRef = useRef<HTMLDivElement | null>(null)
-  const searchParams = useSearchParams()
-  const currentSort = (searchParams.get("sort") ?? "latest") as
-    | "latest"
-    | "hot"
-    | "community"
-
   const [highlightIndex, setHighlightIndex] = useState<number | null>(null)
   const previousItemsLengthRef = useRef<number>(0)
 
@@ -196,19 +189,17 @@ export function TopicList({
                 }
               >
                 <TableCell className="max-w-full max-sm:px-0">
-                  <Link href={`/topic/${t.id}`}>
-                    <div className="flex items-center gap-1">
-                      {currentSort === "latest" && (
-                        <TopicStatusTags
-                          isPinned={t.isPinned}
-                          topicType={t.type as TopicTypeValue}
-                        />
-                      )}
+                  <div className="flex items-center gap-1">
+                    <TopicStatusTags
+                      isPinned={t.isPinned}
+                      topicType={t.type as TopicTypeValue}
+                    />
+                    <Link href={`/topic/${t.id}`}>
                       <span className="max-w-full text-lg font-medium whitespace-normal wrap-break-word">
                         {t.title}
                       </span>
-                    </div>
-                  </Link>
+                    </Link>
+                  </div>
                   <div className="flex max-w-full flex-wrap items-center gap-2 overflow-hidden mt-2">
                     <UserInfoCard
                       userId={t.participants[0].id}

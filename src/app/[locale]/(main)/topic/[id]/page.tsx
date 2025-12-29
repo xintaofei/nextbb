@@ -522,19 +522,20 @@ export default function TopicPage() {
           </>
         ) : (
           <>
-            <Link href={`/topic/${topic.id}`}>
-              <div className="flex items-center gap-1">
-                {topicInfo && (
-                  <TopicStatusTags
-                    isPinned={topicInfo.isPinned}
-                    topicType={topicInfo.type as TopicTypeValue}
-                  />
-                )}
+            <div className="flex items-center gap-1">
+              {topicInfo && (
+                <TopicStatusTags
+                  isPinned={topicInfo.isPinned}
+                  topicType={topicInfo.type as TopicTypeValue}
+                  size="size-6"
+                />
+              )}
+              <Link href={`/topic/${topic.id}`}>
                 <span className="cursor-pointer max-w-full text-2xl font-medium whitespace-normal wrap-break-word">
                   {topic.title}
                 </span>
-              </div>
-            </Link>
+              </Link>
+            </div>
             <div className="flex max-w-full flex-wrap gap-2 overflow-hidden">
               {topicInfo?.category ? (
                 <>

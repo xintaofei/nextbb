@@ -15,12 +15,14 @@ import { useTranslations } from "next-intl"
 export type TopicStatusTagsProps = {
   isPinned: boolean
   topicType: TopicTypeValue
+  size?: string
   className?: string
 }
 
 export function TopicStatusTags({
   isPinned,
   topicType,
+  size,
   className,
 }: TopicStatusTagsProps) {
   const t = useTranslations("Topic.Type")
@@ -31,7 +33,7 @@ export function TopicStatusTags({
   }
 
   const getTypeIcon = (type: TopicTypeValue) => {
-    const iconClass = "size-4/5"
+    const iconClass = size || "size-5"
     switch (type) {
       case TopicType.QUESTION:
         return <HelpCircle className={iconClass} />
@@ -95,7 +97,7 @@ export function TopicStatusTags({
       {/* 置顶图标 - 优先显示在最左侧 */}
       {isPinned && (
         <span className="text-red-600 dark:text-red-400" title="Pin">
-          <Pin className="size-4/5" />
+          <Pin className={size || "size-5"} />
         </span>
       )}
       {/* 类型 Badge - 只在非 GENERAL 类型时显示 */}
