@@ -175,7 +175,86 @@
       },
       "tags": {
         "maxCount": "Up to 5 tags"
+      },
+      "rewardPoints": {
+        "required": "Please enter reward points",
+        "positive": "Reward points must be greater than 0",
+        "exceedBalance": "Reward points cannot exceed your available credits"
+      },
+      "pollOptions": {
+        "min": "At least 2 poll options are required",
+        "max": "Maximum 10 poll options allowed",
+        "optionMaxLength": "Option text must be at most 256 characters"
+      },
+      "lotteryEndTime": {
+        "required": "Please select draw time",
+        "future": "Lottery end time must be in the future"
+      },
+      "lotteryRules": {
+        "min": "Participation rules must be at least 10 characters",
+        "max": "Participation rules must be at most 500 characters"
+      },
+      "winnerCount": {
+        "required": "Please enter winner count",
+        "positive": "Winner count must be greater than 0",
+        "max": "Winner count must be between 1 and 100"
       }
+    },
+    "Type": {
+      "general": "General",
+      "question": "Question",
+      "bounty": "Bounty",
+      "poll": "Poll",
+      "lottery": "Lottery",
+      "tutorial": "Tutorial",
+      "description": {
+        "general": "Start a general discussion",
+        "question": "Ask a question and wait for the best answer",
+        "bounty": "Offer reward points for solutions",
+        "poll": "Create a poll to collect opinions",
+        "lottery": "Set up a lottery event",
+        "tutorial": "Publish a tutorial document"
+      }
+    },
+    "Form": {
+      "rewardPoints": {
+        "label": "Reward Points",
+        "placeholder": "Enter reward points",
+        "info": "Available credits: {credits}"
+      },
+      "pollOptions": {
+        "label": "Poll Options",
+        "placeholder": "Enter option {index}",
+        "addOption": "Add Option",
+        "removeOption": "Remove Option"
+      },
+      "lotteryEndTime": {
+        "label": "Draw Time",
+        "placeholder": "Select draw time"
+      },
+      "lotteryRules": {
+        "label": "Participation Rules",
+        "placeholder": "Describe participation conditions and lottery rules"
+      },
+      "winnerCount": {
+        "label": "Winner Count",
+        "placeholder": "Enter winner count"
+      },
+      "minCredits": {
+        "label": "Minimum Credits",
+        "placeholder": "Enter minimum credits required (optional)",
+        "info": "0 or empty means no restriction"
+      }
+    },
+    "Status": {
+      "answered": "Answered",
+      "waiting": "Waiting",
+      "drawn": "Drawn"
+    },
+    "Action": {
+      "vote": "Vote",
+      "participate": "Participate",
+      "acceptAnswer": "Accept as Best Answer"
     }
   },
   "Auth": {

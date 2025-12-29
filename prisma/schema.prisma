@@ -31,6 +31,8 @@ model users {
   conversations_initiated conversations[] @relation("conversations_user1")
   conversations_received conversations[] @relation("conversations_user2")
   messages messages[] @relation("messages_sender")
+  poll_votes poll_votes[] @relation("poll_votes_user")
+  lottery_participants lottery_participants[] @relation("lottery_participants_user")
 
   @@map("users")
   @@unique([email], map: "users_email_key")
@@ -76,6 +78,9 @@ model topics {
   category_id BigInt   @db.BigInt
   user_id     BigInt   @db.BigInt
   title       String   @db.VarChar(256)
+  type        String   @default("GENERAL") @db.VarChar(32)
+  accepted_answer_id BigInt? @db.BigInt
+  reward_points Int?
   views       Int      @default(0)
   is_pinned   Boolean  @default(false)
   is_community Boolean @default(false)
@@ -87,9 +92,13 @@ model topics {
   user     users      @relation(fields: [user_id], references: [id])
   posts    posts[]
   tag_links topic_tags[]
+  poll_options poll_options[]
+  lottery_config lottery_configs?
+  lottery_participants lottery_participants[]
 
   @@index([user_id], map: "topics_user_index")
   @@index([category_id], map: "topics_category_index")
+  @@index([type], map: "topics_type_index")
   @@map("topics")
 }
 
@@ -265,4 +274,66 @@ model messages {
   @@index([sender_id], map: "messages_sender_index")
   @@index([is_read], map: "messages_read_index")
   @@map("messages")
+}
+
+model poll_options {
+  id          BigInt   @id @db.BigInt
+  topic_id    BigInt   @db.BigInt
+  option_text String   @db.VarChar(256)
+  sort        Int
+  is_deleted  Boolean  @default(false)
+  created_at  DateTime @default(now())
+
+  topic topics @relation(fields: [topic_id], references: [id])
+  votes poll_votes[]
+
+  @@index([topic_id], map: "poll_options_topic_index")
+  @@map("poll_options")
+}
+
+model poll_votes {
+  option_id  BigInt   @db.BigInt
+  user_id    BigInt   @db.BigInt
+  created_at DateTime @default(now())
+
+  option poll_options @relation(fields: [option_id], references: [id])
+  user   users        @relation("poll_votes_user", fields: [user_id], references: [id])
+
+  @@id([option_id, user_id])
+  @@index([option_id], map: "poll_votes_option_index")
+  @@index([user_id], map: "poll_votes_user_index")
+  @@map("poll_votes")
+}
+
+model lottery_participants {
+  topic_id   BigInt   @db.BigInt
+  user_id    BigInt   @db.BigInt
+  is_winner  Boolean  @default(false)
+  created_at DateTime @default(now())
+
+  topic topics @relation(fields: [topic_id], references: [id])
+  user  users  @relation("lottery_participants_user", fields: [user_id], references: [id])
+
+  @@id([topic_id, user_id])
+  @@index([topic_id], map: "lottery_participants_topic_index")
+  @@index([user_id], map: "lottery_participants_user_index")
+  @@index([is_winner], map: "lottery_participants_winner_index")
+  @@map("lottery_participants")
+}
+
+model lottery_configs {
+  topic_id     BigInt   @id @db.BigInt
+  end_time     DateTime
+  rules        String   @db.VarChar(500)
+  winner_count Int
+  min_credits  Int?
+  is_drawn     Boolean  @default(false)
+  created_at   DateTime @default(now())
+  updated_at   DateTime @updatedAt
+
+  topic topics @relation(fields: [topic_id], references: [id])
+
+  @@index([end_time], map: "lottery_configs_endtime_index")
+  @@index([is_drawn], map: "lottery_configs_drawn_index")
+  @@map("lottery_configs")
 }

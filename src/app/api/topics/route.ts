@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma"
 import { z } from "zod"
 import { getSessionUser } from "@/lib/auth"
 import { generateId } from "@/lib/id"
+import { TopicType } from "@/types/topic-type"
 
 interface TopicsDelegate {
   create(args: unknown): Promise<{ id: bigint }>
@@ -16,10 +17,24 @@ interface TopicTagsDelegate {
   createMany(args: unknown): Promise<{ count: number }>
 }
 
+interface PollOptionsDelegate {
+  createMany(args: unknown): Promise<{ count: number }>
+}
+
+interface LotteryConfigsDelegate {
+  create(args: unknown): Promise<{ topic_id: bigint }>
+}
+
 interface TxClient {
   topics: TopicsDelegate
   posts: PostsDelegate
   topic_tags: TopicTagsDelegate
+  poll_options: PollOptionsDelegate
+  lottery_configs: LotteryConfigsDelegate
+  users: {
+    findUnique(args: unknown): Promise<{ credits: number } | null>
+    update(args: unknown): Promise<unknown>
+  }
 }
 
 const TopicListQuery = z.object({
@@ -265,7 +280,8 @@ export async function GET(req: Request) {
   }
   return NextResponse.json(result)
 }
-const TopicCreateSchema = z.object({
+// 基础 Schema
+const BaseTopicCreateSchema = z.object({
   title: z.string().min(1).max(256),
   categoryId: z.string().regex(/^\d+$/),
   content: z.string().min(1),
@@ -273,6 +289,49 @@ const TopicCreateSchema = z.object({
   isPinned: z.boolean().optional(),
   isCommunity: z.boolean().optional(),
 })
+
+// 不同类型的 Schema
+const GeneralTopicCreateSchema = BaseTopicCreateSchema.extend({
+  type: z.literal(TopicType.GENERAL),
+})
+
+const QuestionTopicCreateSchema = BaseTopicCreateSchema.extend({
+  type: z.literal(TopicType.QUESTION),
+})
+
+const BountyTopicCreateSchema = BaseTopicCreateSchema.extend({
+  type: z.literal(TopicType.BOUNTY),
+  rewardPoints: z.number().int().positive(),
+})
+
+const PollTopicCreateSchema = BaseTopicCreateSchema.extend({
+  type: z.literal(TopicType.POLL),
+  pollOptions: z
+    .array(z.object({ text: z.string().min(1).max(256) }))
+    .min(2)
+    .max(10),
+})
+
+const LotteryTopicCreateSchema = BaseTopicCreateSchema.extend({
+  type: z.literal(TopicType.LOTTERY),
+  lotteryEndTime: z.string(),
+  lotteryRules: z.string().min(10).max(500),
+  winnerCount: z.number().int().positive().max(100),
+  minCredits: z.number().int().nonnegative().optional().nullable(),
+})
+
+const TutorialTopicCreateSchema = BaseTopicCreateSchema.extend({
+  type: z.literal(TopicType.TUTORIAL),
+})
+
+const TopicCreateSchema = z.discriminatedUnion("type", [
+  GeneralTopicCreateSchema,
+  QuestionTopicCreateSchema,
+  BountyTopicCreateSchema,
+  PollTopicCreateSchema,
+  LotteryTopicCreateSchema,
+  TutorialTopicCreateSchema,
+])
 
 type TopicCreateDTO = z.infer<typeof TopicCreateSchema>
 
@@ -342,12 +401,27 @@ export async function POST(req: Request) {
 
   const result = await prisma.$transaction(async (tx: unknown) => {
     const client = tx as TxClient
+
+    // BOUNTY 类型需要验证积分
+    if (body.type === TopicType.BOUNTY) {
+      const user = await client.users.findUnique({
+        where: { id: auth.userId },
+        select: { credits: true },
+      })
+      if (!user || user.credits < body.rewardPoints) {
+        throw new Error("Insufficient credits")
+      }
+    }
+
     const topic = await client.topics.create({
       data: {
         id: generateId(),
         category_id: categoryId,
         user_id: auth.userId,
         title: body.title,
+        type: body.type,
+        reward_points:
+          body.type === TopicType.BOUNTY ? body.rewardPoints : null,
         is_pinned: isPinned,
         is_community: isCommunity,
         is_deleted: false,
@@ -377,6 +451,36 @@ export async function POST(req: Request) {
           created_at: new Date(),
         })),
         skipDuplicates: true,
+      })
+    }
+
+    // POLL 类型创建投票选项
+    if (body.type === TopicType.POLL && body.pollOptions) {
+      await client.poll_options.createMany({
+        data: body.pollOptions.map((option, index) => ({
+          id: generateId(),
+          topic_id: topic.id,
+          option_text: option.text,
+          sort: index,
+          is_deleted: false,
+          created_at: new Date(),
+        })),
+      })
+    }
+
+    // LOTTERY 类型创建抽奖配置
+    if (body.type === TopicType.LOTTERY) {
+      await client.lottery_configs.create({
+        data: {
+          topic_id: topic.id,
+          end_time: new Date(body.lotteryEndTime),
+          rules: body.lotteryRules,
+          winner_count: body.winnerCount,
+          min_credits: body.minCredits ?? null,
+          is_drawn: false,
+          created_at: new Date(),
+          updated_at: new Date(),
+        },
       })
     }
 

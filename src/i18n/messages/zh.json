@@ -175,7 +175,86 @@
       },
       "tags": {
         "maxCount": "最多5个标签"
+      },
+      "rewardPoints": {
+        "required": "请输入悬赏积分",
+        "positive": "悬赏积分必须大于0",
+        "exceedBalance": "悬赏积分不能超过您的可用积分"
+      },
+      "pollOptions": {
+        "min": "至少需要2个投票选项",
+        "max": "投票选项最多10个",
+        "optionMaxLength": "选项文本不能超过256个字符"
+      },
+      "lotteryEndTime": {
+        "required": "请选择开奖时间",
+        "future": "开奖时间必须晚于当前时间"
+      },
+      "lotteryRules": {
+        "min": "参与规则至少需要10个字符",
+        "max": "参与规则不能超过500个字符"
+      },
+      "winnerCount": {
+        "required": "请输入中奖人数",
+        "positive": "中奖人数必须大于0",
+        "max": "中奖人数必须为1-100的整数"
       }
+    },
+    "Type": {
+      "general": "普通讨论",
+      "question": "提问",
+      "bounty": "悬赏",
+      "poll": "投票",
+      "lottery": "抽奖",
+      "tutorial": "教程",
+      "description": {
+        "general": "发起自由讨论",
+        "question": "提出问题并等待最佳答案",
+        "bounty": "设置积分奖励寻求解决方案",
+        "poll": "创建投票收集意见",
+        "lottery": "设置抽奖活动",
+        "tutorial": "发布教程文档"
+      }
+    },
+    "Form": {
+      "rewardPoints": {
+        "label": "悬赏积分",
+        "placeholder": "输入悬赏积分数",
+        "info": "可用积分: {credits}"
+      },
+      "pollOptions": {
+        "label": "投票选项",
+        "placeholder": "请输入选项{index}",
+        "addOption": "添加选项",
+        "removeOption": "删除选项"
+      },
+      "lotteryEndTime": {
+        "label": "开奖时间",
+        "placeholder": "选择开奖时间"
+      },
+      "lotteryRules": {
+        "label": "参与规则",
+        "placeholder": "描述参与条件和中奖规则"
+      },
+      "winnerCount": {
+        "label": "中奖人数",
+        "placeholder": "输入中奖人数"
+      },
+      "minCredits": {
+        "label": "最低积分要求",
+        "placeholder": "输入参与所需最低积分(可选)",
+        "info": "0或留空表示无限制"
+      }
+    },
+    "Status": {
+      "answered": "已采纳",
+      "waiting": "等待采纳",
+      "drawn": "已开奖"
+    },
+    "Action": {
+      "vote": "投票",
+      "participate": "参与抽奖",
+      "acceptAnswer": "采纳为最佳答案"
     }
   },
   "Auth": {
