@@ -7,6 +7,7 @@ type TopicInfo = {
   id: string
   title: string
   type: string
+  isPinned: boolean
   category: {
     id: string
     name: string
@@ -44,6 +45,7 @@ export async function GET(
       id: true,
       title: true,
       type: true,
+      is_pinned: true,
       category: {
         select: {
           id: true,
@@ -82,6 +84,7 @@ export async function GET(
     id: String(topic.id),
     title: topic.title,
     type: topic.type || "GENERAL",
+    isPinned: topic.is_pinned,
     category: {
       id: String(topic.category.id),
       name: topic.category.name,

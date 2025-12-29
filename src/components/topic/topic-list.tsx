@@ -16,10 +16,9 @@ import { formatRelative } from "@/lib/time"
 import { Spinner } from "@/components/ui/spinner"
 import { useEffect, useRef, useState } from "react"
 import { useSearchParams } from "next/navigation"
-import { Pin } from "lucide-react"
 import { CategoryBadge } from "@/components/common/category-badge"
 import { TagBadge } from "@/components/common/tag-badge"
-import { TopicTypeBadge } from "@/components/common/topic-type-badge"
+import { TopicStatusTags } from "@/components/common/topic-status-tags"
 import { UserInfoCard } from "@/components/common/user-info-card"
 import { type TopicTypeValue } from "@/types/topic-type"
 
@@ -198,12 +197,17 @@ export function TopicList({
               >
                 <TableCell className="max-w-full max-sm:px-0">
                   <Link href={`/topic/${t.id}`}>
-                    <span className="max-w-full text-lg font-medium whitespace-normal wrap-break-word">
-                      {currentSort === "latest" && t.isPinned ? (
-                        <Pin className="mr-1 inline-block h-4 w-4 text-muted-foreground" />
-                      ) : null}
-                      {t.title}
-                    </span>
+                    <div className="flex items-center gap-1">
+                      {currentSort === "latest" && (
+                        <TopicStatusTags
+                          isPinned={t.isPinned}
+                          topicType={t.type as TopicTypeValue}
+                        />
+                      )}
+                      <span className="max-w-full text-lg font-medium whitespace-normal wrap-break-word">
+                        {t.title}
+                      </span>
+                    </div>
                   </Link>
                   <div className="flex max-w-full flex-wrap items-center gap-2 overflow-hidden mt-2">
                     <UserInfoCard
@@ -222,7 +226,6 @@ export function TopicList({
                         </AvatarFallback>
                       </Avatar>
                     </UserInfoCard>
-                    <TopicTypeBadge type={t.type as TopicTypeValue} />
                     <CategoryBadge
                       id={t.category.id}
                       icon={t.category.icon}

@@ -31,7 +31,7 @@ import {
 } from "@/types/topic"
 import { CategoryBadge } from "@/components/common/category-badge"
 import { TagBadge } from "@/components/common/tag-badge"
-import { TopicTypeBadge } from "@/components/common/topic-type-badge"
+import { TopicStatusTags } from "@/components/common/topic-status-tags"
 import { type TopicTypeValue } from "@/types/topic-type"
 
 export default function TopicPage() {
@@ -523,14 +523,21 @@ export default function TopicPage() {
         ) : (
           <>
             <Link href={`/topic/${topic.id}`}>
-              <span className="cursor-pointer max-w-full text-2xl font-medium whitespace-normal wrap-break-word">
-                {topic.title}
-              </span>
+              <div className="flex items-center gap-1">
+                {topicInfo && (
+                  <TopicStatusTags
+                    isPinned={topicInfo.isPinned}
+                    topicType={topicInfo.type as TopicTypeValue}
+                  />
+                )}
+                <span className="cursor-pointer max-w-full text-2xl font-medium whitespace-normal wrap-break-word">
+                  {topic.title}
+                </span>
+              </div>
             </Link>
             <div className="flex max-w-full flex-wrap gap-2 overflow-hidden">
               {topicInfo?.category ? (
                 <>
-                  <TopicTypeBadge type={topicInfo.type as TopicTypeValue} />
                   <CategoryBadge
                     id={topicInfo.category.id}
                     icon={topicInfo.category.icon}

@@ -56,6 +56,7 @@ export type TopicInfo = {
   id: string
   title: string
   type: string
+  isPinned: boolean
   category: {
     id: string
     name: string
