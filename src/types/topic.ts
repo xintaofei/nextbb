@@ -55,6 +55,7 @@ export type RelatedTopicItem = {
 export type TopicInfo = {
   id: string
   title: string
+  type: string
   category: {
     id: string
     name: string

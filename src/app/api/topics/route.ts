@@ -54,6 +54,7 @@ type TopicParticipant = {
 type TopicListItem = {
   id: string
   title: string
+  type: string
   category: {
     id: string
     name: string
@@ -121,7 +122,13 @@ export async function GET(req: Request) {
   })
   const topics = await prisma.topics.findMany({
     where,
-    include: {
+    select: {
+      id: true,
+      title: true,
+      type: true,
+      views: true,
+      is_pinned: true,
+      is_community: true,
       category: {
         select: {
           id: true,
@@ -157,6 +164,7 @@ export async function GET(req: Request) {
   type TopicRow = {
     id: bigint
     title: string
+    type: string
     views: number
     is_pinned: boolean
     is_community: boolean
@@ -245,6 +253,7 @@ export async function GET(req: Request) {
     return {
       id: String(t.id),
       title: t.title,
+      type: t.type || "GENERAL",
       category: {
         id: String(t.category.id),
         name: t.category.name,

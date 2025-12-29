@@ -6,6 +6,7 @@ import { getSessionUser } from "@/lib/auth"
 type TopicInfo = {
   id: string
   title: string
+  type: string
   category: {
     id: string
     name: string
@@ -42,6 +43,7 @@ export async function GET(
     select: {
       id: true,
       title: true,
+      type: true,
       category: {
         select: {
           id: true,
@@ -79,6 +81,7 @@ export async function GET(
   const result: TopicInfo = {
     id: String(topic.id),
     title: topic.title,
+    type: topic.type || "GENERAL",
     category: {
       id: String(topic.category.id),
       name: topic.category.name,

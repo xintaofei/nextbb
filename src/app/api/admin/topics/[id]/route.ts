@@ -5,6 +5,7 @@ import { getSessionUser } from "@/lib/auth"
 type TopicDetail = {
   id: string
   title: string
+  type: string
   author: {
     id: string
     name: string
@@ -77,6 +78,7 @@ export async function GET(
       select: {
         id: true,
         title: true,
+        type: true,
         views: true,
         is_pinned: true,
         is_community: true,
@@ -146,6 +148,7 @@ export async function GET(
     const result: TopicDetail = {
       id: String(topic.id),
       title: topic.title,
+      type: topic.type || "GENERAL",
       author: {
         id: String(topic.user.id),
         name: topic.user.name,

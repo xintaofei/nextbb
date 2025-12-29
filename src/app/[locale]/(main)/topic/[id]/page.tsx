@@ -31,6 +31,8 @@ import {
 } from "@/types/topic"
 import { CategoryBadge } from "@/components/common/category-badge"
 import { TagBadge } from "@/components/common/tag-badge"
+import { TopicTypeBadge } from "@/components/common/topic-type-badge"
+import { type TopicTypeValue } from "@/types/topic-type"
 
 export default function TopicPage() {
   const { id } = useParams<{ id: string }>()
@@ -527,14 +529,17 @@ export default function TopicPage() {
             </Link>
             <div className="flex max-w-full flex-wrap gap-2 overflow-hidden">
               {topicInfo?.category ? (
-                <CategoryBadge
-                  id={topicInfo.category.id}
-                  icon={topicInfo.category.icon}
-                  name={topicInfo.category.name}
-                  description={topicInfo.category.description}
-                  bgColor={topicInfo.category.bgColor}
-                  textColor={topicInfo.category.textColor}
-                />
+                <>
+                  <TopicTypeBadge type={topicInfo.type as TopicTypeValue} />
+                  <CategoryBadge
+                    id={topicInfo.category.id}
+                    icon={topicInfo.category.icon}
+                    name={topicInfo.category.name}
+                    description={topicInfo.category.description}
+                    bgColor={topicInfo.category.bgColor}
+                    textColor={topicInfo.category.textColor}
+                  />
+                </>
               ) : null}
               {(topicInfo?.tags ?? []).map((tag) => (
                 <TagBadge

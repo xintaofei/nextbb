@@ -19,7 +19,9 @@ import { useSearchParams } from "next/navigation"
 import { Pin } from "lucide-react"
 import { CategoryBadge } from "@/components/common/category-badge"
 import { TagBadge } from "@/components/common/tag-badge"
+import { TopicTypeBadge } from "@/components/common/topic-type-badge"
 import { UserInfoCard } from "@/components/common/user-info-card"
+import { type TopicTypeValue } from "@/types/topic-type"
 
 export type TopicParticipant = {
   id: string
@@ -48,6 +50,7 @@ export type TopicTag = {
 export type TopicListItem = {
   id: string
   title: string
+  type: string
   category: TopicCategory
   tags: TopicTag[]
   participants: TopicParticipant[]
@@ -219,6 +222,7 @@ export function TopicList({
                         </AvatarFallback>
                       </Avatar>
                     </UserInfoCard>
+                    <TopicTypeBadge type={t.type as TopicTypeValue} />
                     <CategoryBadge
                       id={t.category.id}
                       icon={t.category.icon}

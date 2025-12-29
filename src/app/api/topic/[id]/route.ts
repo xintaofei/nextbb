@@ -23,6 +23,7 @@ type PostItem = {
 type RelatedTopicItem = {
   id: string
   title: string
+  type: string
   category: { id: string; name: string; icon?: string }
   tags: { id: string; name: string; icon: string }[]
   replies: number
@@ -34,6 +35,7 @@ type TopicDetailResult = {
   topic: {
     id: string
     title: string
+    type: string
     category: { id: string; name: string; icon?: string }
     tags: { id: string; name: string; icon: string }[]
   }
@@ -59,6 +61,7 @@ export async function GET(
     select: {
       id: true,
       title: true,
+      type: true,
       category: { select: { id: true, name: true, icon: true } },
       tag_links: {
         select: {
@@ -143,6 +146,7 @@ export async function GET(
     select: {
       id: true,
       title: true,
+      type: true,
       category: { select: { id: true, name: true, icon: true } },
       tag_links: {
         select: {
@@ -157,6 +161,7 @@ export async function GET(
     (t: {
       id: bigint
       title: string
+      type: string
       category: { id: bigint; name: string; icon: string | null }
       tag_links: { tag: { id: bigint; name: string; icon: string } }[]
     }) => t.id
@@ -190,6 +195,7 @@ export async function GET(
       (t: {
         id: bigint
         title: string
+        type: string
         category: { id: bigint; name: string; icon: string | null }
         tag_links: { tag: { id: bigint; name: string; icon: string } }[]
       }) => {
@@ -197,6 +203,7 @@ export async function GET(
         return {
           id: String(t.id),
           title: t.title,
+          type: t.type || "GENERAL",
           category: {
             id: String(t.category.id),
             name: t.category.name,
@@ -221,6 +228,7 @@ export async function GET(
     topic: {
       id: String(topic.id),
       title: topic.title,
+      type: topic.type || "GENERAL",
       category: {
         id: String(topic.category.id),
         name: topic.category.name,

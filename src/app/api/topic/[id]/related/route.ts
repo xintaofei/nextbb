@@ -5,6 +5,7 @@ import { Prisma } from "@prisma/client"
 type RelatedTopicItem = {
   id: string
   title: string
+  type: string
   category: {
     id: string
     name: string
@@ -53,6 +54,7 @@ export async function GET(
     select: {
       id: true,
       title: true,
+      type: true,
       category: {
         select: {
           id: true,
@@ -113,6 +115,7 @@ export async function GET(
       return {
         id: String(t.id),
         title: t.title,
+        type: t.type || "GENERAL",
         category: {
           id: String(t.category.id),
           name: t.category.name,
