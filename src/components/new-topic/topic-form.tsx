@@ -1,6 +1,6 @@
 "use client"
 
-import { useForm } from "react-hook-form"
+import { useForm, useWatch } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { z } from "zod"
 import { useState } from "react"
@@ -97,9 +97,10 @@ export function TopicForm({
     } as FormValues,
   })
 
-  const watchedValues = form.watch()
-  const titleCount = watchedValues.title?.length || 0
-  const contentCount = watchedValues.content?.length || 0
+  const titleValue = useWatch({ control: form.control, name: "title" })
+  const contentValue = useWatch({ control: form.control, name: "content" })
+  const titleCount = titleValue?.length || 0
+  const contentCount = contentValue?.length || 0
 
   const handleTypeChange = (type: string) => {
     const typeValue = type as TopicTypeValue
