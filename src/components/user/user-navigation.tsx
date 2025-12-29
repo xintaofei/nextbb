@@ -80,7 +80,7 @@ export function UserNavigation({
                 key={item.href}
                 href={item.href}
                 className={cn(
-                  "flex items-center gap-2 px-4 py-3 text-sm font-medium transition-colors whitespace-nowrap",
+                  "flex items-center gap-2 p-4 text-sm font-medium transition-colors whitespace-nowrap",
                   "border-b-2 border-transparent hover:text-foreground",
                   isActive
                     ? "border-primary text-foreground"
