@@ -144,6 +144,20 @@ export function UserInfoCard({
         isFollowing: data.isFollowing,
       })
 
+      // 更新统计数据缓存，粉丝数量立即+1或-1
+      if (statisticsData) {
+        mutate(
+          `/api/users/${userId}/statistics`,
+          {
+            ...statisticsData,
+            followersCount: data.isFollowing
+              ? statisticsData.followersCount + 1
+              : statisticsData.followersCount - 1,
+          },
+          false
+        )
+      }
+
       toast.success(
         data.isFollowing ? t("followSuccess") : t("unfollowSuccess")
       )
