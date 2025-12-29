@@ -182,30 +182,48 @@ export function TopicForm({
       >
         {/* 类型选择 Tabs */}
         <Tabs value={selectedType} onValueChange={handleTypeChange}>
-          <TabsList className="grid w-full grid-cols-3 lg:grid-cols-6">
-            <TabsTrigger value={TopicType.GENERAL} className="gap-1">
+          <TabsList className="grid w-full grid-cols-3 gap-2 h-auto">
+            <TabsTrigger
+              value={TopicType.GENERAL}
+              className="gap-1 text-xs sm:text-sm"
+            >
               {getTypeIcon(TopicType.GENERAL)}
-              <span className="max-sm:hidden">{tt("general")}</span>
+              <span>{tt("general")}</span>
             </TabsTrigger>
-            <TabsTrigger value={TopicType.QUESTION} className="gap-1">
+            <TabsTrigger
+              value={TopicType.QUESTION}
+              className="gap-1 text-xs sm:text-sm"
+            >
               {getTypeIcon(TopicType.QUESTION)}
-              <span className="max-sm:hidden">{tt("question")}</span>
+              <span>{tt("question")}</span>
             </TabsTrigger>
-            <TabsTrigger value={TopicType.BOUNTY} className="gap-1">
+            <TabsTrigger
+              value={TopicType.BOUNTY}
+              className="gap-1 text-xs sm:text-sm"
+            >
               {getTypeIcon(TopicType.BOUNTY)}
-              <span className="max-sm:hidden">{tt("bounty")}</span>
+              <span>{tt("bounty")}</span>
             </TabsTrigger>
-            <TabsTrigger value={TopicType.POLL} className="gap-1">
+            <TabsTrigger
+              value={TopicType.POLL}
+              className="gap-1 text-xs sm:text-sm"
+            >
               {getTypeIcon(TopicType.POLL)}
-              <span className="max-sm:hidden">{tt("poll")}</span>
+              <span>{tt("poll")}</span>
             </TabsTrigger>
-            <TabsTrigger value={TopicType.LOTTERY} className="gap-1">
+            <TabsTrigger
+              value={TopicType.LOTTERY}
+              className="gap-1 text-xs sm:text-sm"
+            >
               {getTypeIcon(TopicType.LOTTERY)}
-              <span className="max-sm:hidden">{tt("lottery")}</span>
+              <span>{tt("lottery")}</span>
             </TabsTrigger>
-            <TabsTrigger value={TopicType.TUTORIAL} className="gap-1">
+            <TabsTrigger
+              value={TopicType.TUTORIAL}
+              className="gap-1 text-xs sm:text-sm"
+            >
               {getTypeIcon(TopicType.TUTORIAL)}
-              <span className="max-sm:hidden">{tt("tutorial")}</span>
+              <span>{tt("tutorial")}</span>
             </TabsTrigger>
           </TabsList>
 
