@@ -769,7 +769,8 @@
         "posts": "Posts",
         "likes": "Likes",
         "bookmarks": "Bookmarks",
-        "badges": "Badges"
+        "badges": "Badges",
+        "credits": "Credits"
       },
       "actions": {
         "edit": "Edit Profile",
@@ -828,7 +829,8 @@
       "topics": "Topics",
       "posts": "Posts",
       "likes": "Likes",
-      "followers": "Followers"
+      "followers": "Followers",
+      "credits": "Credits"
     },
     "loading": "Loading...",
     "loadingStats": "Loading statistics...",

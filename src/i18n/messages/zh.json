@@ -911,7 +911,8 @@
         "posts": "回复",
         "likes": "点赞",
         "bookmarks": "收藏",
-        "badges": "徽章"
+        "badges": "徽章",
+        "credits": "积分"
       },
       "actions": {
         "edit": "编辑资料",
@@ -970,7 +971,8 @@
       "topics": "主题",
       "posts": "回复",
       "likes": "点赞",
-      "followers": "粉丝"
+      "followers": "粉丝",
+      "credits": "积分"
     },
     "loading": "加载中...",
     "loadingStats": "加载统计中...",

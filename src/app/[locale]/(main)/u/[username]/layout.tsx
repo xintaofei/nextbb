@@ -32,6 +32,7 @@ export default async function UserProfileLayout({
       status: true,
       is_admin: true,
       created_at: true,
+      credits: true,
     },
   })
 
@@ -91,6 +92,7 @@ export default async function UserProfileLayout({
           likesReceived,
           bookmarksCount,
           badgesCount,
+          credits: user.credits,
         }}
         isOwnProfile={isOwnProfile}
         isAdmin={isAdmin}

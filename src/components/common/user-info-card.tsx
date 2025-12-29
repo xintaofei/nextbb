@@ -45,6 +45,7 @@ type UserStatistics = {
   postsCount: number
   likesReceived: number
   followersCount: number
+  credits: number
   joinedAt: string
 }
 
@@ -256,9 +257,13 @@ export function UserInfoCard({
 
           {/* 统计数据区域 */}
           {showStatistics && (
-            <div className="grid grid-cols-4 gap-2 py-2 border-y">
+            <div className="grid grid-cols-5 gap-2 py-2 border-y">
               {statisticsLoading ? (
                 <>
+                  <div className="text-center">
+                    <Skeleton className="h-5 w-8 mx-auto mb-1" />
+                    <Skeleton className="h-3 w-12 mx-auto" />
+                  </div>
                   <div className="text-center">
                     <Skeleton className="h-5 w-8 mx-auto mb-1" />
                     <Skeleton className="h-3 w-12 mx-auto" />
@@ -308,6 +313,14 @@ export function UserInfoCard({
                     </div>
                     <div className="text-xs text-muted-foreground">
                       {t("statistics.followers")}
+                    </div>
+                  </div>
+                  <div className="text-center">
+                    <div className="text-base font-semibold">
+                      {statisticsData.credits}
+                    </div>
+                    <div className="text-xs text-muted-foreground">
+                      {t("statistics.credits")}
                     </div>
                   </div>
                 </>

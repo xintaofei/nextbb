@@ -43,6 +43,7 @@ export async function GET(_req: Request, props: { params: Params }) {
             id: true,
             is_deleted: true,
             created_at: true,
+            credits: true,
           },
         }),
       ])
@@ -57,6 +58,7 @@ export async function GET(_req: Request, props: { params: Params }) {
       postsCount,
       likesReceived,
       followersCount,
+      credits: user.credits,
       joinedAt: user.created_at.toISOString(),
     })
   } catch (error) {
