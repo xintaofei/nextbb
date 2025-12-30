@@ -34,6 +34,7 @@ import { TagBadge } from "@/components/common/tag-badge"
 import { TopicStatusTags } from "@/components/common/topic-status-tags"
 import { PollDisplay } from "@/components/topic/poll-display"
 import { BountyDisplay } from "@/components/topic/bounty-display"
+import { QuestionAcceptanceDisplay } from "@/components/topic/question-acceptance-display"
 import { type TopicTypeValue, TopicType, BountyType } from "@/types/topic-type"
 import { ReactNode } from "react"
 
@@ -42,6 +43,7 @@ export default function TopicPage() {
   const tc = useTranslations("Common")
   const t = useTranslations("Topic")
   const tb = useTranslations("Topic.Bounty")
+  const tq = useTranslations("Topic.Question")
   const te = useTranslations("Error")
 
   const fetcherInfo = async (url: string): Promise<TopicInfoResult> => {
@@ -344,6 +346,27 @@ export default function TopicPage() {
     return (await res.json()) as RewardResult
   })
 
+  type AcceptArg = { postId: string | null }
+  type AcceptResult = {
+    success: boolean
+    isSettled: boolean
+    acceptedPostId: string | null
+  }
+  const { trigger: triggerAccept, isMutating: acceptMutating } = useSWRMutation<
+    AcceptResult,
+    Error,
+    string,
+    AcceptArg
+  >(`/mutations/question-accept-${id}`, async (_key, { arg }) => {
+    const res = await fetch(`/api/topic/${id}/accept`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ postId: arg.postId }),
+    })
+    if (!res.ok) throw new Error(String(res.status))
+    return (await res.json()) as AcceptResult
+  })
+
   useEffect(() => {
     let mounted = true
     const run = async () => {
@@ -593,6 +616,29 @@ export default function TopicPage() {
     }
   }
 
+  const onAccept = async (postId: string, isAccepted: boolean) => {
+    try {
+      setMutatingPostId(postId)
+      const result = await triggerAccept({
+        postId: isAccepted ? null : postId,
+      })
+      await mutatePosts((pages) => pages, true)
+      toast.success(
+        isAccepted ? tq("messages.cancelSuccess") : tq("messages.acceptSuccess")
+      )
+    } catch (e) {
+      const status = Number((e as Error).message)
+      if (status === 401) toast.error(tc("Error.unauthorized"))
+      else if (status === 403) toast.error(tc("Error.forbidden"))
+      else
+        toast.error(
+          isAccepted ? tq("messages.cancelError") : tq("messages.acceptError")
+        )
+    } finally {
+      setMutatingPostId(null)
+    }
+  }
+
   useEffect(() => {
     const sentinel = sentinelRef.current
     if (!sentinel) return
@@ -627,6 +673,13 @@ export default function TopicPage() {
       case TopicType.BOUNTY:
         return (
           <BountyDisplay
+            topicId={id}
+            topicIsSettled={topicInfo.isSettled || false}
+          />
+        )
+      case TopicType.QUESTION:
+        return (
+          <QuestionAcceptanceDisplay
             topicId={id}
             topicIsSettled={topicInfo.isSettled || false}
           />
@@ -708,7 +761,11 @@ export default function TopicPage() {
             <TimelineSteps>
               {posts.map((post, index) => {
                 const isBountyTopic = topicInfo?.type === TopicType.BOUNTY
-                const isTopicOwner = currentUserId && topicInfo?.id === topic.id
+                const isQuestionTopic = topicInfo?.type === TopicType.QUESTION
+                // 通过第一个帖子的作者判断是否为主题作者
+                const topicAuthorId = posts[0]?.author.id
+                const isTopicOwner =
+                  currentUserId && topicAuthorId === currentUserId
                 const showBountyButton = Boolean(
                   isBountyTopic &&
                   isTopicOwner &&
@@ -722,6 +779,13 @@ export default function TopicPage() {
                     ? bountyConfig.bountyTotal
                     : bountyConfig?.singleAmount
                   : undefined
+                const showAcceptButton = Boolean(
+                  isQuestionTopic &&
+                  isTopicOwner &&
+                  index !== 0 &&
+                  post.author.id !== currentUserId &&
+                  !post.isDeleted
+                )
 
                 return (
                   <TopicPostItem
@@ -749,6 +813,9 @@ export default function TopicPage() {
                     onReward={onReward}
                     rewardMutating={rewardMutating}
                     bountyAmount={bountyAmount ?? undefined}
+                    showAcceptButton={showAcceptButton}
+                    onAccept={onAccept}
+                    acceptMutating={acceptMutating}
                   />
                 )
               })}

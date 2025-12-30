@@ -9,7 +9,16 @@ import {
 } from "@/components/ui/timeline-steps"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
-import { Bookmark, Heart, Reply, Pencil, Trash, Coins } from "lucide-react"
+import {
+  Bookmark,
+  Heart,
+  Reply,
+  Pencil,
+  Trash,
+  Coins,
+  Check,
+  X,
+} from "lucide-react"
 import { formatRelative } from "@/lib/time"
 import { PostItem } from "@/types/topic"
 import { UserBadgesDisplay } from "@/components/common/user-badges-display"
@@ -43,6 +52,9 @@ export function TopicPostItem({
   onReward,
   rewardMutating = false,
   bountyAmount,
+  showAcceptButton = false,
+  onAccept,
+  acceptMutating = false,
 }: {
   post: PostItem
   index: number
@@ -71,6 +83,9 @@ export function TopicPostItem({
   ) => void | Promise<void>
   rewardMutating?: boolean
   bountyAmount?: number
+  showAcceptButton?: boolean
+  onAccept?: (postId: string, isAccepted: boolean) => void | Promise<void>
+  acceptMutating?: boolean
 }) {
   const isMobile = useIsMobile()
 
@@ -114,6 +129,15 @@ export function TopicPostItem({
                 className="bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400 flex items-center gap-1"
               >
                 <Coins className="h-3 w-3" />+{post.bountyReward.amount}
+              </Badge>
+            )}
+            {post.questionAcceptance && (
+              <Badge
+                variant="secondary"
+                className="bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 flex items-center gap-1"
+              >
+                <Check className="h-3 w-3" />
+                最佳答案
               </Badge>
             )}
           </div>
@@ -206,6 +230,30 @@ export function TopicPostItem({
                     给赏 ({bountyAmount})
                   </Button>
                 )}
+              {showAcceptButton && onAccept && (
+                <Button
+                  variant={post.questionAcceptance ? "default" : "outline"}
+                  className={
+                    post.questionAcceptance
+                      ? "bg-green-600 hover:bg-green-700 dark:bg-green-700 dark:hover:bg-green-800 text-white"
+                      : "border-green-200 hover:bg-green-50 dark:border-green-900/50 dark:hover:bg-green-950/20 text-green-700 dark:text-green-400"
+                  }
+                  onClick={() => onAccept(post.id, !!post.questionAcceptance)}
+                  disabled={mutatingPostId === post.id || acceptMutating}
+                >
+                  {post.questionAcceptance ? (
+                    <>
+                      <X className="h-4 w-4" />
+                      取消采纳
+                    </>
+                  ) : (
+                    <>
+                      <Check className="h-4 w-4" />
+                      采纳
+                    </>
+                  )}
+                </Button>
+              )}
               <div className="flex gap-5 h-5">
                 <Separator orientation="vertical" />
                 <div className="flex flex-row gap-1 items-center text-muted-foreground">
