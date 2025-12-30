@@ -62,7 +62,12 @@
       "save": "保存",
       "success": "操作成功",
       "goBack": "返回上一页"
-    }
+    },
+    "credits": "积分",
+    "floor": "楼层",
+    "winners": "中奖名单",
+    "notWon": "未中奖",
+    "noWinners": "暂无中奖者"
   },
   "Error": {
     "unauthorized": "请先登录",
@@ -342,6 +347,63 @@
         "label": "最低积分要求",
         "placeholder": "输入参与所需最低积分(可选)",
         "info": "0或留空表示无限制"
+      }
+    },
+    "Lottery": {
+      "drawType": {
+        "label": "开奖类型",
+        "scheduled": "定时开奖",
+        "threshold": "满人开奖",
+        "instant": "即抽即中"
+      },
+      "algorithmType": {
+        "label": "抽奖算法",
+        "interval": "间隔楼层",
+        "random": "随机楼层",
+        "fixed": "指定楼层"
+      },
+      "endTime": {
+        "label": "开奖时间",
+        "info": "请选择未来的时间"
+      },
+      "participantThreshold": {
+        "label": "参与人数阈值",
+        "placeholder": "例如：100",
+        "info": "达到此回复数时自动开奖"
+      },
+      "floorInterval": {
+        "label": "楼层间隔",
+        "placeholder": "例如：10（每 10 楼中奖一次）",
+        "info": "每隔多少楼层中奖一次"
+      },
+      "winnerCount": {
+        "label": "中奖人数",
+        "placeholder": "例如：5",
+        "info": "随机抽取的中奖人数（1-100）"
+      },
+      "fixedFloors": {
+        "label": "指定中奖楼层",
+        "placeholder": "例如：8, 88, 188（多个楼层用逗号分隔）",
+        "info": "指定哪些楼层中奖"
+      },
+      "entryCost": {
+        "label": "参与门槛（积分）",
+        "placeholder": "0 表示免费参与",
+        "info": "用户参与时将扣除相应积分"
+      },
+      "status": {
+        "pending": "等待开奖",
+        "drawn": "已开奖",
+        "progress": "{current} / {threshold} 条回复"
+      },
+      "error": {
+        "alreadyWon": "您已中奖，无法再次中奖",
+        "insufficientCredits": "积分不足，需要 {required} 积分",
+        "lotteryEnded": "抽奖已结束"
+      },
+      "success": {
+        "won": "恭喜中奖！",
+        "participated": "参与成功，等待开奖"
       }
     },
     "Status": {

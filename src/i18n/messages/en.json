@@ -62,7 +62,12 @@
       "save": "Save",
       "success": "Success",
       "goBack": "Go Back"
-    }
+    },
+    "credits": "credits",
+    "floor": "Floor",
+    "winners": "Winners",
+    "notWon": "Not won",
+    "noWinners": "No winners yet"
   },
   "Error": {
     "unauthorized": "Unauthorized",
@@ -342,6 +347,63 @@
         "label": "Minimum Credits",
         "placeholder": "Enter minimum credits required (optional)",
         "info": "0 or empty means no restriction"
+      }
+    },
+    "Lottery": {
+      "drawType": {
+        "label": "Draw Type",
+        "scheduled": "Scheduled Draw",
+        "threshold": "Threshold Draw",
+        "instant": "Instant Win"
+      },
+      "algorithmType": {
+        "label": "Lottery Algorithm",
+        "interval": "Interval Floors",
+        "random": "Random Floors",
+        "fixed": "Fixed Floors"
+      },
+      "endTime": {
+        "label": "Draw Time",
+        "info": "Please select a future time"
+      },
+      "participantThreshold": {
+        "label": "Participant Threshold",
+        "placeholder": "e.g., 100",
+        "info": "Auto-draw when reply count reaches this number"
+      },
+      "floorInterval": {
+        "label": "Floor Interval",
+        "placeholder": "e.g., 10 (win every 10 floors)",
+        "info": "Win every N floors"
+      },
+      "winnerCount": {
+        "label": "Winner Count",
+        "placeholder": "e.g., 5",
+        "info": "Number of winners to randomly select (1-100)"
+      },
+      "fixedFloors": {
+        "label": "Fixed Winner Floors",
+        "placeholder": "e.g., 8, 88, 188 (comma-separated)",
+        "info": "Specify which floors win"
+      },
+      "entryCost": {
+        "label": "Entry Cost (Credits)",
+        "placeholder": "0 means free entry",
+        "info": "Credits deducted when users participate"
+      },
+      "status": {
+        "pending": "Pending Draw",
+        "drawn": "Drawn",
+        "progress": "{current} / {threshold} replies"
+      },
+      "error": {
+        "alreadyWon": "You have already won, cannot win again",
+        "insufficientCredits": "Insufficient credits, need {required} credits",
+        "lotteryEnded": "Lottery has ended"
+      },
+      "success": {
+        "won": "Congratulations! You won!",
+        "participated": "Participated successfully, waiting for draw"
       }
     },
     "Status": {

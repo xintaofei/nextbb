@@ -33,6 +33,7 @@ model users {
   messages messages[] @relation("messages_sender")
   poll_votes poll_votes[] @relation("poll_votes_user")
   lottery_participants lottery_participants[] @relation("lottery_participants_user")
+  lottery_winners lottery_winners[] @relation("lottery_winners_user")
   bounty_rewards_given bounty_rewards[] @relation("bounty_rewards_giver")
   bounty_rewards_received bounty_rewards[] @relation("bounty_rewards_receiver")
   question_acceptances question_acceptances[] @relation("question_acceptances_accepter")
@@ -100,6 +101,7 @@ model topics {
   poll_config poll_configs?
   lottery_config lottery_configs?
   lottery_participants lottery_participants[]
+  lottery_winners lottery_winners[]
   bounty_config bounty_configs?
   bounty_rewards bounty_rewards[]
   question_acceptance question_acceptances?
@@ -130,6 +132,7 @@ model posts {
   likes post_likes[] @relation("post_likes_post")
   bookmarks post_bookmarks[] @relation("post_bookmarks_post")
   bounty_rewards bounty_rewards[]
+  lottery_winners lottery_winners[]
   question_acceptance question_acceptances?
 
   @@index([topic_id], map: "posts_topic_index")
@@ -350,20 +353,48 @@ model poll_configs {
 }
 
 model lottery_configs {
-  topic_id     BigInt   @id @db.BigInt
-  end_time     DateTime
-  rules        String   @db.VarChar(500)
-  winner_count Int
-  min_credits  Int?
-  is_drawn     Boolean  @default(false)
-  created_at   DateTime @default(now())
-  updated_at   DateTime @updatedAt
+  topic_id              BigInt    @id @db.BigInt
+  draw_type             String    @db.VarChar(32)
+  end_time              DateTime?
+  participant_threshold Int?
+  algorithm_type        String    @db.VarChar(32)
+  floor_interval        Int?
+  fixed_floors          String?   @db.VarChar(500)
+  winner_count          Int?
+  entry_cost            Int       @default(0)
+  is_drawn              Boolean   @default(false)
+  drawn_at              DateTime?
+  created_at            DateTime  @default(now())
+  updated_at            DateTime  @updatedAt
 
   topic topics @relation(fields: [topic_id], references: [id])
 
-  @@index([end_time], map: "lottery_configs_endtime_index")
+  @@index([draw_type], map: "lottery_configs_drawtype_index")
   @@index([is_drawn], map: "lottery_configs_drawn_index")
+  @@index([end_time], map: "lottery_configs_endtime_index")
+  @@index([draw_type, is_drawn], map: "lottery_configs_type_drawn_index")
   @@map("lottery_configs")
+}
+
+model lottery_winners {
+  id           BigInt   @id @db.BigInt
+  topic_id     BigInt   @db.BigInt
+  post_id      BigInt   @db.BigInt
+  user_id      BigInt   @db.BigInt
+  floor_number Int
+  won_at       DateTime @default(now())
+  created_at   DateTime @default(now())
+
+  topic topics @relation(fields: [topic_id], references: [id])
+  post  posts  @relation(fields: [post_id], references: [id])
+  user  users  @relation("lottery_winners_user", fields: [user_id], references: [id])
+
+  @@unique([topic_id, post_id], map: "lottery_winners_topic_post_unique")
+  @@unique([topic_id, user_id], map: "lottery_winners_topic_user_unique")
+  @@index([topic_id], map: "lottery_winners_topic_index")
+  @@index([user_id], map: "lottery_winners_user_index")
+  @@index([won_at], map: "lottery_winners_wonat_index")
+  @@map("lottery_winners")
 }
 
 model bounty_configs {

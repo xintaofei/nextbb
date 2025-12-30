@@ -55,16 +55,51 @@ export type PollConfig = {
   totalVoteCount: number
 }
 
+// 开奖类型枚举
+export const DrawType = {
+  SCHEDULED: "SCHEDULED",
+  THRESHOLD: "THRESHOLD",
+  INSTANT: "INSTANT",
+} as const
+
+export type DrawTypeValue = (typeof DrawType)[keyof typeof DrawType]
+
+// 抽奖算法类型枚举
+export const AlgorithmType = {
+  INTERVAL: "INTERVAL",
+  RANDOM: "RANDOM",
+  FIXED: "FIXED",
+} as const
+
+export type AlgorithmTypeValue =
+  (typeof AlgorithmType)[keyof typeof AlgorithmType]
+
 // 抽奖配置类型
 export type LotteryConfig = {
-  endTime: string
-  rules: string
-  winnerCount: number
-  minCredits: number | null
-  participantCount: number
+  topicId: string
+  drawType: DrawTypeValue
+  endTime: string | null
+  participantThreshold: number | null
+  algorithmType: AlgorithmTypeValue
+  floorInterval: number | null
+  fixedFloors: number[] | null
+  winnerCount: number | null
+  entryCost: number
+  replyCount: number
   isDrawn: boolean
-  userParticipated: boolean
-  isWinner: boolean | null
+  drawnAt: string | null
+  userReplied: boolean
+  userIsWinner: boolean | null
+}
+
+// 中奖用户类型
+export type LotteryWinner = {
+  userId: string
+  userName: string
+  userAvatar: string
+  floorNumber: number
+  postId: string
+  wonAt: string
 }
 
 // 悬赏类型枚举

@@ -142,6 +142,14 @@ export function TopicForm({
       } as FormValues
     }
 
+    // 如果是 LOTTERY 类型，添加默认 entryCost
+    if (typeValue === TopicType.LOTTERY) {
+      baseValues = {
+        ...baseValues,
+        entryCost: 0,
+      } as FormValues
+    }
+
     // 重置表单为新类型
     form.reset(baseValues, { keepErrors: false })
   }

@@ -404,10 +404,12 @@ export async function POST(req: Request) {
             ? "ACTIVE"
             : "ACTIVE",
         end_time:
-          body.type === TopicType.POLL
+          body.type === TopicType.POLL && body.endTime
             ? new Date(body.endTime)
-            : body.type === TopicType.LOTTERY
-              ? new Date(body.lotteryEndTime)
+            : body.type === TopicType.LOTTERY &&
+                body.drawType === "SCHEDULED" &&
+                body.endTime
+              ? new Date(body.endTime)
               : null,
         is_settled: false,
         is_pinned: isPinned,
@@ -480,11 +482,31 @@ export async function POST(req: Request) {
       await client.lottery_configs.create({
         data: {
           topic_id: topic.id,
-          end_time: new Date(body.lotteryEndTime),
-          rules: body.lotteryRules,
-          winner_count: body.winnerCount,
-          min_credits: body.minCredits ?? null,
+          draw_type: body.drawType,
+          end_time:
+            body.drawType === "SCHEDULED" && body.endTime
+              ? new Date(body.endTime)
+              : null,
+          participant_threshold:
+            body.drawType === "THRESHOLD" && body.participantThreshold
+              ? body.participantThreshold
+              : null,
+          algorithm_type: body.algorithmType,
+          floor_interval:
+            body.algorithmType === "INTERVAL" && body.floorInterval
+              ? body.floorInterval
+              : null,
+          fixed_floors:
+            body.algorithmType === "FIXED" && body.fixedFloors
+              ? JSON.stringify(body.fixedFloors)
+              : null,
+          winner_count:
+            body.algorithmType === "RANDOM" && body.winnerCount
+              ? body.winnerCount
+              : null,
+          entry_cost: body.entryCost ?? 0,
           is_drawn: false,
+          drawn_at: null,
           created_at: new Date(),
           updated_at: new Date(),
         },
@@ -501,9 +523,7 @@ export async function POST(req: Request) {
           bounty_slots: body.bountySlots,
           remaining_slots: body.bountySlots,
           single_amount:
-            body.bountyType === BountyType.MULTIPLE
-              ? body.singleAmount
-              : null,
+            body.bountyType === BountyType.MULTIPLE ? body.singleAmount : null,
           created_at: new Date(),
           updated_at: new Date(),
         },

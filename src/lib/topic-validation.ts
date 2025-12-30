@@ -1,5 +1,10 @@
 import { z } from "zod"
-import { TopicType, BountyType } from "@/types/topic-type"
+import {
+  TopicType,
+  BountyType,
+  DrawType,
+  AlgorithmType,
+} from "@/types/topic-type"
 
 // 基础字段验证
 const baseTopicSchema = z.object({
@@ -94,19 +99,139 @@ const pollTopicSchema = baseTopicSchema
   )
 
 // LOTTERY 类型 - 需要抽奖配置
-const lotteryTopicSchema = baseTopicSchema.extend({
+// 定时开奖 + 间隔楼层
+const lotteryScheduledIntervalSchema = baseTopicSchema.extend({
   type: z.literal(TopicType.LOTTERY),
-  lotteryEndTime: z.string().refine(
+  drawType: z.literal(DrawType.SCHEDULED),
+  endTime: z.string().refine(
     (val) => {
       const date = new Date(val)
       return date > new Date()
     },
-    { message: "Lottery end time must be in the future" }
+    { message: "End time must be in the future" }
   ),
-  lotteryRules: z.string().min(10).max(500),
-  winnerCount: z.number().int().positive().max(100),
-  minCredits: z.number().int().nonnegative().optional().nullable(),
+  algorithmType: z.literal(AlgorithmType.INTERVAL),
+  floorInterval: z.number().int().positive(),
+  entryCost: z.number().int().nonnegative(),
 })
+
+// 定时开奖 + 随机楼层
+const lotteryScheduledRandomSchema = baseTopicSchema.extend({
+  type: z.literal(TopicType.LOTTERY),
+  drawType: z.literal(DrawType.SCHEDULED),
+  endTime: z.string().refine(
+    (val) => {
+      const date = new Date(val)
+      return date > new Date()
+    },
+    { message: "End time must be in the future" }
+  ),
+  algorithmType: z.literal(AlgorithmType.RANDOM),
+  winnerCount: z.number().int().min(1).max(100),
+  entryCost: z.number().int().nonnegative(),
+})
+
+// 定时开奖 + 指定楼层
+const lotteryScheduledFixedSchema = baseTopicSchema.extend({
+  type: z.literal(TopicType.LOTTERY),
+  drawType: z.literal(DrawType.SCHEDULED),
+  endTime: z.string().refine(
+    (val) => {
+      const date = new Date(val)
+      return date > new Date()
+    },
+    { message: "End time must be in the future" }
+  ),
+  algorithmType: z.literal(AlgorithmType.FIXED),
+  fixedFloors: z
+    .array(z.number().int().min(2))
+    .min(1)
+    .refine((floors) => floors.every((f) => f > 1), {
+      message: "Floor numbers must be greater than 1",
+    }),
+  entryCost: z.number().int().nonnegative(),
+})
+
+// 满人开奖 + 间隔楼层
+const lotteryThresholdIntervalSchema = baseTopicSchema.extend({
+  type: z.literal(TopicType.LOTTERY),
+  drawType: z.literal(DrawType.THRESHOLD),
+  participantThreshold: z.number().int().positive(),
+  algorithmType: z.literal(AlgorithmType.INTERVAL),
+  floorInterval: z.number().int().positive(),
+  entryCost: z.number().int().nonnegative(),
+})
+
+// 满人开奖 + 随机楼层
+const lotteryThresholdRandomSchema = baseTopicSchema.extend({
+  type: z.literal(TopicType.LOTTERY),
+  drawType: z.literal(DrawType.THRESHOLD),
+  participantThreshold: z.number().int().positive(),
+  algorithmType: z.literal(AlgorithmType.RANDOM),
+  winnerCount: z.number().int().min(1).max(100),
+  entryCost: z.number().int().nonnegative(),
+})
+
+// 满人开奖 + 指定楼层
+const lotteryThresholdFixedSchema = baseTopicSchema.extend({
+  type: z.literal(TopicType.LOTTERY),
+  drawType: z.literal(DrawType.THRESHOLD),
+  participantThreshold: z.number().int().positive(),
+  algorithmType: z.literal(AlgorithmType.FIXED),
+  fixedFloors: z
+    .array(z.number().int().min(2))
+    .min(1)
+    .refine((floors) => floors.every((f) => f > 1), {
+      message: "Floor numbers must be greater than 1",
+    }),
+  entryCost: z.number().int().nonnegative(),
+})
+
+// 即抽即中 + 间隔楼层
+const lotteryInstantIntervalSchema = baseTopicSchema.extend({
+  type: z.literal(TopicType.LOTTERY),
+  drawType: z.literal(DrawType.INSTANT),
+  algorithmType: z.literal(AlgorithmType.INTERVAL),
+  floorInterval: z.number().int().positive(),
+  entryCost: z.number().int().nonnegative(),
+})
+
+// 即抽即中 + 随机楼层
+const lotteryInstantRandomSchema = baseTopicSchema.extend({
+  type: z.literal(TopicType.LOTTERY),
+  drawType: z.literal(DrawType.INSTANT),
+  algorithmType: z.literal(AlgorithmType.RANDOM),
+  winnerCount: z.number().int().min(1).max(100),
+  entryCost: z.number().int().nonnegative(),
+})
+
+// 即抽即中 + 指定楼层
+const lotteryInstantFixedSchema = baseTopicSchema.extend({
+  type: z.literal(TopicType.LOTTERY),
+  drawType: z.literal(DrawType.INSTANT),
+  algorithmType: z.literal(AlgorithmType.FIXED),
+  fixedFloors: z
+    .array(z.number().int().min(2))
+    .min(1)
+    .refine((floors) => floors.every((f) => f > 1), {
+      message: "Floor numbers must be greater than 1",
+    }),
+  entryCost: z.number().int().nonnegative(),
+})
+
+const lotteryTopicSchema = z.union([
+  lotteryScheduledIntervalSchema,
+  lotteryScheduledRandomSchema,
+  lotteryScheduledFixedSchema,
+  lotteryThresholdIntervalSchema,
+  lotteryThresholdRandomSchema,
+  lotteryThresholdFixedSchema,
+  lotteryInstantIntervalSchema,
+  lotteryInstantRandomSchema,
+  lotteryInstantFixedSchema,
+])
+
+export type LotteryTopicFormData = z.infer<typeof lotteryTopicSchema>
 
 // TUTORIAL 类型 - 无额外字段
 const tutorialTopicSchema = baseTopicSchema.extend({
@@ -114,12 +239,21 @@ const tutorialTopicSchema = baseTopicSchema.extend({
 })
 
 // 使用 discriminatedUnion 根据 type 字段动态验证
-export const topicFormSchema = z.discriminatedUnion("type", [
+export const topicFormSchema = z.union([
   generalTopicSchema,
   questionTopicSchema,
-  bountyTopicSchema,
+  bountySingleSchema,
+  bountyMultipleSchema,
   pollTopicSchema,
-  lotteryTopicSchema,
+  lotteryScheduledIntervalSchema,
+  lotteryScheduledRandomSchema,
+  lotteryScheduledFixedSchema,
+  lotteryThresholdIntervalSchema,
+  lotteryThresholdRandomSchema,
+  lotteryThresholdFixedSchema,
+  lotteryInstantIntervalSchema,
+  lotteryInstantRandomSchema,
+  lotteryInstantFixedSchema,
   tutorialTopicSchema,
 ])
 
@@ -155,12 +289,41 @@ export function createBountySchemaWithCredits(userCredits: number) {
 
 // 创建完整的带积分验证的 schema
 export function createTopicFormSchemaWithCredits(userCredits: number) {
-  return z.discriminatedUnion("type", [
+  const bountySingleWithCredits = baseTopicSchema.extend({
+    type: z.literal(TopicType.BOUNTY),
+    bountyType: z.literal(BountyType.SINGLE),
+    bountyTotal: z.number().int().positive().max(userCredits, {
+      message: "Insufficient credits",
+    }),
+    bountySlots: z.literal(1),
+    singleAmount: z.undefined().optional(),
+  })
+
+  const bountyMultipleWithCredits = baseTopicSchema.extend({
+    type: z.literal(TopicType.BOUNTY),
+    bountyType: z.literal(BountyType.MULTIPLE),
+    bountyTotal: z.number().int().positive().max(userCredits, {
+      message: "Insufficient credits",
+    }),
+    bountySlots: z.number().int().min(2),
+    singleAmount: z.number().int().positive(),
+  })
+
+  return z.union([
     generalTopicSchema,
     questionTopicSchema,
-    createBountySchemaWithCredits(userCredits),
+    bountySingleWithCredits,
+    bountyMultipleWithCredits,
     pollTopicSchema,
-    lotteryTopicSchema,
+    lotteryScheduledIntervalSchema,
+    lotteryScheduledRandomSchema,
+    lotteryScheduledFixedSchema,
+    lotteryThresholdIntervalSchema,
+    lotteryThresholdRandomSchema,
+    lotteryThresholdFixedSchema,
+    lotteryInstantIntervalSchema,
+    lotteryInstantRandomSchema,
+    lotteryInstantFixedSchema,
     tutorialTopicSchema,
   ])
 }
