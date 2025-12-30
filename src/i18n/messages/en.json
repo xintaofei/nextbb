@@ -249,7 +249,8 @@
         "bountyType": "Bounty Type",
         "remainingSlots": "Remaining Slots",
         "singleAmount": "Single Amount",
-        "rewardedList": "Rewarded List"
+        "rewardedList": "Rewarded List",
+        "noRewardsYet": "No rewards yet, be the first to answer!"
       },
       "error": {
         "insufficientCredits": "Insufficient credits to create bounty",

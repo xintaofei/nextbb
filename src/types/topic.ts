@@ -26,6 +26,10 @@ export type PostItem = {
   bookmarks: number
   bookmarked: boolean
   badges?: BadgeItem[]
+  bountyReward?: {
+    amount: number
+    createdAt: string
+  } | null
 }
 
 export type RelatedTopicItem = {
@@ -59,6 +63,7 @@ export type TopicInfo = {
   status?: string
   endTime?: string | null
   isPinned: boolean
+  isSettled?: boolean
   category: {
     id: string
     name: string

@@ -249,7 +249,8 @@
         "bountyType": "悬赏类型",
         "remainingSlots": "剩余名额",
         "singleAmount": "单次金额",
-        "rewardedList": "已获赏名单"
+        "rewardedList": "已获赏名单",
+        "noRewardsYet": "暂无获赏记录，快来回答问题吧！"
       },
       "error": {
         "insufficientCredits": "积分不足，无法发布悬赏",

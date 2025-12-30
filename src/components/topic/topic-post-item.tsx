@@ -9,12 +9,13 @@ import {
 } from "@/components/ui/timeline-steps"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
-import { Bookmark, Heart, Reply, Pencil, Trash } from "lucide-react"
+import { Bookmark, Heart, Reply, Pencil, Trash, Coins } from "lucide-react"
 import { formatRelative } from "@/lib/time"
 import { PostItem } from "@/types/topic"
 import { UserBadgesDisplay } from "@/components/common/user-badges-display"
 import { UserInfoCard } from "@/components/common/user-info-card"
 import { Separator } from "@/components/ui/separator"
+import { Badge } from "@/components/ui/badge"
 import { useIsMobile } from "@/hooks/use-mobile"
 import { ReactNode } from "react"
 
@@ -38,6 +39,10 @@ export function TopicPostItem({
   deletedText,
   highlight = false,
   topicTypeSlot,
+  showBountyButton = false,
+  onReward,
+  rewardMutating = false,
+  bountyAmount,
 }: {
   post: PostItem
   index: number
@@ -58,6 +63,14 @@ export function TopicPostItem({
   deletedText: string
   highlight?: boolean
   topicTypeSlot?: ReactNode
+  showBountyButton?: boolean
+  onReward?: (
+    postId: string,
+    receiverId: string,
+    amount: number
+  ) => void | Promise<void>
+  rewardMutating?: boolean
+  bountyAmount?: number
 }) {
   const isMobile = useIsMobile()
 
@@ -94,6 +107,14 @@ export function TopicPostItem({
                 maxDisplay={isMobile ? 1 : 3}
                 size="sm"
               />
+            )}
+            {post.bountyReward && (
+              <Badge
+                variant="secondary"
+                className="bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400 flex items-center gap-1"
+              >
+                <Coins className="h-3 w-3" />+{post.bountyReward.amount}
+              </Badge>
             )}
           </div>
           <span className="text-muted-foreground text-sm">
@@ -169,6 +190,22 @@ export function TopicPostItem({
                 <Reply />
                 {replyText}
               </Button>
+              {showBountyButton &&
+                onReward &&
+                bountyAmount &&
+                !post.bountyReward && (
+                  <Button
+                    variant="outline"
+                    className="border-amber-200 hover:bg-amber-50 dark:border-amber-900/50 dark:hover:bg-amber-950/20 text-amber-700 dark:text-amber-400"
+                    onClick={() =>
+                      onReward(post.id, post.author.id, bountyAmount)
+                    }
+                    disabled={mutatingPostId === post.id || rewardMutating}
+                  >
+                    <Coins className="h-4 w-4" />
+                    给赏 ({bountyAmount})
+                  </Button>
+                )}
               <div className="flex gap-5 h-5">
                 <Separator orientation="vertical" />
                 <div className="flex flex-row gap-1 items-center text-muted-foreground">

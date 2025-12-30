@@ -111,155 +111,161 @@ export async function POST(
       )
     }
 
-    // 使用事务处理给赏逻辑
-    const result = await prisma.$transaction(async (tx: unknown) => {
-      const client = tx as TxClient
-      // 查询主题信息
-      const topic = await client.topics.findFirst({
-        where: {
-          id: topicId,
-          is_deleted: false,
-        },
-        select: {
-          id: true,
-          type: true,
-          user_id: true,
-          is_settled: true,
-        },
-      })
-
-      if (!topic) {
-        throw new Error("Topic not found")
-      }
-
-      // 验证主题类型
-      if (topic.type !== TopicType.BOUNTY) {
-        throw new Error("Topic is not a bounty")
-      }
-
-      // 验证是否为楼主
-      if (topic.user_id !== auth.userId) {
-        throw new Error("Only topic owner can reward")
-      }
-
-      // 验证是否已结算
-      if (topic.is_settled) {
-        throw new Error("Bounty already settled")
-      }
-
-      // 查询悬赏配置
-      const bountyConfig = await client.bounty_configs.findUnique({
-        where: { topic_id: topicId },
-      })
-
-      if (!bountyConfig) {
-        throw new Error("Bounty config not found")
-      }
-
-      // 验证剩余名额
-      if (bountyConfig.remaining_slots <= 0) {
-        throw new Error("No remaining slots")
-      }
-
-      // 查询目标回帖
-      const post = await client.posts.findFirst({
-        where: {
-          id: postId,
-          topic_id: topicId,
-          is_deleted: false,
-        },
-        select: {
-          id: true,
-          user_id: true,
-        },
-      })
-
-      if (!post) {
-        throw new Error("Post not found")
-      }
-
-      // 验证是否给自己发赏
-      if (post.user_id === auth.userId) {
-        throw new Error("Cannot reward yourself")
-      }
-
-      // 验证是否已获赏（通过查询 bounty_rewards 表）
-      const existingReward = await client.bounty_rewards.findFirst({
-        where: {
-          topic_id: topicId,
-          receiver_id: post.user_id,
-        },
-      })
-
-      if (existingReward) {
-        throw new Error("User already rewarded in this topic")
-      }
-
-      // 计算本次赏金金额
-      const amount =
-        bountyConfig.bounty_type === BountyType.SINGLE
-          ? bountyConfig.bounty_total
-          : (bountyConfig.single_amount ?? 0)
-
-      if (amount <= 0) {
-        throw new Error("Invalid reward amount")
-      }
-
-      // 增加领赏人积分
-      await client.users.update({
-        where: { id: post.user_id },
-        data: {
-          credits: {
-            increment: amount,
+    // 使用事务处理给赏逻辑，增加超时时间
+    const result = await prisma.$transaction(
+      async (tx: unknown) => {
+        const client = tx as TxClient
+        // 查询主题信息
+        const topic = await client.topics.findFirst({
+          where: {
+            id: topicId,
+            is_deleted: false,
           },
-        },
-      })
-
-      // 创建赏金流水记录
-      await client.bounty_rewards.create({
-        data: {
-          id: generateId(),
-          topic_id: topicId,
-          post_id: postId,
-          giver_id: auth.userId,
-          receiver_id: post.user_id,
-          amount: amount,
-          created_at: new Date(),
-        },
-      })
-
-      // 递减剩余名额
-      const updatedConfig = await client.bounty_configs.update({
-        where: { topic_id: topicId },
-        data: {
-          remaining_slots: {
-            decrement: 1,
-          },
-          updated_at: new Date(),
-        },
-        select: {
-          remaining_slots: true,
-        },
-      })
-
-      // 如果名额用完，标记主题为已结算
-      let isSettled = false
-      if (updatedConfig.remaining_slots === 0) {
-        await client.topics.update({
-          where: { id: topicId },
-          data: {
+          select: {
+            id: true,
+            type: true,
+            user_id: true,
             is_settled: true,
           },
         })
-        isSettled = true
-      }
 
-      return {
-        amount,
-        remainingSlots: updatedConfig.remaining_slots,
-        isSettled,
+        if (!topic) {
+          throw new Error("Topic not found")
+        }
+
+        // 验证主题类型
+        if (topic.type !== TopicType.BOUNTY) {
+          throw new Error("Topic is not a bounty")
+        }
+
+        // 验证是否为楼主
+        if (topic.user_id !== auth.userId) {
+          throw new Error("Only topic owner can reward")
+        }
+
+        // 验证是否已结算
+        if (topic.is_settled) {
+          throw new Error("Bounty already settled")
+        }
+
+        // 查询悬赏配置
+        const bountyConfig = await client.bounty_configs.findUnique({
+          where: { topic_id: topicId },
+        })
+
+        if (!bountyConfig) {
+          throw new Error("Bounty config not found")
+        }
+
+        // 验证剩余名额
+        if (bountyConfig.remaining_slots <= 0) {
+          throw new Error("No remaining slots")
+        }
+
+        // 查询目标回帖
+        const post = await client.posts.findFirst({
+          where: {
+            id: postId,
+            topic_id: topicId,
+            is_deleted: false,
+          },
+          select: {
+            id: true,
+            user_id: true,
+          },
+        })
+
+        if (!post) {
+          throw new Error("Post not found")
+        }
+
+        // 验证是否给自己发赏
+        if (post.user_id === auth.userId) {
+          throw new Error("Cannot reward yourself")
+        }
+
+        // 验证是否已获赏（通过查询 bounty_rewards 表）
+        const existingReward = await client.bounty_rewards.findFirst({
+          where: {
+            topic_id: topicId,
+            receiver_id: post.user_id,
+          },
+        })
+
+        if (existingReward) {
+          throw new Error("User already rewarded in this topic")
+        }
+
+        // 计算本次赏金金额
+        const amount =
+          bountyConfig.bounty_type === BountyType.SINGLE
+            ? bountyConfig.bounty_total
+            : (bountyConfig.single_amount ?? 0)
+
+        if (amount <= 0) {
+          throw new Error("Invalid reward amount")
+        }
+
+        // 增加领赏人积分
+        await client.users.update({
+          where: { id: post.user_id },
+          data: {
+            credits: {
+              increment: amount,
+            },
+          },
+        })
+
+        // 创建赏金流水记录
+        await client.bounty_rewards.create({
+          data: {
+            id: generateId(),
+            topic_id: topicId,
+            post_id: postId,
+            giver_id: auth.userId,
+            receiver_id: post.user_id,
+            amount: amount,
+            created_at: new Date(),
+          },
+        })
+
+        // 递减剩余名额
+        const updatedConfig = await client.bounty_configs.update({
+          where: { topic_id: topicId },
+          data: {
+            remaining_slots: {
+              decrement: 1,
+            },
+            updated_at: new Date(),
+          },
+          select: {
+            remaining_slots: true,
+          },
+        })
+
+        // 如果名额用完，标记主题为已结算
+        let isSettled = false
+        if (updatedConfig.remaining_slots === 0) {
+          await client.topics.update({
+            where: { id: topicId },
+            data: {
+              is_settled: true,
+            },
+          })
+          isSettled = true
+        }
+
+        return {
+          amount,
+          remainingSlots: updatedConfig.remaining_slots,
+          isSettled,
+        }
+      },
+      {
+        maxWait: 5000, // 最大等待时间 5秒
+        timeout: 10000, // 事务超时时间 10秒
       }
-    })
+    )
 
     const response: RewardResponse = {
       success: true,

@@ -30,6 +30,10 @@ type PostItem = {
   bookmarks: number
   bookmarked: boolean
   badges?: BadgeItem[]
+  bountyReward?: {
+    amount: number
+    createdAt: string
+  } | null
 }
 
 type PostPage = {
@@ -169,6 +173,28 @@ export async function GET(
     for (const r of bookmarkedRows) bookmarkedSet.add(String(r.post_id))
   }
 
+  // 查询悬赏奖励记录
+  const bountyRewardsMap = new Map<
+    string,
+    { amount: number; createdAt: string }
+  >()
+  if (postIds.length > 0) {
+    const bountyRewards = await prisma.bounty_rewards.findMany({
+      where: { post_id: { in: postIds } },
+      select: {
+        post_id: true,
+        amount: true,
+        created_at: true,
+      },
+    })
+    for (const reward of bountyRewards) {
+      bountyRewardsMap.set(String(reward.post_id), {
+        amount: reward.amount,
+        createdAt: reward.created_at.toISOString(),
+      })
+    }
+  }
+
   const items: PostItem[] = postsDb.map((p: PostRow) => {
     const idStr = String(p.id)
     const userId = String(p.user.id)
@@ -191,6 +217,7 @@ export async function GET(
       bookmarks: bookmarkCountsById.get(idStr) ?? 0,
       bookmarked: bookmarkedSet.has(idStr),
       badges: userBadgesMap.get(userId) ?? [],
+      bountyReward: bountyRewardsMap.get(idStr) ?? null,
     }
   })
 

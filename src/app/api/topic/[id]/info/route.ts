@@ -10,6 +10,7 @@ type TopicInfo = {
   isPinned: boolean
   status?: string | null
   endTime?: string | null
+  isSettled?: boolean
   category: {
     id: string
     name: string
@@ -50,6 +51,7 @@ export async function GET(
       status: true,
       is_pinned: true,
       end_time: true,
+      is_settled: true,
       category: {
         select: {
           id: true,
@@ -91,6 +93,7 @@ export async function GET(
     isPinned: topic.is_pinned,
     status: topic.status ?? undefined,
     endTime: topic.end_time ? topic.end_time.toISOString() : null,
+    isSettled: topic.is_settled,
     category: {
       id: String(topic.category.id),
       name: topic.category.name,

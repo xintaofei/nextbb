@@ -33,13 +33,16 @@ import { CategoryBadge } from "@/components/common/category-badge"
 import { TagBadge } from "@/components/common/tag-badge"
 import { TopicStatusTags } from "@/components/common/topic-status-tags"
 import { PollDisplay } from "@/components/topic/poll-display"
-import { type TopicTypeValue, TopicType } from "@/types/topic-type"
+import { BountyDisplay } from "@/components/topic/bounty-display"
+import { type TopicTypeValue, TopicType, BountyType } from "@/types/topic-type"
 import { ReactNode } from "react"
 
 export default function TopicPage() {
   const { id } = useParams<{ id: string }>()
   const tc = useTranslations("Common")
   const t = useTranslations("Topic")
+  const tb = useTranslations("Topic.Bounty")
+  const te = useTranslations("Error")
 
   const fetcherInfo = async (url: string): Promise<TopicInfoResult> => {
     const res = await fetch(url, { cache: "no-store" })
@@ -81,6 +84,12 @@ export default function TopicPage() {
   const [mutatingPostId, setMutatingPostId] = useState<string | null>(null)
   const [previousPostsLength, setPreviousPostsLength] = useState<number>(0)
   const [highlightIndex, setHighlightIndex] = useState<number | null>(null)
+  const [bountyConfig, setBountyConfig] = useState<{
+    bountyTotal: number
+    bountyType: string
+    remainingSlots: number
+    singleAmount: number | null
+  } | null>(null)
 
   const fetcherPosts = async (url: string): Promise<PostPage> => {
     const res = await fetch(url, { cache: "no-store" })
@@ -313,6 +322,28 @@ export default function TopicPage() {
     return (await res.json()) as ReplyResult
   })
 
+  type RewardArg = { postId: string; receiverId: string }
+  type RewardResult = {
+    success: boolean
+    amount: number
+    remainingSlots: number
+    isSettled: boolean
+  }
+  const { trigger: triggerReward, isMutating: rewardMutating } = useSWRMutation<
+    RewardResult,
+    Error,
+    string,
+    RewardArg
+  >(`/mutations/bounty-reward-${id}`, async (_key, { arg }) => {
+    const res = await fetch(`/api/topic/${id}/reward`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ postId: arg.postId }),
+    })
+    if (!res.ok) throw new Error(String(res.status))
+    return (await res.json()) as RewardResult
+  })
+
   useEffect(() => {
     let mounted = true
     const run = async () => {
@@ -348,6 +379,28 @@ export default function TopicPage() {
       mounted = false
     }
   }, [])
+
+  // 获取悬赏配置
+  useEffect(() => {
+    if (!topicInfo || topicInfo.type !== TopicType.BOUNTY) return
+    const fetchBountyConfig = async () => {
+      try {
+        const res = await fetch(`/api/topic/${id}/bounty`, {
+          cache: "no-store",
+        })
+        if (res.ok) {
+          const data = await res.json()
+          setBountyConfig({
+            bountyTotal: data.bountyTotal,
+            bountyType: data.bountyType,
+            remainingSlots: data.remainingSlots,
+            singleAmount: data.singleAmount,
+          })
+        }
+      } catch {}
+    }
+    fetchBountyConfig()
+  }, [id, topicInfo])
 
   const onClickReply = (postId: string, authorName: string) => {
     setReplyToPostId(postId)
@@ -499,6 +552,47 @@ export default function TopicPage() {
     }
   }
 
+  const onReward = async (
+    postId: string,
+    receiverId: string,
+    amount: number
+  ) => {
+    if (
+      !window.confirm(
+        tb("action.confirmMessage", {
+          user: posts.find((p) => p.id === postId)?.author.name ?? "",
+          amount,
+        })
+      )
+    )
+      return
+    try {
+      setMutatingPostId(postId)
+      const result = await triggerReward({ postId, receiverId })
+      await mutatePosts((pages) => pages, true)
+      toast.success(
+        tb("success.rewarded", { remaining: result.remainingSlots })
+      )
+      // 更新悬赏配置
+      if (bountyConfig) {
+        setBountyConfig({
+          ...bountyConfig,
+          remainingSlots: result.remainingSlots,
+        })
+      }
+    } catch (e) {
+      const status = Number((e as Error).message)
+      if (status === 401) toast.error(te("unauthorized"))
+      else if (status === 403) toast.error(tb("error.onlyOwnerCanReward"))
+      else if (status === 400) toast.error(tb("error.alreadyRewarded"))
+      else if (status === 409) toast.error(tb("error.noRemainingSlots"))
+      else if (status === 410) toast.error(tb("error.alreadySettled"))
+      else toast.error(te("requestFailed"))
+    } finally {
+      setMutatingPostId(null)
+    }
+  }
+
   useEffect(() => {
     const sentinel = sentinelRef.current
     if (!sentinel) return
@@ -528,6 +622,13 @@ export default function TopicPage() {
             topicId={id}
             topicStatus={topicInfo.status || "ACTIVE"}
             endTime={topicInfo.endTime || null}
+          />
+        )
+      case TopicType.BOUNTY:
+        return (
+          <BountyDisplay
+            topicId={id}
+            topicIsSettled={topicInfo.isSettled || false}
           />
         )
       // 未来可以在这里添加其他主题类型的特殊内容
@@ -605,30 +706,52 @@ export default function TopicPage() {
             </TimelineSteps>
           ) : (
             <TimelineSteps>
-              {posts.map((post, index) => (
-                <TopicPostItem
-                  key={post.id}
-                  post={post}
-                  index={index}
-                  anchorId={`post-${index + 1}`}
-                  currentUserId={currentUserId}
-                  mutatingPostId={mutatingPostId}
-                  likeMutating={likeMutating}
-                  bookmarkMutating={bookmarkMutating}
-                  editMutating={editMutating}
-                  deleteMutating={deleteMutating}
-                  onLike={likeAction}
-                  onBookmark={bookmarkAction}
-                  onEdit={onClickEdit}
-                  onDelete={onClickDelete}
-                  onReply={onClickReply}
-                  floorOpText={t("floor.op")}
-                  replyText={t("reply")}
-                  deletedText={t("deleted")}
-                  highlight={highlightIndex === index}
-                  topicTypeSlot={renderTopicTypeSlot(index)}
-                />
-              ))}
+              {posts.map((post, index) => {
+                const isBountyTopic = topicInfo?.type === TopicType.BOUNTY
+                const isTopicOwner = currentUserId && topicInfo?.id === topic.id
+                const showBountyButton = Boolean(
+                  isBountyTopic &&
+                  isTopicOwner &&
+                  index !== 0 &&
+                  post.author.id !== currentUserId &&
+                  bountyConfig &&
+                  bountyConfig.remainingSlots > 0
+                )
+                const bountyAmount = isBountyTopic
+                  ? bountyConfig?.bountyType === BountyType.SINGLE
+                    ? bountyConfig.bountyTotal
+                    : bountyConfig?.singleAmount
+                  : undefined
+
+                return (
+                  <TopicPostItem
+                    key={post.id}
+                    post={post}
+                    index={index}
+                    anchorId={`post-${index + 1}`}
+                    currentUserId={currentUserId}
+                    mutatingPostId={mutatingPostId}
+                    likeMutating={likeMutating}
+                    bookmarkMutating={bookmarkMutating}
+                    editMutating={editMutating}
+                    deleteMutating={deleteMutating}
+                    onLike={likeAction}
+                    onBookmark={bookmarkAction}
+                    onEdit={onClickEdit}
+                    onDelete={onClickDelete}
+                    onReply={onClickReply}
+                    floorOpText={t("floor.op")}
+                    replyText={t("reply")}
+                    deletedText={t("deleted")}
+                    highlight={highlightIndex === index}
+                    topicTypeSlot={renderTopicTypeSlot(index)}
+                    showBountyButton={showBountyButton}
+                    onReward={onReward}
+                    rewardMutating={rewardMutating}
+                    bountyAmount={bountyAmount ?? undefined}
+                  />
+                )
+              })}
               {validatingPosts && hasMore && <PostSkeletonList count={3} />}
             </TimelineSteps>
           )}
