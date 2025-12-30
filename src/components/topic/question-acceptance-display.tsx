@@ -43,6 +43,8 @@ export function QuestionAcceptanceDisplay({
     fetcher,
     {
       revalidateOnFocus: false,
+      // 每 2 秒重新验证一次，确保采纳状态实时更新
+      refreshInterval: 2000,
     }
   )
 

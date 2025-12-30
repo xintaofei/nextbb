@@ -34,6 +34,14 @@ type PostItem = {
     amount: number
     createdAt: string
   } | null
+  questionAcceptance?: {
+    acceptedBy: {
+      id: string
+      name: string
+      avatar: string
+    }
+    acceptedAt: string
+  } | null
 }
 
 type PostPage = {
@@ -195,6 +203,41 @@ export async function GET(
     }
   }
 
+  // 查询采纳记录
+  const questionAcceptancesMap = new Map<
+    string,
+    {
+      acceptedBy: { id: string; name: string; avatar: string }
+      acceptedAt: string
+    }
+  >()
+  if (postIds.length > 0) {
+    const questionAcceptances = await prisma.question_acceptances.findMany({
+      where: { post_id: { in: postIds } },
+      select: {
+        post_id: true,
+        accepted_at: true,
+        accepter: {
+          select: {
+            id: true,
+            name: true,
+            avatar: true,
+          },
+        },
+      },
+    })
+    for (const acceptance of questionAcceptances) {
+      questionAcceptancesMap.set(String(acceptance.post_id), {
+        acceptedBy: {
+          id: String(acceptance.accepter.id),
+          name: acceptance.accepter.name,
+          avatar: acceptance.accepter.avatar,
+        },
+        acceptedAt: acceptance.accepted_at.toISOString(),
+      })
+    }
+  }
+
   const items: PostItem[] = postsDb.map((p: PostRow) => {
     const idStr = String(p.id)
     const userId = String(p.user.id)
@@ -218,6 +261,7 @@ export async function GET(
       bookmarked: bookmarkedSet.has(idStr),
       badges: userBadgesMap.get(userId) ?? [],
       bountyReward: bountyRewardsMap.get(idStr) ?? null,
+      questionAcceptance: questionAcceptancesMap.get(idStr) ?? null,
     }
   })
 

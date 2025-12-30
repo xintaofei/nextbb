@@ -617,12 +617,48 @@ export default function TopicPage() {
   }
 
   const onAccept = async (postId: string, isAccepted: boolean) => {
+    const target = posts.find((p) => p.id === postId)
+    if (!target) return
     try {
       setMutatingPostId(postId)
+      const currentUserId_ = currentUserId
+      const currentUserProfile_ = currentUserProfile
+
+      // 乐观更新：立即更新 UI
+      await mutatePosts(
+        (pages) =>
+          pages?.map((pg) => ({
+            ...pg,
+            items: pg.items.map((p) =>
+              p.id === postId
+                ? {
+                    ...p,
+                    questionAcceptance: isAccepted
+                      ? null
+                      : currentUserId_ && currentUserProfile_
+                        ? {
+                            acceptedBy: {
+                              id: currentUserId_,
+                              name: currentUserProfile_.username,
+                              avatar: currentUserProfile_.avatar,
+                            },
+                            acceptedAt: new Date().toISOString(),
+                          }
+                        : null,
+                  }
+                : p
+            ),
+          })) ?? pages,
+        false
+      )
+
       const result = await triggerAccept({
         postId: isAccepted ? null : postId,
       })
+
+      // 重新验证数据，确保与服务器一致
       await mutatePosts((pages) => pages, true)
+
       toast.success(
         isAccepted ? tq("messages.cancelSuccess") : tq("messages.acceptSuccess")
       )
@@ -634,6 +670,8 @@ export default function TopicPage() {
         toast.error(
           isAccepted ? tq("messages.cancelError") : tq("messages.acceptError")
         )
+      // 错误时恢复数据
+      await mutatePosts((pages) => pages, true)
     } finally {
       setMutatingPostId(null)
     }
@@ -779,12 +817,27 @@ export default function TopicPage() {
                     ? bountyConfig.bountyTotal
                     : bountyConfig?.singleAmount
                   : undefined
+
+                // 检查是否已有采纳的答案
+                const hasAcceptedAnswer = posts.some(
+                  (p) =>
+                    p.questionAcceptance !== null &&
+                    p.questionAcceptance !== undefined
+                )
+                // 只在以下条件下显示采纳按钮：
+                // 1. 是问答类型主题
+                // 2. 是主题作者
+                // 3. 不是首楼
+                // 4. 不是自己的回复
+                // 5. 帖子未被删除
+                // 6. 还没有已采纳的答案，或者当前就是被采纳的楼层
                 const showAcceptButton = Boolean(
                   isQuestionTopic &&
                   isTopicOwner &&
                   index !== 0 &&
                   post.author.id !== currentUserId &&
-                  !post.isDeleted
+                  !post.isDeleted &&
+                  (!hasAcceptedAnswer || post.questionAcceptance)
                 )
 
                 return (
