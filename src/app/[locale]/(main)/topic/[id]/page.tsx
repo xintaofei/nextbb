@@ -566,15 +566,6 @@ export default function TopicPage() {
         )}
       </div>
 
-      {/* 投票组件 - 仅在POLL类型主题显示 */}
-      {topicInfo && topicInfo.type === TopicType.POLL && (
-        <PollDisplay
-          topicId={id}
-          topicStatus={topicInfo.status || "ACTIVE"}
-          endTime={topicInfo.endTime || null}
-        />
-      )}
-
       <div className="flex flex-row justify-between gap-16">
         <div className="flex-1">
           {postListLoading ? (
@@ -604,6 +595,17 @@ export default function TopicPage() {
                   replyText={t("reply")}
                   deletedText={t("deleted")}
                   highlight={highlightIndex === index}
+                  pollSlot={
+                    index === 0 &&
+                    topicInfo &&
+                    topicInfo.type === TopicType.POLL ? (
+                      <PollDisplay
+                        topicId={id}
+                        topicStatus={topicInfo.status || "ACTIVE"}
+                        endTime={topicInfo.endTime || null}
+                      />
+                    ) : undefined
+                  }
                 />
               ))}
               {validatingPosts && hasMore && <PostSkeletonList count={3} />}

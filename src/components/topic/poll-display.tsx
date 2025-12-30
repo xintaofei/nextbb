@@ -142,7 +142,8 @@ export function PollDisplay({
     if (data?.userVotedOptionIds && selectedOptions.length === 0) {
       setSelectedOptions(data.userVotedOptionIds)
     }
-  }, [data?.userVotedOptionIds, selectedOptions.length])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [data?.userVotedOptionIds])
 
   if (isLoading || !data) {
     return (
@@ -244,7 +245,12 @@ export function PollDisplay({
               {t("voteClosed")}
             </Badge>
           ) : timeRemaining ? (
-            <div className={cn("flex items-center gap-1 text-sm font-medium", getTimeRemainingColor())}>
+            <div
+              className={cn(
+                "flex items-center gap-1 text-sm font-medium",
+                getTimeRemainingColor()
+              )}
+            >
               <Clock className="h-3 w-3" />
               <span>
                 {t("timeRemaining")}{" "}
@@ -269,27 +275,36 @@ export function PollDisplay({
           <div className="space-y-3">
             {options.map((option) => {
               const isSelected = selectedOptions.includes(option.id)
-              const showResults = isClosed || hasVoted || config.showResultsBeforeVote
+              const showResults =
+                isClosed || hasVoted || config.showResultsBeforeVote
 
               return (
                 <div
                   key={option.id}
                   className={cn(
                     "relative p-4 border rounded-lg transition-all",
-                    isSelected && option.userVoted && "border-primary bg-primary/5",
-                    !isClosed && canVote && "cursor-pointer hover:border-primary/50"
+                    isSelected &&
+                      option.userVoted &&
+                      "border-primary bg-primary/5",
+                    !isClosed &&
+                      canVote &&
+                      "cursor-pointer hover:border-primary/50"
                   )}
                   onClick={() => handleOptionChange(option.id)}
                 >
                   <div className="flex items-start gap-3">
                     <Checkbox
+                      id={`poll-option-${option.id}`}
                       checked={isSelected}
                       disabled={isClosed || !canVote}
-                      className="mt-1"
+                      className="mt-1 pointer-events-none"
                     />
                     <div className="flex-1 space-y-2">
                       <div className="flex items-center justify-between gap-2">
-                        <Label className="text-base font-medium flex items-center gap-2">
+                        <Label
+                          htmlFor={`poll-option-${option.id}`}
+                          className="text-base font-medium flex items-center gap-2 cursor-pointer"
+                        >
                           {option.text}
                           {option.userVoted && (
                             <Badge variant="default" className="text-xs">
@@ -322,29 +337,46 @@ export function PollDisplay({
             })}
           </div>
         ) : (
-          <RadioGroup value={selectedOptions[0]} onValueChange={handleOptionChange}>
+          <RadioGroup
+            value={selectedOptions[0]}
+            onValueChange={handleOptionChange}
+          >
             {options.map((option) => {
               const isSelected = selectedOptions.includes(option.id)
-              const showResults = isClosed || hasVoted || config.showResultsBeforeVote
+              const showResults =
+                isClosed || hasVoted || config.showResultsBeforeVote
 
               return (
                 <div
                   key={option.id}
                   className={cn(
                     "relative p-4 border rounded-lg transition-all",
-                    isSelected && option.userVoted && "border-primary bg-primary/5",
-                    !isClosed && canVote && "cursor-pointer hover:border-primary/50"
+                    isSelected &&
+                      option.userVoted &&
+                      "border-primary bg-primary/5",
+                    !isClosed &&
+                      canVote &&
+                      "cursor-pointer hover:border-primary/50"
                   )}
+                  onClick={() => {
+                    if (!isClosed && canVote) {
+                      handleOptionChange(option.id)
+                    }
+                  }}
                 >
                   <div className="flex items-start gap-3">
                     <RadioGroupItem
+                      id={`poll-option-${option.id}`}
                       value={option.id}
                       disabled={isClosed || !canVote}
-                      className="mt-1"
+                      className="mt-1 pointer-events-none"
                     />
                     <div className="flex-1 space-y-2">
                       <div className="flex items-center justify-between gap-2">
-                        <Label className="text-base font-medium flex items-center gap-2">
+                        <Label
+                          htmlFor={`poll-option-${option.id}`}
+                          className="text-base font-medium flex items-center gap-2 cursor-pointer"
+                        >
                           {option.text}
                           {option.userVoted && (
                             <Badge variant="default" className="text-xs">

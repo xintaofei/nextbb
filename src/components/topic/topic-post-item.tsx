@@ -16,6 +16,7 @@ import { UserBadgesDisplay } from "@/components/common/user-badges-display"
 import { UserInfoCard } from "@/components/common/user-info-card"
 import { Separator } from "@/components/ui/separator"
 import { useIsMobile } from "@/hooks/use-mobile"
+import { ReactNode } from "react"
 
 export function TopicPostItem({
   post,
@@ -36,6 +37,7 @@ export function TopicPostItem({
   replyText,
   deletedText,
   highlight = false,
+  pollSlot,
 }: {
   post: PostItem
   index: number
@@ -55,6 +57,7 @@ export function TopicPostItem({
   replyText: string
   deletedText: string
   highlight?: boolean
+  pollSlot?: ReactNode
 }) {
   const isMobile = useIsMobile()
 
@@ -104,6 +107,7 @@ export function TopicPostItem({
             post.content
           )}
         </TimelineStepsDescription>
+        {pollSlot}
         <TimelineStepsAction>
           {post.isDeleted ? null : (
             <>
