@@ -133,6 +133,15 @@ export function TopicForm({
       } as FormValues
     }
 
+    // 如果是 BOUNTY 类型，添加默认 bountyType 和 bountySlots
+    if (typeValue === TopicType.BOUNTY) {
+      baseValues = {
+        ...baseValues,
+        bountyType: "SINGLE",
+        bountySlots: 1,
+      } as FormValues
+    }
+
     // 重置表单为新类型
     form.reset(baseValues, { keepErrors: false })
   }

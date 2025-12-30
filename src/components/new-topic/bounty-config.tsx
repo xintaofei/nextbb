@@ -53,7 +53,7 @@ export function BountyConfig({ userCredits }: BountyConfigProps) {
             <FormLabel>{tb("form.bountyType")}</FormLabel>
             <FormControl>
               <Tabs
-                value={field.value || BountyType.SINGLE}
+                value={field.value ?? BountyType.SINGLE}
                 onValueChange={(v) => {
                   field.onChange(v)
                   // 切换到单人模式时重置相关字段
