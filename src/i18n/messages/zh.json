@@ -394,6 +394,11 @@
         "placeholder": "0 表示免费参与",
         "info": "用户参与时将扣除相应积分"
       },
+      "participation": {
+        "method": "参与方式",
+        "replyToJoin": "回复主题参与抽奖",
+        "replyAndCost": "回复并扣除 {cost} 积分参与抽奖"
+      },
       "status": {
         "pending": "等待开奖",
         "drawn": "已开奖",

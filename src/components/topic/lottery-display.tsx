@@ -143,6 +143,17 @@ export function LotteryDisplay({ topicId }: LotteryDisplayProps) {
           )}
         </div>
 
+        {/* 参与方式说明 */}
+        <div className="flex items-center gap-2 p-3 rounded-lg bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-900/50">
+          <Users className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+          <div className="text-sm text-blue-900 dark:text-blue-100">
+            <span className="font-medium">{t("participation.method")}:</span>{" "}
+            {data.entryCost > 0
+              ? t("participation.replyAndCost", { cost: data.entryCost })
+              : t("participation.replyToJoin")}
+          </div>
+        </div>
+
         {/* 抽奖详细信息 */}
         <div className="space-y-2">
           {data.drawType === "SCHEDULED" && data.endTime && (

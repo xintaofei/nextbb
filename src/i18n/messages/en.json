@@ -394,6 +394,11 @@
         "placeholder": "0 means free entry",
         "info": "Credits deducted when users participate"
       },
+      "participation": {
+        "method": "How to Participate",
+        "replyToJoin": "Reply to this topic to participate",
+        "replyAndCost": "Reply and pay {cost} credits to participate"
+      },
       "status": {
         "pending": "Pending Draw",
         "drawn": "Drawn",

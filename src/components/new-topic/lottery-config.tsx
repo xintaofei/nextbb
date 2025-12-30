@@ -1,5 +1,6 @@
 "use client"
 
+import { useState } from "react"
 import { useFormContext, useWatch } from "react-hook-form"
 import { useTranslations } from "next-intl"
 import { Input } from "@/components/ui/input"
@@ -18,6 +19,9 @@ import { DrawType, AlgorithmType } from "@/types/topic-type"
 export function LotteryConfig() {
   const form = useFormContext()
   const tf = useTranslations("Topic.Lottery")
+
+  // 用于指定楼层输入的临时状态
+  const [floorInput, setFloorInput] = useState("")
 
   // 监听开奖类型和算法类型的变化
   const drawType = useWatch({ control: form.control, name: "drawType" })
@@ -217,15 +221,15 @@ export function LotteryConfig() {
                 <Input
                   type="text"
                   placeholder={tf("fixedFloors.placeholder")}
-                  value={
-                    field.value && Array.isArray(field.value)
-                      ? field.value.join(", ")
-                      : ""
-                  }
+                  value={floorInput}
                   onChange={(e) => {
+                    setFloorInput(e.target.value)
+                  }}
+                  onBlur={(e) => {
                     const input = e.target.value
                     if (!input) {
                       field.onChange([])
+                      setFloorInput("")
                       return
                     }
                     // 解析逗号分隔的楼层号
@@ -237,6 +241,18 @@ export function LotteryConfig() {
                       })
                       .filter((f) => f !== null) as number[]
                     field.onChange(floors)
+                    // 更新显示值为格式化后的楼层列表
+                    setFloorInput(floors.join(", "))
+                  }}
+                  onFocus={() => {
+                    // 获取焦点时，如果floorInput为空且field有值，将field值显示到输入框
+                    if (
+                      !floorInput &&
+                      field.value &&
+                      Array.isArray(field.value)
+                    ) {
+                      setFloorInput(field.value.join(", "))
+                    }
                   }}
                 />
               </FormControl>
