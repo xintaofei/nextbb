@@ -629,25 +629,37 @@ export default function TopicPage() {
         (pages) =>
           pages?.map((pg) => ({
             ...pg,
-            items: pg.items.map((p) =>
-              p.id === postId
-                ? {
-                    ...p,
-                    questionAcceptance: isAccepted
-                      ? null
-                      : currentUserId_ && currentUserProfile_
-                        ? {
-                            acceptedBy: {
-                              id: currentUserId_,
-                              name: currentUserProfile_.username,
-                              avatar: currentUserProfile_.avatar,
-                            },
-                            acceptedAt: new Date().toISOString(),
-                          }
-                        : null,
-                  }
-                : p
-            ),
+            items: pg.items.map((p) => {
+              // 如果是取消采纳，清除所有帖子的采纳状态
+              if (isAccepted) {
+                return {
+                  ...p,
+                  questionAcceptance: null,
+                }
+              }
+              // 如果是新采纳，只给当前帖子设置采纳状态，其他帖子清除
+              if (p.id === postId) {
+                return {
+                  ...p,
+                  questionAcceptance:
+                    currentUserId_ && currentUserProfile_
+                      ? {
+                          acceptedBy: {
+                            id: currentUserId_,
+                            name: currentUserProfile_.username,
+                            avatar: currentUserProfile_.avatar,
+                          },
+                          acceptedAt: new Date().toISOString(),
+                        }
+                      : null,
+                }
+              }
+              // 其他帖子清除采纳状态（因为同一时刻只能有一个被采纳的答案）
+              return {
+                ...p,
+                questionAcceptance: null,
+              }
+            }),
           })) ?? pages,
         false
       )
