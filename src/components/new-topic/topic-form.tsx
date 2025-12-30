@@ -104,6 +104,18 @@ export function TopicForm({
     control: form.control,
     name: "bountyType",
   })
+  const bountyTotalValue = useWatch({
+    control: form.control,
+    name: "bountyTotal",
+  })
+  const bountySlotsValue = useWatch({
+    control: form.control,
+    name: "bountySlots",
+  })
+  const singleAmountValue = useWatch({
+    control: form.control,
+    name: "singleAmount",
+  })
   const allowMultipleValue = useWatch({
     control: form.control,
     name: "pollConfig.allowMultiple",
@@ -407,11 +419,30 @@ export function TopicForm({
                       placeholder="100"
                       {...field}
                       value={field.value || ""}
-                      onChange={(e) =>
-                        field.onChange(
-                          e.target.value ? Number(e.target.value) : undefined
-                        )
-                      }
+                      onChange={(e) => {
+                        const value = e.target.value
+                          ? Number(e.target.value)
+                          : undefined
+                        field.onChange(value)
+
+                        // 多人模式：如果有名额和单次金额，自动计算总额（但不触发此逻辑）
+                        // 这里用户直接输入总额，需要反算单次金额
+                        if (
+                          bountyTypeValue === BountyType.MULTIPLE &&
+                          value &&
+                          bountySlotsValue &&
+                          bountySlotsValue > 0
+                        ) {
+                          const calculatedSingle = Math.floor(
+                            value / bountySlotsValue
+                          )
+                          if (calculatedSingle > 0) {
+                            form.setValue("singleAmount", calculatedSingle, {
+                              shouldValidate: true,
+                            })
+                          }
+                        }
+                      }}
                     />
                   </FormControl>
                   <FormMessage />
@@ -433,13 +464,40 @@ export function TopicForm({
                           placeholder="2"
                           {...field}
                           value={field.value || ""}
-                          onChange={(e) =>
-                            field.onChange(
-                              e.target.value
-                                ? Number(e.target.value)
-                                : undefined
-                            )
-                          }
+                          onChange={(e) => {
+                            const value = e.target.value
+                              ? Number(e.target.value)
+                              : undefined
+                            field.onChange(value)
+
+                            // 多人模式：名额变化时自动重新计算
+                            if (value && value > 0) {
+                              // 优先使用总额反算单次金额
+                              if (bountyTotalValue && bountyTotalValue > 0) {
+                                const calculatedSingle = Math.floor(
+                                  bountyTotalValue / value
+                                )
+                                if (calculatedSingle > 0) {
+                                  form.setValue(
+                                    "singleAmount",
+                                    calculatedSingle,
+                                    { shouldValidate: true }
+                                  )
+                                }
+                              }
+                              // 如果没有总额但有单次金额，用单次金额算总额
+                              else if (
+                                singleAmountValue &&
+                                singleAmountValue > 0
+                              ) {
+                                const calculatedTotal =
+                                  singleAmountValue * value
+                                form.setValue("bountyTotal", calculatedTotal, {
+                                  shouldValidate: true,
+                                })
+                              }
+                            }
+                          }}
                         />
                       </FormControl>
                       <FormMessage />
@@ -459,13 +517,25 @@ export function TopicForm({
                           placeholder="50"
                           {...field}
                           value={field.value || ""}
-                          onChange={(e) =>
-                            field.onChange(
-                              e.target.value
-                                ? Number(e.target.value)
-                                : undefined
-                            )
-                          }
+                          onChange={(e) => {
+                            const value = e.target.value
+                              ? Number(e.target.value)
+                              : undefined
+                            field.onChange(value)
+
+                            // 多人模式：单次金额变化时，如果有名额，自动计算总额
+                            if (
+                              value &&
+                              value > 0 &&
+                              bountySlotsValue &&
+                              bountySlotsValue > 0
+                            ) {
+                              const calculatedTotal = value * bountySlotsValue
+                              form.setValue("bountyTotal", calculatedTotal, {
+                                shouldValidate: true,
+                              })
+                            }
+                          }}
                         />
                       </FormControl>
                       <FormDescription>{tb("form.totalHint")}</FormDescription>

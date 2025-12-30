@@ -30,23 +30,13 @@ const bountySingleSchema = baseTopicSchema.extend({
   singleAmount: z.undefined().optional(),
 })
 
-const bountyMultipleSchema = baseTopicSchema
-  .extend({
-    type: z.literal(TopicType.BOUNTY),
-    bountyType: z.literal(BountyType.MULTIPLE),
-    bountyTotal: z.number().int().positive(),
-    bountySlots: z.number().int().min(2),
-    singleAmount: z.number().int().positive(),
-  })
-  .refine(
-    (data) => {
-      return data.bountyTotal === data.singleAmount * data.bountySlots
-    },
-    {
-      message: "Bounty total must equal single amount × slots",
-      path: ["bountyTotal"],
-    }
-  )
+const bountyMultipleSchema = baseTopicSchema.extend({
+  type: z.literal(TopicType.BOUNTY),
+  bountyType: z.literal(BountyType.MULTIPLE),
+  bountyTotal: z.number().int().positive(),
+  bountySlots: z.number().int().min(2),
+  singleAmount: z.number().int().positive(),
+})
 
 const bountyTopicSchema = z.discriminatedUnion("bountyType", [
   bountySingleSchema,
@@ -147,25 +137,15 @@ export function createBountySchemaWithCredits(userCredits: number) {
     singleAmount: z.undefined().optional(),
   })
 
-  const bountyMultipleWithCredits = baseTopicSchema
-    .extend({
-      type: z.literal(TopicType.BOUNTY),
-      bountyType: z.literal(BountyType.MULTIPLE),
-      bountyTotal: z.number().int().positive().max(userCredits, {
-        message: "Insufficient credits",
-      }),
-      bountySlots: z.number().int().min(2),
-      singleAmount: z.number().int().positive(),
-    })
-    .refine(
-      (data) => {
-        return data.bountyTotal === data.singleAmount * data.bountySlots
-      },
-      {
-        message: "Bounty total must equal single amount × slots",
-        path: ["bountyTotal"],
-      }
-    )
+  const bountyMultipleWithCredits = baseTopicSchema.extend({
+    type: z.literal(TopicType.BOUNTY),
+    bountyType: z.literal(BountyType.MULTIPLE),
+    bountyTotal: z.number().int().positive().max(userCredits, {
+      message: "Insufficient credits",
+    }),
+    bountySlots: z.number().int().min(2),
+    singleAmount: z.number().int().positive(),
+  })
 
   return z.discriminatedUnion("bountyType", [
     bountySingleWithCredits,
