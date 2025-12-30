@@ -327,10 +327,10 @@ const PollTopicCreateSchema = BaseTopicCreateSchema.extend({
   endTime: z.string(),
   pollConfig: z
     .object({
-      allowMultiple: z.boolean().default(false),
-      maxChoices: z.number().int().positive().optional(),
-      showResultsBeforeVote: z.boolean().default(false),
-      showVoterList: z.boolean().default(false),
+      allowMultiple: z.boolean(),
+      maxChoices: z.number().int().positive().nullable().optional(),
+      showResultsBeforeVote: z.boolean(),
+      showVoterList: z.boolean(),
     })
     .optional(),
 })

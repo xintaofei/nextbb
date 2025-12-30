@@ -28,32 +28,54 @@ const bountyTopicSchema = baseTopicSchema.extend({
 })
 
 // POLL 类型 - 需要投票选项和配置
-const pollTopicSchema = baseTopicSchema.extend({
-  type: z.literal(TopicType.POLL),
-  pollOptions: z
-    .array(
-      z.object({
-        text: z.string().min(1).max(256),
+const pollTopicSchema = baseTopicSchema
+  .extend({
+    type: z.literal(TopicType.POLL),
+    pollOptions: z
+      .array(
+        z.object({
+          text: z.string().min(1).max(256),
+        })
+      )
+      .min(2)
+      .max(10),
+    endTime: z.string().refine(
+      (val) => {
+        const date = new Date(val)
+        return date > new Date()
+      },
+      { message: "Poll end time must be in the future" }
+    ),
+    pollConfig: z
+      .object({
+        allowMultiple: z.boolean(),
+        maxChoices: z.number().int().positive().nullable().optional(),
+        showResultsBeforeVote: z.boolean(),
+        showVoterList: z.boolean(),
       })
-    )
-    .min(2)
-    .max(10),
-  endTime: z.string().refine(
-    (val) => {
-      const date = new Date(val)
-      return date > new Date()
+      .optional(),
+  })
+  .refine(
+    (data) => {
+      // 如果没有 pollConfig，跳过验证
+      if (!data.pollConfig) return true
+
+      const { allowMultiple, maxChoices } = data.pollConfig
+      const optionsCount = data.pollOptions.length
+
+      // 如果允许多选且设置了maxChoices
+      if (allowMultiple && maxChoices !== null && maxChoices !== undefined) {
+        // 必须大于1且不能超过选项数量
+        return maxChoices > 1 && maxChoices <= optionsCount
+      }
+      return true
     },
-    { message: "Poll end time must be in the future" }
-  ),
-  pollConfig: z
-    .object({
-      allowMultiple: z.boolean(),
-      maxChoices: z.number().int().positive().optional(),
-      showResultsBeforeVote: z.boolean(),
-      showVoterList: z.boolean(),
-    })
-    .optional(),
-})
+    {
+      message:
+        "Max choices must be greater than 1 and not exceed the number of options",
+      path: ["pollConfig", "maxChoices"],
+    }
+  )
 
 // LOTTERY 类型 - 需要抽奖配置
 const lotteryTopicSchema = baseTopicSchema.extend({

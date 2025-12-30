@@ -99,6 +99,10 @@ export function TopicForm({
 
   const titleValue = useWatch({ control: form.control, name: "title" })
   const contentValue = useWatch({ control: form.control, name: "content" })
+  const allowMultipleValue = useWatch({
+    control: form.control,
+    name: "pollConfig.allowMultiple",
+  })
   const titleCount = titleValue?.length || 0
   const contentCount = contentValue?.length || 0
 
@@ -110,7 +114,7 @@ export function TopicForm({
     const currentValues = form.getValues()
 
     // 根据类型重置表单，保留基础字段
-    const baseValues: FormValues = {
+    let baseValues: FormValues = {
       type: typeValue,
       title: currentValues.title || "",
       categoryId: currentValues.categoryId || "",
@@ -119,6 +123,19 @@ export function TopicForm({
       isPinned: currentValues.isPinned || false,
       isCommunity: currentValues.isCommunity || false,
     } as FormValues
+
+    // 如果是 POLL 类型，添加默认 pollConfig
+    if (typeValue === TopicType.POLL) {
+      baseValues = {
+        ...baseValues,
+        pollConfig: {
+          allowMultiple: false,
+          maxChoices: null,
+          showResultsBeforeVote: false,
+          showVoterList: false,
+        },
+      } as FormValues
+    }
 
     // 重置表单为新类型
     form.reset(baseValues, { keepErrors: false })
@@ -177,7 +194,9 @@ export function TopicForm({
   return (
     <Form {...form}>
       <form
-        onSubmit={form.handleSubmit((data) => onSubmit(data))}
+        onSubmit={form.handleSubmit((data) => {
+          onSubmit(data)
+        })}
         className="space-y-6"
       >
         {/* 类型选择 Tabs */}
@@ -413,7 +432,13 @@ export function TopicForm({
                     <FormControl>
                       <Checkbox
                         checked={field.value ?? false}
-                        onCheckedChange={(v) => field.onChange(Boolean(v))}
+                        onCheckedChange={(v) => {
+                          field.onChange(Boolean(v))
+                          // 取消多选时清空maxChoices
+                          if (!v) {
+                            form.setValue("pollConfig.maxChoices", null)
+                          }
+                        }}
                         aria-label={tf("pollConfig.allowMultiple")}
                       />
                     </FormControl>
@@ -425,29 +450,31 @@ export function TopicForm({
                 )}
               />
 
-              <FormField
-                control={form.control}
-                name="pollConfig.maxChoices"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>{tf("pollConfig.maxChoices")}</FormLabel>
-                    <FormControl>
-                      <Input
-                        type="number"
-                        placeholder={tf("pollConfig.maxChoicesPlaceholder")}
-                        {...field}
-                        value={field.value || ""}
-                        onChange={(e) =>
-                          field.onChange(
-                            e.target.value ? Number(e.target.value) : null
-                          )
-                        }
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+              {allowMultipleValue && (
+                <FormField
+                  control={form.control}
+                  name="pollConfig.maxChoices"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>{tf("pollConfig.maxChoices")}</FormLabel>
+                      <FormControl>
+                        <Input
+                          type="number"
+                          placeholder={tf("pollConfig.maxChoicesPlaceholder")}
+                          {...field}
+                          value={field.value || ""}
+                          onChange={(e) =>
+                            field.onChange(
+                              e.target.value ? Number(e.target.value) : null
+                            )
+                          }
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              )}
 
               <FormField
                 control={form.control}
