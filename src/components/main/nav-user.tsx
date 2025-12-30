@@ -45,6 +45,7 @@ type MeUser = {
   id: string
   email?: string | null
   isAdmin: boolean
+  credits: number
 }
 
 type MeResponse = {

@@ -26,6 +26,7 @@ export function NewTopicButton({ onClick, className }: NewTopicButtonProps) {
   type MeUser = {
     id: string
     email?: string | null
+    credits: number
   }
   type MeResponse = {
     user: MeUser

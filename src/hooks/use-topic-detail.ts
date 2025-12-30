@@ -36,7 +36,7 @@ type TopicDetail = {
 }
 
 type MeResponse = {
-  user: { id: string; email: string }
+  user: { id: string; email: string; isAdmin: boolean; credits: number }
   profile: { id: string; email: string; username: string; avatar: string }
 } | null
 

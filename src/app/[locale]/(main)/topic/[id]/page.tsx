@@ -323,6 +323,8 @@ export default function TopicPage() {
             user: {
               id: string
               email: string
+              isAdmin: boolean
+              credits: number
             }
             profile: {
               id: string

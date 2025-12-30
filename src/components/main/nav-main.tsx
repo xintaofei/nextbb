@@ -34,6 +34,7 @@ type MeResponse = {
     id: string
     email?: string | null
     isAdmin: boolean
+    credits: number
   }
   profile?: {
     id: string
