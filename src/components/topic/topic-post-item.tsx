@@ -37,7 +37,7 @@ export function TopicPostItem({
   replyText,
   deletedText,
   highlight = false,
-  pollSlot,
+  topicTypeSlot,
 }: {
   post: PostItem
   index: number
@@ -57,7 +57,7 @@ export function TopicPostItem({
   replyText: string
   deletedText: string
   highlight?: boolean
-  pollSlot?: ReactNode
+  topicTypeSlot?: ReactNode
 }) {
   const isMobile = useIsMobile()
 
@@ -107,7 +107,7 @@ export function TopicPostItem({
             post.content
           )}
         </TimelineStepsDescription>
-        {pollSlot}
+        {topicTypeSlot}
         <TimelineStepsAction>
           {post.isDeleted ? null : (
             <>

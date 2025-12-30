@@ -34,6 +34,7 @@ import { TagBadge } from "@/components/common/tag-badge"
 import { TopicStatusTags } from "@/components/common/topic-status-tags"
 import { PollDisplay } from "@/components/topic/poll-display"
 import { type TopicTypeValue, TopicType } from "@/types/topic-type"
+import { ReactNode } from "react"
 
 export default function TopicPage() {
   const { id } = useParams<{ id: string }>()
@@ -509,6 +510,34 @@ export default function TopicPage() {
     return () => observer.disconnect()
   }, [hasMore, loadingPosts, setSize, sentinelRef])
 
+  /**
+   * 根据主题类型渲染特定内容插槽
+   * @param index - 帖子索引
+   * @returns 主题类型特定的内容组件，仅在第一个帖子（楼主）显示
+   */
+  const renderTopicTypeSlot = (index: number): ReactNode => {
+    // 只在第一个帖子（楼主）显示主题类型特定内容
+    if (index !== 0 || !topicInfo) return undefined
+
+    switch (topicInfo.type) {
+      case TopicType.POLL:
+        return (
+          <PollDisplay
+            topicId={id}
+            topicStatus={topicInfo.status || "ACTIVE"}
+            endTime={topicInfo.endTime || null}
+          />
+        )
+      // 未来可以在这里添加其他主题类型的特殊内容
+      // case TopicType.EVENT:
+      //   return <EventDisplay ... />
+      // case TopicType.ANNOUNCEMENT:
+      //   return <AnnouncementDisplay ... />
+      default:
+        return undefined
+    }
+  }
+
   return (
     <div className="flex min-h-screen w-full flex-col p-8 max-sm:p-4 gap-8">
       <div className="flex flex-col gap-2">
@@ -595,17 +624,7 @@ export default function TopicPage() {
                   replyText={t("reply")}
                   deletedText={t("deleted")}
                   highlight={highlightIndex === index}
-                  pollSlot={
-                    index === 0 &&
-                    topicInfo &&
-                    topicInfo.type === TopicType.POLL ? (
-                      <PollDisplay
-                        topicId={id}
-                        topicStatus={topicInfo.status || "ACTIVE"}
-                        endTime={topicInfo.endTime || null}
-                      />
-                    ) : undefined
-                  }
+                  topicTypeSlot={renderTopicTypeSlot(index)}
                 />
               ))}
               {validatingPosts && hasMore && <PostSkeletonList count={3} />}
