@@ -350,6 +350,9 @@
       }
     },
     "Lottery": {
+      "info": {
+        "title": "Lottery Info"
+      },
       "drawType": {
         "label": "Draw Type",
         "scheduled": "Scheduled Draw",

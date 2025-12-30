@@ -18,6 +18,7 @@ import {
   Coins,
   Check,
   X,
+  Gift,
 } from "lucide-react"
 import { formatRelative } from "@/lib/time"
 import { PostItem } from "@/types/topic"
@@ -129,6 +130,15 @@ export function TopicPostItem({
                 className="bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400 flex items-center gap-1"
               >
                 <Coins className="h-3 w-3" />+{post.bountyReward.amount}
+              </Badge>
+            )}
+            {post.lotteryWin && (
+              <Badge
+                variant="secondary"
+                className="bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400 flex items-center gap-1"
+              >
+                <Gift className="h-3 w-3" />
+                中奖
               </Badge>
             )}
             {post.questionAcceptance && (

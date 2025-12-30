@@ -350,6 +350,9 @@
       }
     },
     "Lottery": {
+      "info": {
+        "title": "抽奖信息"
+      },
       "drawType": {
         "label": "开奖类型",
         "scheduled": "定时开奖",

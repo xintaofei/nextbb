@@ -38,6 +38,9 @@ export type PostItem = {
     }
     acceptedAt: string
   } | null
+  lotteryWin?: {
+    wonAt: string
+  } | null
 }
 
 export type RelatedTopicItem = {

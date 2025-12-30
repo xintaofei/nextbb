@@ -42,6 +42,9 @@ type PostItem = {
     }
     acceptedAt: string
   } | null
+  lotteryWin?: {
+    wonAt: string
+  } | null
 }
 
 type PostPage = {
@@ -238,6 +241,23 @@ export async function GET(
     }
   }
 
+  // 查询抽奖中奖记录
+  const lotteryWinnersMap = new Map<string, { wonAt: string }>()
+  if (postIds.length > 0) {
+    const lotteryWinners = await prisma.lottery_winners.findMany({
+      where: { post_id: { in: postIds } },
+      select: {
+        post_id: true,
+        won_at: true,
+      },
+    })
+    for (const winner of lotteryWinners) {
+      lotteryWinnersMap.set(String(winner.post_id), {
+        wonAt: winner.won_at.toISOString(),
+      })
+    }
+  }
+
   const items: PostItem[] = postsDb.map((p: PostRow) => {
     const idStr = String(p.id)
     const userId = String(p.user.id)
@@ -262,6 +282,7 @@ export async function GET(
       badges: userBadgesMap.get(userId) ?? [],
       bountyReward: bountyRewardsMap.get(idStr) ?? null,
       questionAcceptance: questionAcceptancesMap.get(idStr) ?? null,
+      lotteryWin: lotteryWinnersMap.get(idStr) ?? null,
     }
   })
 

@@ -35,6 +35,7 @@ import { TopicStatusTags } from "@/components/common/topic-status-tags"
 import { PollDisplay } from "@/components/topic/poll-display"
 import { BountyDisplay } from "@/components/topic/bounty-display"
 import { QuestionAcceptanceDisplay } from "@/components/topic/question-acceptance-display"
+import { LotteryDisplay } from "@/components/topic/lottery-display"
 import { type TopicTypeValue, TopicType, BountyType } from "@/types/topic-type"
 import { ReactNode } from "react"
 
@@ -734,6 +735,8 @@ export default function TopicPage() {
             topicIsSettled={topicInfo.isSettled || false}
           />
         )
+      case TopicType.LOTTERY:
+        return <LotteryDisplay topicId={id} />
       // 未来可以在这里添加其他主题类型的特殊内容
       // case TopicType.EVENT:
       //   return <EventDisplay ... />
