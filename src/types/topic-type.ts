@@ -99,6 +99,30 @@ export type BountyReward = {
   createdAt: string
 }
 
+// 采纳信息类型
+export type QuestionAcceptance = {
+  hasAcceptance: boolean
+  postId?: string
+  acceptedBy?: {
+    id: string
+    name: string
+    avatar: string
+  }
+  acceptedAt?: string
+}
+
+// 采纳操作请求类型
+export type AcceptRequest = {
+  postId: string | null
+}
+
+// 采纳操作响应类型
+export type AcceptResponse = {
+  success: boolean
+  isSettled: boolean
+  acceptedPostId: string | null
+}
+
 // 扩展的主题信息类型
 export type TopicTypeInfo = {
   type: TopicTypeValue
@@ -109,6 +133,7 @@ export type TopicTypeInfo = {
   pollConfig?: PollConfig | null
   lotteryConfig?: LotteryConfig | null
   bountyConfig?: BountyConfig | null
+  questionAcceptance?: QuestionAcceptance | null
 }
 
 // 列表页主题类型扩展字段

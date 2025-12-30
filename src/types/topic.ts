@@ -30,6 +30,14 @@ export type PostItem = {
     amount: number
     createdAt: string
   } | null
+  questionAcceptance?: {
+    acceptedBy: {
+      id: string
+      name: string
+      avatar: string
+    }
+    acceptedAt: string
+  } | null
 }
 
 export type RelatedTopicItem = {

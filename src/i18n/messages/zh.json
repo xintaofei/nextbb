@@ -274,6 +274,32 @@
         "totalMismatch": "总赏金必须等于单次金额乘以名额"
       }
     },
+    "Question": {
+      "acceptance": {
+        "title": "最佳答案",
+        "status": {
+          "settled": "已采纳",
+          "noAnswer": "暂无最佳答案"
+        },
+        "info": {
+          "acceptedBy": "采纳人",
+          "acceptedAt": "采纳时间",
+          "acceptedPost": "最佳答案楼层"
+        }
+      },
+      "actions": {
+        "accept": "采纳",
+        "cancelAccept": "取消采纳",
+        "accepting": "采纳中",
+        "canceling": "取消中"
+      },
+      "messages": {
+        "acceptSuccess": "采纳成功",
+        "cancelSuccess": "取消采纳成功",
+        "acceptError": "采纳失败",
+        "cancelError": "取消采纳失败"
+      }
+    },
     "Form": {
       "rewardPoints": {
         "label": "悬赏积分",

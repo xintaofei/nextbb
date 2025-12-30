@@ -274,6 +274,32 @@
         "totalMismatch": "Bounty total must equal single amount × slots"
       }
     },
+    "Question": {
+      "acceptance": {
+        "title": "Best Answer",
+        "status": {
+          "settled": "Accepted",
+          "noAnswer": "No best answer yet"
+        },
+        "info": {
+          "acceptedBy": "Accepted by",
+          "acceptedAt": "Accepted at",
+          "acceptedPost": "Best answer floor"
+        }
+      },
+      "actions": {
+        "accept": "Accept",
+        "cancelAccept": "Cancel",
+        "accepting": "Accepting",
+        "canceling": "Canceling"
+      },
+      "messages": {
+        "acceptSuccess": "Answer accepted successfully",
+        "cancelSuccess": "Acceptance canceled successfully",
+        "acceptError": "Failed to accept answer",
+        "cancelError": "Failed to cancel acceptance"
+      }
+    },
     "Form": {
       "rewardPoints": {
         "label": "Reward Points",
@@ -962,63 +988,6 @@
       "notFoundDescription": "This user may have been deleted, disabled, or never existed.",
       "backToHome": "Back to Home",
       "unauthorized": "You do not have permission to access this page",
-      "empty": {
-        "activity": "No activity yet",
-        "topics": "No topics yet",
-        "posts": "No posts yet",
-        "likes": "No liked posts yet",
-        "bookmarks": "No bookmarks yet",
-        "badges": "No badges yet"
-      }
-    },
-    "activity": {
-      "all": "All Activity",
-      "topics": "Topics",
-      "posts": "Posts",
-      "likes": "Liked",
-      "bookmarks": "Bookmarks"
-    },
-    "preferences": {
-      "account": {
-        "title": "Account Settings"
-      },
-      "security": {
-        "title": "Security Settings"
-      },
-      "interface": {
-        "title": "Interface Settings"
-      },
-      "notifications": {
-        "title": "Notification Preferences"
-      },
-      "privacy": {
-        "title": "Privacy Settings"
-      }
-    }
-  },
-  "UserCard": {
-    "viewProfile": "View Profile",
-    "follow": "Follow",
-    "following": "Following",
-    "message": "Message",
-    "admin": "Admin",
-    "badges": "Badges",
-    "joinedAt": "Joined",
-    "statistics": {
-      "topics": "Topics",
-      "posts": "Posts",
-      "likes": "Likes",
-      "followers": "Followers",
-      "credits": "Credits"
-    },
-    "loading": "Loading...",
-    "loadingStats": "Loading statistics...",
-    "followSuccess": "Followed successfully",
-    "unfollowSuccess": "Unfollowed successfully",
-    "followError": "Operation failed, please try again later",
-    "messageError": "Failed to create conversation, please try again later"
-  }
-}
       "empty": {
         "activity": "No activity yet",
         "topics": "No topics yet",
