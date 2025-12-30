@@ -383,6 +383,113 @@ export function TopicForm({
                 {tf("pollOptions.addOption")}
               </Button>
             )}
+
+            <FormField
+              control={form.control}
+              name="endTime"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>{tf("endTime.label")}</FormLabel>
+                  <FormControl>
+                    <Input
+                      type="datetime-local"
+                      {...field}
+                      value={field.value || ""}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <div className="space-y-3">
+              <FormLabel>{tf("pollConfig.label")}</FormLabel>
+
+              <FormField
+                control={form.control}
+                name="pollConfig.allowMultiple"
+                render={({ field }) => (
+                  <FormItem className="flex flex-row items-center gap-3">
+                    <FormControl>
+                      <Checkbox
+                        checked={field.value ?? false}
+                        onCheckedChange={(v) => field.onChange(Boolean(v))}
+                        aria-label={tf("pollConfig.allowMultiple")}
+                      />
+                    </FormControl>
+                    <FormLabel className="m-0">
+                      {tf("pollConfig.allowMultiple")}
+                    </FormLabel>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="pollConfig.maxChoices"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>{tf("pollConfig.maxChoices")}</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="number"
+                        placeholder={tf("pollConfig.maxChoicesPlaceholder")}
+                        {...field}
+                        value={field.value || ""}
+                        onChange={(e) =>
+                          field.onChange(
+                            e.target.value ? Number(e.target.value) : null
+                          )
+                        }
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="pollConfig.showResultsBeforeVote"
+                render={({ field }) => (
+                  <FormItem className="flex flex-row items-center gap-3">
+                    <FormControl>
+                      <Checkbox
+                        checked={field.value ?? false}
+                        onCheckedChange={(v) => field.onChange(Boolean(v))}
+                        aria-label={tf("pollConfig.showResultsBeforeVote")}
+                      />
+                    </FormControl>
+                    <FormLabel className="m-0">
+                      {tf("pollConfig.showResultsBeforeVote")}
+                    </FormLabel>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="pollConfig.showVoterList"
+                render={({ field }) => (
+                  <FormItem className="flex flex-row items-center gap-3">
+                    <FormControl>
+                      <Checkbox
+                        checked={field.value ?? false}
+                        onCheckedChange={(v) => field.onChange(Boolean(v))}
+                        aria-label={tf("pollConfig.showVoterList")}
+                      />
+                    </FormControl>
+                    <FormLabel className="m-0">
+                      {tf("pollConfig.showVoterList")}
+                    </FormLabel>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+
             <FormMessage />
           </div>
         )}

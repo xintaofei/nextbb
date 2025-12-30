@@ -25,12 +25,17 @@ interface LotteryConfigsDelegate {
   create(args: unknown): Promise<{ topic_id: bigint }>
 }
 
+interface PollConfigsDelegate {
+  create(args: unknown): Promise<{ topic_id: bigint }>
+}
+
 interface TxClient {
   topics: TopicsDelegate
   posts: PostsDelegate
   topic_tags: TopicTagsDelegate
   poll_options: PollOptionsDelegate
   lottery_configs: LotteryConfigsDelegate
+  poll_configs: PollConfigsDelegate
   users: {
     findUnique(args: unknown): Promise<{ credits: number } | null>
     update(args: unknown): Promise<unknown>
@@ -319,6 +324,15 @@ const PollTopicCreateSchema = BaseTopicCreateSchema.extend({
     .array(z.object({ text: z.string().min(1).max(256) }))
     .min(2)
     .max(10),
+  endTime: z.string(),
+  pollConfig: z
+    .object({
+      allowMultiple: z.boolean().default(false),
+      maxChoices: z.number().int().positive().optional(),
+      showResultsBeforeVote: z.boolean().default(false),
+      showVoterList: z.boolean().default(false),
+    })
+    .optional(),
 })
 
 const LotteryTopicCreateSchema = BaseTopicCreateSchema.extend({
@@ -431,6 +445,17 @@ export async function POST(req: Request) {
         type: body.type,
         reward_points:
           body.type === TopicType.BOUNTY ? body.rewardPoints : null,
+        status:
+          body.type === TopicType.POLL || body.type === TopicType.LOTTERY
+            ? "ACTIVE"
+            : "ACTIVE",
+        end_time:
+          body.type === TopicType.POLL
+            ? new Date(body.endTime)
+            : body.type === TopicType.LOTTERY
+              ? new Date(body.lotteryEndTime)
+              : null,
+        is_settled: false,
         is_pinned: isPinned,
         is_community: isCommunity,
         is_deleted: false,
@@ -463,7 +488,7 @@ export async function POST(req: Request) {
       })
     }
 
-    // POLL 类型创建投票选项
+    // POLL 类型创建投票选项和配置
     if (body.type === TopicType.POLL && body.pollOptions) {
       await client.poll_options.createMany({
         data: body.pollOptions.map((option, index) => ({
@@ -474,6 +499,25 @@ export async function POST(req: Request) {
           is_deleted: false,
           created_at: new Date(),
         })),
+      })
+
+      // 创建投票配置
+      const pollConfig = (body.pollConfig || {}) as {
+        allowMultiple?: boolean
+        maxChoices?: number
+        showResultsBeforeVote?: boolean
+        showVoterList?: boolean
+      }
+      await client.poll_configs.create({
+        data: {
+          topic_id: topic.id,
+          allow_multiple: pollConfig.allowMultiple ?? false,
+          max_choices: pollConfig.maxChoices ?? null,
+          show_results_before_vote: pollConfig.showResultsBeforeVote ?? false,
+          show_voter_list: pollConfig.showVoterList ?? false,
+          created_at: new Date(),
+          updated_at: new Date(),
+        },
       })
     }
 

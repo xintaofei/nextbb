@@ -10,12 +10,49 @@ export const TopicType = {
 
 export type TopicTypeValue = (typeof TopicType)[keyof typeof TopicType]
 
+// 主题状态枚举
+export const TopicStatus = {
+  ACTIVE: "ACTIVE",
+  CLOSED: "CLOSED",
+  DRAFT: "DRAFT",
+} as const
+
+export type TopicStatusValue = (typeof TopicStatus)[keyof typeof TopicStatus]
+
 // 投票选项类型
 export type PollOption = {
   id: string
   text: string
   voteCount: number
   userVoted: boolean
+}
+
+// 投票选项详情类型（包含百分比和排名）
+export type PollOptionDetail = {
+  id: string
+  text: string
+  voteCount: number
+  percentage: number
+  rank: number
+  userVoted: boolean
+  voters?:
+    | {
+        id: string
+        name: string
+        avatar: string
+      }[]
+    | null
+}
+
+// 投票配置类型
+export type PollConfig = {
+  topicId: string
+  allowMultiple: boolean
+  maxChoices: number | null
+  showResultsBeforeVote: boolean
+  showVoterList: boolean
+  totalVotes: number
+  totalVoteCount: number
 }
 
 // 抽奖配置类型
@@ -33,15 +70,21 @@ export type LotteryConfig = {
 // 扩展的主题信息类型
 export type TopicTypeInfo = {
   type: TopicTypeValue
+  status?: TopicStatusValue
+  endTime?: string | null
+  isSettled?: boolean
   acceptedAnswerId?: string | null
   rewardPoints?: number | null
   pollOptions?: PollOption[] | null
+  pollConfig?: PollConfig | null
   lotteryConfig?: LotteryConfig | null
 }
 
 // 列表页主题类型扩展字段
 export type TopicListTypeInfo = {
   type: TopicTypeValue
+  status?: TopicStatusValue
+  endTime?: string | null
   rewardPoints?: number | null
   pollOptionCount?: number | null
   lotteryEndTime?: string | null

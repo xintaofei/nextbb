@@ -228,6 +228,18 @@
         "addOption": "添加选项",
         "removeOption": "删除选项"
       },
+      "endTime": {
+        "label": "投票截止时间",
+        "placeholder": "选择投票截止时间"
+      },
+      "pollConfig": {
+        "label": "投票配置",
+        "allowMultiple": "允许多选",
+        "maxChoices": "最大选择数",
+        "maxChoicesPlaceholder": "输入最大可选数（多选时必填）",
+        "showResultsBeforeVote": "投票前显示结果",
+        "showVoterList": "公开投票者名单"
+      },
       "lotteryEndTime": {
         "label": "开奖时间",
         "placeholder": "选择开奖时间"
@@ -247,9 +259,39 @@
       }
     },
     "Status": {
+      "active": "进行中",
+      "closed": "已结束",
+      "draft": "草稿",
+      "ending": "即将结束",
       "answered": "已采纳",
       "waiting": "等待采纳",
       "drawn": "已开奖"
+    },
+    "Poll": {
+      "title": "投票",
+      "options": "选项",
+      "votes": "票",
+      "totalVotes": "共{count}人投票",
+      "myChoice": "我的选择",
+      "timeRemaining": "离投票结束还有",
+      "voteClosed": "投票已关闭",
+      "days": "天",
+      "hours": "小时",
+      "minutes": "分钟",
+      "seconds": "秒",
+      "vote": "投票",
+      "cancelVote": "取消投票",
+      "viewDetails": "查看详情",
+      "singleChoice": "单选",
+      "multipleChoice": "多选（最多{max}项）",
+      "selectOption": "请选择投票选项",
+      "voteSuccess": "投票成功",
+      "voteCanceled": "投票已取消",
+      "alreadyVoted": "您已投票",
+      "cannotVote": "投票已关闭",
+      "invalidOptions": "无效的选项",
+      "rank": "第{rank}名",
+      "changeVote": "修改投票"
     },
     "Action": {
       "vote": "投票",

@@ -79,6 +79,9 @@ model topics {
   user_id     BigInt   @db.BigInt
   title       String   @db.VarChar(256)
   type        String   @default("GENERAL") @db.VarChar(32)
+  status      String   @default("ACTIVE") @db.VarChar(32)
+  end_time    DateTime?
+  is_settled  Boolean  @default(false)
   accepted_answer_id BigInt? @db.BigInt
   reward_points Int?
   views       Int      @default(0)
@@ -93,12 +96,16 @@ model topics {
   posts    posts[]
   tag_links topic_tags[]
   poll_options poll_options[]
+  poll_config poll_configs?
   lottery_config lottery_configs?
   lottery_participants lottery_participants[]
 
   @@index([user_id], map: "topics_user_index")
   @@index([category_id], map: "topics_category_index")
   @@index([type], map: "topics_type_index")
+  @@index([status, end_time], map: "topics_status_endtime_index")
+  @@index([type, status], map: "topics_type_status_index")
+  @@index([is_settled], map: "topics_settled_index")
   @@map("topics")
 }
 
@@ -319,6 +326,21 @@ model lottery_participants {
   @@index([user_id], map: "lottery_participants_user_index")
   @@index([is_winner], map: "lottery_participants_winner_index")
   @@map("lottery_participants")
+}
+
+model poll_configs {
+  topic_id                 BigInt   @id @db.BigInt
+  allow_multiple           Boolean  @default(false)
+  max_choices              Int?
+  show_results_before_vote Boolean  @default(false)
+  show_voter_list          Boolean  @default(false)
+  created_at               DateTime @default(now())
+  updated_at               DateTime @updatedAt
+
+  topic topics @relation(fields: [topic_id], references: [id])
+
+  @@index([topic_id], map: "poll_configs_topic_index")
+  @@map("poll_configs")
 }
 
 model lottery_configs {

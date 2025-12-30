@@ -27,7 +27,7 @@ const bountyTopicSchema = baseTopicSchema.extend({
   rewardPoints: z.number().int().positive(),
 })
 
-// POLL 类型 - 需要投票选项
+// POLL 类型 - 需要投票选项和配置
 const pollTopicSchema = baseTopicSchema.extend({
   type: z.literal(TopicType.POLL),
   pollOptions: z
@@ -38,6 +38,21 @@ const pollTopicSchema = baseTopicSchema.extend({
     )
     .min(2)
     .max(10),
+  endTime: z.string().refine(
+    (val) => {
+      const date = new Date(val)
+      return date > new Date()
+    },
+    { message: "Poll end time must be in the future" }
+  ),
+  pollConfig: z
+    .object({
+      allowMultiple: z.boolean(),
+      maxChoices: z.number().int().positive().optional(),
+      showResultsBeforeVote: z.boolean(),
+      showVoterList: z.boolean(),
+    })
+    .optional(),
 })
 
 // LOTTERY 类型 - 需要抽奖配置

@@ -32,7 +32,8 @@ import {
 import { CategoryBadge } from "@/components/common/category-badge"
 import { TagBadge } from "@/components/common/tag-badge"
 import { TopicStatusTags } from "@/components/common/topic-status-tags"
-import { type TopicTypeValue } from "@/types/topic-type"
+import { PollDisplay } from "@/components/topic/poll-display"
+import { type TopicTypeValue, TopicType } from "@/types/topic-type"
 
 export default function TopicPage() {
   const { id } = useParams<{ id: string }>()
@@ -564,6 +565,16 @@ export default function TopicPage() {
           </>
         )}
       </div>
+
+      {/* 投票组件 - 仅在POLL类型主题显示 */}
+      {topicInfo && topicInfo.type === TopicType.POLL && (
+        <PollDisplay
+          topicId={id}
+          topicStatus={topicInfo.status || "ACTIVE"}
+          endTime={topicInfo.endTime || null}
+        />
+      )}
+
       <div className="flex flex-row justify-between gap-16">
         <div className="flex-1">
           {postListLoading ? (

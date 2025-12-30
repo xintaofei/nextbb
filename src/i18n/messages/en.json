@@ -228,6 +228,18 @@
         "addOption": "Add Option",
         "removeOption": "Remove Option"
       },
+      "endTime": {
+        "label": "Poll End Time",
+        "placeholder": "Select poll end time"
+      },
+      "pollConfig": {
+        "label": "Poll Configuration",
+        "allowMultiple": "Allow Multiple Choices",
+        "maxChoices": "Max Choices",
+        "maxChoicesPlaceholder": "Enter max choices (required for multiple choice)",
+        "showResultsBeforeVote": "Show Results Before Voting",
+        "showVoterList": "Show Voter List"
+      },
       "lotteryEndTime": {
         "label": "Draw Time",
         "placeholder": "Select draw time"
@@ -247,9 +259,39 @@
       }
     },
     "Status": {
+      "active": "Active",
+      "closed": "Closed",
+      "draft": "Draft",
+      "ending": "Ending Soon",
       "answered": "Answered",
       "waiting": "Waiting",
       "drawn": "Drawn"
+    },
+    "Poll": {
+      "title": "Poll",
+      "options": "Options",
+      "votes": "votes",
+      "totalVotes": "{count} people voted",
+      "myChoice": "My Choice",
+      "timeRemaining": "Time remaining:",
+      "voteClosed": "Poll Closed",
+      "days": "days",
+      "hours": "hours",
+      "minutes": "minutes",
+      "seconds": "seconds",
+      "vote": "Vote",
+      "cancelVote": "Cancel Vote",
+      "viewDetails": "View Details",
+      "singleChoice": "Single Choice",
+      "multipleChoice": "Multiple Choice (up to {max})",
+      "selectOption": "Please select an option",
+      "voteSuccess": "Voted successfully",
+      "voteCanceled": "Vote canceled",
+      "alreadyVoted": "You have already voted",
+      "cannotVote": "Poll is closed",
+      "invalidOptions": "Invalid options",
+      "rank": "#{rank}",
+      "changeVote": "Change Vote"
     },
     "Action": {
       "vote": "Vote",
