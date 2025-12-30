@@ -126,31 +126,21 @@ export function LotteryDisplay({ topicId }: LotteryDisplayProps) {
             </div>
           </div>
 
-          {data.entryCost > 0 && (
-            <div className="flex items-center gap-3 p-3 rounded-lg bg-white/50 dark:bg-gray-900/20">
-              <div className="p-2 rounded-full bg-amber-100 dark:bg-amber-900/30">
-                <Trophy className="h-5 w-5 text-amber-600 dark:text-amber-400" />
+          {/* 参与门槛 */}
+          <div className="flex items-center gap-3 p-3 rounded-lg bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-900/50">
+            <div className="p-2 rounded-full bg-blue-100 dark:bg-blue-900/30">
+              <Users className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+            </div>
+            <div>
+              <div className="text-sm text-muted-foreground">
+                {t("participation.method")}
               </div>
-              <div>
-                <div className="text-sm text-muted-foreground">
-                  {t("entryCost.label")}
-                </div>
-                <div className="text-lg font-bold text-amber-700 dark:text-amber-400">
-                  {data.entryCost} {tc("credits")}
-                </div>
+              <div className="text-base font-semibold text-blue-900 dark:text-blue-100">
+                {data.entryCost > 0
+                  ? t("participation.replyAndCost", { cost: data.entryCost })
+                  : t("participation.replyToJoin")}
               </div>
             </div>
-          )}
-        </div>
-
-        {/* 参与方式说明 */}
-        <div className="flex items-center gap-2 p-3 rounded-lg bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-900/50">
-          <Users className="h-4 w-4 text-blue-600 dark:text-blue-400" />
-          <div className="text-sm text-blue-900 dark:text-blue-100">
-            <span className="font-medium">{t("participation.method")}:</span>{" "}
-            {data.entryCost > 0
-              ? t("participation.replyAndCost", { cost: data.entryCost })
-              : t("participation.replyToJoin")}
           </div>
         </div>
 
