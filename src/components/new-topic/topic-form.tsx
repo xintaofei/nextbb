@@ -22,7 +22,7 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { useTranslations } from "next-intl"
 import useSWR from "swr"
 import { Checkbox } from "@/components/ui/checkbox"
-import { TopicType, type TopicTypeValue } from "@/types/topic-type"
+import { TopicType, BountyType, type TopicTypeValue } from "@/types/topic-type"
 import {
   createTopicFormSchemaWithCredits,
   type TopicFormData,
@@ -65,6 +65,7 @@ export function TopicForm({
   const t = useTranslations("Topic.New")
   const tt = useTranslations("Topic.Type")
   const tf = useTranslations("Topic.Form")
+  const tb = useTranslations("Topic.Bounty")
 
   const [selectedType, setSelectedType] = useState<TopicTypeValue>(
     TopicType.GENERAL
@@ -99,6 +100,10 @@ export function TopicForm({
 
   const titleValue = useWatch({ control: form.control, name: "title" })
   const contentValue = useWatch({ control: form.control, name: "content" })
+  const bountyTypeValue = useWatch({
+    control: form.control,
+    name: "bountyType",
+  })
   const allowMultipleValue = useWatch({
     control: form.control,
     name: "pollConfig.allowMultiple",
@@ -344,27 +349,133 @@ export function TopicForm({
 
         {/* 类型特定字段 */}
         {selectedType === TopicType.BOUNTY && (
-          <FormField
-            control={form.control}
-            name="rewardPoints"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>{tf("rewardPoints.label")}</FormLabel>
-                <FormControl>
-                  <Input
-                    type="number"
-                    placeholder={tf("rewardPoints.placeholder")}
-                    {...field}
-                    onChange={(e) => field.onChange(Number(e.target.value))}
-                  />
-                </FormControl>
-                <FormDescription>
-                  {tf("rewardPoints.info", { credits: userCredits })}
-                </FormDescription>
-                <FormMessage />
-              </FormItem>
+          <div className="space-y-4 rounded-lg border p-4">
+            <div className="text-sm text-muted-foreground">
+              {tb("form.currentCredits")}: {userCredits}
+            </div>
+
+            <FormField
+              control={form.control}
+              name="bountyType"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>{tb("form.bountyType")}</FormLabel>
+                  <FormControl>
+                    <Tabs
+                      value={field.value || BountyType.SINGLE}
+                      onValueChange={(v) => {
+                        field.onChange(v)
+                        // 切换到单人模式时重置相关字段
+                        if (v === BountyType.SINGLE) {
+                          form.setValue("bountySlots", 1)
+                          form.setValue("singleAmount", undefined)
+                        } else {
+                          // 切换到多人模式时设置默认值
+                          if (
+                            !form.getValues("bountySlots") ||
+                            form.getValues("bountySlots") === 1
+                          ) {
+                            form.setValue("bountySlots", 2)
+                          }
+                        }
+                      }}
+                    >
+                      <TabsList className="grid w-full grid-cols-2">
+                        <TabsTrigger value={BountyType.SINGLE}>
+                          {tb("single")}
+                        </TabsTrigger>
+                        <TabsTrigger value={BountyType.MULTIPLE}>
+                          {tb("multiple")}
+                        </TabsTrigger>
+                      </TabsList>
+                    </Tabs>
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="bountyTotal"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>{tb("form.totalAmount")}</FormLabel>
+                  <FormControl>
+                    <Input
+                      type="number"
+                      placeholder="100"
+                      {...field}
+                      value={field.value || ""}
+                      onChange={(e) =>
+                        field.onChange(
+                          e.target.value ? Number(e.target.value) : undefined
+                        )
+                      }
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            {bountyTypeValue === BountyType.MULTIPLE && (
+              <>
+                <FormField
+                  control={form.control}
+                  name="bountySlots"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>{tb("form.slots")}</FormLabel>
+                      <FormControl>
+                        <Input
+                          type="number"
+                          placeholder="2"
+                          {...field}
+                          value={field.value || ""}
+                          onChange={(e) =>
+                            field.onChange(
+                              e.target.value
+                                ? Number(e.target.value)
+                                : undefined
+                            )
+                          }
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="singleAmount"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>{tb("form.singleAmount")}</FormLabel>
+                      <FormControl>
+                        <Input
+                          type="number"
+                          placeholder="50"
+                          {...field}
+                          value={field.value || ""}
+                          onChange={(e) =>
+                            field.onChange(
+                              e.target.value
+                                ? Number(e.target.value)
+                                : undefined
+                            )
+                          }
+                        />
+                      </FormControl>
+                      <FormDescription>{tb("form.totalHint")}</FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </>
             )}
-          />
+          </div>
         )}
 
         {selectedType === TopicType.POLL && (

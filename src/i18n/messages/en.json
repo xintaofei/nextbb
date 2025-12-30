@@ -210,10 +210,67 @@
       "description": {
         "general": "Start a general discussion",
         "question": "Ask a question and wait for the best answer",
-        "bounty": "Offer reward points for solutions",
+        "bounty": "Offer rewards for solutions",
         "poll": "Create a poll to collect opinions",
         "lottery": "Set up a lottery event",
         "tutorial": "Publish a tutorial document"
+      }
+    },
+    "Bounty": {
+      "single": "Single Bounty",
+      "multiple": "Multiple Bounty",
+      "form": {
+        "totalAmount": "Total Bounty",
+        "totalAmountPlaceholder": "Enter total bounty amount",
+        "bountyType": "Bounty Type",
+        "slots": "Bounty Slots",
+        "slotsPlaceholder": "Enter number of slots",
+        "singleAmount": "Single Amount",
+        "singleAmountPlaceholder": "Enter amount per reward",
+        "currentCredits": "Your Current Credits",
+        "totalHint": "Total = Single Amount × Slots",
+        "confirmMessage": "You will deduct {amount} credits as bounty, confirm to publish?",
+        "insufficientWarning": "Insufficient credits, please top up or adjust the bounty amount"
+      },
+      "action": {
+        "reward": "Reward",
+        "rewardFull": "Reward (Full)",
+        "rewardAmount": "Reward ({amount} credits)",
+        "confirmTitle": "Confirm Reward",
+        "confirmMessage": "You will reward {amount} credits to {user}'s reply. Continue?"
+      },
+      "status": {
+        "rewarded": "Rewarded {amount} credits",
+        "settled": "Bounty Settled"
+      },
+      "info": {
+        "title": "Bounty Info",
+        "totalAmount": "Total Amount",
+        "bountyType": "Bounty Type",
+        "remainingSlots": "Remaining Slots",
+        "singleAmount": "Single Amount",
+        "rewardedList": "Rewarded List"
+      },
+      "error": {
+        "insufficientCredits": "Insufficient credits to create bounty",
+        "alreadySettled": "Bounty already settled",
+        "cannotRewardSelf": "Cannot reward yourself",
+        "alreadyRewarded": "User already rewarded",
+        "noRemainingSlots": "No remaining slots",
+        "onlyOwnerCanReward": "Only topic owner can reward"
+      },
+      "success": {
+        "created": "Bounty topic published successfully, {amount} credits deducted",
+        "rewarded": "Reward successful, {remaining} slots remaining"
+      },
+      "validation": {
+        "totalRequired": "Please enter total bounty",
+        "totalPositive": "Bounty amount must be greater than 0",
+        "slotsRequired": "Please enter bounty slots",
+        "slotsSingle": "Bounty slots must be 1 for single mode",
+        "slotsMultiple": "Bounty slots must be greater than 1 for multiple mode",
+        "singleAmountRequired": "Single amount is required for multiple mode",
+        "totalMismatch": "Bounty total must equal single amount × slots"
       }
     },
     "Form": {
@@ -904,6 +961,63 @@
       "notFoundDescription": "This user may have been deleted, disabled, or never existed.",
       "backToHome": "Back to Home",
       "unauthorized": "You do not have permission to access this page",
+      "empty": {
+        "activity": "No activity yet",
+        "topics": "No topics yet",
+        "posts": "No posts yet",
+        "likes": "No liked posts yet",
+        "bookmarks": "No bookmarks yet",
+        "badges": "No badges yet"
+      }
+    },
+    "activity": {
+      "all": "All Activity",
+      "topics": "Topics",
+      "posts": "Posts",
+      "likes": "Liked",
+      "bookmarks": "Bookmarks"
+    },
+    "preferences": {
+      "account": {
+        "title": "Account Settings"
+      },
+      "security": {
+        "title": "Security Settings"
+      },
+      "interface": {
+        "title": "Interface Settings"
+      },
+      "notifications": {
+        "title": "Notification Preferences"
+      },
+      "privacy": {
+        "title": "Privacy Settings"
+      }
+    }
+  },
+  "UserCard": {
+    "viewProfile": "View Profile",
+    "follow": "Follow",
+    "following": "Following",
+    "message": "Message",
+    "admin": "Admin",
+    "badges": "Badges",
+    "joinedAt": "Joined",
+    "statistics": {
+      "topics": "Topics",
+      "posts": "Posts",
+      "likes": "Likes",
+      "followers": "Followers",
+      "credits": "Credits"
+    },
+    "loading": "Loading...",
+    "loadingStats": "Loading statistics...",
+    "followSuccess": "Followed successfully",
+    "unfollowSuccess": "Unfollowed successfully",
+    "followError": "Operation failed, please try again later",
+    "messageError": "Failed to create conversation, please try again later"
+  }
+}
       "empty": {
         "activity": "No activity yet",
         "topics": "No topics yet",

@@ -3,7 +3,8 @@ import { prisma } from "@/lib/prisma"
 import { z } from "zod"
 import { getSessionUser } from "@/lib/auth"
 import { generateId } from "@/lib/id"
-import { TopicType } from "@/types/topic-type"
+import { TopicType, BountyType } from "@/types/topic-type"
+import { topicFormSchema } from "@/lib/topic-validation"
 
 interface TopicsDelegate {
   create(args: unknown): Promise<{ id: bigint }>
@@ -29,6 +30,10 @@ interface PollConfigsDelegate {
   create(args: unknown): Promise<{ topic_id: bigint }>
 }
 
+interface BountyConfigsDelegate {
+  create(args: unknown): Promise<{ topic_id: bigint }>
+}
+
 interface TxClient {
   topics: TopicsDelegate
   posts: PostsDelegate
@@ -36,6 +41,7 @@ interface TxClient {
   poll_options: PollOptionsDelegate
   lottery_configs: LotteryConfigsDelegate
   poll_configs: PollConfigsDelegate
+  bounty_configs: BountyConfigsDelegate
   users: {
     findUnique(args: unknown): Promise<{ credits: number } | null>
     update(args: unknown): Promise<unknown>
@@ -294,69 +300,8 @@ export async function GET(req: Request) {
   }
   return NextResponse.json(result)
 }
-// 基础 Schema
-const BaseTopicCreateSchema = z.object({
-  title: z.string().min(1).max(256),
-  categoryId: z.string().regex(/^\d+$/),
-  content: z.string().min(1),
-  tags: z.array(z.string().min(1).max(32)).max(5),
-  isPinned: z.boolean().optional(),
-  isCommunity: z.boolean().optional(),
-})
-
-// 不同类型的 Schema
-const GeneralTopicCreateSchema = BaseTopicCreateSchema.extend({
-  type: z.literal(TopicType.GENERAL),
-})
-
-const QuestionTopicCreateSchema = BaseTopicCreateSchema.extend({
-  type: z.literal(TopicType.QUESTION),
-})
-
-const BountyTopicCreateSchema = BaseTopicCreateSchema.extend({
-  type: z.literal(TopicType.BOUNTY),
-  rewardPoints: z.number().int().positive(),
-})
-
-const PollTopicCreateSchema = BaseTopicCreateSchema.extend({
-  type: z.literal(TopicType.POLL),
-  pollOptions: z
-    .array(z.object({ text: z.string().min(1).max(256) }))
-    .min(2)
-    .max(10),
-  endTime: z.string(),
-  pollConfig: z
-    .object({
-      allowMultiple: z.boolean(),
-      maxChoices: z.number().int().positive().nullable().optional(),
-      showResultsBeforeVote: z.boolean(),
-      showVoterList: z.boolean(),
-    })
-    .optional(),
-})
-
-const LotteryTopicCreateSchema = BaseTopicCreateSchema.extend({
-  type: z.literal(TopicType.LOTTERY),
-  lotteryEndTime: z.string(),
-  lotteryRules: z.string().min(10).max(500),
-  winnerCount: z.number().int().positive().max(100),
-  minCredits: z.number().int().nonnegative().optional().nullable(),
-})
-
-const TutorialTopicCreateSchema = BaseTopicCreateSchema.extend({
-  type: z.literal(TopicType.TUTORIAL),
-})
-
-const TopicCreateSchema = z.discriminatedUnion("type", [
-  GeneralTopicCreateSchema,
-  QuestionTopicCreateSchema,
-  BountyTopicCreateSchema,
-  PollTopicCreateSchema,
-  LotteryTopicCreateSchema,
-  TutorialTopicCreateSchema,
-])
-
-type TopicCreateDTO = z.infer<typeof TopicCreateSchema>
+// 使用 topic-validation.ts 中统一的验证 Schema
+type TopicCreateDTO = z.infer<typeof topicFormSchema>
 
 type TopicCreateResult = {
   topicId: string
@@ -371,8 +316,9 @@ export async function POST(req: Request) {
   let body: TopicCreateDTO
   try {
     const json = await req.json()
-    body = TopicCreateSchema.parse(json)
-  } catch {
+    body = topicFormSchema.parse(json)
+  } catch (error) {
+    console.error("Validation error:", error)
     return NextResponse.json({ error: "Invalid body" }, { status: 400 })
   }
 
@@ -425,15 +371,25 @@ export async function POST(req: Request) {
   const result = await prisma.$transaction(async (tx: unknown) => {
     const client = tx as TxClient
 
-    // BOUNTY 类型需要验证积分
+    // BOUNTY 类型需要验证积分并预扣
     if (body.type === TopicType.BOUNTY) {
       const user = await client.users.findUnique({
         where: { id: auth.userId },
         select: { credits: true },
       })
-      if (!user || user.credits < body.rewardPoints) {
+      if (!user || user.credits < body.bountyTotal) {
         throw new Error("Insufficient credits")
       }
+
+      // 预扣积分
+      await client.users.update({
+        where: { id: auth.userId },
+        data: {
+          credits: {
+            decrement: body.bountyTotal,
+          },
+        },
+      })
     }
 
     const topic = await client.topics.create({
@@ -443,8 +399,6 @@ export async function POST(req: Request) {
         user_id: auth.userId,
         title: body.title,
         type: body.type,
-        reward_points:
-          body.type === TopicType.BOUNTY ? body.rewardPoints : null,
         status:
           body.type === TopicType.POLL || body.type === TopicType.LOTTERY
             ? "ACTIVE"
@@ -531,6 +485,25 @@ export async function POST(req: Request) {
           winner_count: body.winnerCount,
           min_credits: body.minCredits ?? null,
           is_drawn: false,
+          created_at: new Date(),
+          updated_at: new Date(),
+        },
+      })
+    }
+
+    // BOUNTY 类型创建悬赏配置
+    if (body.type === TopicType.BOUNTY) {
+      await client.bounty_configs.create({
+        data: {
+          topic_id: topic.id,
+          bounty_total: body.bountyTotal,
+          bounty_type: body.bountyType,
+          bounty_slots: body.bountySlots,
+          remaining_slots: body.bountySlots,
+          single_amount:
+            body.bountyType === BountyType.MULTIPLE
+              ? body.singleAmount
+              : null,
           created_at: new Date(),
           updated_at: new Date(),
         },

@@ -67,17 +67,48 @@ export type LotteryConfig = {
   isWinner: boolean | null
 }
 
+// 悬赏类型枚举
+export const BountyType = {
+  SINGLE: "SINGLE",
+  MULTIPLE: "MULTIPLE",
+} as const
+
+export type BountyTypeValue = (typeof BountyType)[keyof typeof BountyType]
+
+// 悬赏配置类型
+export type BountyConfig = {
+  topicId: string
+  bountyTotal: number
+  bountyType: BountyTypeValue
+  bountySlots: number
+  remainingSlots: number
+  singleAmount: number | null
+}
+
+// 悬赏流水类型
+export type BountyReward = {
+  id: string
+  topicId: string
+  postId: string
+  receiver: {
+    id: string
+    name: string
+    avatar: string
+  }
+  amount: number
+  createdAt: string
+}
+
 // 扩展的主题信息类型
 export type TopicTypeInfo = {
   type: TopicTypeValue
   status?: TopicStatusValue
   endTime?: string | null
   isSettled?: boolean
-  acceptedAnswerId?: string | null
-  rewardPoints?: number | null
   pollOptions?: PollOption[] | null
   pollConfig?: PollConfig | null
   lotteryConfig?: LotteryConfig | null
+  bountyConfig?: BountyConfig | null
 }
 
 // 列表页主题类型扩展字段
@@ -85,8 +116,8 @@ export type TopicListTypeInfo = {
   type: TopicTypeValue
   status?: TopicStatusValue
   endTime?: string | null
-  rewardPoints?: number | null
   pollOptionCount?: number | null
   lotteryEndTime?: string | null
   isAnswered?: boolean | null
+  bountyTotal?: number | null
 }

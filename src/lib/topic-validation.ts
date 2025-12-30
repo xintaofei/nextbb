@@ -1,5 +1,5 @@
 import { z } from "zod"
-import { TopicType } from "@/types/topic-type"
+import { TopicType, BountyType } from "@/types/topic-type"
 
 // 基础字段验证
 const baseTopicSchema = z.object({
@@ -21,11 +21,37 @@ const questionTopicSchema = baseTopicSchema.extend({
   type: z.literal(TopicType.QUESTION),
 })
 
-// BOUNTY 类型 - 需要悬赏积分
-const bountyTopicSchema = baseTopicSchema.extend({
+// BOUNTY 类型 - 悬赏功能（单人/多人模式）
+const bountySingleSchema = baseTopicSchema.extend({
   type: z.literal(TopicType.BOUNTY),
-  rewardPoints: z.number().int().positive(),
+  bountyType: z.literal(BountyType.SINGLE),
+  bountyTotal: z.number().int().positive(),
+  bountySlots: z.literal(1),
+  singleAmount: z.undefined().optional(),
 })
+
+const bountyMultipleSchema = baseTopicSchema
+  .extend({
+    type: z.literal(TopicType.BOUNTY),
+    bountyType: z.literal(BountyType.MULTIPLE),
+    bountyTotal: z.number().int().positive(),
+    bountySlots: z.number().int().min(2),
+    singleAmount: z.number().int().positive(),
+  })
+  .refine(
+    (data) => {
+      return data.bountyTotal === data.singleAmount * data.bountySlots
+    },
+    {
+      message: "Bounty total must equal single amount × slots",
+      path: ["bountyTotal"],
+    }
+  )
+
+const bountyTopicSchema = z.discriminatedUnion("bountyType", [
+  bountySingleSchema,
+  bountyMultipleSchema,
+])
 
 // POLL 类型 - 需要投票选项和配置
 const pollTopicSchema = baseTopicSchema
@@ -111,12 +137,40 @@ export type TopicFormData = z.infer<typeof topicFormSchema>
 
 // 创建带用户积分验证的 bounty schema 工厂函数
 export function createBountySchemaWithCredits(userCredits: number) {
-  return baseTopicSchema.extend({
+  const bountySingleWithCredits = baseTopicSchema.extend({
     type: z.literal(TopicType.BOUNTY),
-    rewardPoints: z.number().int().positive().max(userCredits, {
-      message: "Reward points cannot exceed your available credits",
+    bountyType: z.literal(BountyType.SINGLE),
+    bountyTotal: z.number().int().positive().max(userCredits, {
+      message: "Insufficient credits",
     }),
+    bountySlots: z.literal(1),
+    singleAmount: z.undefined().optional(),
   })
+
+  const bountyMultipleWithCredits = baseTopicSchema
+    .extend({
+      type: z.literal(TopicType.BOUNTY),
+      bountyType: z.literal(BountyType.MULTIPLE),
+      bountyTotal: z.number().int().positive().max(userCredits, {
+        message: "Insufficient credits",
+      }),
+      bountySlots: z.number().int().min(2),
+      singleAmount: z.number().int().positive(),
+    })
+    .refine(
+      (data) => {
+        return data.bountyTotal === data.singleAmount * data.bountySlots
+      },
+      {
+        message: "Bounty total must equal single amount × slots",
+        path: ["bountyTotal"],
+      }
+    )
+
+  return z.discriminatedUnion("bountyType", [
+    bountySingleWithCredits,
+    bountyMultipleWithCredits,
+  ])
 }
 
 // 创建完整的带积分验证的 schema

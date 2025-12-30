@@ -210,10 +210,67 @@
       "description": {
         "general": "发起自由讨论",
         "question": "提出问题并等待最佳答案",
-        "bounty": "设置积分奖励寻求解决方案",
+        "bounty": "为解决方案提供奖励",
         "poll": "创建投票收集意见",
         "lottery": "设置抽奖活动",
         "tutorial": "发布教程文档"
+      }
+    },
+    "Bounty": {
+      "single": "单人悬赏",
+      "multiple": "多人悬赏",
+      "form": {
+        "totalAmount": "总赏金",
+        "totalAmountPlaceholder": "请输入总赏金额度",
+        "bountyType": "悬赏类型",
+        "slots": "悬赏名额",
+        "slotsPlaceholder": "请输入悬赏名额",
+        "singleAmount": "单次金额",
+        "singleAmountPlaceholder": "请输入每次发赏金额",
+        "currentCredits": "您的当前积分",
+        "totalHint": "总赏金 = 单次金额 × 名额",
+        "confirmMessage": "您将预扣 {amount} 积分作为悬赏，确认发布？",
+        "insufficientWarning": "您的积分不足，请先充值或调整赏金金额"
+      },
+      "action": {
+        "reward": "给赏",
+        "rewardFull": "给赏（全额）",
+        "rewardAmount": "给赏（{amount} 积分）",
+        "confirmTitle": "确认给赏",
+        "confirmMessage": "您将给 {user} 的回复发放 {amount} 积分，确认继续？"
+      },
+      "status": {
+        "rewarded": "已获赏 {amount} 积分",
+        "settled": "悬赏已结算"
+      },
+      "info": {
+        "title": "悬赏信息",
+        "totalAmount": "总赏金",
+        "bountyType": "悬赏类型",
+        "remainingSlots": "剩余名额",
+        "singleAmount": "单次金额",
+        "rewardedList": "已获赏名单"
+      },
+      "error": {
+        "insufficientCredits": "积分不足，无法发布悬赏",
+        "alreadySettled": "悬赏已结算，无法继续给赏",
+        "cannotRewardSelf": "不能给自己发赏",
+        "alreadyRewarded": "该用户已获赏，不可重复领赏",
+        "noRemainingSlots": "悬赏名额已用完",
+        "onlyOwnerCanReward": "仅楼主可以给赏"
+      },
+      "success": {
+        "created": "悬赏主题发布成功，已扣除 {amount} 积分",
+        "rewarded": "给赏成功，剩余 {remaining} 个名额"
+      },
+      "validation": {
+        "totalRequired": "请输入总赏金",
+        "totalPositive": "赏金金额必须大于0",
+        "slotsRequired": "请输入悬赏名额",
+        "slotsSingle": "单人悬赏名额必须为1",
+        "slotsMultiple": "多人悬赏名额必须大于1",
+        "singleAmountRequired": "多人模式下必须输入单次金额",
+        "totalMismatch": "总赏金必须等于单次金额乘以名额"
       }
     },
     "Form": {

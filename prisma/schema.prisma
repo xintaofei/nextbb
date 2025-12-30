@@ -33,6 +33,8 @@ model users {
   messages messages[] @relation("messages_sender")
   poll_votes poll_votes[] @relation("poll_votes_user")
   lottery_participants lottery_participants[] @relation("lottery_participants_user")
+  bounty_rewards_given bounty_rewards[] @relation("bounty_rewards_giver")
+  bounty_rewards_received bounty_rewards[] @relation("bounty_rewards_receiver")
 
   @@map("users")
   @@unique([email], map: "users_email_key")
@@ -82,8 +84,6 @@ model topics {
   status      String   @default("ACTIVE") @db.VarChar(32)
   end_time    DateTime?
   is_settled  Boolean  @default(false)
-  accepted_answer_id BigInt? @db.BigInt
-  reward_points Int?
   views       Int      @default(0)
   is_pinned   Boolean  @default(false)
   is_community Boolean @default(false)
@@ -99,6 +99,8 @@ model topics {
   poll_config poll_configs?
   lottery_config lottery_configs?
   lottery_participants lottery_participants[]
+  bounty_config bounty_configs?
+  bounty_rewards bounty_rewards[]
 
   @@index([user_id], map: "topics_user_index")
   @@index([category_id], map: "topics_category_index")
@@ -125,6 +127,7 @@ model posts {
   user  users  @relation(fields: [user_id], references: [id])
   likes post_likes[] @relation("post_likes_post")
   bookmarks post_bookmarks[] @relation("post_bookmarks_post")
+  bounty_rewards bounty_rewards[]
 
   @@index([topic_id], map: "posts_topic_index")
   @@index([user_id], map: "posts_user_index")
@@ -358,4 +361,41 @@ model lottery_configs {
   @@index([end_time], map: "lottery_configs_endtime_index")
   @@index([is_drawn], map: "lottery_configs_drawn_index")
   @@map("lottery_configs")
+}
+
+model bounty_configs {
+  topic_id        BigInt   @id @db.BigInt
+  bounty_total    Int
+  bounty_type     String   @db.VarChar(32)
+  bounty_slots    Int
+  remaining_slots Int
+  single_amount   Int?
+  created_at      DateTime @default(now())
+  updated_at      DateTime @updatedAt
+
+  topic topics @relation(fields: [topic_id], references: [id])
+
+  @@index([bounty_type], map: "bounty_configs_type_index")
+  @@map("bounty_configs")
+}
+
+model bounty_rewards {
+  id          BigInt   @id @db.BigInt
+  topic_id    BigInt   @db.BigInt
+  post_id     BigInt   @db.BigInt
+  giver_id    BigInt   @db.BigInt
+  receiver_id BigInt   @db.BigInt
+  amount      Int
+  created_at  DateTime @default(now())
+
+  topic    topics @relation(fields: [topic_id], references: [id])
+  post     posts  @relation(fields: [post_id], references: [id])
+  giver    users  @relation("bounty_rewards_giver", fields: [giver_id], references: [id])
+  receiver users  @relation("bounty_rewards_receiver", fields: [receiver_id], references: [id])
+
+  @@index([topic_id], map: "bounty_rewards_topic_index")
+  @@index([receiver_id], map: "bounty_rewards_receiver_index")
+  @@index([giver_id], map: "bounty_rewards_giver_index")
+  @@unique([topic_id, receiver_id], map: "bounty_rewards_topic_receiver_unique")
+  @@map("bounty_rewards")
 }
