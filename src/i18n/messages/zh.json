@@ -279,12 +279,14 @@
         "title": "最佳答案",
         "status": {
           "settled": "已采纳",
-          "noAnswer": "暂无最佳答案"
+          "noAnswer": "暂无最佳答案",
+          "bestAnswer": "最佳答案"
         },
         "info": {
           "acceptedBy": "采纳人",
           "acceptedAt": "采纳时间",
-          "acceptedPost": "最佳答案楼层"
+          "acceptedPost": "最佳答案楼层",
+          "answeredBy": "回答者"
         }
       },
       "actions": {

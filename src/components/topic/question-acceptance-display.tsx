@@ -13,6 +13,12 @@ import { Alert, AlertDescription } from "@/components/ui/alert"
 type QuestionAcceptanceData = {
   hasAcceptance: boolean
   postId?: string
+  floorNumber?: number
+  answeredBy?: {
+    id: string
+    name: string
+    avatar: string
+  }
   acceptedBy?: {
     id: string
     name: string
@@ -65,7 +71,8 @@ export function QuestionAcceptanceDisplay({
     return null
   }
 
-  const hasAcceptance = data.hasAcceptance && data.acceptedBy && data.acceptedAt
+  const hasAcceptance =
+    data.hasAcceptance && data.answeredBy && data.acceptedBy && data.acceptedAt
 
   return (
     <Card className="mb-6 border-blue-200 dark:border-blue-900/50 bg-linear-to-br from-blue-50/50 to-cyan-50/30 dark:from-blue-950/20 dark:to-cyan-950/10 shadow-none">
@@ -84,37 +91,49 @@ export function QuestionAcceptanceDisplay({
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
-        {hasAcceptance && data.acceptedBy && data.acceptedAt ? (
+        {hasAcceptance &&
+        data.answeredBy &&
+        data.acceptedBy &&
+        data.acceptedAt ? (
           <div className="space-y-3">
-            <div className="flex items-center gap-3 p-3 rounded-lg bg-white/60 dark:bg-gray-900/30 border border-blue-100 dark:border-blue-900/30">
+            {/* 被采纳的回答者信息 */}
+            <div className="flex items-center gap-3 p-3 rounded-lg bg-white/60 dark:bg-gray-900/30 border border-green-100 dark:border-green-900/30">
               <Avatar className="h-10 w-10">
                 <AvatarImage
-                  src={data.acceptedBy!.avatar}
-                  alt={data.acceptedBy!.name}
+                  src={data.answeredBy!.avatar}
+                  alt={data.answeredBy!.name}
                 />
                 <AvatarFallback>
-                  {data.acceptedBy!.name.charAt(0)}
+                  {data.answeredBy!.name.charAt(0)}
                 </AvatarFallback>
               </Avatar>
               <div className="flex-1">
                 <div className="flex items-center gap-2 mb-1">
+                  <Badge
+                    variant="secondary"
+                    className="bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
+                  >
+                    <CheckCircle2 className="h-3 w-3 mr-1" />
+                    {t("acceptance.status.bestAnswer")}
+                  </Badge>
                   <span className="text-sm text-muted-foreground">
-                    {t("acceptance.info.acceptedBy")}
+                    #{data.floorNumber}
                   </span>
-                  <span className="font-medium">{data.acceptedBy!.name}</span>
                 </div>
-                <div className="text-xs text-muted-foreground">
-                  {t("acceptance.info.acceptedAt")}:{" "}
-                  {formatRelative(data.acceptedAt!)}
+                <div className="flex items-center gap-2">
+                  <span className="font-medium">{data.answeredBy!.name}</span>
+                  <span className="text-xs text-muted-foreground">
+                    {t("acceptance.info.answeredBy")}
+                  </span>
                 </div>
               </div>
-              <Badge
-                variant="secondary"
-                className="bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
-              >
-                <CheckCircle2 className="h-3 w-3 mr-1" />
-                {t("acceptance.status.settled")}
-              </Badge>
+            </div>
+            {/* 采纳者信息 */}
+            <div className="flex items-center gap-2 px-3 py-2 text-xs text-muted-foreground">
+              <span>{t("acceptance.info.acceptedBy")}:</span>
+              <span className="font-medium">{data.acceptedBy!.name}</span>
+              <span>•</span>
+              <span>{formatRelative(data.acceptedAt!)}</span>
             </div>
           </div>
         ) : (

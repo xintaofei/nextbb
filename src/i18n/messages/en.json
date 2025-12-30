@@ -279,12 +279,14 @@
         "title": "Best Answer",
         "status": {
           "settled": "Accepted",
-          "noAnswer": "No best answer yet"
+          "noAnswer": "No best answer yet",
+          "bestAnswer": "Best Answer"
         },
         "info": {
           "acceptedBy": "Accepted by",
           "acceptedAt": "Accepted at",
-          "acceptedPost": "Best answer floor"
+          "acceptedPost": "Best answer floor",
+          "answeredBy": "Answered by"
         }
       },
       "actions": {

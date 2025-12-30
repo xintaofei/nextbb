@@ -58,6 +58,19 @@ export async function GET(
             avatar: true,
           },
         },
+        post: {
+          select: {
+            id: true,
+            floor_number: true,
+            user: {
+              select: {
+                id: true,
+                name: true,
+                avatar: true,
+              },
+            },
+          },
+        },
       },
     })
 
@@ -69,6 +82,12 @@ export async function GET(
       {
         hasAcceptance: true,
         postId: String(acceptance.post_id),
+        floorNumber: acceptance.post.floor_number,
+        answeredBy: {
+          id: String(acceptance.post.user.id),
+          name: acceptance.post.user.name,
+          avatar: acceptance.post.user.avatar,
+        },
         acceptedBy: {
           id: String(acceptance.accepter.id),
           name: acceptance.accepter.name,
