@@ -51,7 +51,7 @@ function RankBadge({ rank }: { rank: number }) {
   }
   return (
     <div className="flex size-8 sm:size-10 items-center justify-center text-sm font-semibold text-muted-foreground">
-      {rank}
+      #{rank}
     </div>
   )
 }
@@ -152,18 +152,14 @@ function TopThreeDisplay({
               <div className="flex flex-col items-center cursor-pointer transition-transform hover:scale-105">
                 <div
                   className={`mb-3 flex items-center justify-center ${
-                    isFirst ? "h-24 w-24" : "h-20 w-20"
+                    isFirst ? "size-24" : "size-20"
                   }`}
                 >
                   <RankBadge rank={ranking.rank} />
                 </div>
-                <Card className="relative shadow-none overflow-hidden">
-                  <CardContent className="p-4 text-center">
-                    <Avatar
-                      className={`mx-auto mb-3 ${
-                        isFirst ? "h-20 w-20" : "h-16 w-16"
-                      }`}
-                    >
+                <Card className="relative shadow-none overflow-hidden py-12">
+                  <CardContent className="min-w-40 px-8 text-center">
+                    <Avatar className={`mx-auto mb-3 size-16`}>
                       <AvatarImage
                         src={ranking.user.avatar}
                         alt={ranking.user.name}
