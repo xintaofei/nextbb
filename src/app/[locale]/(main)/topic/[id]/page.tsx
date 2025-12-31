@@ -761,15 +761,16 @@ export default function TopicPage() {
           </>
         ) : (
           <>
-            <div className="flex items-center gap-1">
+            <div>
               {topicInfo && (
                 <TopicStatusTags
                   isPinned={topicInfo.isPinned}
                   topicType={topicInfo.type as TopicTypeValue}
-                  size="size-6"
+                  size="size-5"
+                  className="align-middle mr-1"
                 />
               )}
-              <Link href={`/topic/${topic.id}`}>
+              <Link href={`/topic/${topic.id}`} className="align-middle">
                 <span className="cursor-pointer max-w-full text-2xl font-medium whitespace-normal wrap-break-word">
                   {topic.title}
                 </span>

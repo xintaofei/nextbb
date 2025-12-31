@@ -26,7 +26,6 @@ import { UserBadgesDisplay } from "@/components/common/user-badges-display"
 import { UserInfoCard } from "@/components/common/user-info-card"
 import { Separator } from "@/components/ui/separator"
 import { Badge } from "@/components/ui/badge"
-import { useIsMobile } from "@/hooks/use-mobile"
 import { ReactNode } from "react"
 
 export function TopicPostItem({
@@ -88,8 +87,6 @@ export function TopicPostItem({
   onAccept?: (postId: string, isAccepted: boolean) => void | Promise<void>
   acceptMutating?: boolean
 }) {
-  const isMobile = useIsMobile()
-
   return (
     <TimelineStepsItem
       id={anchorId}
@@ -115,12 +112,12 @@ export function TopicPostItem({
       </TimelineStepsIcon>
       <TimelineStepsContent className={`border-b`}>
         <div className="flex flex-row justify-between items-center w-full">
-          <div className="flex flex-row gap-2 items-center">
+          <div className="flex flex-row gap-4 items-center">
             <TimelineStepsTitle>{post.author.name}</TimelineStepsTitle>
             {post.badges && post.badges.length > 0 && (
               <UserBadgesDisplay
                 badges={post.badges}
-                maxDisplay={isMobile ? 1 : 3}
+                maxDisplay={1}
                 size="sm"
               />
             )}

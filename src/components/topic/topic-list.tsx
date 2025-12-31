@@ -189,12 +189,13 @@ export function TopicList({
                 }
               >
                 <TableCell className="max-w-full max-sm:px-0">
-                  <div className="flex items-center gap-1">
+                  <div>
                     <TopicStatusTags
                       isPinned={t.isPinned}
                       topicType={t.type as TopicTypeValue}
+                      className="align-middle mr-1"
                     />
-                    <Link href={`/topic/${t.id}`}>
+                    <Link href={`/topic/${t.id}`} className="align-middle">
                       <span className="max-w-full text-lg font-medium whitespace-normal wrap-break-word">
                         {t.title}
                       </span>

@@ -33,7 +33,7 @@ export function TopicStatusTags({
   }
 
   const getTypeIcon = (type: TopicTypeValue) => {
-    const iconClass = size || "size-5"
+    const iconClass = size || "size-4"
     switch (type) {
       case TopicType.QUESTION:
         return <HelpCircle className={iconClass} />
@@ -70,17 +70,17 @@ export function TopicStatusTags({
   const getTypeStyle = (type: TopicTypeValue) => {
     switch (type) {
       case TopicType.QUESTION:
-        return "text-blue-600 dark:text-blue-400"
+        return "text-muted-foreground"
       case TopicType.BOUNTY:
-        return "text-amber-600 dark:text-amber-400"
+        return "text-muted-foreground"
       case TopicType.POLL:
-        return "text-purple-600 dark:text-purple-400"
+        return "text-muted-foreground"
       case TopicType.LOTTERY:
-        return "text-pink-600 dark:text-pink-400"
+        return "text-muted-foreground"
       case TopicType.TUTORIAL:
-        return "text-green-600 dark:text-green-400"
+        return "text-muted-foreground"
       default:
-        return ""
+        return "text-muted-foreground"
     }
   }
 
@@ -96,8 +96,8 @@ export function TopicStatusTags({
     <div className={cn("inline-flex items-center gap-1", className)}>
       {/* 置顶图标 - 优先显示在最左侧 */}
       {isPinned && (
-        <span className="text-red-600 dark:text-red-400" title="Pin">
-          <Pin className={size || "size-5"} />
+        <span className="text-muted-foreground" title="Pin">
+          <Pin className={size || "size-4"} />
         </span>
       )}
       {/* 类型 Badge - 只在非 GENERAL 类型时显示 */}
