@@ -33,6 +33,7 @@ export async function GET(req: NextRequest, context: RouteContext) {
             level: true,
             bg_color: true,
             text_color: true,
+            description: true,
           },
         },
       },
@@ -47,6 +48,7 @@ export async function GET(req: NextRequest, context: RouteContext) {
       level: ub.badge.level,
       bgColor: ub.badge.bg_color,
       textColor: ub.badge.text_color,
+      description: ub.badge.description,
     }))
 
     const result: BadgeListResponse = { items }
