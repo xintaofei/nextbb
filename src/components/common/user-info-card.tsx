@@ -214,7 +214,7 @@ export function UserInfoCard({
         align={align}
         className="w-96 max-sm:w-80 p-0 overflow-hidden"
       >
-        <div className="flex flex-col gap-3 p-4">
+        <div className="flex flex-col gap-4 p-4">
           {/* 头像区域 */}
           <div className="flex justify-center">
             <div className="relative">

@@ -40,7 +40,7 @@ export function UserBadgesDisplay({
   const remainingCount = badges.length - maxDisplay
 
   return (
-    <div className="flex flex-wrap gap-2 items-center">
+    <div className="flex flex-wrap gap-2 items-center justify-center">
       {displayBadges.map((badge) => (
         <UserBadge
           key={badge.id}
