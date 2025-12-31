@@ -54,7 +54,7 @@ export function createTopicFormSchema(t: TranslateFn) {
       .int()
       .positive(t("Topic.Validation.bounty.totalPositive")),
     bountySlots: z.literal(1),
-    singleAmount: z.number().int().positive().optional().or(z.undefined()),
+    singleAmount: z.number().int().positive().optional(),
   })
 
   const bountyMultipleSchema = baseTopicSchema.extend({
@@ -381,7 +381,7 @@ export function createTopicFormSchemaWithCredits(
         message: t("Topic.Validation.bounty.insufficientCredits"),
       }),
     bountySlots: z.literal(1),
-    singleAmount: z.number().int().positive().optional().or(z.undefined()),
+    singleAmount: z.number().int().positive().optional(),
   })
 
   const bountyMultipleWithCredits = baseTopicSchema.extend({
