@@ -232,9 +232,9 @@ export function LotteryConfig() {
                       setFloorInput("")
                       return
                     }
-                    // 解析逗号分隔的楼层号
+                    // 解析逗号分隔的楼层号（支持中英文逗号）
                     const floors = input
-                      .split(",")
+                      .split(/[,，]/)
                       .map((f) => {
                         const num = parseInt(f.trim(), 10)
                         return isNaN(num) ? null : num
