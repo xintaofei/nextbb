@@ -203,6 +203,30 @@
         "required": "请输入中奖人数",
         "positive": "中奖人数必须大于0",
         "max": "中奖人数必须为1-100的整数"
+      },
+      "categoryId": {
+        "invalid": "分类ID无效"
+      },
+      "pollEndTime": {
+        "future": "投票结束时间必须晚于当前时间"
+      },
+      "pollConfig": {
+        "maxChoices": "最大选择数必须大于1且不能超过选项数量"
+      },
+      "lottery": {
+        "endTimeFuture": "结束时间必须晚于当前时间",
+        "floorInterval": "楼层间隔必须为正整数",
+        "participantThreshold": "参与人数阈值必须为正整数",
+        "winnerCount": "中奖人数必须为1-100的整数",
+        "fixedFloors": "楼层号必须大于1",
+        "entryCost": "参与门槛必须为非负整数"
+      },
+      "bounty": {
+        "totalPositive": "悬赏总额必须为正整数",
+        "slotsMin": "多人模式的悬赏名额至少为2",
+        "singleAmountPositive": "单次金额必须为正整数",
+        "insufficientCredits": "积分不足",
+        "typeMismatch": "悬赏类型不匹配"
       }
     },
     "Type": {

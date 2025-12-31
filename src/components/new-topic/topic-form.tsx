@@ -66,6 +66,7 @@ export function TopicForm({
 }: TopicFormProps) {
   const t = useTranslations("Topic.New")
   const tt = useTranslations("Topic.Type")
+  const tv = useTranslations() // 用于验证消息
 
   const [selectedType, setSelectedType] = useState<TopicTypeValue>(
     TopicType.GENERAL
@@ -80,7 +81,10 @@ export function TopicForm({
   const isAdmin = me?.user?.isAdmin === true
   const userCredits = me?.user?.credits ?? 0
 
-  const topicFormSchema = createTopicFormSchemaWithCredits(userCredits)
+  const topicFormSchema = createTopicFormSchemaWithCredits(
+    userCredits,
+    (key: string) => tv(key)
+  )
 
   type FormValues = z.infer<typeof topicFormSchema>
 

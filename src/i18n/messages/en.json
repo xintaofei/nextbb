@@ -203,6 +203,30 @@
         "required": "Please enter winner count",
         "positive": "Winner count must be greater than 0",
         "max": "Winner count must be between 1 and 100"
+      },
+      "categoryId": {
+        "invalid": "Invalid category ID"
+      },
+      "pollEndTime": {
+        "future": "Poll end time must be in the future"
+      },
+      "pollConfig": {
+        "maxChoices": "Max choices must be greater than 1 and not exceed the number of options"
+      },
+      "lottery": {
+        "endTimeFuture": "End time must be in the future",
+        "floorInterval": "Floor interval must be a positive number",
+        "participantThreshold": "Participant threshold must be a positive number",
+        "winnerCount": "Winner count must be between 1 and 100",
+        "fixedFloors": "Floor numbers must be greater than 1",
+        "entryCost": "Entry cost must be non-negative"
+      },
+      "bounty": {
+        "totalPositive": "Bounty total must be a positive number",
+        "slotsMin": "Bounty slots must be at least 2 for multiple mode",
+        "singleAmountPositive": "Single amount must be a positive number",
+        "insufficientCredits": "Insufficient credits",
+        "typeMismatch": "Bounty type mismatch"
       }
     },
     "Type": {
