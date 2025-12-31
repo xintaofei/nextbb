@@ -41,13 +41,13 @@ const fetcher = async (url: string): Promise<LeaderboardResponse> => {
 
 function RankBadge({ rank }: { rank: number }) {
   if (rank === 1) {
-    return <span className="text-6xl">🥇</span>
+    return <span className="text-7xl">🥇</span>
   }
   if (rank === 2) {
-    return <span className="text-6xl">🥈</span>
+    return <span className="text-5xl">🥈</span>
   }
   if (rank === 3) {
-    return <span className="text-6xl">🥉</span>
+    return <span className="text-5xl">🥉</span>
   }
   return (
     <div className="flex size-8 sm:size-10 items-center justify-center text-sm font-semibold text-muted-foreground">
