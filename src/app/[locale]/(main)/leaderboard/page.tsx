@@ -3,7 +3,7 @@
 import { useState } from "react"
 import useSWR from "swr"
 import { useTranslations } from "next-intl"
-import { Trophy, Medal, Award, TrendingUp } from "lucide-react"
+import { Trophy, Medal, Award, TrendingUp, ChartColumn } from "lucide-react"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Card, CardContent } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
@@ -349,7 +349,7 @@ export default function LeaderboardPage() {
     <div className="container mx-auto max-w-4xl px-4 py-6">
       <div className="mb-6">
         <div className="flex items-center gap-2">
-          <Trophy className="h-8 w-8" />
+          <ChartColumn className="size-8" />
           <h1 className="text-2xl font-bold sm:text-3xl">{t("title")}</h1>
         </div>
         <p className="mt-2 text-muted-foreground">{t("subtitle")}</p>

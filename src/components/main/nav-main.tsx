@@ -3,8 +3,8 @@
 import { useMemo } from "react"
 import useSWR from "swr"
 import {
-  AlignStartHorizontal,
   BookUser,
+  ChartColumn,
   ChevronRight,
   EllipsisVertical,
   FolderOpenDot,
@@ -91,7 +91,7 @@ export function NavMain() {
         </Link>
         <Link href="/leaderboard">
           <SidebarMenuButton>
-            <AlignStartHorizontal />
+            <ChartColumn />
             <span>排行榜</span>
           </SidebarMenuButton>
         </Link>
