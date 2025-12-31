@@ -17,7 +17,16 @@ export async function AppSidebar({
 }: React.ComponentProps<typeof Sidebar>) {
   const categories = await prisma.categories.findMany({
     where: { is_deleted: false },
-    select: { id: true, name: true, icon: true },
+    select: {
+      id: true,
+      name: true,
+      icon: true,
+      _count: {
+        select: {
+          topics: true,
+        },
+      },
+    },
     orderBy: [{ sort: "asc" }, { updated_at: "desc" }],
   })
 
@@ -25,12 +34,16 @@ export async function AppSidebar({
     id: bigint
     name: string
     icon: string
+    _count: {
+      topics: number
+    }
   }
 
   const categoryItems = categories.map((c: CategoryRow) => ({
     id: String(c.id),
     name: c.name,
     icon: c.icon ?? "📁",
+    topicCount: c._count.topics,
   }))
 
   return (
