@@ -194,13 +194,13 @@ function TopThreeDisplay({
                   </CardContent>
                   <BorderBeam
                     duration={6}
-                    size={200}
+                    size={150}
                     className="from-transparent via-red-500 to-transparent"
                   />
                   <BorderBeam
                     duration={6}
                     delay={3}
-                    size={200}
+                    size={150}
                     borderWidth={2}
                     className="from-transparent via-blue-500 to-transparent"
                   />
