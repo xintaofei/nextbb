@@ -56,7 +56,7 @@ export default function DynamicRoutePage() {
   const [loading, setLoading] = useState<boolean>(true)
   const [topics, setTopics] = useState<TopicListItem[]>([])
   const [page, setPage] = useState<number>(1)
-  const [pageSize] = useState<number>(15)
+  const [pageSize] = useState<number>(20)
   const [total, setTotal] = useState<number>(0)
   const [loadingMore, setLoadingMore] = useState<boolean>(false)
   const hasMore = useMemo(() => topics.length < total, [topics.length, total])
