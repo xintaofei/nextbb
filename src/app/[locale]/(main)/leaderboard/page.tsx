@@ -8,6 +8,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Card, CardContent } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { UserInfoCard } from "@/components/common/user-info-card"
+import { motion } from "framer-motion"
 
 type LeaderboardType = "wealth" | "pioneer" | "expert" | "reputation"
 
@@ -70,37 +71,35 @@ function LeaderboardItem({
       side="left"
       align="start"
     >
-      <Card
-        className={`mb-4 py-4 cursor-pointer shadow-none transition-colors hover:bg-accent ${
-          highlight ? "border-primary border-2" : ""
-        }`}
+      <motion.div
+        whileHover={{ y: -4 }}
+        transition={{ duration: 0.2 }}
+        className="group relative overflow-hidden cursor-pointer rounded-2xl border border-border/40 bg-background/60 p-4 backdrop-blur transition-all hover:border-border/60 hover:shadow-lg"
+        role="article"
+        aria-label={"decrease rank"}
       >
-        <CardContent>
-          <div className="flex flex-row items-center justify-between gap-4">
-            <div className="flex flex-row items-center gap-4">
-              <RankBadge rank={ranking.rank} />
-              <Avatar className="size-8 sm:size-10">
-                <AvatarImage
-                  src={ranking.user.avatar}
-                  alt={ranking.user.name}
-                />
-                <AvatarFallback>
-                  {ranking.user.name.slice(0, 1).toUpperCase()}
-                </AvatarFallback>
-              </Avatar>
-              <div className="font-semibold text-lg">{ranking.user.name}</div>
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="text-sm text-muted-foreground">
-                {valueLabel}:
-              </span>
-              <span className="text-lg font-bold sm:text-xl">
-                {ranking.value.toLocaleString()}
-              </span>
+        <div className="absolute inset-0 bg-linear-to-br from-foreground/4 via-transparent to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100 -z-10" />
+        <div className="flex flex-row items-center justify-between gap-4">
+          <div className="flex flex-row items-center gap-4">
+            <RankBadge rank={ranking.rank} />
+            <Avatar className="size-8 sm:size-10">
+              <AvatarImage src={ranking.user.avatar} alt={ranking.user.name} />
+              <AvatarFallback>
+                {ranking.user.name.slice(0, 1).toUpperCase()}
+              </AvatarFallback>
+            </Avatar>
+            <div className={`font-semibold text-lg text-muted-foreground`}>
+              {ranking.user.name}
             </div>
           </div>
-        </CardContent>
-      </Card>
+          <div className="flex items-center gap-2">
+            <span className="text-sm text-muted-foreground">{valueLabel}:</span>
+            <span className="text-lg font-bold sm:text-xl">
+              {ranking.value.toLocaleString()}
+            </span>
+          </div>
+        </div>
+      </motion.div>
     </UserInfoCard>
   )
 }
@@ -307,10 +306,10 @@ function LeaderboardList({
       {/* 其他排名列表 */}
       {restRankings.length > 0 && (
         <div>
-          <h3 className="mb-3 text-sm font-semibold text-muted-foreground">
+          <h3 className="mb-4 text-sm font-semibold text-muted-foreground">
             {t("fullLeaderboard")}
           </h3>
-          <div className="space-y-2">
+          <div className="space-y-4">
             {restRankings.map((ranking) => (
               <LeaderboardItem
                 key={ranking.user.id}
