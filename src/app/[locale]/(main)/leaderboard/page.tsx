@@ -7,20 +7,9 @@ import { Trophy, Medal, Award, TrendingUp } from "lucide-react"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Card, CardContent } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { UserBadgesDisplay } from "@/components/common/user-badges-display"
-import { encodeUsername } from "@/lib/utils"
-import Link from "next/link"
+import { UserInfoCard } from "@/components/common/user-info-card"
 
 type LeaderboardType = "wealth" | "pioneer" | "expert" | "reputation"
-
-type BadgeItem = {
-  id: string
-  name: string
-  icon: string
-  level: number
-  bgColor: string | null
-  textColor: string | null
-}
 
 type RankingUser = {
   rank: number
@@ -30,12 +19,12 @@ type RankingUser = {
     avatar: string
   }
   value: number
-  badges: BadgeItem[]
 }
 
 type LeaderboardResponse = {
   type: LeaderboardType
   rankings: RankingUser[]
+  currentUserRanking?: RankingUser | null
   updatedAt: string
 }
 
@@ -67,15 +56,25 @@ function RankBadge({ rank }: { rank: number }) {
 function LeaderboardItem({
   ranking,
   valueLabel,
+  highlight = false,
 }: {
   ranking: RankingUser
   valueLabel: string
+  highlight?: boolean
 }) {
-  const encodedUsername = encodeUsername(ranking.user.name)
-
   return (
-    <Link href={`/u/${encodedUsername}`}>
-      <Card className="mb-3 cursor-pointer transition-colors hover:bg-accent">
+    <UserInfoCard
+      userId={ranking.user.id}
+      userName={ranking.user.name}
+      userAvatar={ranking.user.avatar}
+      side="left"
+      align="start"
+    >
+      <Card
+        className={`mb-3 cursor-pointer transition-colors hover:bg-accent ${
+          highlight ? "border-primary border-2" : ""
+        }`}
+      >
         <CardContent className="p-4">
           <div className="flex items-center gap-4">
             <RankBadge rank={ranking.rank} />
@@ -90,15 +89,6 @@ function LeaderboardItem({
                 <div className="text-base font-semibold sm:text-lg">
                   {ranking.user.name}
                 </div>
-                {ranking.badges.length > 0 && (
-                  <div className="mt-1">
-                    <UserBadgesDisplay
-                      badges={ranking.badges}
-                      size="sm"
-                      maxDisplay={3}
-                    />
-                  </div>
-                )}
               </div>
               <div className="flex items-center gap-2">
                 <span className="text-sm text-muted-foreground">
@@ -112,7 +102,107 @@ function LeaderboardItem({
           </div>
         </CardContent>
       </Card>
-    </Link>
+    </UserInfoCard>
+  )
+}
+
+function TopThreeDisplay({
+  rankings,
+  valueLabel,
+}: {
+  rankings: RankingUser[]
+  valueLabel: string
+}) {
+  const topThree = rankings.slice(0, 3)
+  if (topThree.length === 0) return null
+
+  // 按照 2-1-3 的顺序排列（中间是第一名）
+  const orderedRankings = [
+    topThree[1], // 第二名
+    topThree[0], // 第一名
+    topThree[2], // 第三名
+  ].filter(Boolean)
+
+  return (
+    <div className="mb-8 grid grid-cols-1 gap-4 sm:grid-cols-3">
+      {orderedRankings.map((ranking) => {
+        const isFirst = ranking.rank === 1
+        return (
+          <div
+            key={ranking.user.id}
+            className={`flex flex-col items-center ${
+              isFirst
+                ? "sm:order-2"
+                : ranking.rank === 2
+                  ? "sm:order-1"
+                  : "sm:order-3"
+            }`}
+          >
+            <UserInfoCard
+              userId={ranking.user.id}
+              userName={ranking.user.name}
+              userAvatar={ranking.user.avatar}
+              side="bottom"
+              align="center"
+            >
+              <div className="cursor-pointer transition-transform hover:scale-105">
+                <div
+                  className={`mb-3 flex items-center justify-center ${
+                    isFirst ? "h-24 w-24" : "h-20 w-20"
+                  }`}
+                >
+                  <RankBadge rank={ranking.rank} />
+                </div>
+                <Card
+                  className={`border-2 ${
+                    isFirst
+                      ? "border-yellow-500 bg-yellow-50 dark:bg-yellow-950/20"
+                      : ranking.rank === 2
+                        ? "border-gray-400 bg-gray-50 dark:bg-gray-900/20"
+                        : "border-orange-600 bg-orange-50 dark:bg-orange-950/20"
+                  }`}
+                >
+                  <CardContent className="p-4 text-center">
+                    <Avatar
+                      className={`mx-auto mb-3 ${
+                        isFirst ? "h-20 w-20" : "h-16 w-16"
+                      }`}
+                    >
+                      <AvatarImage
+                        src={ranking.user.avatar}
+                        alt={ranking.user.name}
+                      />
+                      <AvatarFallback className="text-xl">
+                        {ranking.user.name.slice(0, 1).toUpperCase()}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div
+                      className={`mb-2 font-semibold ${
+                        isFirst ? "text-lg" : "text-base"
+                      }`}
+                    >
+                      {ranking.user.name}
+                    </div>
+                    <div className="flex items-center justify-center gap-2">
+                      <span className="text-xs text-muted-foreground">
+                        {valueLabel}
+                      </span>
+                      <span
+                        className={`font-bold ${
+                          isFirst ? "text-xl" : "text-lg"
+                        }`}
+                      >
+                        {ranking.value.toLocaleString()}
+                      </span>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            </UserInfoCard>
+          </div>
+        )
+      })}
+    </div>
   )
 }
 
@@ -129,6 +219,20 @@ function LeaderboardList({
     {
       revalidateOnFocus: false,
       refreshInterval: 30000,
+    }
+  )
+
+  // 获取当前用户信息
+  const { data: currentUser } = useSWR<{ user: { id: string } } | null>(
+    "/api/auth/me",
+    async (url: string) => {
+      const res = await fetch(url)
+      if (!res.ok) return null
+      return res.json()
+    },
+    {
+      revalidateOnFocus: false,
+      shouldRetryOnError: false,
     }
   )
 
@@ -171,15 +275,56 @@ function LeaderboardList({
     )
   }
 
+  // 区分前三名和其他排名
+  const topThree = data.rankings.slice(0, 3)
+  const restRankings = data.rankings.slice(3)
+
+  // 查找当前用户的排名（如果不在前三名中）
+  const currentUserRanking = currentUser?.user?.id
+    ? data.rankings.find((r) => r.user.id === currentUser.user.id)
+    : null
+
+  const showCurrentUserRanking =
+    currentUserRanking && currentUserRanking.rank > 3
+
   return (
-    <div className="space-y-2">
-      {data.rankings.map((ranking) => (
-        <LeaderboardItem
-          key={ranking.user.id}
-          ranking={ranking}
-          valueLabel={valueLabel}
-        />
-      ))}
+    <div className="space-y-6">
+      {/* 前三名特殊展示 */}
+      <TopThreeDisplay rankings={topThree} valueLabel={valueLabel} />
+
+      {/* 当前用户排名（如果不在前三名） */}
+      {showCurrentUserRanking && (
+        <div>
+          <h3 className="mb-3 text-sm font-semibold text-muted-foreground">
+            你的排名
+          </h3>
+          <LeaderboardItem
+            ranking={currentUserRanking}
+            valueLabel={valueLabel}
+            highlight={true}
+          />
+        </div>
+      )}
+
+      {/* 其他排名列表 */}
+      {restRankings.length > 0 && (
+        <div>
+          <h3 className="mb-3 text-sm font-semibold text-muted-foreground">
+            完整排行榜
+          </h3>
+          <div className="space-y-2">
+            {restRankings.map((ranking) => (
+              <LeaderboardItem
+                key={ranking.user.id}
+                ranking={ranking}
+                valueLabel={valueLabel}
+                highlight={currentUser?.user?.id === ranking.user.id}
+              />
+            ))}
+          </div>
+        </div>
+      )}
+
       {data.updatedAt && (
         <div className="pt-4 text-center text-xs text-muted-foreground">
           最后更新时间：{new Date(data.updatedAt).toLocaleString("zh-CN")}
