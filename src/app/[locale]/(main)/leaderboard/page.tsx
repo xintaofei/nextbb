@@ -213,6 +213,7 @@ function LeaderboardList({
   type: LeaderboardType
   valueLabel: string
 }) {
+  const t = useTranslations("Leaderboard")
   const { data, error, isLoading } = useSWR<LeaderboardResponse>(
     `/api/leaderboard?type=${type}`,
     fetcher,
@@ -240,9 +241,9 @@ function LeaderboardList({
     return (
       <div className="flex items-center justify-center py-12">
         <div className="text-center">
-          <div className="mb-2 text-lg">加载中...</div>
+          <div className="mb-2 text-lg">{t("loading")}</div>
           <div className="text-sm text-muted-foreground">
-            正在获取排行榜数据
+            {t("loadingData")}
           </div>
         </div>
       </div>
@@ -253,10 +254,8 @@ function LeaderboardList({
     return (
       <div className="flex items-center justify-center py-12">
         <div className="text-center">
-          <div className="mb-2 text-lg text-destructive">加载失败</div>
-          <div className="text-sm text-muted-foreground">
-            请稍后重试或刷新页面
-          </div>
+          <div className="mb-2 text-lg text-destructive">{t("loadFailed")}</div>
+          <div className="text-sm text-muted-foreground">{t("retryLater")}</div>
         </div>
       </div>
     )
@@ -266,9 +265,9 @@ function LeaderboardList({
     return (
       <div className="flex items-center justify-center py-12">
         <div className="text-center">
-          <div className="mb-2 text-lg">暂无排名数据</div>
+          <div className="mb-2 text-lg">{t("noRankingData")}</div>
           <div className="text-sm text-muted-foreground">
-            快来参与社区活动，冲上排行榜吧！
+            {t("joinCommunity")}
           </div>
         </div>
       </div>
@@ -296,7 +295,7 @@ function LeaderboardList({
       {showCurrentUserRanking && (
         <div>
           <h3 className="mb-3 text-sm font-semibold text-muted-foreground">
-            你的排名
+            {t("yourRanking")}
           </h3>
           <LeaderboardItem
             ranking={currentUserRanking}
@@ -310,7 +309,7 @@ function LeaderboardList({
       {restRankings.length > 0 && (
         <div>
           <h3 className="mb-3 text-sm font-semibold text-muted-foreground">
-            完整排行榜
+            {t("fullLeaderboard")}
           </h3>
           <div className="space-y-2">
             {restRankings.map((ranking) => (
@@ -327,7 +326,7 @@ function LeaderboardList({
 
       {data.updatedAt && (
         <div className="pt-4 text-center text-xs text-muted-foreground">
-          最后更新时间：{new Date(data.updatedAt).toLocaleString("zh-CN")}
+          {t("lastUpdated")}：{new Date(data.updatedAt).toLocaleString("zh-CN")}
         </div>
       )}
     </div>
@@ -345,9 +344,7 @@ export default function LeaderboardPage() {
           <Trophy className="h-8 w-8" />
           <h1 className="text-2xl font-bold sm:text-3xl">{t("title")}</h1>
         </div>
-        <p className="mt-2 text-muted-foreground">
-          社区排行榜展示不同维度的优秀用户
-        </p>
+        <p className="mt-2 text-muted-foreground">{t("subtitle")}</p>
       </div>
 
       <Tabs
@@ -358,31 +355,29 @@ export default function LeaderboardPage() {
           <TabsTrigger value="wealth" className="flex items-center gap-1">
             <Trophy className="h-4 w-4" />
             <span className="hidden sm:inline">{t("wealth")}</span>
-            <span className="sm:hidden">富豪</span>
+            <span className="sm:hidden">{t("wealthShort")}</span>
           </TabsTrigger>
           <TabsTrigger value="pioneer" className="flex items-center gap-1">
             <TrendingUp className="h-4 w-4" />
             <span className="hidden sm:inline">{t("pioneer")}</span>
-            <span className="sm:hidden">先锋</span>
+            <span className="sm:hidden">{t("pioneerShort")}</span>
           </TabsTrigger>
           <TabsTrigger value="expert" className="flex items-center gap-1">
             <Award className="h-4 w-4" />
             <span className="hidden sm:inline">{t("expert")}</span>
-            <span className="sm:hidden">智囊</span>
+            <span className="sm:hidden">{t("expertShort")}</span>
           </TabsTrigger>
           <TabsTrigger value="reputation" className="flex items-center gap-1">
             <Medal className="h-4 w-4" />
             <span className="hidden sm:inline">{t("reputation")}</span>
-            <span className="sm:hidden">声望</span>
+            <span className="sm:hidden">{t("reputationShort")}</span>
           </TabsTrigger>
         </TabsList>
 
         <TabsContent value="wealth" className="mt-6">
           <div className="mb-4">
             <h2 className="text-xl font-semibold">{t("wealth")}</h2>
-            <p className="text-sm text-muted-foreground">
-              {t("wealthDesc")} - 基于用户当前的积分余额
-            </p>
+            <p className="text-sm text-muted-foreground">{t("wealthDesc")}</p>
           </div>
           <LeaderboardList type="wealth" valueLabel={t("credits")} />
         </TabsContent>
@@ -390,9 +385,7 @@ export default function LeaderboardPage() {
         <TabsContent value="pioneer" className="mt-6">
           <div className="mb-4">
             <h2 className="text-xl font-semibold">{t("pioneer")}</h2>
-            <p className="text-sm text-muted-foreground">
-              {t("pioneerDesc")} - 基于近7天内的话题和帖子数量
-            </p>
+            <p className="text-sm text-muted-foreground">{t("pioneerDesc")}</p>
           </div>
           <LeaderboardList type="pioneer" valueLabel={t("activities")} />
         </TabsContent>
@@ -400,9 +393,7 @@ export default function LeaderboardPage() {
         <TabsContent value="expert" className="mt-6">
           <div className="mb-4">
             <h2 className="text-xl font-semibold">{t("expert")}</h2>
-            <p className="text-sm text-muted-foreground">
-              {t("expertDesc")} - 基于被采纳为最佳答案的次数
-            </p>
+            <p className="text-sm text-muted-foreground">{t("expertDesc")}</p>
           </div>
           <LeaderboardList type="expert" valueLabel={t("acceptances")} />
         </TabsContent>
@@ -411,7 +402,7 @@ export default function LeaderboardPage() {
           <div className="mb-4">
             <h2 className="text-xl font-semibold">{t("reputation")}</h2>
             <p className="text-sm text-muted-foreground">
-              {t("reputationDesc")} - 基于获得的点赞数和收藏数总和
+              {t("reputationDesc")}
             </p>
           </div>
           <LeaderboardList
