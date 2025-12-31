@@ -50,7 +50,7 @@ function RankBadge({ rank }: { rank: number }) {
     return <span className="text-6xl">🥉</span>
   }
   return (
-    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-muted text-sm font-semibold text-muted-foreground">
+    <div className="flex h-10 w-10 items-center justify-center text-sm font-semibold text-muted-foreground">
       {rank}
     </div>
   )
