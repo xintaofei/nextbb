@@ -178,7 +178,7 @@ export function TopicForm({
         onSubmit={form.handleSubmit((data) => {
           onSubmit(data)
         })}
-        className="space-y-6"
+        className="space-y-4"
       >
         {/* 类型选择 Tabs */}
         <Tabs value={selectedType} onValueChange={handleTypeChange}>
