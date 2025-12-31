@@ -8,7 +8,9 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Card, CardContent } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { UserInfoCard } from "@/components/common/user-info-card"
-import { motion } from "framer-motion"
+import { MagicCard } from "@/components/ui/magic-card"
+import { useTheme } from "next-themes"
+import { BorderBeam } from "@/components/ui/border-beam"
 
 type LeaderboardType = "wealth" | "pioneer" | "expert" | "reputation"
 
@@ -63,6 +65,7 @@ function LeaderboardItem({
   valueLabel: string
   highlight?: boolean
 }) {
+  const { resolvedTheme } = useTheme()
   return (
     <UserInfoCard
       userId={ranking.user.id}
@@ -71,35 +74,38 @@ function LeaderboardItem({
       side="left"
       align="start"
     >
-      <motion.div
-        whileHover={{ y: -4 }}
-        transition={{ duration: 0.2 }}
-        className="group relative overflow-hidden cursor-pointer rounded-2xl border border-border/40 bg-background/60 p-4 backdrop-blur transition-all hover:border-border/60 hover:shadow-lg"
-        role="article"
-        aria-label={"decrease rank"}
-      >
-        <div className="absolute inset-0 bg-linear-to-br from-foreground/4 via-transparent to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100 -z-10" />
-        <div className="flex flex-row items-center justify-between gap-4">
-          <div className="flex flex-row items-center gap-4">
-            <RankBadge rank={ranking.rank} />
-            <Avatar className="size-8 sm:size-10">
-              <AvatarImage src={ranking.user.avatar} alt={ranking.user.name} />
-              <AvatarFallback>
-                {ranking.user.name.slice(0, 1).toUpperCase()}
-              </AvatarFallback>
-            </Avatar>
-            <div className={`font-semibold text-lg text-muted-foreground`}>
-              {ranking.user.name}
+      <div>
+        <MagicCard
+          gradientColor={resolvedTheme === "dark" ? "#262626" : "#D9D9D955"}
+          className="p-4 cursor-pointer rounded-2xl"
+        >
+          <div className="flex flex-row items-center justify-between gap-4">
+            <div className="flex flex-row items-center gap-4">
+              <RankBadge rank={ranking.rank} />
+              <Avatar className="size-8 sm:size-10">
+                <AvatarImage
+                  src={ranking.user.avatar}
+                  alt={ranking.user.name}
+                />
+                <AvatarFallback>
+                  {ranking.user.name.slice(0, 1).toUpperCase()}
+                </AvatarFallback>
+              </Avatar>
+              <div className={`font-semibold text-lg text-muted-foreground`}>
+                {ranking.user.name}
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-muted-foreground">
+                {valueLabel}:
+              </span>
+              <span className="text-lg font-bold sm:text-xl">
+                {ranking.value.toLocaleString()}
+              </span>
             </div>
           </div>
-          <div className="flex items-center gap-2">
-            <span className="text-sm text-muted-foreground">{valueLabel}:</span>
-            <span className="text-lg font-bold sm:text-xl">
-              {ranking.value.toLocaleString()}
-            </span>
-          </div>
-        </div>
-      </motion.div>
+        </MagicCard>
+      </div>
     </UserInfoCard>
   )
 }
@@ -151,15 +157,7 @@ function TopThreeDisplay({
                 >
                   <RankBadge rank={ranking.rank} />
                 </div>
-                <Card
-                  className={`border-2 ${
-                    isFirst
-                      ? "border-yellow-500 bg-yellow-50 dark:bg-yellow-950/20"
-                      : ranking.rank === 2
-                        ? "border-gray-400 bg-gray-50 dark:bg-gray-900/20"
-                        : "border-orange-600 bg-orange-50 dark:bg-orange-950/20"
-                  }`}
-                >
+                <Card className="relative shadow-none overflow-hidden">
                   <CardContent className="p-4 text-center">
                     <Avatar
                       className={`mx-auto mb-3 ${
@@ -194,6 +192,18 @@ function TopThreeDisplay({
                       </span>
                     </div>
                   </CardContent>
+                  <BorderBeam
+                    duration={6}
+                    size={200}
+                    className="from-transparent via-red-500 to-transparent"
+                  />
+                  <BorderBeam
+                    duration={6}
+                    delay={3}
+                    size={200}
+                    borderWidth={2}
+                    className="from-transparent via-blue-500 to-transparent"
+                  />
                 </Card>
               </div>
             </UserInfoCard>
