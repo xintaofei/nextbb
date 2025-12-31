@@ -38,13 +38,13 @@ const fetcher = async (url: string): Promise<LeaderboardResponse> => {
 
 function RankBadge({ rank }: { rank: number }) {
   if (rank === 1) {
-    return <span className="text-2xl">🥇</span>
+    return <span className="text-6xl">🥇</span>
   }
   if (rank === 2) {
-    return <span className="text-2xl">🥈</span>
+    return <span className="text-6xl">🥈</span>
   }
   if (rank === 3) {
-    return <span className="text-2xl">🥉</span>
+    return <span className="text-6xl">🥉</span>
   }
   return (
     <div className="flex h-10 w-10 items-center justify-center rounded-full bg-muted text-sm font-semibold text-muted-foreground">
@@ -71,33 +71,32 @@ function LeaderboardItem({
       align="start"
     >
       <Card
-        className={`mb-3 cursor-pointer transition-colors hover:bg-accent ${
+        className={`mb-4 py-4 cursor-pointer shadow-none transition-colors hover:bg-accent ${
           highlight ? "border-primary border-2" : ""
         }`}
       >
-        <CardContent className="p-4">
-          <div className="flex items-center gap-4">
-            <RankBadge rank={ranking.rank} />
-            <Avatar className="h-12 w-12 sm:h-14 sm:w-14">
-              <AvatarImage src={ranking.user.avatar} alt={ranking.user.name} />
-              <AvatarFallback>
-                {ranking.user.name.slice(0, 1).toUpperCase()}
-              </AvatarFallback>
-            </Avatar>
-            <div className="flex flex-1 flex-col sm:flex-row sm:items-center sm:justify-between">
-              <div className="mb-2 sm:mb-0">
-                <div className="text-base font-semibold sm:text-lg">
-                  {ranking.user.name}
-                </div>
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="text-sm text-muted-foreground">
-                  {valueLabel}:
-                </span>
-                <span className="text-lg font-bold sm:text-xl">
-                  {ranking.value.toLocaleString()}
-                </span>
-              </div>
+        <CardContent>
+          <div className="flex flex-row items-center justify-between gap-4">
+            <div className="flex flex-row items-center gap-4">
+              <RankBadge rank={ranking.rank} />
+              <Avatar className="size-8 sm:size-10">
+                <AvatarImage
+                  src={ranking.user.avatar}
+                  alt={ranking.user.name}
+                />
+                <AvatarFallback>
+                  {ranking.user.name.slice(0, 1).toUpperCase()}
+                </AvatarFallback>
+              </Avatar>
+              <div className="font-semibold text-lg">{ranking.user.name}</div>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-muted-foreground">
+                {valueLabel}:
+              </span>
+              <span className="text-lg font-bold sm:text-xl">
+                {ranking.value.toLocaleString()}
+              </span>
             </div>
           </div>
         </CardContent>
@@ -145,7 +144,7 @@ function TopThreeDisplay({
               side="bottom"
               align="center"
             >
-              <div className="cursor-pointer transition-transform hover:scale-105">
+              <div className="flex flex-col items-center cursor-pointer transition-transform hover:scale-105">
                 <div
                   className={`mb-3 flex items-center justify-center ${
                     isFirst ? "h-24 w-24" : "h-20 w-20"
