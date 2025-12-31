@@ -46,7 +46,6 @@ export function createTopicFormSchema(t: TranslateFn) {
     type: z.literal(TopicType.BOUNTY),
     bountyType: z
       .enum([BountyType.SINGLE, BountyType.MULTIPLE])
-      .default(BountyType.SINGLE)
       .refine((val) => val === BountyType.SINGLE, {
         message: t("Topic.Validation.bounty.typeMismatch"),
       }),
@@ -55,7 +54,7 @@ export function createTopicFormSchema(t: TranslateFn) {
       .int()
       .positive(t("Topic.Validation.bounty.totalPositive")),
     bountySlots: z.literal(1),
-    singleAmount: z.undefined().optional(),
+    singleAmount: z.number().int().positive().optional().or(z.undefined()),
   })
 
   const bountyMultipleSchema = baseTopicSchema.extend({
@@ -371,7 +370,6 @@ export function createTopicFormSchemaWithCredits(
     type: z.literal(TopicType.BOUNTY),
     bountyType: z
       .enum([BountyType.SINGLE, BountyType.MULTIPLE])
-      .default(BountyType.SINGLE)
       .refine((val) => val === BountyType.SINGLE, {
         message: t("Topic.Validation.bounty.typeMismatch"),
       }),
@@ -383,7 +381,7 @@ export function createTopicFormSchemaWithCredits(
         message: t("Topic.Validation.bounty.insufficientCredits"),
       }),
     bountySlots: z.literal(1),
-    singleAmount: z.undefined().optional(),
+    singleAmount: z.number().int().positive().optional().or(z.undefined()),
   })
 
   const bountyMultipleWithCredits = baseTopicSchema.extend({
