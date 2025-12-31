@@ -349,7 +349,7 @@ export default function LeaderboardPage() {
         value={activeTab}
         onValueChange={(v) => setActiveTab(v as LeaderboardType)}
       >
-        <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4">
+        <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4 gap-2 h-auto">
           <TabsTrigger value="wealth" className="flex items-center gap-1">
             <Trophy className="h-4 w-4" />
             <span className="hidden sm:inline">{t("wealth")}</span>
