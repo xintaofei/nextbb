@@ -37,9 +37,7 @@ export async function POST(req: Request) {
       take: 100,
     })
 
-    console.log(
-      `[Cron] Found ${pollsToSettle.length} polls to settle`
-    )
+    console.log(`[Cron] Found ${pollsToSettle.length} polls to settle`)
 
     let settledCount = 0
     const errors: { id: string; error: string }[] = []
@@ -56,17 +54,12 @@ export async function POST(req: Request) {
           },
         })
 
-        console.log(
-          `[Cron] Settled poll: ${poll.id} - "${poll.title}"`
-        )
+        console.log(`[Cron] Settled poll: ${poll.id} - "${poll.title}"`)
         settledCount++
       } catch (error) {
         const errorMsg =
           error instanceof Error ? error.message : "Unknown error"
-        console.error(
-          `[Cron] Failed to settle poll ${poll.id}:`,
-          errorMsg
-        )
+        console.error(`[Cron] Failed to settle poll ${poll.id}:`, errorMsg)
         errors.push({
           id: String(poll.id),
           error: errorMsg,

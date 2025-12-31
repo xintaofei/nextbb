@@ -1257,5 +1257,26 @@
     "unfollowSuccess": "已取消关注",
     "followError": "操作失败，请稍后再试",
     "messageError": "创建会话失败，请稍后再试"
+  },
+  "Leaderboard": {
+    "title": "社区排行榜",
+    "wealth": "富豪榜",
+    "wealthDesc": "财富积累",
+    "pioneer": "先锋榜",
+    "pioneerDesc": "动态活跃",
+    "expert": "智囊榜",
+    "expertDesc": "专业贡献",
+    "reputation": "声望榜",
+    "reputationDesc": "社区认可",
+    "credits": "积分",
+    "activities": "活跃度",
+    "acceptances": "被采纳次数",
+    "likesAndBookmarks": "声望值",
+    "rank": "排名",
+    "user": "用户",
+    "value": "数值",
+    "noData": "暂无排名数据",
+    "loadError": "加载失败，请稍后重试",
+    "lastUpdated": "最后更新时间"
   }
 }

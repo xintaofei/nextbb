@@ -89,7 +89,7 @@ export function NavMain() {
             <span>我的消息</span>
           </SidebarMenuButton>
         </Link>
-        <Link href="#">
+        <Link href="/leaderboard">
           <SidebarMenuButton>
             <AlignStartHorizontal />
             <span>排行榜</span>

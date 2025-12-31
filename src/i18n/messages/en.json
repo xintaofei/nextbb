@@ -1115,5 +1115,26 @@
     "unfollowSuccess": "Unfollowed successfully",
     "followError": "Operation failed, please try again later",
     "messageError": "Failed to create conversation, please try again later"
+  },
+  "Leaderboard": {
+    "title": "Community Leaderboard",
+    "wealth": "Wealth Rank",
+    "wealthDesc": "Wealth Accumulation",
+    "pioneer": "Pioneer Rank",
+    "pioneerDesc": "Activity Level",
+    "expert": "Expert Rank",
+    "expertDesc": "Professional Contribution",
+    "reputation": "Reputation Rank",
+    "reputationDesc": "Community Recognition",
+    "credits": "Credits",
+    "activities": "Activities",
+    "acceptances": "Accepted Answers",
+    "likesAndBookmarks": "Reputation Score",
+    "rank": "Rank",
+    "user": "User",
+    "value": "Value",
+    "noData": "No ranking data yet",
+    "loadError": "Failed to load, please try again later",
+    "lastUpdated": "Last Updated"
   }
 }

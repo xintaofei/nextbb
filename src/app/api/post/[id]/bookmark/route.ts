@@ -44,7 +44,9 @@ export async function POST(
     await prisma.post_bookmarks.create({ data: { ...key } })
   }
 
-  const count = await prisma.post_bookmarks.count({ where: { post_id: postId } })
+  const count = await prisma.post_bookmarks.count({
+    where: { post_id: postId },
+  })
   const response: BookmarkToggleResult = { bookmarked: !exists, count }
   return NextResponse.json(response, { status: 200 })
 }
