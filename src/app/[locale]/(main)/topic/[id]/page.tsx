@@ -936,7 +936,7 @@ export default function TopicPage() {
         submitText={tc("Action.save")}
         cancelText={tc("Action.cancel")}
       />
-      <div className="flex flex-col gap-4 mt-8">
+      <div className="flex flex-col gap-4 mt-12">
         <Table className="w-full table-fixed">
           <colgroup>
             <col />
@@ -946,7 +946,7 @@ export default function TopicPage() {
           </colgroup>
           <TableHeader>
             <TableRow>
-              <TableHead>{tc("Table.related")}</TableHead>
+              <TableHead className="text-2xl">{tc("Table.related")}</TableHead>
               <TableHead className="text-center">
                 {tc("Table.replies")}
               </TableHead>
