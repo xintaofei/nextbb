@@ -93,10 +93,10 @@ export function TopicPostItem({
       data-post-anchor
       className={highlight ? "animate-(--animate-highlight-fade)" : ""}
     >
-      <TimelineStepsConnector />
+      <TimelineStepsConnector className="max-sm:hidden" />
       <TimelineStepsIcon
         size="lg"
-        className="sticky top-18 md:top-4 overflow-hidden p-0.5"
+        className="sticky top-18 md:top-4 overflow-hidden p-0.5 max-sm:hidden"
       >
         <UserInfoCard
           userId={post.author.id}
@@ -112,7 +112,18 @@ export function TopicPostItem({
       </TimelineStepsIcon>
       <TimelineStepsContent className={`border-b`}>
         <div className="flex flex-row justify-between items-center w-full">
-          <div className="flex flex-row gap-4 items-center">
+          <div className="flex flex-row gap-4 max-sm:gap-2 items-center">
+            <UserInfoCard
+              userId={post.author.id}
+              userName={post.author.name}
+              userAvatar={post.author.avatar}
+              side="right"
+            >
+              <Avatar className="hidden max-sm:flex size-5 cursor-pointer">
+                <AvatarImage src={post.author.avatar} alt="@avatar" />
+                <AvatarFallback>{post.author.name}</AvatarFallback>
+              </Avatar>
+            </UserInfoCard>
             <TimelineStepsTitle>{post.author.name}</TimelineStepsTitle>
             {post.badges && post.badges.length > 0 && (
               <UserBadgesDisplay
