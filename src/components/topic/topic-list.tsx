@@ -148,7 +148,7 @@ export function TopicList({
           ? Array.from({ length: 15 }).map((_, i) => (
               <TableRow key={`skeleton-${i}`}>
                 <TableCell className="flex flex-col gap-2 max-sm:px-0">
-                  <Skeleton className="h-7 w-72 xl:w-96 max-sm:w-56" />
+                  <Skeleton className="h-7 w-72 xl:w-96 max-sm:w-64" />
                   <div className="flex max-w-full flex-wrap gap-2 overflow-hidden">
                     <Skeleton className="size-5 rounded-full hidden max-sm:block" />
                     <Skeleton className="h-5 w-20 max-sm:w-16" />
