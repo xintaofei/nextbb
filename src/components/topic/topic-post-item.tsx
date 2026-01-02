@@ -119,7 +119,7 @@ export function TopicPostItem({
               userAvatar={post.author.avatar}
               side="right"
             >
-              <Avatar className="hidden max-sm:flex size-5 cursor-pointer">
+              <Avatar className="hidden max-sm:flex size-6 cursor-pointer">
                 <AvatarImage src={post.author.avatar} alt="@avatar" />
                 <AvatarFallback>{post.author.name}</AvatarFallback>
               </Avatar>
