@@ -36,7 +36,7 @@ export function PostSkeletonList({
           <TimelineStepsContent className="border-b">
             <div className="flex flex-row justify-between items-center w-full">
               <div className="flex flex-row gap-2 items-center">
-                <Skeleton className="size-5 rounded-full hidden max-sm:block" />
+                <Skeleton className="size-6 rounded-full hidden max-sm:block" />
                 <Skeleton className="h-5 w-24" />
                 <Skeleton className="h-4 w-16" />
               </div>
