@@ -71,8 +71,8 @@ function LeaderboardItem({
       userId={ranking.user.id}
       userName={ranking.user.name}
       userAvatar={ranking.user.avatar}
-      side="left"
-      align="start"
+      side="top"
+      align="center"
     >
       <div>
         <MagicCard
@@ -80,7 +80,7 @@ function LeaderboardItem({
           className="p-4 cursor-pointer rounded-2xl"
         >
           <div className="flex flex-row items-center justify-between gap-4">
-            <div className="flex flex-row items-center gap-4">
+            <div className="flex flex-row items-center gap-4 max-sm:gap-2">
               <RankBadge rank={ranking.rank} />
               <Avatar className="size-8 sm:size-10">
                 <AvatarImage
