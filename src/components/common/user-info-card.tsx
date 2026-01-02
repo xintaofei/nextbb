@@ -215,8 +215,9 @@ export function UserInfoCard({
         className="w-96 max-sm:w-80 p-0 overflow-hidden"
       >
         <div className="flex flex-col gap-4 p-4">
-          {/* 头像区域 */}
-          <div className="flex justify-center">
+          {/* 头部区域 */}
+          <div className="flex flex-row items-center gap-4">
+            {/* 头像区域 */}
             <div className="relative">
               <div className="absolute inset-0 rounded-full bg-linear-to-br from-primary to-accent opacity-20 blur-sm" />
               <Avatar className="h-16 w-16 max-sm:h-14 max-sm:w-14 relative border-2 border-primary/30">
@@ -226,33 +227,32 @@ export function UserInfoCard({
                 </AvatarFallback>
               </Avatar>
             </div>
-          </div>
-
-          {/* 用户信息区域 */}
-          <div className="flex flex-col items-center gap-1">
-            <div className="flex items-center gap-2">
-              <h3 className="text-lg max-sm:text-base font-semibold">
-                {userName}
-              </h3>
-              {isAdmin && (
-                <Badge
-                  variant="secondary"
-                  className="text-xs bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400"
-                >
-                  <Shield className="h-3 w-3 mr-1" />
-                  {t("admin")}
-                </Badge>
+            <div className="flex flex-col gap-1">
+              {/* 用户信息区域 */}
+              <div className="flex items-center gap-2">
+                <h3 className="text-xl max-sm:text-lg font-semibold">
+                  {userName}
+                </h3>
+                {isAdmin && (
+                  <Badge
+                    variant="secondary"
+                    className="text-xs bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400"
+                  >
+                    <Shield className="h-3 w-3 mr-1" />
+                    {t("admin")}
+                  </Badge>
+                )}
+              </div>
+              {/* 加入时间 */}
+              {statisticsData?.joinedAt && (
+                <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                  <Calendar className="h-3 w-3" />
+                  <span>
+                    {t("joinedAt")} {formatJoinedDate(statisticsData.joinedAt)}
+                  </span>
+                </div>
               )}
             </div>
-            {/* 加入时间 */}
-            {statisticsData?.joinedAt && (
-              <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                <Calendar className="h-3 w-3" />
-                <span>
-                  {t("joinedAt")} {formatJoinedDate(statisticsData.joinedAt)}
-                </span>
-              </div>
-            )}
           </div>
 
           {/* 统计数据区域 */}
