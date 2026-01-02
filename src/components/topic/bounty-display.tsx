@@ -80,7 +80,7 @@ export function BountyDisplay({
   const isFullyRewarded = data.remainingSlots === 0
 
   return (
-    <Card className="mb-6 border-amber-200 dark:border-amber-900/50 bg-linear-to-br from-amber-50/50 to-orange-50/30 dark:from-amber-950/20 dark:to-orange-950/10 shadow-none">
+    <Card className="border-amber-200 dark:border-amber-900/50 bg-linear-to-br from-amber-50/50 to-orange-50/30 dark:from-amber-950/20 dark:to-orange-950/10 shadow-none">
       <CardHeader>
         <CardTitle className="flex items-center gap-2 text-amber-700 dark:text-amber-400">
           <Coins className="h-5 w-5" />

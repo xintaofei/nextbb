@@ -83,7 +83,7 @@ export function LotteryDisplay({ topicId }: LotteryDisplayProps) {
   }
 
   return (
-    <Card className="mb-6 border-purple-200 dark:border-purple-900/50 bg-gradient-to-br from-purple-50/50 to-pink-50/30 dark:from-purple-950/20 dark:to-pink-950/10 shadow-none">
+    <Card className="border-purple-200 dark:border-purple-900/50 bg-linear-to-br from-purple-50/50 to-pink-50/30 dark:from-purple-950/20 dark:to-pink-950/10 shadow-none">
       <CardHeader>
         <CardTitle className="flex items-center gap-2 text-purple-700 dark:text-purple-400">
           <Gift className="h-5 w-5" />
