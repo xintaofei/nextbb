@@ -23,7 +23,9 @@ export async function AppSidebar({
       icon: true,
       _count: {
         select: {
-          topics: true,
+          topics: {
+            where: { is_deleted: false },
+          },
         },
       },
     },
