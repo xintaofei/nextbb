@@ -87,7 +87,7 @@ export function UserInfoHeader({
           </div>
 
           {/* 统计数据 */}
-          <div className="grid grid-cols-6 gap-2 md:gap-4 lg:gap-8 w-full md:w-auto">
+          <div className="grid grid-cols-5 gap-2 md:gap-4 lg:gap-8 w-full md:w-auto">
             <div className="text-center">
               <div className="text-lg md:text-2xl font-bold">
                 {statistics.topicsCount}
