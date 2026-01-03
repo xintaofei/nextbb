@@ -122,14 +122,6 @@ export function UserInfoHeader({
             </div>
             <div className="text-center">
               <div className="text-lg md:text-2xl font-bold">
-                {statistics.badgesCount}
-              </div>
-              <div className="text-xs md:text-sm text-muted-foreground">
-                {t("statistics.badges")}
-              </div>
-            </div>
-            <div className="text-center">
-              <div className="text-lg md:text-2xl font-bold">
                 {statistics.credits}
               </div>
               <div className="text-xs md:text-sm text-muted-foreground">
