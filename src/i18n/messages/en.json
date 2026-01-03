@@ -1090,7 +1090,17 @@
         "posts": "No posts yet",
         "likes": "No liked posts yet",
         "bookmarks": "No bookmarks yet",
-        "badges": "No badges yet"
+        "badges": "No badges yet",
+        "followers": "No followers yet",
+        "following": "Not following anyone yet"
+      },
+      "follows": {
+        "title": "Follows",
+        "followers": "Followers",
+        "following": "Following",
+        "followersCount": "Followers",
+        "followingCount": "Following",
+        "followedAt": "Followed at"
       }
     },
     "activity": {

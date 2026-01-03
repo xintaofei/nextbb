@@ -1232,7 +1232,17 @@
         "posts": "暂无回复的帖子",
         "likes": "暂无点赞记录",
         "bookmarks": "暂无收藏内容",
-        "badges": "暂未获得徽章"
+        "badges": "暂未获得徽章",
+        "followers": "暂无粉丝",
+        "following": "暂无关注的用户"
+      },
+      "follows": {
+        "title": "关注",
+        "followers": "粉丝",
+        "following": "关注中",
+        "followersCount": "位粉丝",
+        "followingCount": "位关注",
+        "followedAt": "关注于"
       }
     },
     "activity": {

@@ -3,7 +3,7 @@
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { cn, encodeUsername } from "@/lib/utils"
-import { Activity, Award, Bell, Settings, User } from "lucide-react"
+import { Activity, Award, Bell, Settings, User, Users } from "lucide-react"
 import { useTranslations } from "next-intl"
 
 type UserNavigationProps = {
@@ -43,6 +43,12 @@ export function UserNavigation({
       label: t("badges"),
       href: `/u/${encodedUsername}/badges`,
       icon: Award,
+      requiresAuth: false,
+    },
+    {
+      label: t("follows.title"),
+      href: `/u/${encodedUsername}/follows`,
+      icon: Users,
       requiresAuth: false,
     },
     {
