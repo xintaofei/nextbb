@@ -30,7 +30,7 @@ function BadgesTimeline({ badges }: BadgesTimelineProps) {
   }
 
   return (
-    <section ref={ref} className="w-full bg-background px-4 py-8">
+    <section ref={ref} className="w-full bg-background px-4 py-16">
       <div className="mx-auto max-w-5xl">
         {/* Header */}
         <motion.div
@@ -127,7 +127,7 @@ function BadgesTimeline({ badges }: BadgesTimelineProps) {
                       whileHover={{ scale: 1.02, y: -5 }}
                       transition={{ duration: 0.2 }}
                     >
-                      <Card className="relative overflow-hidden border-border/50 bg-card p-4 shadow-lg md:p-6">
+                      <Card className="relative overflow-hidden border-border/50 bg-card p-4 shadow-none md:p-6">
                         <motion.div
                           className="absolute inset-0 bg-linear-to-br from-primary/5 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100"
                           whileHover={{ opacity: 1 }}
