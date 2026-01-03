@@ -32,13 +32,13 @@ export function TopicHeaderBar({
         </div>
         <div className="flex flex-row flex-wrap gap-4 items-center justify-between">
           <TopicSortTabs
-            className="max-sm:hidden flex-1"
+            className="max-sm:hidden"
             onSortStart={(next) => {
               onSortStart?.(next)
             }}
           />
           <TopicSortDrawer
-            className="hidden max-sm:flex flex-1"
+            className="hidden max-sm:flex"
             onSortStart={(next) => {
               onSortStart?.(next)
             }}
