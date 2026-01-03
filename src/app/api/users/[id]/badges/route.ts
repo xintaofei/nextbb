@@ -36,6 +36,13 @@ export async function GET(req: NextRequest, context: RouteContext) {
             description: true,
           },
         },
+        awarder: {
+          select: {
+            id: true,
+            name: true,
+            avatar: true,
+          },
+        },
       },
       orderBy: [{ badge: { level: "desc" } }, { awarded_at: "desc" }],
     })
@@ -49,6 +56,10 @@ export async function GET(req: NextRequest, context: RouteContext) {
       bgColor: ub.badge.bg_color,
       textColor: ub.badge.text_color,
       description: ub.badge.description,
+      awardedAt: ub.awarded_at.toISOString(),
+      awardedBy: ub.awarded_by ? String(ub.awarded_by) : null,
+      awarderName: ub.awarder?.name || null,
+      awarderAvatar: ub.awarder?.avatar || null,
     }))
 
     const result: BadgeListResponse = { items }

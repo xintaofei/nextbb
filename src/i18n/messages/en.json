@@ -1101,6 +1101,15 @@
         "followersCount": "Followers",
         "followingCount": "Following",
         "followedAt": "Followed at"
+      },
+      "badgeList": {
+        "title": "Badge List",
+        "description": "All badges earned by the user",
+        "awardedAt": "Awarded at",
+        "awardedBy": "Awarded by",
+        "system": "System",
+        "empty": "No badges earned yet",
+        "emptyDescription": "Participate in community activities to earn badges!"
       }
     },
     "activity": {

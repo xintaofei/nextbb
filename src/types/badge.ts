@@ -8,6 +8,9 @@ export type BadgeItem = {
   textColor: string | null
   description?: string | null
   awardedAt?: string
+  awardedBy?: string | null
+  awarderName?: string | null
+  awarderAvatar?: string | null
 }
 
 export type UserBadgeRelation = {

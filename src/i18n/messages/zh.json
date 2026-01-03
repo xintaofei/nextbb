@@ -1243,6 +1243,15 @@
         "followersCount": "位粉丝",
         "followingCount": "位关注",
         "followedAt": "关注于"
+      },
+      "badgeList": {
+        "title": "徽章列表",
+        "description": "用户获得的所有徽章",
+        "awardedAt": "授予时间",
+        "awardedBy": "授予人",
+        "system": "系统",
+        "empty": "暂未获得任何徽章",
+        "emptyDescription": "参与社区活动获取徽章吧！"
       }
     },
     "activity": {
