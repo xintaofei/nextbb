@@ -1,19 +1,9 @@
 import { Metadata } from "next"
-import { Award, Calendar, User as UserIcon } from "lucide-react"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import {
-  TimelineSteps,
-  TimelineStepsItem,
-  TimelineStepsConnector,
-  TimelineStepsIcon,
-  TimelineStepsContent,
-  TimelineStepsTitle,
-  TimelineStepsDescription,
-  TimelineStepsTime,
-} from "@/components/ui/timeline-steps"
+import { Award } from "lucide-react"
 import { BadgeItem } from "@/types/badge"
 import { decodeUsername } from "@/lib/utils"
 import { prisma } from "@/lib/prisma"
+import BadgesTimeline from "@/components/user/badges-timeline"
 
 type BadgesPageProps = {
   params: Promise<{ username: string }>
@@ -131,13 +121,6 @@ export default async function BadgesPage({ params }: BadgesPageProps) {
   if (badges.length === 0) {
     return (
       <div className="space-y-6">
-        <div className="space-y-2">
-          <h1 className="text-2xl font-bold flex items-center gap-2">
-            <Award className="h-6 w-6" />
-            {t("title")}
-          </h1>
-          <p className="text-sm text-muted-foreground">{t("description")}</p>
-        </div>
         <div className="flex flex-col items-center justify-center py-12 space-y-4">
           <Award className="h-16 w-16 text-muted-foreground/30" />
           <div className="text-center space-y-2">
@@ -155,92 +138,7 @@ export default async function BadgesPage({ params }: BadgesPageProps) {
 
   return (
     <div className="space-y-6">
-      <div className="space-y-2">
-        <h1 className="text-2xl font-bold flex items-center gap-2">
-          <Award className="h-6 w-6" />
-          {t("title")}
-        </h1>
-        <p className="text-sm text-muted-foreground">{t("description")}</p>
-      </div>
-
-      <TimelineSteps>
-        {badges.map((badge) => (
-          <TimelineStepsItem key={badge.id} className="mb-4">
-            <TimelineStepsConnector />
-            <TimelineStepsIcon
-              variant="outline"
-              className="text-xl"
-              style={{
-                backgroundColor: badge.bgColor || undefined,
-                color: badge.textColor || undefined,
-                borderColor: badge.bgColor ? `${badge.bgColor}80` : undefined,
-              }}
-            >
-              {badge.icon}
-            </TimelineStepsIcon>
-            <TimelineStepsContent>
-              <TimelineStepsTitle>
-                <span
-                  style={{
-                    color: badge.textColor || undefined,
-                  }}
-                >
-                  {badge.name} - Level {badge.level}
-                </span>
-              </TimelineStepsTitle>
-
-              {/* 徽章描述 */}
-              {badge.description && (
-                <TimelineStepsDescription className="text-sm">
-                  {badge.description}
-                </TimelineStepsDescription>
-              )}
-
-              {/* 授予信息 */}
-              <div className="flex flex-col gap-2 text-sm text-muted-foreground">
-                {/* 授予时间 */}
-                {badge.awardedAt && (
-                  <div className="flex items-center gap-2">
-                    <Calendar className="h-4 w-4" />
-                    <span>{t("awardedAt")}: </span>
-                    <TimelineStepsTime>
-                      {new Date(badge.awardedAt).toLocaleString("zh-CN", {
-                        year: "numeric",
-                        month: "long",
-                        day: "numeric",
-                        hour: "2-digit",
-                        minute: "2-digit",
-                      })}
-                    </TimelineStepsTime>
-                  </div>
-                )}
-
-                {/* 授予人 */}
-                <div className="flex items-center gap-2">
-                  <UserIcon className="h-4 w-4" />
-                  <span>{t("awardedBy")}: </span>
-                  {badge.awardedBy && badge.awarderName ? (
-                    <div className="flex items-center gap-2">
-                      <Avatar className="h-5 w-5">
-                        <AvatarImage
-                          src={badge.awarderAvatar || ""}
-                          alt={badge.awarderName}
-                        />
-                        <AvatarFallback className="text-xs">
-                          {badge.awarderName.slice(0, 1).toUpperCase()}
-                        </AvatarFallback>
-                      </Avatar>
-                      <span className="font-medium">{badge.awarderName}</span>
-                    </div>
-                  ) : (
-                    <span className="font-medium">{t("system")}</span>
-                  )}
-                </div>
-              </div>
-            </TimelineStepsContent>
-          </TimelineStepsItem>
-        ))}
-      </TimelineSteps>
+      <BadgesTimeline badges={badges} />
     </div>
   )
 }
