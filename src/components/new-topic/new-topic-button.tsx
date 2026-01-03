@@ -48,23 +48,13 @@ export function NewTopicButton({ onClick, className }: NewTopicButtonProps) {
     onClick()
   }
   return (
-    <>
-      <Button
-        variant="secondary"
-        onClick={handleClick}
-        className={`${className} max-sm:hidden`}
-      >
-        <Icon className="mr-2" />
-        {label}
-      </Button>
-      <Button
-        variant="secondary"
-        size="icon"
-        onClick={handleClick}
-        className={`${className} hidden max-sm:inline-flex`}
-      >
-        <Icon />
-      </Button>
-    </>
+    <Button
+      variant="secondary"
+      onClick={handleClick}
+      className={`${className}`}
+    >
+      <Icon className="mr-2" />
+      {label}
+    </Button>
   )
 }
