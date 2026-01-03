@@ -23,12 +23,12 @@ export function TopicHeaderBar({
   return (
     <div className={className}>
       <div className="flex flex-col gap-4">
-        <div className="flex flex-row flex-wrap items-center gap-4 max-sm:hidden">
+        <div className="flex flex-row flex-wrap justify-between items-center gap-4">
+          <HotTags />
           <TopicControls
-            className="flex flex-row gap-2"
+            className="max-sm:hidden flex flex-row gap-2"
             initialCategoryId={categoryId}
           />
-          <HotTags />
         </div>
         <div className="flex flex-row flex-wrap gap-4 items-center justify-between">
           <TopicSortTabs
