@@ -1059,7 +1059,6 @@
   "User": {
     "profile": {
       "title": "User Profile",
-      "activity": "Activity",
       "badges": "Badges",
       "preferences": "Settings",
       "notifications": "Notifications",
@@ -1150,6 +1149,35 @@
         "system": "System",
         "empty": "No badges earned yet",
         "emptyDescription": "Participate in community activities to earn badges!"
+      },
+      "activity": {
+        "title": "Activity",
+        "filter": {
+          "all": "All",
+          "topics": "Topics",
+          "posts": "Replies",
+          "likes": "Likes",
+          "bookmarks": "Bookmarks"
+        },
+        "empty": {
+          "all": "No activity records yet",
+          "topics": "No topics published yet",
+          "posts": "No replies posted yet",
+          "likes": "No content liked yet",
+          "bookmarks": "No content bookmarked yet"
+        },
+        "item": {
+          "topic": "Published topic",
+          "post": "Replied to",
+          "like": "Liked",
+          "bookmark": "Bookmarked",
+          "views": "views",
+          "replies": "replies",
+          "floor": "#"
+        },
+        "permission": {
+          "denied": "Only the owner or administrators can view this content"
+        }
       }
     },
     "activity": {

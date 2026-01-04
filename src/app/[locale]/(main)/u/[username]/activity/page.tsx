@@ -1,5 +1,10 @@
 import { Metadata } from "next"
 import { decodeUsername } from "@/lib/utils"
+import { prisma } from "@/lib/prisma"
+import { notFound } from "next/navigation"
+import { getSessionUser } from "@/lib/auth"
+import { ActivityClient } from "@/components/user/activity-client"
+import { getTranslations } from "next-intl/server"
 
 type ActivityPageProps = {
   params: Promise<{ username: string }>
@@ -10,8 +15,9 @@ export async function generateMetadata({
 }: ActivityPageProps): Promise<Metadata> {
   const { username } = await params
   const decodedUsername = decodeUsername(username)
+  const t = await getTranslations("User.profile.activity")
   return {
-    title: `${decodedUsername} - 活动记录`,
+    title: `${decodedUsername} - ${t("title")}`,
   }
 }
 
@@ -19,12 +25,38 @@ export default async function ActivityPage({ params }: ActivityPageProps) {
   const { username } = await params
   const decodedUsername = decodeUsername(username)
 
+  // 查询用户信息
+  const user = await prisma.users.findFirst({
+    where: {
+      name: decodedUsername,
+      is_deleted: false,
+    },
+    select: {
+      id: true,
+    },
+  })
+
+  if (!user) {
+    notFound()
+  }
+
+  // 获取当前用户会话
+  const session = await getSessionUser()
+  const currentUser = session
+    ? await prisma.users.findUnique({
+        where: { id: session.userId },
+        select: { id: true, is_admin: true },
+      })
+    : null
+
+  const isOwnProfile = currentUser?.id === user.id
+  const isAdmin = currentUser?.is_admin || false
+
   return (
-    <div className="space-y-6">
-      <h1 className="text-2xl font-bold">活动记录</h1>
-      <div className="text-sm text-muted-foreground">
-        用户 {decodedUsername} 的活动时间线 - 待实现
-      </div>
-    </div>
+    <ActivityClient
+      userId={String(user.id)}
+      isOwnProfile={isOwnProfile}
+      isAdmin={isAdmin}
+    />
   )
 }

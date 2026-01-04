@@ -1201,7 +1201,6 @@
   "User": {
     "profile": {
       "title": "用户主页",
-      "activity": "活动",
       "badges": "徽章",
       "preferences": "设置",
       "notifications": "通知",
@@ -1292,6 +1291,35 @@
         "system": "系统",
         "empty": "暂未获得任何徽章",
         "emptyDescription": "参与社区活动获取徽章吧！"
+      },
+      "activity": {
+        "title": "活动",
+        "filter": {
+          "all": "所有",
+          "topics": "主题",
+          "posts": "回复",
+          "likes": "赞",
+          "bookmarks": "收藏"
+        },
+        "empty": {
+          "all": "暂无任何活动记录",
+          "topics": "暂未发布任何主题",
+          "posts": "暂未发表任何回复",
+          "likes": "暂未点赞任何内容",
+          "bookmarks": "暂未收藏任何内容"
+        },
+        "item": {
+          "topic": "发布了主题",
+          "post": "回复了",
+          "like": "点赞了",
+          "bookmark": "收藏了",
+          "views": "浏览",
+          "replies": "回复",
+          "floor": "楼"
+        },
+        "permission": {
+          "denied": "仅本人或管理员可查看此内容"
+        }
       }
     },
     "activity": {

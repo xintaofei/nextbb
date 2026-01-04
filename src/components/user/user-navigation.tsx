@@ -34,7 +34,7 @@ export function UserNavigation({
       requiresAuth: false,
     },
     {
-      label: t("activity"),
+      label: t("activity.title"),
       href: `/u/${encodedUsername}/activity`,
       icon: Activity,
       requiresAuth: false,
