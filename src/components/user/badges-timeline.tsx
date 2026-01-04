@@ -30,7 +30,7 @@ function BadgesTimeline({ badges }: BadgesTimelineProps) {
   }
 
   return (
-    <section ref={ref} className="w-full bg-background px-4 py-16 max-sm:py-8">
+    <section ref={ref} className="w-full bg-background px-4 py-8 max-md:py-4">
       <div className="mx-auto max-w-5xl">
         {/* Header */}
         <motion.div
@@ -82,7 +82,7 @@ function BadgesTimeline({ badges }: BadgesTimelineProps) {
                   }`}
                 >
                   {/* Timeline node */}
-                  <div className="absolute left-4 flex h-8 w-8 items-center justify-center md:left-1/2 md:-translate-x-1/2">
+                  <div className="absolute left-4 max-md:left-0 flex h-8 w-8 items-center justify-center md:left-1/2 md:-translate-x-1/2">
                     <motion.div
                       className="flex h-8 w-8 items-center justify-center rounded-full border-4 z-10"
                       style={{

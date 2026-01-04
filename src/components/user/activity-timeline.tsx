@@ -295,7 +295,7 @@ function ActivityTimeline({
               }`}
             >
               {/* 时间线节点骨架 */}
-              <div className="absolute left-4 flex h-8 w-8 items-center justify-center md:left-1/2 md:-translate-x-1/2">
+              <div className="absolute left-4 max-md:left-0 flex h-8 w-8 items-center justify-center md:left-1/2 md:-translate-x-1/2">
                 <Skeleton className="h-8 w-8 rounded-full" />
               </div>
 
@@ -408,7 +408,7 @@ function ActivityTimeline({
   }
 
   return (
-    <section ref={ref} className="w-full bg-background px-4 py-8 max-sm:py-4">
+    <section ref={ref} className="w-full bg-background px-4 py-8 max-md:py-4">
       <div className="mx-auto max-w-5xl">
         {/* Header */}
         <motion.div
@@ -489,7 +489,7 @@ function ActivityTimeline({
                   }`}
                 >
                   {/* Timeline node */}
-                  <div className="absolute left-4 flex h-8 w-8 items-center justify-center md:left-1/2 md:-translate-x-1/2">
+                  <div className="absolute left-4 max-md:left-0 flex h-8 w-8 items-center justify-center md:left-1/2 md:-translate-x-1/2">
                     <motion.div
                       className="flex h-8 w-8 items-center justify-center rounded-full border-4 border-primary/30 bg-primary text-primary-foreground z-10"
                       initial={{ scale: 0 }}
