@@ -90,26 +90,6 @@ export function UserOverviewClient({ userId }: OverviewStatsProps) {
     )
   }
 
-  if (isLoading || !data) {
-    return (
-      <div className="space-y-6">
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-          {[...Array(3)].map((_, i) => (
-            <Card key={i} className="shadow-none">
-              <CardHeader className="pb-3">
-                <Skeleton className="h-4 w-24" />
-              </CardHeader>
-              <CardContent>
-                <Skeleton className="h-8 w-full mb-2" />
-                <Skeleton className="h-4 w-full" />
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      </div>
-    )
-  }
-
   return (
     <div className="space-y-8">
       {/* 活跃指标 */}
@@ -135,10 +115,18 @@ export function UserOverviewClient({ userId }: OverviewStatsProps) {
                 </CardHeader>
                 <CardContent>
                   <div className="text-2xl font-bold">
-                    {data.activeStats.joinDays}
+                    {isLoading || !data ? (
+                      <Skeleton className="h-8 w-24" />
+                    ) : (
+                      <>{data.activeStats.joinDays}</>
+                    )}
                   </div>
                   <p className="text-xs text-muted-foreground mt-1">
-                    {data.activeStats.joinDays > 0 ? "天" : "今天加入"}
+                    {isLoading || !data ? (
+                      <>天</>
+                    ) : (
+                      <>{data.activeStats.joinDays > 0 ? "天" : "今天加入"}</>
+                    )}
                   </p>
                 </CardContent>
               </Card>
@@ -159,7 +147,11 @@ export function UserOverviewClient({ userId }: OverviewStatsProps) {
                 </CardHeader>
                 <CardContent>
                   <div className="text-2xl font-bold">
-                    {data.activeStats.topicsCount}
+                    {isLoading || !data ? (
+                      <Skeleton className="h-8 w-24" />
+                    ) : (
+                      <>{data.activeStats.topicsCount}</>
+                    )}
                   </div>
                   <p className="text-xs text-muted-foreground mt-1">条</p>
                 </CardContent>
@@ -181,7 +173,11 @@ export function UserOverviewClient({ userId }: OverviewStatsProps) {
                 </CardHeader>
                 <CardContent>
                   <div className="text-2xl font-bold">
-                    {data.activeStats.postsCount}
+                    {isLoading || !data ? (
+                      <Skeleton className="h-8 w-24" />
+                    ) : (
+                      <>{data.activeStats.postsCount}</>
+                    )}
                   </div>
                   <p className="text-xs text-muted-foreground mt-1">条</p>
                 </CardContent>
@@ -222,7 +218,11 @@ export function UserOverviewClient({ userId }: OverviewStatsProps) {
                 </CardHeader>
                 <CardContent>
                   <div className="text-2xl font-bold">
-                    {data.interactionStats.likesGiven}
+                    {isLoading || !data ? (
+                      <Skeleton className="h-8 w-24" />
+                    ) : (
+                      <>{data.interactionStats.likesGiven}</>
+                    )}
                   </div>
                 </CardContent>
               </Card>
@@ -243,7 +243,11 @@ export function UserOverviewClient({ userId }: OverviewStatsProps) {
                 </CardHeader>
                 <CardContent>
                   <div className="text-2xl font-bold">
-                    {data.interactionStats.likesReceived}
+                    {isLoading || !data ? (
+                      <Skeleton className="h-8 w-24" />
+                    ) : (
+                      <>{data.interactionStats.likesReceived}</>
+                    )}
                   </div>
                 </CardContent>
               </Card>
@@ -264,7 +268,11 @@ export function UserOverviewClient({ userId }: OverviewStatsProps) {
                 </CardHeader>
                 <CardContent>
                   <div className="text-2xl font-bold">
-                    {data.interactionStats.bookmarksCount}
+                    {isLoading || !data ? (
+                      <Skeleton className="h-8 w-24" />
+                    ) : (
+                      <>{data.interactionStats.bookmarksCount}</>
+                    )}
                   </div>
                 </CardContent>
               </Card>
@@ -285,7 +293,11 @@ export function UserOverviewClient({ userId }: OverviewStatsProps) {
                 </CardHeader>
                 <CardContent>
                   <div className="text-2xl font-bold">
-                    {data.interactionStats.bookmarkedCount}
+                    {isLoading || !data ? (
+                      <Skeleton className="h-8 w-24" />
+                    ) : (
+                      <>{data.interactionStats.bookmarkedCount}</>
+                    )}
                   </div>
                 </CardContent>
               </Card>
@@ -323,7 +335,11 @@ export function UserOverviewClient({ userId }: OverviewStatsProps) {
                 </CardHeader>
                 <CardContent>
                   <div className="text-2xl font-bold">
-                    {data.honorStats.badgesCount}
+                    {isLoading || !data ? (
+                      <Skeleton className="h-8 w-24" />
+                    ) : (
+                      <>{data.honorStats.badgesCount}</>
+                    )}
                   </div>
                 </CardContent>
               </Card>
