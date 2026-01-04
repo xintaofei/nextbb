@@ -10,6 +10,7 @@ import {
   Heart,
   Bookmark,
   Award,
+  FileText,
 } from "lucide-react"
 import { useTranslations } from "next-intl"
 import { TopContentSection } from "./top-content-section"
@@ -143,7 +144,7 @@ export function UserOverviewClient({ userId }: OverviewStatsProps) {
                   <CardTitle className="text-sm font-medium">
                     {t("activeStats.topicsCreated")}
                   </CardTitle>
-                  <MessageSquare className="h-4 w-4 text-muted-foreground" />
+                  <FileText className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
                   <div className="text-2xl font-bold">
