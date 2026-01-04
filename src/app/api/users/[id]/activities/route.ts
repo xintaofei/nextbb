@@ -6,7 +6,6 @@ import type {
   ActivityItem,
   ActivitiesResponse,
   CategoryInfo,
-  AuthorInfo,
 } from "@/types/activity"
 
 type Params = Promise<{ id: string }>
@@ -418,13 +417,15 @@ export async function GET(req: Request, props: { params: Params }) {
         },
       })
     } else if (type === "all") {
-      // 查询所有类型，限制每种类型的数量
+      // 查询所有类型，使用分页参数
       const perTypeLimit = Math.ceil(pageSize / 4)
+      const perTypeOffset = Math.floor(offset / 4)
+
       const [topics, posts, likes, bookmarks] = await Promise.all([
-        getTopicsActivities(userId, perTypeLimit, 0),
-        getPostsActivities(userId, perTypeLimit, 0),
-        getLikesActivities(userId, perTypeLimit, 0),
-        getBookmarksActivities(userId, perTypeLimit, 0),
+        getTopicsActivities(userId, perTypeLimit, perTypeOffset),
+        getPostsActivities(userId, perTypeLimit, perTypeOffset),
+        getLikesActivities(userId, perTypeLimit, perTypeOffset),
+        getBookmarksActivities(userId, perTypeLimit, perTypeOffset),
       ])
 
       // 合并所有活动并按时间排序
@@ -436,8 +437,8 @@ export async function GET(req: Request, props: { params: Params }) {
         )
       })
 
-      // 应用分页
-      items = allActivities.slice(offset, offset + pageSize)
+      // 取前 pageSize 条
+      items = allActivities.slice(0, pageSize)
 
       // 计算总数（所有类型的总和）
       const [topicsTotal, postsTotal, likesTotal, bookmarksTotal] =
@@ -484,7 +485,7 @@ export async function GET(req: Request, props: { params: Params }) {
       page,
       pageSize,
       total,
-      hasMore: offset + items.length < total,
+      hasMore: page * pageSize < total,
     }
 
     return NextResponse.json(response)

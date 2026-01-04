@@ -1,9 +1,8 @@
 "use client"
 
-import { useState } from "react"
-import useSWR from "swr"
-import { ActivityFilter } from "./activity-filter"
-import { ActivityList } from "./activity-list"
+import { useState, useEffect, useRef, useCallback, useMemo } from "react"
+import useSWRInfinite from "swr/infinite"
+import ActivityTimeline from "./activity-timeline"
 import type { ActivityType, ActivitiesResponse } from "@/types/activity"
 
 type ActivityClientProps = {
@@ -20,45 +19,102 @@ export function ActivityClient({
   isAdmin,
 }: ActivityClientProps) {
   const [activeFilter, setActiveFilter] = useState<ActivityType>("all")
-  const [page, setPage] = useState(1)
+  const observerRef = useRef<IntersectionObserver | null>(null)
+  const sentinelRef = useRef<HTMLDivElement>(null)
 
   const hasPermission = isOwnProfile || isAdmin
 
-  const { data, isLoading } = useSWR<ActivitiesResponse>(
-    `/api/users/${userId}/activities?type=${activeFilter}&page=${page}&pageSize=20`,
-    fetcher,
-    {
-      keepPreviousData: true,
-    }
+  // 使用 SWR Infinite 进行分页加载
+  const getKey = (
+    pageIndex: number,
+    previousPageData: ActivitiesResponse | null
+  ) => {
+    // 如果上一页没有更多数据，返回 null
+    if (previousPageData && !previousPageData.hasMore) return null
+
+    // 返回 API URL
+    return `/api/users/${userId}/activities?type=${activeFilter}&page=${
+      pageIndex + 1
+    }&pageSize=10`
+  }
+
+  const { data, size, setSize, isLoading, isValidating } =
+    useSWRInfinite<ActivitiesResponse>(getKey, fetcher, {
+      revalidateFirstPage: false,
+      revalidateOnFocus: false,
+    })
+
+  // 合并所有页的数据
+  const allActivities = useMemo(() => {
+    return data ? data.flatMap((page) => page.items) : []
+  }, [data])
+
+  // 检查是否还有更多数据
+  const hasMore = useMemo(() => {
+    if (!data || data.length === 0) return false
+    return data[data.length - 1].hasMore
+  }, [data])
+
+  // 是否正在加载更多（不是第一页的加载）
+  const isLoadingMore = useMemo(() => {
+    // 只有在加载中、不是第一页、且还有更多数据时才显示加载更多状态
+    return isValidating && size > 1 && hasMore
+  }, [isValidating, size, hasMore])
+
+  // 筛选器变更
+  const handleFilterChange = useCallback(
+    (filter: ActivityType) => {
+      setActiveFilter(filter)
+      setSize(1) // 重置到第一页
+    },
+    [setSize]
   )
 
-  const handleFilterChange = (filter: ActivityType) => {
-    setActiveFilter(filter)
-    setPage(1)
-  }
+  // 加载更多
+  const loadMore = useCallback(() => {
+    if (!isLoading && !isValidating && hasMore) {
+      setSize(size + 1)
+    }
+  }, [isLoading, isValidating, hasMore, size, setSize])
 
-  const handlePageChange = (newPage: number) => {
-    setPage(newPage)
-    window.scrollTo({ top: 0, behavior: "smooth" })
-  }
+  // 设置 Intersection Observer
+  useEffect(() => {
+    if (observerRef.current) {
+      observerRef.current.disconnect()
+    }
+
+    observerRef.current = new IntersectionObserver(
+      (entries) => {
+        const first = entries[0]
+        if (first.isIntersecting) {
+          loadMore()
+        }
+      },
+      { threshold: 0.1 }
+    )
+
+    const currentSentinel = sentinelRef.current
+    if (currentSentinel) {
+      observerRef.current.observe(currentSentinel)
+    }
+
+    return () => {
+      if (observerRef.current) {
+        observerRef.current.disconnect()
+      }
+    }
+  }, [loadMore])
 
   return (
-    <div className="space-y-6">
-      <ActivityFilter
-        activeFilter={activeFilter}
-        onFilterChange={handleFilterChange}
-        hasPermission={hasPermission}
-      />
-      <div className="max-w-5xl mx-auto px-4 py-6">
-        <ActivityList
-          items={data?.items || []}
-          isLoading={isLoading}
-          activityType={activeFilter}
-          page={page}
-          hasMore={data?.hasMore || false}
-          onPageChange={handlePageChange}
-        />
-      </div>
-    </div>
+    <ActivityTimeline
+      activities={allActivities}
+      activityType={activeFilter}
+      hasMore={hasMore}
+      onFilterChange={handleFilterChange}
+      hasPermission={hasPermission}
+      isLoading={isLoading && size === 1}
+      isLoadingMore={isLoadingMore}
+      sentinelRef={sentinelRef}
+    />
   )
 }
