@@ -1330,8 +1330,28 @@
       "bookmarks": "收藏夹"
     },
     "preferences": {
+      "title": "设置",
       "account": {
-        "title": "账户设置"
+        "title": "账户设置",
+        "basicInfo": "基本信息",
+        "username": "用户名",
+        "email": "邮箱",
+        "avatar": "头像",
+        "uploadAvatar": "上传头像",
+        "bio": "个人简介",
+        "bioPlaceholder": "介绍一下你自己...",
+        "website": "个人网站",
+        "websitePlaceholder": "https://example.com",
+        "location": "所在地",
+        "locationPlaceholder": "你的城市或国家",
+        "birthday": "生日",
+        "birthdayPlaceholder": "选择日期",
+        "save": "保存更改",
+        "saving": "保存中...",
+        "saveSuccess": "保存成功",
+        "saveError": "保存失败，请重试",
+        "usernameHelper": "用户名不可修改",
+        "emailHelper": "邮箱用于登录和接收通知"
       },
       "security": {
         "title": "安全设置"

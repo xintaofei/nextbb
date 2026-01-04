@@ -1188,8 +1188,28 @@
       "bookmarks": "Bookmarks"
     },
     "preferences": {
+      "title": "Settings",
       "account": {
-        "title": "Account Settings"
+        "title": "Account Settings",
+        "basicInfo": "Basic Information",
+        "username": "Username",
+        "email": "Email",
+        "avatar": "Avatar",
+        "uploadAvatar": "Upload Avatar",
+        "bio": "Bio",
+        "bioPlaceholder": "Tell us about yourself...",
+        "website": "Website",
+        "websitePlaceholder": "https://example.com",
+        "location": "Location",
+        "locationPlaceholder": "Your city or country",
+        "birthday": "Birthday",
+        "birthdayPlaceholder": "Select date",
+        "save": "Save Changes",
+        "saving": "Saving...",
+        "saveSuccess": "Saved successfully",
+        "saveError": "Save failed, please try again",
+        "usernameHelper": "Username cannot be changed",
+        "emailHelper": "Email is used for login and notifications"
       },
       "security": {
         "title": "Security Settings"

@@ -3,6 +3,7 @@ import { redirect } from "next/navigation"
 import { getSessionUser } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import { decodeUsername, encodeUsername } from "@/lib/utils"
+import { PreferencesNavigation } from "@/components/user/preferences-navigation"
 
 type PreferencesLayoutProps = {
   children: ReactNode
@@ -31,5 +32,10 @@ export default async function PreferencesLayout({
     redirect(`/u/${encodeUsername(decodedUsername)}`)
   }
 
-  return <>{children}</>
+  return (
+    <div className="flex flex-col w-full">
+      <PreferencesNavigation username={decodedUsername} />
+      <div className="max-w-5xl mx-auto w-full p-6">{children}</div>
+    </div>
+  )
 }

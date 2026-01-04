@@ -17,6 +17,10 @@ model users {
   is_deleted  Boolean
   is_admin    Boolean  @default(false)
   credits     Int      @default(0)
+  bio         String   @default("") @db.VarChar(500)
+  website     String   @default("") @db.VarChar(256)
+  location    String   @default("") @db.VarChar(100)
+  birthday    DateTime?
   created_at  DateTime @default(now())
   updated_at  DateTime @updatedAt
 
