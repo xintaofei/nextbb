@@ -1201,7 +1201,6 @@
   "User": {
     "profile": {
       "title": "用户主页",
-      "overview": "概览",
       "activity": "活动",
       "badges": "徽章",
       "preferences": "设置",
@@ -1214,6 +1213,47 @@
         "bookmarks": "收藏",
         "badges": "徽章",
         "credits": "积分"
+      },
+      "overview": {
+        "title": "概览",
+        "statistics": {
+          "title": "统计数据"
+        },
+        "activeStats": {
+          "title": "活跃指标",
+          "joinDays": "加入天数",
+          "topicsCreated": "创建的主题",
+          "repliesCount": "回复总数"
+        },
+        "interactionStats": {
+          "title": "互动指标",
+          "likesGiven": "送出的赞",
+          "likesReceived": "收到的赞",
+          "bookmarksCount": "收藏数量",
+          "bookmarkedCount": "被收藏数量"
+        },
+        "honorStats": {
+          "title": "荣誉指标",
+          "badgesCount": "获得的徽章"
+        },
+        "topContent": {
+          "title": "热门内容",
+          "topTopics": "热门主题",
+          "topReplies": "热门回复",
+          "views": "浏览",
+          "likes": "点赞",
+          "emptyTopics": "还没有发布主题，快去分享你的想法吧！",
+          "emptyReplies": "还没有参与讨论，快去回复感兴趣的话题吧！",
+          "inTopic": "在话题中"
+        },
+        "socialInteraction": {
+          "title": "社交互动",
+          "topLikers": "赞我最多",
+          "topLiked": "我赞最多",
+          "likesCount": "{count} 个赞",
+          "emptyLikers": "还没有收到点赞，继续加油！",
+          "emptyLiked": "还没有给他人点赞，快去支持优质内容吧！"
+        }
       },
       "actions": {
         "edit": "编辑资料",

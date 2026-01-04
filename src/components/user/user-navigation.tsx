@@ -28,7 +28,7 @@ export function UserNavigation({
 
   const navItems: NavItem[] = [
     {
-      label: t("overview"),
+      label: t("overview.title"),
       href: `/u/${encodedUsername}`,
       icon: User,
       requiresAuth: false,

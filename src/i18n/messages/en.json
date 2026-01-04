@@ -1059,7 +1059,6 @@
   "User": {
     "profile": {
       "title": "User Profile",
-      "overview": "Overview",
       "activity": "Activity",
       "badges": "Badges",
       "preferences": "Settings",
@@ -1072,6 +1071,47 @@
         "bookmarks": "Bookmarks",
         "badges": "Badges",
         "credits": "Credits"
+      },
+      "overview": {
+        "title": "Overview",
+        "statistics": {
+          "title": "Statistics"
+        },
+        "activeStats": {
+          "title": "Active Stats",
+          "joinDays": "Days Joined",
+          "topicsCreated": "Topics Created",
+          "repliesCount": "Total Replies"
+        },
+        "interactionStats": {
+          "title": "Interaction Stats",
+          "likesGiven": "Likes Given",
+          "likesReceived": "Likes Received",
+          "bookmarksCount": "Bookmarks",
+          "bookmarkedCount": "Bookmarked"
+        },
+        "honorStats": {
+          "title": "Honor Stats",
+          "badgesCount": "Badges Earned"
+        },
+        "topContent": {
+          "title": "Top Content",
+          "topTopics": "Top Topics",
+          "topReplies": "Top Replies",
+          "views": "Views",
+          "likes": "Likes",
+          "emptyTopics": "No topics yet. Share your ideas!",
+          "emptyReplies": "No replies yet. Join the discussion!",
+          "inTopic": "In topic"
+        },
+        "socialInteraction": {
+          "title": "Social Interaction",
+          "topLikers": "Top Likers",
+          "topLiked": "Most Liked By Me",
+          "likesCount": "{count} likes",
+          "emptyLikers": "No likes received yet. Keep going!",
+          "emptyLiked": "No likes given yet. Support great content!"
+        }
       },
       "actions": {
         "edit": "Edit Profile",
