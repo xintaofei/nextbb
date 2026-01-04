@@ -3,6 +3,7 @@
 import { useState, useRef } from "react"
 import { useRouter, usePathname } from "next/navigation"
 import { useTranslations } from "next-intl"
+import useSWR from "swr"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -31,6 +32,7 @@ export function AccountForm({ user }: AccountFormProps) {
   const t = useTranslations("User.preferences.account")
   const router = useRouter()
   const pathname = usePathname()
+  const { mutate: mutateMe } = useSWR("/api/auth/me")
   const [saving, setSaving] = useState(false)
   const [uploading, setUploading] = useState(false)
   const [avatarPreview, setAvatarPreview] = useState(user.avatar)
@@ -79,17 +81,21 @@ export function AccountForm({ user }: AccountFormProps) {
 
       toast.success(t("saveSuccess"))
 
-      // 如果用户名发生了改变，需要跳转到新的用户名URL
+      // 如果用户名发生了改变
       const usernameChanged = formData.username !== user.name
-      if (usernameChanged && pathname) {
-        // 将路径中的旧用户名替换为新用户名
-        const encodedNewUsername = encodeUsername(formData.username)
-        const encodedOldUsername = encodeUsername(user.name)
-        const newPath = pathname.replace(
-          `/u/${encodedOldUsername}`,
-          `/u/${encodedNewUsername}`
-        )
-        router.push(newPath)
+      if (usernameChanged) {
+        // 更新 SWR 缓存，让侧边栏等组件能获取到最新的用户名
+        await mutateMe()
+        if (pathname) {
+          // 将路径中的旧用户名替换为新用户名，需要跳转到新的用户名URL
+          const encodedNewUsername = encodeUsername(formData.username)
+          const encodedOldUsername = encodeUsername(user.name)
+          const newPath = pathname.replace(
+            `/u/${encodedOldUsername}`,
+            `/u/${encodedNewUsername}`
+          )
+          router.push(newPath)
+        }
       } else {
         router.refresh()
       }
