@@ -163,7 +163,7 @@ function BadgesTimeline({ badges }: BadgesTimelineProps) {
                         <div className="flex flex-col gap-2 text-sm text-muted-foreground">
                           {/* 授予时间 */}
                           {badge.awardedAt && (
-                            <div className="flex items-center gap-2">
+                            <div className="flex items-center gap-2 flex-wrap">
                               <Calendar className="h-4 w-4" />
                               <span>{t("awardedAt")}: </span>
                               <span>
@@ -182,7 +182,7 @@ function BadgesTimeline({ badges }: BadgesTimelineProps) {
                           )}
 
                           {/* 授予人 */}
-                          <div className="flex items-center gap-2">
+                          <div className="flex items-center gap-2 flex-wrap">
                             <UserIcon className="h-4 w-4" />
                             <span>{t("awardedBy")}: </span>
                             {badge.awardedBy && badge.awarderName ? (
