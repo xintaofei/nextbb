@@ -14,6 +14,59 @@ function getEnv(name: string): string {
   return v
 }
 
+/**
+ * 生成随机字母数字组合
+ * @param length 长度
+ * @returns 随机字符串
+ */
+function generateRandomString(length: number): string {
+  const chars = "abcdefghijklmnopqrstuvwxyz0123456789"
+  let result = ""
+  for (let i = 0; i < length; i++) {
+    result += chars.charAt(Math.floor(Math.random() * chars.length))
+  }
+  return result
+}
+
+/**
+ * 确保用户名唯一，如果已存在则添加随机后缀
+ * @param name 原始用户名
+ * @returns 唯一的用户名
+ */
+async function ensureUniqueName(name: string): Promise<string> {
+  // 先检查原始用户名是否存在
+  const existingUser = await prisma.users.findFirst({
+    where: { name },
+  })
+
+  if (!existingUser) {
+    return name
+  }
+
+  // 用户名已存在，添加5位随机字母数字组合
+  let uniqueName = `${name}${generateRandomString(5)}`
+
+  // 万一生成的名称还是重复（概率极低），继续尝试
+  let attempts = 0
+  const maxAttempts = 10
+
+  while (attempts < maxAttempts) {
+    const check = await prisma.users.findFirst({
+      where: { name: uniqueName },
+    })
+
+    if (!check) {
+      return uniqueName
+    }
+
+    uniqueName = `${name}${generateRandomString(5)}`
+    attempts++
+  }
+
+  // 如果10次都失败，使用时间戳作为后备方案
+  return `${name}${Date.now().toString().slice(-8)}`
+}
+
 export const authOptions: NextAuthOptions = {
   debug: process.env.NODE_ENV !== "production",
   providers: [
@@ -57,20 +110,7 @@ export const authOptions: NextAuthOptions = {
           : null) ??
         null
       if (existing) {
-        if (avatarSrc && avatarSrc.length > 0) {
-          try {
-            const uploaded = await uploadAvatarFromUrl(existing.id, avatarSrc)
-            await prisma.users.update({
-              where: { id: existing.id },
-              data: { avatar: uploaded },
-            })
-          } catch {
-            await prisma.users.update({
-              where: { id: existing.id },
-              data: { avatar: avatarSrc },
-            })
-          }
-        }
+        // 用户已存在，直接返回，不修改任何信息
         return true
       }
       const id = generateId()
@@ -90,6 +130,10 @@ export const authOptions: NextAuthOptions = {
       if (!name) {
         name = email.split("@")[0]
       }
+
+      // 确保用户名唯一
+      const uniqueName = await ensureUniqueName(name)
+
       let avatar = ""
       if (avatarSrc && avatarSrc.length > 0) {
         try {
@@ -102,7 +146,7 @@ export const authOptions: NextAuthOptions = {
         data: {
           id,
           email,
-          name,
+          name: uniqueName,
           avatar,
           password: "oauth",
           status: 1,
