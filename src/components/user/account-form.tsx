@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useRef } from "react"
-import { useRouter } from "next/navigation"
+import { useRouter, usePathname } from "next/navigation"
 import { useTranslations } from "next-intl"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
@@ -10,6 +10,7 @@ import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { toast } from "sonner"
 import { Upload } from "lucide-react"
+import { encodeUsername } from "@/lib/utils"
 
 type UserData = {
   id: bigint
@@ -29,6 +30,7 @@ type AccountFormProps = {
 export function AccountForm({ user }: AccountFormProps) {
   const t = useTranslations("User.preferences.account")
   const router = useRouter()
+  const pathname = usePathname()
   const [saving, setSaving] = useState(false)
   const [uploading, setUploading] = useState(false)
   const [avatarPreview, setAvatarPreview] = useState(user.avatar)
@@ -69,7 +71,6 @@ export function AccountForm({ user }: AccountFormProps) {
       })
 
       if (!response.ok) {
-        const errorData = await response.json()
         if (response.status === 409) {
           throw new Error(t("usernameTaken"))
         }
@@ -77,7 +78,21 @@ export function AccountForm({ user }: AccountFormProps) {
       }
 
       toast.success(t("saveSuccess"))
-      router.refresh()
+
+      // 如果用户名发生了改变，需要跳转到新的用户名URL
+      const usernameChanged = formData.username !== user.name
+      if (usernameChanged && pathname) {
+        // 将路径中的旧用户名替换为新用户名
+        const encodedNewUsername = encodeUsername(formData.username)
+        const encodedOldUsername = encodeUsername(user.name)
+        const newPath = pathname.replace(
+          `/u/${encodedOldUsername}`,
+          `/u/${encodedNewUsername}`
+        )
+        router.push(newPath)
+      } else {
+        router.refresh()
+      }
     } catch (error) {
       toast.error(error instanceof Error ? error.message : t("saveError"))
     } finally {
@@ -166,7 +181,7 @@ export function AccountForm({ user }: AccountFormProps) {
       } else {
         setUsernameError(null)
       }
-    } catch (error) {
+    } catch {
       setUsernameError(t("usernameCheckError"))
     } finally {
       setCheckingUsername(false)
