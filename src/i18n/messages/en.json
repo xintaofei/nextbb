@@ -1213,8 +1213,12 @@
         "saving": "Saving...",
         "saveSuccess": "Saved successfully",
         "saveError": "Save failed, please try again",
-        "usernameHelper": "Username cannot be changed",
-        "emailHelper": "Email is used for login and notifications"
+        "usernameHelper": "Username can be changed, but must be unique",
+        "emailHelper": "Email is used for login and notifications",
+        "usernameInvalid": "Username format is invalid",
+        "usernameTaken": "This username is already taken",
+        "usernameCheckError": "Failed to check username, please try again",
+        "usernameChecking": "Checking username availability..."
       },
       "security": {
         "title": "Security Settings"

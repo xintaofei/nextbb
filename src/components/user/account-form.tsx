@@ -32,8 +32,11 @@ export function AccountForm({ user }: AccountFormProps) {
   const [saving, setSaving] = useState(false)
   const [uploading, setUploading] = useState(false)
   const [avatarPreview, setAvatarPreview] = useState(user.avatar)
+  const [usernameError, setUsernameError] = useState<string | null>(null)
+  const [checkingUsername, setCheckingUsername] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [formData, setFormData] = useState({
+    username: user.name,
     bio: user.bio,
     website: user.website,
     location: user.location,
@@ -42,6 +45,13 @@ export function AccountForm({ user }: AccountFormProps) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+
+    // 如果用户名验证失败，不提交
+    if (usernameError) {
+      toast.error(usernameError)
+      return
+    }
+
     setSaving(true)
 
     try {
@@ -49,6 +59,8 @@ export function AccountForm({ user }: AccountFormProps) {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
+          username:
+            formData.username !== user.name ? formData.username : undefined,
           bio: formData.bio,
           website: formData.website,
           location: formData.location,
@@ -57,13 +69,17 @@ export function AccountForm({ user }: AccountFormProps) {
       })
 
       if (!response.ok) {
+        const errorData = await response.json()
+        if (response.status === 409) {
+          throw new Error(t("usernameTaken"))
+        }
         throw new Error("Failed to save")
       }
 
       toast.success(t("saveSuccess"))
       router.refresh()
     } catch (error) {
-      toast.error(t("saveError"))
+      toast.error(error instanceof Error ? error.message : t("saveError"))
     } finally {
       setSaving(false)
     }
@@ -74,6 +90,87 @@ export function AccountForm({ user }: AccountFormProps) {
       ...prev,
       [field]: value,
     }))
+
+    // 如果是用户名字段，清除错误
+    if (field === "username") {
+      setUsernameError(null)
+    }
+  }
+
+  const validateUsername = (username: string): string | null => {
+    // 长度验证
+    if (username.length < 2 || username.length > 32) {
+      return t("usernameInvalid")
+    }
+
+    // 基本字符验证
+    const basicRegex = /^[a-zA-Z0-9_\u4e00-\u9fa5-]+$/
+    if (!basicRegex.test(username)) {
+      return t("usernameInvalid")
+    }
+
+    // 危险字符验证
+    const dangerousChars = /[\/\\?#@%&=+\s.,:;'"<>{}\[\]|`~!$^*()]/
+    if (dangerousChars.test(username)) {
+      return t("usernameInvalid")
+    }
+
+    // 连字符验证
+    if (username.startsWith("-") || username.endsWith("-")) {
+      return t("usernameInvalid")
+    }
+
+    // 连续连字符验证
+    if (/--/.test(username)) {
+      return t("usernameInvalid")
+    }
+
+    return null
+  }
+
+  const handleUsernameBlur = async () => {
+    const username = formData.username.trim()
+
+    // 如果用户名没有变化，不需要验证
+    if (username === user.name) {
+      setUsernameError(null)
+      return
+    }
+
+    // 先进行格式验证
+    const validationError = validateUsername(username)
+    if (validationError) {
+      setUsernameError(validationError)
+      return
+    }
+
+    // 检查用户名是否已被使用
+    setCheckingUsername(true)
+    try {
+      const response = await fetch("/api/users/check-username", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          username,
+        }),
+      })
+
+      if (!response.ok) {
+        setUsernameError(t("usernameCheckError"))
+        return
+      }
+
+      const data = await response.json()
+      if (!data.available) {
+        setUsernameError(t("usernameTaken"))
+      } else {
+        setUsernameError(null)
+      }
+    } catch (error) {
+      setUsernameError(t("usernameCheckError"))
+    } finally {
+      setCheckingUsername(false)
+    }
   }
 
   const handleAvatarClick = () => {
@@ -187,8 +284,24 @@ export function AccountForm({ user }: AccountFormProps) {
         {/* 用户名 */}
         <div className="space-y-2">
           <Label htmlFor="username">{t("username")}</Label>
-          <Input id="username" value={user.name} disabled />
-          <p className="text-sm text-muted-foreground">{t("usernameHelper")}</p>
+          <Input
+            id="username"
+            value={formData.username}
+            onChange={(e) => handleInputChange("username", e.target.value)}
+            onBlur={handleUsernameBlur}
+            disabled={checkingUsername}
+          />
+          {checkingUsername ? (
+            <p className="text-sm text-muted-foreground">
+              {t("usernameChecking")}
+            </p>
+          ) : usernameError ? (
+            <p className="text-sm text-destructive">{usernameError}</p>
+          ) : (
+            <p className="text-sm text-muted-foreground">
+              {t("usernameHelper")}
+            </p>
+          )}
         </div>
 
         {/* 邮箱 */}

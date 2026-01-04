@@ -4,10 +4,34 @@ import { prisma } from "@/lib/prisma"
 import { getSessionUser } from "@/lib/auth"
 
 const UpdateAccountSchema = z.object({
+  username: z
+    .string()
+    .min(2)
+    .max(32)
+    .regex(
+      /^[a-zA-Z0-9_\u4e00-\u9fa5-]+$/,
+      "Username can only contain letters, numbers, underscores, Chinese characters, and hyphens"
+    )
+    .refine(
+      (val) => {
+        // Prohibit URL path separators and special characters
+        const dangerousChars = /[\/\\?#@%&=+\s.,:;'"<>{}\[\]|`~!$^*()]/
+        if (dangerousChars.test(val)) return false
+        // Prohibit starting or ending with hyphens (avoid command-line argument injection)
+        if (val.startsWith("-") || val.endsWith("-")) return false
+        // Prohibit consecutive hyphens
+        if (/--/.test(val)) return false
+        return true
+      },
+      {
+        message: "Username contains disallowed characters or incorrect format",
+      }
+    )
+    .optional(),
   bio: z.string().max(500).optional(),
-  website: z.string().url().max(256).optional().or(z.literal("")),
+  website: z.url().max(256).optional().or(z.literal("")),
   location: z.string().max(100).optional(),
-  birthday: z.string().datetime().nullable().optional(),
+  birthday: z.iso.date().nullable().optional(),
 })
 
 type UpdateAccountDTO = z.infer<typeof UpdateAccountSchema>
@@ -23,10 +47,29 @@ export async function PATCH(req: Request) {
     const json = await req.json()
     body = UpdateAccountSchema.parse(json)
   } catch (error) {
+    console.error("Update account error:", error)
     return NextResponse.json({ error: "Invalid body" }, { status: 400 })
   }
 
+  // Check username uniqueness if username is being changed
+  if (body.username) {
+    const existingUser = await prisma.users.findFirst({
+      where: {
+        name: body.username,
+        id: { not: session.userId },
+      },
+    })
+
+    if (existingUser) {
+      return NextResponse.json(
+        { error: "Username already taken" },
+        { status: 409 }
+      )
+    }
+  }
+
   const data: {
+    name?: string
     bio?: string
     website?: string
     location?: string
@@ -34,6 +77,7 @@ export async function PATCH(req: Request) {
     updated_at: Date
   } = { updated_at: new Date() }
 
+  if (typeof body.username === "string") data.name = body.username
   if (typeof body.bio === "string") data.bio = body.bio
   if (typeof body.website === "string") data.website = body.website
   if (typeof body.location === "string") data.location = body.location
@@ -75,6 +119,7 @@ export async function PATCH(req: Request) {
       { status: 200 }
     )
   } catch (error) {
+    console.error("Update account error:", error)
     return NextResponse.json(
       { error: "Failed to update account" },
       { status: 500 }

@@ -1355,8 +1355,12 @@
         "saving": "保存中...",
         "saveSuccess": "保存成功",
         "saveError": "保存失败，请重试",
-        "usernameHelper": "用户名不可修改",
-        "emailHelper": "邮箱用于登录和接收通知"
+        "usernameHelper": "用户名可修改，但需要保证唯一性",
+        "emailHelper": "邮箱用于登录和接收通知",
+        "usernameInvalid": "用户名格式不正确",
+        "usernameTaken": "该用户名已被使用",
+        "usernameCheckError": "检查用户名失败，请重试",
+        "usernameChecking": "正在检查用户名..."
       },
       "security": {
         "title": "安全设置"
