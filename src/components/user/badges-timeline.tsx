@@ -30,7 +30,7 @@ function BadgesTimeline({ badges }: BadgesTimelineProps) {
   }
 
   return (
-    <section ref={ref} className="w-full bg-background px-4 py-16">
+    <section ref={ref} className="w-full bg-background px-4 py-16 max-sm:py-8">
       <div className="mx-auto max-w-5xl">
         {/* Header */}
         <motion.div
@@ -133,7 +133,7 @@ function BadgesTimeline({ badges }: BadgesTimelineProps) {
                           whileHover={{ opacity: 1 }}
                         />
 
-                        <div className="relative z-10">
+                        <div>
                           <h3 className="mb-2 text-lg font-bold md:text-xl rounded-lg">
                             {" "}
                             <Highlighter
