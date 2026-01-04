@@ -1,5 +1,6 @@
-import "../globals.css"
+import "@/app/globals.css"
 import type { Metadata } from "next"
+import { Analytics } from "@vercel/analytics/next"
 import { ReactNode } from "react"
 import { getLocale, getMessages } from "next-intl/server"
 import { NextIntlClientProvider } from "next-intl"
@@ -35,6 +36,7 @@ export default async function RootLayout({
           >
             <SWRProvider>{children}</SWRProvider>
             <Toaster richColors closeButton />
+            <Analytics />
           </ThemeProvider>
         </NextIntlClientProvider>
       </body>

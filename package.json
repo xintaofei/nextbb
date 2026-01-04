@@ -46,6 +46,7 @@
     "@radix-ui/react-toggle": "^1.1.10",
     "@radix-ui/react-toggle-group": "^1.1.11",
     "@radix-ui/react-tooltip": "^1.2.8",
+    "@vercel/analytics": "^1.6.1",
     "@vercel/blob": "^0.27.0",
     "bcryptjs": "^3.0.3",
     "class-variance-authority": "^0.7.1",
