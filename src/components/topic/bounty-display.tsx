@@ -60,7 +60,7 @@ export function BountyDisplay({
 
   if (isLoading) {
     return (
-      <Card className="mb-6">
+      <Card className="mb-6 shadow-none">
         <CardHeader>
           <Skeleton className="h-6 w-32" />
         </CardHeader>

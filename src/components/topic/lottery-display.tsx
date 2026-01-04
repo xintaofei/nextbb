@@ -32,7 +32,7 @@ export function LotteryDisplay({ topicId }: LotteryDisplayProps) {
 
   if (isLoading || !data) {
     return (
-      <Card className="w-full">
+      <Card className="w-full shadow-none">
         <CardContent className="pt-6">
           <div className="animate-pulse space-y-4">
             <div className="h-4 bg-muted rounded w-1/4"></div>
