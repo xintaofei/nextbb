@@ -6,6 +6,7 @@ import { useTranslations } from "next-intl"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
+import { Skeleton } from "@/components/ui/skeleton"
 import { UserInfoCard } from "@/components/common/user-info-card"
 import { formatRelative } from "@/lib/time"
 
@@ -28,6 +29,18 @@ type FollowsResponse = {
 type FollowsClientProps = {
   userId: string
   username: string
+}
+
+function UserListSkeleton() {
+  return (
+    <div className="flex items-center gap-4 p-4 rounded-lg">
+      <Skeleton className="h-12 w-12 rounded-full" />
+      <div className="flex-1 space-y-2">
+        <Skeleton className="h-4 w-32" />
+        <Skeleton className="h-3 w-48" />
+      </div>
+    </div>
+  )
 }
 
 function UserListItem({ user }: { user: User }) {
@@ -112,8 +125,10 @@ function FollowsClient({ userId, username }: FollowsClientProps) {
 
       <TabsContent value="followers" className="mt-4">
         {followersLoading ? (
-          <div className="text-center py-8 text-muted-foreground">
-            {t("empty.activity")}
+          <div className="space-y-2">
+            {Array.from({ length: 5 }).map((_, i) => (
+              <UserListSkeleton key={i} />
+            ))}
           </div>
         ) : followers.length === 0 ? (
           <div className="text-center py-8 text-muted-foreground">
@@ -130,8 +145,10 @@ function FollowsClient({ userId, username }: FollowsClientProps) {
 
       <TabsContent value="following" className="mt-4">
         {followingLoading ? (
-          <div className="text-center py-8 text-muted-foreground">
-            {t("empty.activity")}
+          <div className="space-y-2">
+            {Array.from({ length: 5 }).map((_, i) => (
+              <UserListSkeleton key={i} />
+            ))}
           </div>
         ) : following.length === 0 ? (
           <div className="text-center py-8 text-muted-foreground">
