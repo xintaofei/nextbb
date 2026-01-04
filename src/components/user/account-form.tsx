@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useRef } from "react"
 import { useRouter } from "next/navigation"
 import { useTranslations } from "next-intl"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
@@ -30,6 +30,9 @@ export function AccountForm({ user }: AccountFormProps) {
   const t = useTranslations("User.preferences.account")
   const router = useRouter()
   const [saving, setSaving] = useState(false)
+  const [uploading, setUploading] = useState(false)
+  const [avatarPreview, setAvatarPreview] = useState(user.avatar)
+  const fileInputRef = useRef<HTMLInputElement>(null)
   const [formData, setFormData] = useState({
     bio: user.bio,
     website: user.website,
@@ -73,6 +76,75 @@ export function AccountForm({ user }: AccountFormProps) {
     }))
   }
 
+  const handleAvatarClick = () => {
+    fileInputRef.current?.click()
+  }
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    // 验证文件类型
+    const allowedTypes = [
+      "image/jpeg",
+      "image/jpg",
+      "image/png",
+      "image/webp",
+      "image/gif",
+    ]
+    if (!allowedTypes.includes(file.type)) {
+      toast.error(t("invalidFileType"))
+      return
+    }
+
+    // 验证文件大小（5MB）
+    const maxSize = 5 * 1024 * 1024
+    if (file.size > maxSize) {
+      toast.error(t("fileTooLarge"))
+      return
+    }
+
+    // 创建预览
+    const reader = new FileReader()
+    reader.onload = (event) => {
+      setAvatarPreview(event.target?.result as string)
+    }
+    reader.readAsDataURL(file)
+
+    // 上传文件
+    setUploading(true)
+    try {
+      const formData = new FormData()
+      formData.append("avatar", file)
+
+      const response = await fetch("/api/users/me/avatar", {
+        method: "POST",
+        body: formData,
+      })
+
+      if (!response.ok) {
+        const error = await response.json()
+        throw new Error(error.error || "Upload failed")
+      }
+
+      const data = await response.json()
+      setAvatarPreview(data.avatar)
+      toast.success(t("uploadSuccess"))
+      router.refresh()
+    } catch (error) {
+      console.error("Avatar upload error:", error)
+      toast.error(t("uploadError"))
+      // 恢复原始头像
+      setAvatarPreview(user.avatar)
+    } finally {
+      setUploading(false)
+      // 清空文件输入
+      if (fileInputRef.current) {
+        fileInputRef.current.value = ""
+      }
+    }
+  }
+
   return (
     <form onSubmit={handleSubmit} className="space-y-8">
       {/* 基本信息 */}
@@ -82,23 +154,32 @@ export function AccountForm({ user }: AccountFormProps) {
         {/* 头像 */}
         <div className="flex items-center gap-4">
           <Avatar className="h-20 w-20">
-            <AvatarImage src={user.avatar} alt={user.name} />
+            <AvatarImage src={avatarPreview} alt={user.name} />
             <AvatarFallback className="text-2xl">
               {user.name.slice(0, 1).toUpperCase()}
             </AvatarFallback>
           </Avatar>
           <div className="flex-1">
             <Label>{t("avatar")}</Label>
-            <p className="text-sm text-muted-foreground">{t("uploadAvatar")}</p>
+            <p className="text-sm text-muted-foreground mb-2">
+              {t("uploadAvatar")}
+            </p>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/jpeg,image/jpg,image/png,image/webp,image/gif"
+              onChange={handleFileChange}
+              className="hidden"
+            />
             <Button
               type="button"
               variant="outline"
               size="sm"
-              className="mt-2"
-              disabled
+              onClick={handleAvatarClick}
+              disabled={uploading}
             >
               <Upload className="h-4 w-4 mr-2" />
-              {t("uploadAvatar")}
+              {uploading ? t("uploading") : t("uploadAvatar")}
             </Button>
           </div>
         </div>
