@@ -158,7 +158,7 @@ function TopThreeDisplay({
                   <RankBadge rank={ranking.rank} />
                 </div>
                 <Card className="relative shadow-none overflow-hidden py-12">
-                  <CardContent className="min-w-40 px-8 text-center">
+                  <CardContent className="min-w-44 px-8 text-center">
                     <Avatar className={`mx-auto mb-3 size-16`}>
                       <AvatarImage
                         src={ranking.user.avatar}
