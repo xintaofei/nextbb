@@ -222,19 +222,19 @@ function TopThreeDisplay({ checkins }: { checkins: CheckinRecord[] }) {
 
 function CheckinStatusSkeleton() {
   return (
-    <div className="flex flex-col justify-center items-center gap-8 max-sm:gap-4">
-      <Skeleton className="h-10 w-48" />
-      <Skeleton className="h-5 w-64" />
+    <div className="flex flex-col justify-center items-center gap-4 max-sm:gap-2">
+      <div className="flex flex-col gap-4 items-center mt-4">
+        <Skeleton className="h-10 w-48" />
+        <Skeleton className="h-5 w-80" />
+      </div>
 
-      <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
-        <Skeleton className="h-11 w-full sm:w-32" />
+      <div className="flex flex-col mt-8 items-center gap-4">
+        <Skeleton className="h-10 w-full sm:w-64" />
         <div className="flex flex-wrap gap-4">
           <Skeleton className="h-6 w-24" />
           <Skeleton className="h-6 w-24" />
         </div>
       </div>
-
-      <Skeleton className="h-16 w-full max-w-md rounded-lg" />
     </div>
   )
 }
@@ -387,7 +387,7 @@ export function CheckinSection() {
         <CheckinStatusSkeleton />
       ) : (
         <div className="flex flex-col justify-center items-center gap-4 max-sm:gap-2">
-          <div className="flex flex-col gap-4 items-center">
+          <div className="flex flex-col gap-4 items-center mt-4">
             <span className="flex items-center gap-2 text-4xl font-medium">
               <CalendarCheck className="size-10" />
               {t("title")}
@@ -395,7 +395,7 @@ export function CheckinSection() {
             <span className="text-muted-foreground">{t("description")}</span>
           </div>
 
-          <div className="relative flex flex-col mt-4 sm:flex-row items-start sm:items-center gap-4">
+          <div className="relative flex flex-col mt-8 items-center gap-4">
             <Button
               className="group relative mx-auto flex items-center justify-center rounded-full px-4 py-1.5 bg-primary-foreground hover:bg-muted shadow-[inset_0_-8px_10px_#8fdfff1f] transition-shadow duration-500 ease-out hover:shadow-[inset_0_-5px_10px_#8fdfff3f]"
               onClick={handleCheckin}
@@ -419,8 +419,11 @@ export function CheckinSection() {
                 {isChecking
                   ? t("checking")
                   : hasCheckedIn
-                    ? t("checkedIn")
-                    : t("button")}
+                    ? t("todayEarned", {
+                        credits:
+                          checkinStatus?.todayCheckin?.creditsEarned || 10,
+                      })
+                    : t("earnCredits", { credits: 10 })}
               </AnimatedGradientText>
               {isChecking ? (
                 <Loader2 className="ml-1 size-4 stroke-neutral-500 transition-transform duration-300 ease-in-out group-hover:translate-x-0.5" />
@@ -447,22 +450,6 @@ export function CheckinSection() {
               )}
             </div>
           </div>
-
-          {hasCheckedIn && checkinStatus?.todayCheckin && (
-            <div className="rounded-lg bg-muted p-4">
-              <p className="text-sm text-muted-foreground">
-                {t("todayEarned", {
-                  credits: checkinStatus.todayCheckin.creditsEarned,
-                })}
-              </p>
-            </div>
-          )}
-
-          {!hasCheckedIn && (
-            <div className="rounded-lg border border-primary/20 bg-primary/5 p-4">
-              <p className="text-sm">{t("earnCredits", { credits: 10 })}</p>
-            </div>
-          )}
         </div>
       )}
 
