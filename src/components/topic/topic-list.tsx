@@ -56,6 +56,11 @@ export type TopicListItem = {
   views: number
   activity: string
   isPinned: boolean
+  firstPost?: {
+    id: string
+    content: string
+    createdAt: string
+  }
 }
 
 export function TopicList({
@@ -238,6 +243,15 @@ export function TopicList({
                       />
                     ))}
                   </div>
+                  {t.firstPost && (
+                    <div className="mt-2 text-base text-muted-foreground max-w-full">
+                      <Link href={`/topic/${t.id}`}>
+                        <span className="line-clamp-3 whitespace-normal wrap-break-word">
+                          {t.firstPost.content}
+                        </span>
+                      </Link>
+                    </div>
+                  )}
                 </TableCell>
                 <TableCell className="max-sm:hidden">
                   <div className="*:data-[slot=avatar]:ring-background flex lg:-space-x-2 *:data-[slot=avatar]:ring-2 max-lg:justify-center">

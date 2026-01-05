@@ -87,6 +87,11 @@ type TopicListItem = {
   views: number
   activity: string
   isPinned: boolean
+  firstPost?: {
+    id: string
+    content: string
+    createdAt: string
+  }
 }
 
 type TopicListResult = {
@@ -200,6 +205,37 @@ export async function GET(req: Request) {
   }
   const topicsX = topics as unknown as TopicRow[]
   const topicIds = topicsX.map((t) => t.id)
+
+  // 在 latest 模式下，查询置顶话题的第一个 post（楼主 post）
+  const firstPosts: Record<
+    string,
+    { id: bigint; content: string; created_at: Date }
+  > = {}
+  if (sortMode === "latest") {
+    const pinnedTopicIds = topicsX.filter((t) => t.is_pinned).map((t) => t.id)
+    if (pinnedTopicIds.length > 0) {
+      const firstPostsData = await prisma.posts.findMany({
+        where: {
+          topic_id: { in: pinnedTopicIds },
+          floor_number: 1,
+          is_deleted: false,
+        },
+        select: {
+          id: true,
+          topic_id: true,
+          content: true,
+          created_at: true,
+        },
+      })
+      for (const post of firstPostsData) {
+        firstPosts[String(post.topic_id)] = {
+          id: post.id,
+          content: post.content,
+          created_at: post.created_at,
+        }
+      }
+    }
+  }
   const posts = await prisma.posts.findMany({
     where: { topic_id: { in: topicIds }, is_deleted: false },
     select: {
@@ -261,6 +297,7 @@ export async function GET(req: Request) {
         textColor: l.tag.text_color,
       })
     )
+    const firstPost = firstPosts[String(t.id)]
     return {
       id: String(t.id),
       title: t.title,
@@ -279,6 +316,13 @@ export async function GET(req: Request) {
       views: t.views ?? 0,
       activity: agg.activity ? agg.activity.toISOString() : "",
       isPinned: Boolean(t.is_pinned),
+      ...(firstPost && {
+        firstPost: {
+          id: String(firstPost.id),
+          content: firstPost.content,
+          createdAt: firstPost.created_at.toISOString(),
+        },
+      }),
     }
   })
   let sorted = items
