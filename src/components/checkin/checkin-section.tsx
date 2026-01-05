@@ -282,14 +282,12 @@ export function CheckinSection() {
   return (
     <div className="space-y-6">
       {/* 签到卡片 */}
-      <div className="flex flex-col gap-4">
-        <div className="flex flex-col gap-2">
-          <span className="flex items-center gap-1 text-2xl font-medium">
-            <CalendarCheck className="size-5" />
-            {t("title")}
-          </span>
-          <span className="text-muted-foreground">{t("description")}</span>
-        </div>
+      <div className="flex flex-col justify-center items-center gap-8 max-sm:gap-4">
+        <span className="flex items-center gap-2 text-4xl font-medium">
+          <CalendarCheck className="size-10" />
+          {t("title")}
+        </span>
+        <span className="text-muted-foreground">{t("description")}</span>
 
         <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
           <Button
@@ -349,8 +347,8 @@ export function CheckinSection() {
       </div>
 
       {/* 今日签到列表 */}
-      <div>
-        <div className="flex flex-col gap-2">
+      <div className="mt-16 max-sm:mt-8">
+        <div className="flex flex-col gap-2 items-center">
           <span className="flex items-center gap-1 text-2xl font-medium">
             <Trophy className="size-5" />
             {t("todayList")}
@@ -359,7 +357,7 @@ export function CheckinSection() {
             {t("todayListDescription", { count: todayCheckins.length })}
           </span>
         </div>
-        <div className="mt-8">
+        <div className="mt-8 max-sm:mt-4">
           {todayCheckins.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-12 text-muted-foreground">
               <CalendarCheck className="mb-4 h-12 w-12 opacity-20" />
