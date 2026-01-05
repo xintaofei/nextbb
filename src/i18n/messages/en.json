@@ -1100,7 +1100,13 @@
           "title": "Active Stats",
           "joinDays": "Days Joined",
           "topicsCreated": "Topics Created",
-          "repliesCount": "Total Replies"
+          "repliesCount": "Total Replies",
+          "unit": {
+            "day": "days",
+            "topic": "topics",
+            "reply": "replies",
+            "joinedToday": "Joined today"
+          }
         },
         "interactionStats": {
           "title": "Interaction Stats",
@@ -1111,7 +1117,12 @@
         },
         "honorStats": {
           "title": "Honor Stats",
-          "badgesCount": "Badges Earned"
+          "badgesCount": "Badges Earned",
+          "checkinCount": "Total Check-ins",
+          "unit": {
+            "badge": "badges",
+            "checkin": "times"
+          }
         },
         "topContent": {
           "title": "Top Content",

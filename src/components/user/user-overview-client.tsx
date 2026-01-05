@@ -11,6 +11,7 @@ import {
   Bookmark,
   Award,
   FileText,
+  CalendarCheck,
 } from "lucide-react"
 import { useTranslations } from "next-intl"
 import { TopContentSection } from "./top-content-section"
@@ -35,6 +36,7 @@ type OverviewStatsData = {
   }
   honorStats: {
     badgesCount: number
+    checkinCount: number
   }
 }
 
@@ -124,9 +126,13 @@ export function UserOverviewClient({ userId }: OverviewStatsProps) {
                   </div>
                   <p className="text-xs text-muted-foreground mt-1">
                     {isLoading || !data ? (
-                      <>天</>
+                      <>{t("activeStats.unit.day")}</>
                     ) : (
-                      <>{data.activeStats.joinDays > 0 ? "天" : "今天加入"}</>
+                      <>
+                        {data.activeStats.joinDays > 0
+                          ? t("activeStats.unit.day")
+                          : t("activeStats.unit.joinedToday")}
+                      </>
                     )}
                   </p>
                 </CardContent>
@@ -154,7 +160,9 @@ export function UserOverviewClient({ userId }: OverviewStatsProps) {
                       <>{data.activeStats.topicsCount}</>
                     )}
                   </div>
-                  <p className="text-xs text-muted-foreground mt-1">条</p>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    {t("activeStats.unit.topic")}
+                  </p>
                 </CardContent>
               </Card>
             </motion.div>
@@ -180,7 +188,9 @@ export function UserOverviewClient({ userId }: OverviewStatsProps) {
                       <>{data.activeStats.postsCount}</>
                     )}
                   </div>
-                  <p className="text-xs text-muted-foreground mt-1">条</p>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    {t("activeStats.unit.reply")}
+                  </p>
                 </CardContent>
               </Card>
             </motion.div>
@@ -342,6 +352,37 @@ export function UserOverviewClient({ userId }: OverviewStatsProps) {
                       <>{data.honorStats.badgesCount}</>
                     )}
                   </div>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    {t("honorStats.unit.badge")}
+                  </p>
+                </CardContent>
+              </Card>
+            </motion.div>
+          </motion.div>
+
+          <motion.div variants={cardVariants}>
+            <motion.div
+              whileHover={{ y: -4, scale: 1.02 }}
+              transition={{ duration: 0.2 }}
+            >
+              <Card className="shadow-none">
+                <CardHeader className="flex flex-row items-center justify-between pb-2">
+                  <CardTitle className="text-sm font-medium">
+                    {t("honorStats.checkinCount")}
+                  </CardTitle>
+                  <CalendarCheck className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">
+                    {isLoading || !data ? (
+                      <Skeleton className="h-8 w-24" />
+                    ) : (
+                      <>{data.honorStats.checkinCount}</>
+                    )}
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    {t("honorStats.unit.checkin")}
+                  </p>
                 </CardContent>
               </Card>
             </motion.div>

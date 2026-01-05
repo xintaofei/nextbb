@@ -15,6 +15,7 @@ type OverviewStatsResponse = {
   }
   honorStats: {
     badgesCount: number
+    checkinCount: number
   }
 }
 
@@ -50,6 +51,7 @@ export async function GET(
       bookmarksCount,
       bookmarkedCount,
       badgesCount,
+      checkinCount,
     ] = await Promise.all([
       // 创建的主题总数
       prisma.topics.count({
@@ -89,6 +91,10 @@ export async function GET(
       prisma.user_badges.count({
         where: { user_id: userId, is_deleted: false },
       }),
+      // 签到总次数
+      prisma.user_checkins.count({
+        where: { user_id: userId },
+      }),
     ])
 
     // 计算加入天数
@@ -113,6 +119,7 @@ export async function GET(
       },
       honorStats: {
         badgesCount,
+        checkinCount,
       },
     }
 

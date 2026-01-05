@@ -1242,7 +1242,13 @@
           "title": "活跃指标",
           "joinDays": "加入天数",
           "topicsCreated": "创建的主题",
-          "repliesCount": "回复总数"
+          "repliesCount": "回复总数",
+          "unit": {
+            "day": "天",
+            "topic": "条",
+            "reply": "条",
+            "joinedToday": "今天加入"
+          }
         },
         "interactionStats": {
           "title": "互动指标",
@@ -1253,7 +1259,12 @@
         },
         "honorStats": {
           "title": "荣誉指标",
-          "badgesCount": "获得的徽章"
+          "badgesCount": "获得的徽章",
+          "checkinCount": "签到总次数",
+          "unit": {
+            "badge": "枚",
+            "checkin": "次"
+          }
         },
         "topContent": {
           "title": "热门内容",
