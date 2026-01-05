@@ -2,9 +2,8 @@
 
 import { useState } from "react"
 import { useTranslations } from "next-intl"
-import { CalendarCheck, Loader2, Trophy } from "lucide-react"
+import { CalendarCheck, ChevronRight, Loader2, Trophy } from "lucide-react"
 import useSWR, { mutate } from "swr"
-import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
@@ -17,6 +16,10 @@ import { MagicCard } from "@/components/ui/magic-card"
 import { useTheme } from "next-themes"
 import { BorderBeam } from "@/components/ui/border-beam"
 import { Skeleton } from "@/components/ui/skeleton"
+import { AnimatedGradientText } from "@/components/ui/animated-gradient-text"
+import { cn } from "@/lib/utils"
+import confetti from "canvas-confetti"
+import { Button } from "@/components/ui/button"
 
 type CheckinStatus = {
   hasCheckedInToday: boolean
@@ -324,8 +327,12 @@ export function CheckinSection() {
     }
   )
 
-  const handleCheckin = async () => {
+  const handleCheckin = async (event: React.MouseEvent<HTMLButtonElement>) => {
     try {
+      const rect = event.currentTarget.getBoundingClientRect()
+      const x = rect.left + rect.width / 2
+      const y = rect.top + rect.height / 2
+
       setIsChecking(true)
 
       const res = await fetch("/api/checkin", {
@@ -344,6 +351,13 @@ export function CheckinSection() {
         mutate("/api/checkin")
         mutateList()
         mutate("/api/auth/me")
+
+        confetti({
+          origin: {
+            x: x / window.innerWidth,
+            y: y / window.innerHeight,
+          },
+        })
       } else {
         if (result.alreadyCheckedIn) {
           toast.info(t("alreadyCheckedIn"))
@@ -367,13 +381,13 @@ export function CheckinSection() {
   const restCheckins = todayCheckins.slice(3)
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       {/* 签到卡片 */}
       {isStatusLoading ? (
         <CheckinStatusSkeleton />
       ) : (
         <div className="flex flex-col justify-center items-center gap-4 max-sm:gap-2">
-          <div className="flex flex-col gap-2 items-center">
+          <div className="flex flex-col gap-4 items-center">
             <span className="flex items-center gap-2 text-4xl font-medium">
               <CalendarCheck className="size-10" />
               {t("title")}
@@ -381,24 +395,37 @@ export function CheckinSection() {
             <span className="text-muted-foreground">{t("description")}</span>
           </div>
 
-          <div className="flex flex-col mt-4 sm:flex-row items-start sm:items-center gap-4">
+          <div className="relative flex flex-col mt-4 sm:flex-row items-start sm:items-center gap-4">
             <Button
+              className="group relative mx-auto flex items-center justify-center rounded-full px-4 py-1.5 bg-primary-foreground hover:bg-muted shadow-[inset_0_-8px_10px_#8fdfff1f] transition-shadow duration-500 ease-out hover:shadow-[inset_0_-5px_10px_#8fdfff3f]"
               onClick={handleCheckin}
               disabled={isChecking || hasCheckedIn}
-              variant={hasCheckedIn ? "secondary" : "default"}
-              size="lg"
-              className="w-full sm:w-auto"
             >
+              <span
+                className={cn(
+                  "animate-gradient absolute inset-0 block h-full w-full rounded-[inherit] bg-linear-to-r from-[#ffaa40]/50 via-[#9c40ff]/50 to-[#ffaa40]/50 bg-size-[300%_100%] p-px"
+                )}
+                style={{
+                  WebkitMask:
+                    "linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)",
+                  WebkitMaskComposite: "destination-out",
+                  mask: "linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)",
+                  maskComposite: "subtract",
+                  WebkitClipPath: "padding-box",
+                }}
+              />
+              🎉 <hr className="mx-2 h-4 w-px shrink-0 bg-border" />
+              <AnimatedGradientText className="text-sm font-medium">
+                {isChecking
+                  ? t("checking")
+                  : hasCheckedIn
+                    ? t("checkedIn")
+                    : t("button")}
+              </AnimatedGradientText>
               {isChecking ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  {t("checking")}
-                </>
+                <Loader2 className="ml-1 size-4 stroke-neutral-500 transition-transform duration-300 ease-in-out group-hover:translate-x-0.5" />
               ) : (
-                <>
-                  <CalendarCheck className="mr-2 h-4 w-4" />
-                  {hasCheckedIn ? t("checkedIn") : t("button")}
-                </>
+                <ChevronRight className="ml-1 size-4 stroke-neutral-500 transition-transform duration-300 ease-in-out group-hover:translate-x-0.5" />
               )}
             </Button>
 
