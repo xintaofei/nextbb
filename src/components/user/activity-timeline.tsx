@@ -29,7 +29,6 @@ type ActivityTimelineProps = {
   activityType: ActivityType
   username: string
   hasMore: boolean
-  onFilterChange: (filter: ActivityType) => void
   hasPermission: boolean
   isLoading: boolean
   isLoadingMore: boolean
@@ -41,7 +40,6 @@ function ActivityTimeline({
   activityType,
   username,
   hasMore,
-  onFilterChange,
   hasPermission,
   isLoading,
   isLoadingMore,
@@ -263,7 +261,9 @@ function ActivityTimeline({
             >
               {/* 时间线节点骨架 */}
               <div className="absolute left-4 max-md:left-0 flex h-8 w-8 items-center justify-center md:left-1/2 md:-translate-x-1/2">
-                <Skeleton className="h-8 w-8 rounded-full" />
+                <div className="h-8 w-8 rounded-full border-4 border-primary/30 flex items-center justify-center">
+                  <Skeleton className="h-4 w-4 rounded-full" />
+                </div>
               </div>
 
               {/* 卡片骨架 */}
@@ -331,6 +331,16 @@ function ActivityTimeline({
             </p>
           </div>
 
+          {/* 筛选器 - loading 状态 */}
+          <div className="mb-8">
+            <ActivityFilter
+              activeFilter={activityType}
+              hasPermission={hasPermission}
+              username={username}
+              isLoading={true}
+            />
+          </div>
+
           {/* 时间线骨架屏 */}
           <div className="relative">
             {/* 垂直时间线 */}
@@ -376,9 +386,9 @@ function ActivityTimeline({
         >
           <ActivityFilter
             activeFilter={activityType}
-            onFilterChange={onFilterChange}
             hasPermission={hasPermission}
             username={username}
+            isLoading={isLoading}
           />
         </motion.div>
 

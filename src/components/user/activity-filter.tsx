@@ -15,9 +15,9 @@ import {
 
 type ActivityFilterProps = {
   activeFilter: ActivityType
-  onFilterChange: (filter: ActivityType) => void
   hasPermission: boolean
   username: string
+  isLoading?: boolean
 }
 
 type FilterOption = {
@@ -29,9 +29,9 @@ type FilterOption = {
 
 export function ActivityFilter({
   activeFilter,
-  onFilterChange,
   hasPermission,
   username,
+  isLoading = false,
 }: ActivityFilterProps) {
   const t = useTranslations("User.profile.activity.filter")
   const encodedUsername = encodeUsername(username)
@@ -72,7 +72,8 @@ export function ActivityFilter({
   return (
     <div className="flex flex-wrap gap-2 justify-center">
       {filterOptions.map((option) => {
-        const isDisabled = option.requiresPermission && !hasPermission
+        const isDisabled =
+          isLoading || (option.requiresPermission && !hasPermission)
         const isActive = activeFilter === option.value
         const href =
           option.value === "all"
@@ -82,9 +83,10 @@ export function ActivityFilter({
         return (
           <Badge
             key={option.value}
-            variant={isActive ? "default" : "outline"}
+            variant={isLoading ? "outline" : isActive ? "default" : "outline"}
             className={cn(
-              "cursor-pointer transition-all",
+              "transition-all",
+              !isLoading && !isDisabled && "cursor-pointer",
               isDisabled && "opacity-50 cursor-not-allowed"
             )}
             asChild={!isDisabled}

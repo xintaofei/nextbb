@@ -40,8 +40,6 @@ export function ActivityClient({
   const sentinelRef = useRef<HTMLDivElement>(null)
 
   const hasPermission = isOwnProfile || isAdmin
-
-  // 使用 SWR Infinite 进行分页加载
   const getKey = (
     pageIndex: number,
     previousPageData: ActivitiesResponse | null
@@ -74,18 +72,8 @@ export function ActivityClient({
 
   // 是否正在加载更多（不是第一页的加载）
   const isLoadingMore = useMemo(() => {
-    // 只有在加载中、不是第一页、且还有更多数据时才显示加载更多状态
     return isValidating && size > 1 && hasMore
   }, [isValidating, size, hasMore])
-
-  // 筛选器变更
-  const handleFilterChange = useCallback(
-    (filter: ActivityType) => {
-      setActiveFilter(filter)
-      setSize(1) // 重置到第一页
-    },
-    [setSize]
-  )
 
   // 加载更多
   const loadMore = useCallback(() => {
@@ -128,7 +116,6 @@ export function ActivityClient({
       activityType={activeFilter}
       username={username}
       hasMore={hasMore}
-      onFilterChange={handleFilterChange}
       hasPermission={hasPermission}
       isLoading={isLoading && size === 1}
       isLoadingMore={isLoadingMore}
