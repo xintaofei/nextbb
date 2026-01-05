@@ -260,7 +260,7 @@ function CheckinListSkeleton() {
                 }`}
               />
               <Card className="shadow-none py-12">
-                <CardContent className="min-w-40 px-8 text-center space-y-3">
+                <CardContent className="min-w-44 px-8 text-center space-y-3">
                   <Skeleton className="mx-auto size-16 rounded-full" />
                   <Skeleton
                     className={`mx-auto ${i === 1 ? "h-6 w-24" : "h-5 w-20"}`}
