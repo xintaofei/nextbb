@@ -7,7 +7,7 @@ import { ActivityClient } from "@/components/user/activity-client"
 import { getTranslations } from "next-intl/server"
 
 type ActivityPageProps = {
-  params: Promise<{ username: string }>
+  params: Promise<{ username: string; type?: string[] }>
 }
 
 export async function generateMetadata({
@@ -22,8 +22,9 @@ export async function generateMetadata({
 }
 
 export default async function ActivityPage({ params }: ActivityPageProps) {
-  const { username } = await params
+  const { username, type } = await params
   const decodedUsername = decodeUsername(username)
+  const activityType = type?.[0] || "all"
 
   // 查询用户信息
   const user = await prisma.users.findFirst({
@@ -33,6 +34,7 @@ export default async function ActivityPage({ params }: ActivityPageProps) {
     },
     select: {
       id: true,
+      name: true,
     },
   })
 
@@ -55,6 +57,8 @@ export default async function ActivityPage({ params }: ActivityPageProps) {
   return (
     <ActivityClient
       userId={String(user.id)}
+      username={user.name}
+      initialType={activityType}
       isOwnProfile={isOwnProfile}
       isAdmin={isAdmin}
     />

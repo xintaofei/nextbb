@@ -7,6 +7,8 @@ import type { ActivityType, ActivitiesResponse } from "@/types/activity"
 
 type ActivityClientProps = {
   userId: string
+  username: string
+  initialType?: string
   isOwnProfile: boolean
   isAdmin: boolean
 }
@@ -15,10 +17,25 @@ const fetcher = (url: string) => fetch(url).then((res) => res.json())
 
 export function ActivityClient({
   userId,
+  username,
+  initialType = "all",
   isOwnProfile,
   isAdmin,
 }: ActivityClientProps) {
-  const [activeFilter, setActiveFilter] = useState<ActivityType>("all")
+  // 验证 initialType 是否为有效的 ActivityType
+  const validTypes: ActivityType[] = [
+    "all",
+    "topics",
+    "posts",
+    "likes",
+    "bookmarks",
+  ]
+  const initialActivityType = validTypes.includes(initialType as ActivityType)
+    ? (initialType as ActivityType)
+    : "all"
+
+  const [activeFilter, setActiveFilter] =
+    useState<ActivityType>(initialActivityType)
   const observerRef = useRef<IntersectionObserver | null>(null)
   const sentinelRef = useRef<HTMLDivElement>(null)
 
@@ -109,6 +126,7 @@ export function ActivityClient({
     <ActivityTimeline
       activities={allActivities}
       activityType={activeFilter}
+      username={username}
       hasMore={hasMore}
       onFilterChange={handleFilterChange}
       hasPermission={hasPermission}

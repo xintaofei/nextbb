@@ -1,8 +1,10 @@
 "use client"
 
-import { cn } from "@/lib/utils"
+import { cn, encodeUsername } from "@/lib/utils"
 import { useTranslations } from "next-intl"
 import type { ActivityType } from "@/types/activity"
+import Link from "next/link"
+import { Badge } from "@/components/ui/badge"
 import {
   FileText,
   MessageSquare,
@@ -15,6 +17,7 @@ type ActivityFilterProps = {
   activeFilter: ActivityType
   onFilterChange: (filter: ActivityType) => void
   hasPermission: boolean
+  username: string
 }
 
 type FilterOption = {
@@ -28,8 +31,10 @@ export function ActivityFilter({
   activeFilter,
   onFilterChange,
   hasPermission,
+  username,
 }: ActivityFilterProps) {
   const t = useTranslations("User.profile.activity.filter")
+  const encodedUsername = encodeUsername(username)
 
   const filterOptions: FilterOption[] = [
     {
@@ -65,33 +70,39 @@ export function ActivityFilter({
   ]
 
   return (
-    <div className="w-full border-b bg-background">
-      <div className="max-w-5xl mx-auto px-4">
-        <nav className="flex gap-1 overflow-x-auto scrollbar-hide">
-          {filterOptions.map((option) => {
-            const isDisabled = option.requiresPermission && !hasPermission
-            const isActive = activeFilter === option.value
+    <div className="flex flex-wrap gap-2 justify-center">
+      {filterOptions.map((option) => {
+        const isDisabled = option.requiresPermission && !hasPermission
+        const isActive = activeFilter === option.value
+        const href =
+          option.value === "all"
+            ? `/u/${encodedUsername}/activity`
+            : `/u/${encodedUsername}/activity/${option.value}`
 
-            return (
-              <button
-                key={option.value}
-                onClick={() => !isDisabled && onFilterChange(option.value)}
-                disabled={isDisabled}
-                className={cn(
-                  "flex items-center gap-2 px-4 py-3 text-sm font-medium transition-colors whitespace-nowrap border-b-2",
-                  isActive
-                    ? "border-primary text-foreground"
-                    : "border-transparent text-muted-foreground hover:text-foreground",
-                  isDisabled && "opacity-50 cursor-not-allowed"
-                )}
-              >
+        return (
+          <Badge
+            key={option.value}
+            variant={isActive ? "default" : "outline"}
+            className={cn(
+              "cursor-pointer transition-all",
+              isDisabled && "opacity-50 cursor-not-allowed"
+            )}
+            asChild={!isDisabled}
+          >
+            {isDisabled ? (
+              <span className="flex items-center gap-1">
                 {option.icon}
                 <span className="max-sm:hidden">{option.label}</span>
-              </button>
-            )
-          })}
-        </nav>
-      </div>
+              </span>
+            ) : (
+              <Link href={href} className="flex items-center gap-1">
+                {option.icon}
+                <span className="max-sm:hidden">{option.label}</span>
+              </Link>
+            )}
+          </Badge>
+        )
+      })}
     </div>
   )
 }

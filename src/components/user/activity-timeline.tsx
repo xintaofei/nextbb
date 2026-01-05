@@ -1,5 +1,3 @@
-"use client"
-
 import { motion } from "motion/react"
 import { useRef } from "react"
 import { Badge } from "@/components/ui/badge"
@@ -24,10 +22,12 @@ import type { ActivityItem, ActivityType } from "@/types/activity"
 import { TopicType, type TopicTypeValue } from "@/types/topic-type"
 import { Skeleton } from "@/components/ui/skeleton"
 import type { RefObject } from "react"
+import { ActivityFilter } from "./activity-filter"
 
 type ActivityTimelineProps = {
   activities: ActivityItem[]
   activityType: ActivityType
+  username: string
   hasMore: boolean
   onFilterChange: (filter: ActivityType) => void
   hasPermission: boolean
@@ -39,6 +39,7 @@ type ActivityTimelineProps = {
 function ActivityTimeline({
   activities,
   activityType,
+  username,
   hasMore,
   onFilterChange,
   hasPermission,
@@ -48,40 +49,6 @@ function ActivityTimeline({
 }: ActivityTimelineProps) {
   const ref = useRef(null)
   const t = useTranslations("User.profile.activity")
-
-  // 筛选器配置
-  const filterOptions = [
-    {
-      value: "all" as ActivityType,
-      label: t("filter.all"),
-      icon: <ActivityIcon className="h-4 w-4" />,
-      requiresPermission: false,
-    },
-    {
-      value: "topics" as ActivityType,
-      label: t("filter.topics"),
-      icon: <FileText className="h-4 w-4" />,
-      requiresPermission: false,
-    },
-    {
-      value: "posts" as ActivityType,
-      label: t("filter.posts"),
-      icon: <MessageSquare className="h-4 w-4" />,
-      requiresPermission: false,
-    },
-    {
-      value: "likes" as ActivityType,
-      label: t("filter.likes"),
-      icon: <ThumbsUp className="h-4 w-4" />,
-      requiresPermission: true,
-    },
-    {
-      value: "bookmarks" as ActivityType,
-      label: t("filter.bookmarks"),
-      icon: <Bookmark className="h-4 w-4" />,
-      requiresPermission: true,
-    },
-  ]
 
   // 获取活动类型图标
   const getActivityIcon = (type: ActivityType) => {
@@ -364,24 +331,6 @@ function ActivityTimeline({
             </p>
           </div>
 
-          {/* 筛选器 */}
-          <div className="mb-8">
-            <div className="flex flex-wrap gap-2 justify-center">
-              {filterOptions.map((option) => (
-                <Badge
-                  key={option.value}
-                  variant="outline"
-                  className="cursor-not-allowed opacity-50"
-                >
-                  <span className="flex items-center gap-1">
-                    {option.icon}
-                    <span className="max-sm:hidden">{option.label}</span>
-                  </span>
-                </Badge>
-              ))}
-            </div>
-          </div>
-
           {/* 时间线骨架屏 */}
           <div className="relative">
             {/* 垂直时间线 */}
@@ -393,17 +342,6 @@ function ActivityTimeline({
           </div>
         </div>
       </section>
-    )
-  }
-
-  if (activities.length === 0) {
-    return (
-      <div className="flex flex-col items-center justify-center py-16 text-center">
-        <div className="text-6xl mb-4">📭</div>
-        <h3 className="text-lg font-semibold mb-2">
-          {t(`empty.${activityType}`)}
-        </h3>
-      </div>
     )
   }
 
@@ -436,146 +374,143 @@ function ActivityTimeline({
           transition={{ duration: 0.5, delay: 0.2 }}
           className="mb-8"
         >
-          <div className="flex flex-wrap gap-2 justify-center">
-            {filterOptions.map((option) => {
-              const isDisabled = option.requiresPermission && !hasPermission
-              const isActive = activityType === option.value
-
-              return (
-                <Badge
-                  key={option.value}
-                  variant={isActive ? "default" : "outline"}
-                  className={`cursor-pointer transition-all ${
-                    isDisabled ? "opacity-50 cursor-not-allowed" : ""
-                  }`}
-                  onClick={() => !isDisabled && onFilterChange(option.value)}
-                >
-                  <span className="flex items-center gap-1">
-                    {option.icon}
-                    <span className="max-sm:hidden">{option.label}</span>
-                  </span>
-                </Badge>
-              )
-            })}
-          </div>
+          <ActivityFilter
+            activeFilter={activityType}
+            onFilterChange={onFilterChange}
+            hasPermission={hasPermission}
+            username={username}
+          />
         </motion.div>
 
         {/* Timeline */}
         <div className="relative">
-          {/* Vertical line */}
-          <motion.div
-            className="absolute left-4 top-0 h-full w-0.5 bg-linear-to-b from-primary via-primary/50 to-primary/20 md:left-1/2 md:-translate-x-1/2"
-            initial={{ scaleY: 0 }}
-            animate={{ scaleY: 1 }}
-            transition={{ duration: 1.5, ease: "easeOut" }}
-            style={{ transformOrigin: "top" }}
-          />
+          {activities.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-16 text-center">
+              <div className="text-6xl mb-4">📭</div>
+              <h3 className="text-lg font-semibold mb-2">
+                {t(`empty.${activityType}`)}
+              </h3>
+            </div>
+          ) : (
+            <>
+              {/* Vertical line */}
+              <motion.div
+                className="absolute left-4 top-0 h-full w-0.5 bg-linear-to-b from-primary via-primary/50 to-primary/20 md:left-1/2 md:-translate-x-1/2"
+                initial={{ scaleY: 0 }}
+                animate={{ scaleY: 1 }}
+                transition={{ duration: 1.5, ease: "easeOut" }}
+                style={{ transformOrigin: "top" }}
+              />
 
-          <div className="space-y-8 md:space-y-12">
-            {activities.map((activity, index) => {
-              const isEven = index % 2 === 0
-              return (
-                <motion.div
-                  key={`${activity.activityType}-${index}`}
-                  initial={{ opacity: 0, y: 30 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{
-                    delay: index * 0.1,
-                    duration: 0.5,
-                    ease: "easeOut",
-                  }}
-                  className={`relative flex items-center ${
-                    isEven ? "md:flex-row" : "md:flex-row-reverse"
-                  }`}
-                >
-                  {/* Timeline node */}
-                  <div className="absolute left-4 max-md:left-0 flex h-8 w-8 items-center justify-center md:left-1/2 md:-translate-x-1/2">
+              <div className="space-y-8 md:space-y-12">
+                {activities.map((activity, index) => {
+                  const isEven = index % 2 === 0
+                  return (
                     <motion.div
-                      className="flex h-8 w-8 items-center justify-center rounded-full border-4 border-primary/30 bg-primary text-primary-foreground z-10"
-                      initial={{ scale: 0 }}
-                      animate={{ scale: 1 }}
+                      key={`${activity.activityType}-${index}`}
+                      initial={{ opacity: 0, y: 30 }}
+                      animate={{ opacity: 1, y: 0 }}
                       transition={{
-                        delay: index * 0.1 + 0.3,
-                        type: "spring",
-                      }}
-                    >
-                      {getActivityIcon(activity.activityType)}
-                    </motion.div>
-                    <motion.div
-                      className="absolute h-8 w-8 rounded-full bg-primary/50"
-                      animate={{ scale: [1, 1.5, 1] }}
-                      transition={{
-                        duration: 2,
-                        repeat: Infinity,
                         delay: index * 0.1,
+                        duration: 0.5,
+                        ease: "easeOut",
                       }}
-                    />
-                  </div>
-
-                  {/* Content card */}
-                  <div
-                    className={`ml-16 w-full md:ml-0 md:w-5/12 ${
-                      isEven ? "md:pr-12" : "md:pl-12"
-                    }`}
-                  >
-                    <motion.div
-                      whileHover={{ scale: 1.02, y: -5 }}
-                      transition={{ duration: 0.2 }}
+                      className={`relative flex items-center ${
+                        isEven ? "md:flex-row" : "md:flex-row-reverse"
+                      }`}
                     >
-                      <Card className="relative overflow-hidden border-border/50 bg-card p-4 shadow-none md:p-6">
+                      {/* Timeline node */}
+                      <div className="absolute left-4 max-md:left-0 flex h-8 w-8 items-center justify-center md:left-1/2 md:-translate-x-1/2">
                         <motion.div
-                          className="absolute inset-0 bg-linear-to-br from-primary/5 to-transparent opacity-0 transition-opacity duration-300"
-                          whileHover={{ opacity: 1 }}
+                          className="flex h-8 w-8 items-center justify-center rounded-full border-4 border-primary/30 bg-primary text-primary-foreground z-10"
+                          initial={{ scale: 0 }}
+                          animate={{ scale: 1 }}
+                          transition={{
+                            delay: index * 0.1 + 0.3,
+                            type: "spring",
+                          }}
+                        >
+                          {getActivityIcon(activity.activityType)}
+                        </motion.div>
+                        <motion.div
+                          className="absolute h-8 w-8 rounded-full bg-primary/50"
+                          animate={{ scale: [1, 1.5, 1] }}
+                          transition={{
+                            duration: 2,
+                            repeat: Infinity,
+                            delay: index * 0.1,
+                          }}
                         />
+                      </div>
 
-                        <div className="relative">
-                          <div className="flex items-center gap-2 text-sm text-muted-foreground mb-3">
-                            {getActivityIcon(activity.activityType)}
-                            <span>
-                              {getActivityLabel(activity.activityType)}
-                            </span>
-                            <span>·</span>
-                            <Calendar className="h-3 w-3" />
-                            <span>{formatRelative(activity.activityTime)}</span>
-                          </div>
+                      {/* Content card */}
+                      <div
+                        className={`ml-16 w-full md:ml-0 md:w-5/12 ${
+                          isEven ? "md:pr-12" : "md:pl-12"
+                        }`}
+                      >
+                        <motion.div
+                          whileHover={{ scale: 1.02, y: -5 }}
+                          transition={{ duration: 0.2 }}
+                        >
+                          <Card className="relative overflow-hidden border-border/50 bg-card p-4 shadow-none md:p-6">
+                            <motion.div
+                              className="absolute inset-0 bg-linear-to-br from-primary/5 to-transparent opacity-0 transition-opacity duration-300"
+                              whileHover={{ opacity: 1 }}
+                            />
 
-                          {renderActivityContent(activity)}
-                        </div>
-                      </Card>
+                            <div className="relative">
+                              <div className="flex items-center gap-2 text-sm text-muted-foreground mb-3">
+                                {getActivityIcon(activity.activityType)}
+                                <span>
+                                  {getActivityLabel(activity.activityType)}
+                                </span>
+                                <span>·</span>
+                                <Calendar className="h-3 w-3" />
+                                <span>
+                                  {formatRelative(activity.activityTime)}
+                                </span>
+                              </div>
+
+                              {renderActivityContent(activity)}
+                            </div>
+                          </Card>
+                        </motion.div>
+                      </div>
+
+                      {/* Spacer for alternating layout */}
+                      <div className="hidden w-5/12 md:block" />
                     </motion.div>
-                  </div>
+                  )
+                })}
 
-                  {/* Spacer for alternating layout */}
-                  <div className="hidden w-5/12 md:block" />
-                </motion.div>
-              )
-            })}
+                {/* 加载更多骨架屏 - 放在时间线内部 */}
+                {isLoadingMore && renderTimelineSkeleton(3)}
+              </div>
 
-            {/* 加载更多骨架屏 - 放在时间线内部 */}
-            {isLoadingMore && renderTimelineSkeleton(3)}
-          </div>
+              {/* 滚动加载触发器 */}
+              {hasMore && !isLoadingMore && (
+                <div
+                  ref={sentinelRef}
+                  className="mt-8 h-20 flex items-center justify-center"
+                >
+                  <span className="text-sm text-muted-foreground">
+                    向下滚动加载更多...
+                  </span>
+                </div>
+              )}
+
+              {/* 没有更多数据 */}
+              {!hasMore && activities.length > 0 && (
+                <div className="mt-12 text-center">
+                  <span className="text-sm text-muted-foreground">
+                    已加载全部活动
+                  </span>
+                </div>
+              )}
+            </>
+          )}
         </div>
-
-        {/* 滚动加载触发器 */}
-        {hasMore && !isLoadingMore && (
-          <div
-            ref={sentinelRef}
-            className="mt-8 h-20 flex items-center justify-center"
-          >
-            <span className="text-sm text-muted-foreground">
-              向下滚动加载更多...
-            </span>
-          </div>
-        )}
-
-        {/* 没有更多数据 */}
-        {!hasMore && activities.length > 0 && (
-          <div className="mt-12 text-center">
-            <span className="text-sm text-muted-foreground">
-              已加载全部活动
-            </span>
-          </div>
-        )}
       </div>
     </section>
   )
