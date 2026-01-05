@@ -34,8 +34,7 @@ export function ActivityClient({
     ? (initialType as ActivityType)
     : "all"
 
-  const [activeFilter, setActiveFilter] =
-    useState<ActivityType>(initialActivityType)
+  const [activeFilter] = useState<ActivityType>(initialActivityType)
   const observerRef = useRef<IntersectionObserver | null>(null)
   const sentinelRef = useRef<HTMLDivElement>(null)
 
