@@ -70,12 +70,6 @@ export function NavMain() {
             <span>话题</span>
           </SidebarMenuButton>
         </Link>
-        <Link href="/checkin">
-          <SidebarMenuButton>
-            <CalendarCheck />
-            <span>签到</span>
-          </SidebarMenuButton>
-        </Link>
         <Link
           href={
             encodedUsername ? `/u/${encodedUsername}/activity/posts` : "/login"
@@ -94,6 +88,12 @@ export function NavMain() {
           <SidebarMenuButton>
             <Inbox />
             <span>我的消息</span>
+          </SidebarMenuButton>
+        </Link>
+        <Link href="/checkin">
+          <SidebarMenuButton>
+            <CalendarCheck />
+            <span>签到</span>
           </SidebarMenuButton>
         </Link>
         <Link href="/leaderboard">
