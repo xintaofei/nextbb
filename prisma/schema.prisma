@@ -41,6 +41,8 @@ model users {
   bounty_rewards_given bounty_rewards[] @relation("bounty_rewards_giver")
   bounty_rewards_received bounty_rewards[] @relation("bounty_rewards_receiver")
   question_acceptances question_acceptances[] @relation("question_acceptances_accepter")
+  checkins user_checkins[] @relation("user_checkins_user")
+  credit_logs user_credit_logs[] @relation("user_credit_logs_user")
 
   @@map("users")
   @@unique([email], map: "users_email_key")
@@ -453,4 +455,47 @@ model question_acceptances {
   @@index([post_id], map: "question_acceptances_post_index")
   @@index([accepted_by], map: "question_acceptances_accepter_index")
   @@map("question_acceptances")
+}
+
+model user_checkins {
+  id          BigInt   @id @db.BigInt
+  user_id     BigInt   @db.BigInt
+  checkin_date DateTime @db.Date
+  credits_earned Int   @default(0)
+  created_at  DateTime @default(now())
+
+  user users @relation("user_checkins_user", fields: [user_id], references: [id])
+
+  @@unique([user_id, checkin_date], map: "user_checkins_user_date_unique")
+  @@index([user_id], map: "user_checkins_user_index")
+  @@index([checkin_date], map: "user_checkins_date_index")
+  @@index([created_at], map: "user_checkins_created_index")
+  @@map("user_checkins")
+}
+
+enum CreditLogType {
+  CHECKIN
+  POST_REWARD
+  BOUNTY_RECEIVED
+  BOUNTY_GIVEN
+  LOTTERY_ENTRY
+  ADMIN_ADJUSTMENT
+  OTHER
+}
+
+model user_credit_logs {
+  id          BigInt        @id @db.BigInt
+  user_id     BigInt        @db.BigInt
+  amount      Int
+  balance     Int
+  type        CreditLogType
+  description String        @default("") @db.VarChar(256)
+  created_at  DateTime      @default(now())
+
+  user users @relation("user_credit_logs_user", fields: [user_id], references: [id])
+
+  @@index([user_id], map: "user_credit_logs_user_index")
+  @@index([type], map: "user_credit_logs_type_index")
+  @@index([created_at], map: "user_credit_logs_created_index")
+  @@map("user_credit_logs")
 }

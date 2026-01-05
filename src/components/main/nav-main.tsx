@@ -4,6 +4,7 @@ import { useMemo } from "react"
 import useSWR from "swr"
 import {
   BookUser,
+  CalendarCheck,
   ChartColumn,
   ChevronRight,
   EllipsisVertical,
@@ -67,6 +68,12 @@ export function NavMain() {
           <SidebarMenuButton>
             <Layers />
             <span>话题</span>
+          </SidebarMenuButton>
+        </Link>
+        <Link href="/checkin">
+          <SidebarMenuButton>
+            <CalendarCheck />
+            <span>签到</span>
           </SidebarMenuButton>
         </Link>
         <Link

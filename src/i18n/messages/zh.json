@@ -69,6 +69,26 @@
     "notWon": "未中奖",
     "noWinners": "暂无中奖者"
   },
+  "Checkin": {
+    "pageTitle": "签到",
+    "title": "每日签到",
+    "description": "每天签到一次，赚取积分奖励，连续签到让你进步更快",
+    "button": "签到",
+    "checking": "签到中...",
+    "checkedIn": "已签到",
+    "consecutiveDays": "连续签到 {days} 天",
+    "monthlyCheckins": "本月签到 {days} 天",
+    "earnCredits": "签到+{credits}积分",
+    "todayEarned": "今日已签到，获得 {credits} 积分",
+    "credits": "积分",
+    "todayList": "今日签到榜",
+    "todayListDescription": "共 {count} 人已签到",
+    "noCheckinToday": "今天还没有人签到，快来成为第一名！",
+    "success": "签到成功！获得 {credits} 积分",
+    "alreadyCheckedIn": "今天已经签到过了",
+    "error": "签到失败，请稍后重试",
+    "loginRequired": "请先登录后签到"
+  },
   "Error": {
     "unauthorized": "请先登录",
     "forbidden": "没有权限",

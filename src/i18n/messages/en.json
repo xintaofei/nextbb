@@ -69,6 +69,26 @@
     "notWon": "Not won",
     "noWinners": "No winners yet"
   },
+  "Checkin": {
+    "pageTitle": "Check-in",
+    "title": "Daily Check-in",
+    "description": "Check in once daily to earn credit rewards. Keep your streak going for faster progress",
+    "button": "Check-in",
+    "checking": "Checking in...",
+    "checkedIn": "Checked In",
+    "consecutiveDays": "{days} days streak",
+    "monthlyCheckins": "{days} days this month",
+    "earnCredits": "+{credits} credits",
+    "todayEarned": "Already checked in today, earned {credits} credits",
+    "credits": "credits",
+    "todayList": "Today's Check-ins",
+    "todayListDescription": "{count} users checked in",
+    "noCheckinToday": "No one has checked in today. Be the first!",
+    "success": "Check-in successful! Earned {credits} credits",
+    "alreadyCheckedIn": "Already checked in today",
+    "error": "Check-in failed, please try again later",
+    "loginRequired": "Please sign in to check in"
+  },
   "Error": {
     "unauthorized": "Unauthorized",
     "forbidden": "Forbidden",
