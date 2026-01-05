@@ -64,7 +64,7 @@ export function PreferencesNavigation({
 
   return (
     <Tabs value={activeValue} className="w-full">
-      <TabsList className="grid w-full grid-cols-5 max-sm:grid-cols-3 h-auto">
+      <TabsList className="grid w-full grid-cols-5 max-sm:grid-cols-3 gap-2 h-auto">
         {navItems.map((item) => {
           const Icon = item.icon
           const isActive = pathname === item.href
