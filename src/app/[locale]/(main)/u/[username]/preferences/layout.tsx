@@ -35,7 +35,7 @@ export default async function PreferencesLayout({
   return (
     <div className="flex flex-col w-full">
       <PreferencesNavigation username={decodedUsername} />
-      <div className="max-w-5xl mx-auto w-full p-6">{children}</div>
+      <div className="max-w-5xl mx-auto w-full py-6">{children}</div>
     </div>
   )
 }
