@@ -6,8 +6,9 @@ import { generateId } from "@/lib/id"
 /**
  * 用户签到接口
  * POST /api/checkin
+ * Body: { timezoneOffset: number } - 用户时区偏移量（分钟，可选）
  */
-export async function POST() {
+export async function POST(request: Request) {
   try {
     // 验证用户登录
     const sessionUser = await getSessionUser()
@@ -17,11 +18,35 @@ export async function POST() {
 
     const userId = sessionUser.userId
 
-    // 获取今天的日期（使用 UTC 时间避免时区问题）
+    // 获取用户时区偏移量（从请求body中获取，如果没有则使用0）
+    let timezoneOffset = 0
+    try {
+      const body = await request.json()
+      timezoneOffset = body.timezoneOffset || 0
+
+      // 校验时区偏移量范围（地球时区范围：UTC-12 到 UTC+14）
+      // getTimezoneOffset 返回值：-840（UTC+14）到 720（UTC-12）
+      if (
+        typeof timezoneOffset !== "number" ||
+        timezoneOffset < -840 ||
+        timezoneOffset > 720
+      ) {
+        return NextResponse.json({ error: "时区偏移量不合法" }, { status: 400 })
+      }
+    } catch {
+      // 如果没有传递时区，使用UTC时区
+    }
+
+    // 根据用户时区计算用户本地日期
     const now = new Date()
-    const today = new Date(
-      Date.UTC(now.getFullYear(), now.getMonth(), now.getDate())
-    )
+    // 将UTC时间转换为用户本地时间
+    const userLocalTime = new Date(now.getTime() - timezoneOffset * 60 * 1000)
+    const userYear = userLocalTime.getUTCFullYear()
+    const userMonth = userLocalTime.getUTCMonth()
+    const userDay = userLocalTime.getUTCDate()
+
+    // 创建用户本地日期的UTC零点时间
+    const today = new Date(Date.UTC(userYear, userMonth, userDay))
 
     // 获取明天的日期（用于范围查询）
     const tomorrow = new Date(today)

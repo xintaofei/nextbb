@@ -237,8 +237,16 @@ export function CheckinSection() {
   const handleCheckin = async () => {
     try {
       setIsChecking(true)
+
+      // 获取用户时区偏移（分钟）
+      const timezoneOffset = new Date().getTimezoneOffset()
+
       const res = await fetch("/api/checkin", {
         method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ timezoneOffset }),
       })
 
       const result = await res.json()
