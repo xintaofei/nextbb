@@ -2,6 +2,7 @@
 
 import { useMemo } from "react"
 import useSWR from "swr"
+import { useTranslations } from "next-intl"
 import {
   BookUser,
   CalendarCheck,
@@ -53,6 +54,7 @@ const fetcher = async (url: string): Promise<MeResponse | null> => {
 
 export function NavMain() {
   const { data } = useSWR<MeResponse | null>("/api/auth/me", fetcher)
+  const t = useTranslations("Nav.main")
 
   const username = useMemo(() => {
     if (!data) return null
@@ -67,7 +69,7 @@ export function NavMain() {
         <Link href="/">
           <SidebarMenuButton>
             <Layers />
-            <span>话题</span>
+            <span>{t("topics")}</span>
           </SidebarMenuButton>
         </Link>
         <Link
@@ -77,7 +79,7 @@ export function NavMain() {
         >
           <SidebarMenuButton>
             <BookUser />
-            <span>我的帖子</span>
+            <span>{t("myPosts")}</span>
           </SidebarMenuButton>
         </Link>
         <Link
@@ -87,19 +89,19 @@ export function NavMain() {
         >
           <SidebarMenuButton>
             <Inbox />
-            <span>我的消息</span>
+            <span>{t("myMessages")}</span>
           </SidebarMenuButton>
         </Link>
         <Link href="/checkin">
           <SidebarMenuButton>
             <CalendarCheck />
-            <span>签到</span>
+            <span>{t("checkin")}</span>
           </SidebarMenuButton>
         </Link>
         <Link href="/leaderboard">
           <SidebarMenuButton>
             <ChartColumn />
-            <span>排行榜</span>
+            <span>{t("leaderboard")}</span>
           </SidebarMenuButton>
         </Link>
         <Collapsible asChild defaultOpen={false} className="group/collapsible">
@@ -107,7 +109,7 @@ export function NavMain() {
             <CollapsibleTrigger asChild>
               <SidebarMenuButton tooltip="x">
                 <FolderOpenDot />
-                <span>共享资源</span>
+                <span>{t("sharedResources")}</span>
                 <ChevronRight className="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
               </SidebarMenuButton>
             </CollapsibleTrigger>
@@ -127,7 +129,7 @@ export function NavMain() {
             <CollapsibleTrigger asChild>
               <SidebarMenuButton tooltip="x">
                 <EllipsisVertical />
-                <span>更多</span>
+                <span>{t("more")}</span>
                 <ChevronRight className="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
               </SidebarMenuButton>
             </CollapsibleTrigger>

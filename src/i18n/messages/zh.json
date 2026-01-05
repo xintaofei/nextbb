@@ -538,6 +538,17 @@
       }
     }
   },
+  "Nav": {
+    "main": {
+      "topics": "话题",
+      "myPosts": "我的帖子",
+      "myMessages": "我的消息",
+      "checkin": "签到",
+      "leaderboard": "排行榜",
+      "sharedResources": "共享资源",
+      "more": "更多"
+    }
+  },
   "Admin": {
     "entry": "管理后台",
     "title": "NextBB 管理后台",

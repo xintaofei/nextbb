@@ -538,6 +538,17 @@
       }
     }
   },
+  "Nav": {
+    "main": {
+      "topics": "Topics",
+      "myPosts": "My Posts",
+      "myMessages": "My Messages",
+      "checkin": "Check-in",
+      "leaderboard": "Leaderboard",
+      "sharedResources": "Shared Resources",
+      "more": "More"
+    }
+  },
   "Admin": {
     "entry": "Admin",
     "title": "NextBB Admin",
