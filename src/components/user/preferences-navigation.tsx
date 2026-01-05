@@ -67,8 +67,6 @@ export function PreferencesNavigation({
       <TabsList className="grid w-full grid-cols-5 max-sm:grid-cols-3 gap-2 h-auto">
         {navItems.map((item) => {
           const Icon = item.icon
-          const isActive = pathname === item.href
-
           return (
             <TabsTrigger key={item.value} value={item.value} asChild>
               <Link href={item.href}>
