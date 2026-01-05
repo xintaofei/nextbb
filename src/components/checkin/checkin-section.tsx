@@ -16,6 +16,7 @@ import { UserInfoCard } from "@/components/common/user-info-card"
 import { MagicCard } from "@/components/ui/magic-card"
 import { useTheme } from "next-themes"
 import { BorderBeam } from "@/components/ui/border-beam"
+import { Skeleton } from "@/components/ui/skeleton"
 
 type CheckinStatus = {
   hasCheckedInToday: boolean
@@ -216,6 +217,89 @@ function TopThreeDisplay({ checkins }: { checkins: CheckinRecord[] }) {
   )
 }
 
+function CheckinStatusSkeleton() {
+  return (
+    <div className="flex flex-col justify-center items-center gap-8 max-sm:gap-4">
+      <Skeleton className="h-10 w-48" />
+      <Skeleton className="h-5 w-64" />
+
+      <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+        <Skeleton className="h-11 w-full sm:w-32" />
+        <div className="flex flex-wrap gap-4">
+          <Skeleton className="h-6 w-24" />
+          <Skeleton className="h-6 w-24" />
+        </div>
+      </div>
+
+      <Skeleton className="h-16 w-full max-w-md rounded-lg" />
+    </div>
+  )
+}
+
+function CheckinListSkeleton() {
+  return (
+    <div className="mt-16 max-sm:mt-8">
+      <div className="flex flex-col gap-2 items-center">
+        <Skeleton className="h-8 w-40" />
+        <Skeleton className="h-5 w-48" />
+      </div>
+
+      <div className="mt-8 max-sm:mt-4">
+        {/* 前三名骨架 */}
+        <div className="mb-8 grid grid-cols-1 gap-4 sm:grid-cols-3">
+          {[0, 1, 2].map((i) => (
+            <div
+              key={i}
+              className={`flex flex-col items-center ${
+                i === 1 ? "sm:order-2" : i === 0 ? "sm:order-1" : "sm:order-3"
+              }`}
+            >
+              <Skeleton
+                className={`mb-3 rounded-full ${
+                  i === 1 ? "size-24" : "size-20"
+                }`}
+              />
+              <Card className="shadow-none py-12">
+                <CardContent className="min-w-40 px-8 text-center space-y-3">
+                  <Skeleton className="mx-auto size-16 rounded-full" />
+                  <Skeleton
+                    className={`mx-auto ${i === 1 ? "h-6 w-24" : "h-5 w-20"}`}
+                  />
+                  <Skeleton className="mx-auto h-6 w-16" />
+                  <Skeleton className="mx-auto h-4 w-20" />
+                </CardContent>
+              </Card>
+            </div>
+          ))}
+        </div>
+
+        {/* 其余列表骨架 */}
+        <div className="space-y-2">
+          {[0, 1, 2].map((i) => (
+            <MagicCard
+              key={i}
+              gradientColor="#26262600"
+              className="p-4 rounded-2xl"
+            >
+              <div className="flex flex-row items-center justify-between gap-4">
+                <div className="flex flex-row items-center gap-4 max-sm:gap-2">
+                  <Skeleton className="size-8 sm:size-10 rounded-md" />
+                  <Skeleton className="size-8 sm:size-10 rounded-full" />
+                  <Skeleton className="h-6 w-24" />
+                </div>
+                <div className="flex flex-col items-end gap-1">
+                  <Skeleton className="h-6 w-16" />
+                  <Skeleton className="h-4 w-14" />
+                </div>
+              </div>
+            </MagicCard>
+          ))}
+        </div>
+      </div>
+    </div>
+  )
+}
+
 export function CheckinSection() {
   const t = useTranslations("Checkin")
   const [isChecking, setIsChecking] = useState(false)
@@ -223,19 +307,22 @@ export function CheckinSection() {
   // 获取用户时区偏移量（分钟）
   const timezoneOffset = new Date().getTimezoneOffset()
 
-  const { data: checkinStatus } = useSWR<CheckinStatus | null>(
-    "/api/checkin",
-    statusFetcher,
-    {
+  const { data: checkinStatus, isLoading: isStatusLoading } =
+    useSWR<CheckinStatus | null>("/api/checkin", statusFetcher, {
       refreshInterval: 60000,
+    })
+
+  const {
+    data: todayCheckins = [],
+    mutate: mutateList,
+    isLoading: isListLoading,
+  } = useSWR<CheckinRecord[]>(
+    `/api/checkin?list=today&timezoneOffset=${timezoneOffset}`,
+    listFetcher,
+    {
+      refreshInterval: 30000,
     }
   )
-
-  const { data: todayCheckins = [], mutate: mutateList } = useSWR<
-    CheckinRecord[]
-  >(`/api/checkin?list=today&timezoneOffset=${timezoneOffset}`, listFetcher, {
-    refreshInterval: 30000,
-  })
 
   const handleCheckin = async () => {
     try {
@@ -282,104 +369,114 @@ export function CheckinSection() {
   return (
     <div className="space-y-6">
       {/* 签到卡片 */}
-      <div className="flex flex-col justify-center items-center gap-8 max-sm:gap-4">
-        <span className="flex items-center gap-2 text-4xl font-medium">
-          <CalendarCheck className="size-10" />
-          {t("title")}
-        </span>
-        <span className="text-muted-foreground">{t("description")}</span>
-
-        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
-          <Button
-            onClick={handleCheckin}
-            disabled={isChecking || hasCheckedIn}
-            variant={hasCheckedIn ? "secondary" : "default"}
-            size="lg"
-            className="w-full sm:w-auto"
-          >
-            {isChecking ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                {t("checking")}
-              </>
-            ) : (
-              <>
-                <CalendarCheck className="mr-2 h-4 w-4" />
-                {hasCheckedIn ? t("checkedIn") : t("button")}
-              </>
-            )}
-          </Button>
-
-          <div className="flex flex-wrap gap-4 text-sm">
-            {consecutiveDays > 0 && (
-              <div className="flex items-center gap-2">
-                <Badge variant="outline">
-                  <Trophy className="mr-1 h-3 w-3" />
-                  {t("consecutiveDays", { days: consecutiveDays })}
-                </Badge>
-              </div>
-            )}
-            {monthlyCheckins > 0 && (
-              <div className="flex items-center gap-2">
-                <Badge variant="outline">
-                  {t("monthlyCheckins", { days: monthlyCheckins })}
-                </Badge>
-              </div>
-            )}
+      {isStatusLoading ? (
+        <CheckinStatusSkeleton />
+      ) : (
+        <div className="flex flex-col justify-center items-center gap-4 max-sm:gap-2">
+          <div className="flex flex-col gap-2 items-center">
+            <span className="flex items-center gap-2 text-4xl font-medium">
+              <CalendarCheck className="size-10" />
+              {t("title")}
+            </span>
+            <span className="text-muted-foreground">{t("description")}</span>
           </div>
-        </div>
 
-        {hasCheckedIn && checkinStatus?.todayCheckin && (
-          <div className="rounded-lg bg-muted p-4">
-            <p className="text-sm text-muted-foreground">
-              {t("todayEarned", {
-                credits: checkinStatus.todayCheckin.creditsEarned,
-              })}
-            </p>
-          </div>
-        )}
+          <div className="flex flex-col mt-4 sm:flex-row items-start sm:items-center gap-4">
+            <Button
+              onClick={handleCheckin}
+              disabled={isChecking || hasCheckedIn}
+              variant={hasCheckedIn ? "secondary" : "default"}
+              size="lg"
+              className="w-full sm:w-auto"
+            >
+              {isChecking ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  {t("checking")}
+                </>
+              ) : (
+                <>
+                  <CalendarCheck className="mr-2 h-4 w-4" />
+                  {hasCheckedIn ? t("checkedIn") : t("button")}
+                </>
+              )}
+            </Button>
 
-        {!hasCheckedIn && (
-          <div className="rounded-lg border border-primary/20 bg-primary/5 p-4">
-            <p className="text-sm">{t("earnCredits", { credits: 10 })}</p>
-          </div>
-        )}
-      </div>
-
-      {/* 今日签到列表 */}
-      <div className="mt-16 max-sm:mt-8">
-        <div className="flex flex-col gap-2 items-center">
-          <span className="flex items-center gap-1 text-2xl font-medium">
-            <Trophy className="size-5" />
-            {t("todayList")}
-          </span>
-          <span className="text-muted-foreground">
-            {t("todayListDescription", { count: todayCheckins.length })}
-          </span>
-        </div>
-        <div className="mt-8 max-sm:mt-4">
-          {todayCheckins.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-12 text-muted-foreground">
-              <CalendarCheck className="mb-4 h-12 w-12 opacity-20" />
-              <p>{t("noCheckinToday")}</p>
-            </div>
-          ) : (
-            <div>
-              {/* 前三名特殊展示 */}
-              {topThree.length > 0 && <TopThreeDisplay checkins={topThree} />}
-
-              {/* 其余用户列表 */}
-              {restCheckins.length > 0 && (
-                <div className="space-y-2">
-                  {restCheckins.map((checkin) => (
-                    <CheckinItem key={checkin.id} checkin={checkin} />
-                  ))}
+            <div className="flex flex-wrap gap-4 text-sm">
+              {consecutiveDays > 0 && (
+                <div className="flex items-center gap-2">
+                  <Badge variant="outline">
+                    <Trophy className="mr-1 h-3 w-3" />
+                    {t("consecutiveDays", { days: consecutiveDays })}
+                  </Badge>
+                </div>
+              )}
+              {monthlyCheckins > 0 && (
+                <div className="flex items-center gap-2">
+                  <Badge variant="outline">
+                    {t("monthlyCheckins", { days: monthlyCheckins })}
+                  </Badge>
                 </div>
               )}
             </div>
+          </div>
+
+          {hasCheckedIn && checkinStatus?.todayCheckin && (
+            <div className="rounded-lg bg-muted p-4">
+              <p className="text-sm text-muted-foreground">
+                {t("todayEarned", {
+                  credits: checkinStatus.todayCheckin.creditsEarned,
+                })}
+              </p>
+            </div>
+          )}
+
+          {!hasCheckedIn && (
+            <div className="rounded-lg border border-primary/20 bg-primary/5 p-4">
+              <p className="text-sm">{t("earnCredits", { credits: 10 })}</p>
+            </div>
           )}
         </div>
-      </div>
+      )}
+
+      {/* 今日签到列表 */}
+      {isListLoading ? (
+        <CheckinListSkeleton />
+      ) : (
+        <div className="mt-16 max-sm:mt-8">
+          <div className="flex flex-col gap-2 items-center">
+            <span className="flex items-center gap-1 text-2xl font-medium">
+              <Trophy className="size-5" />
+              {t("todayList")}
+            </span>
+            <span className="text-muted-foreground">
+              {t("todayListDescription", { count: todayCheckins.length })}
+            </span>
+          </div>
+          <div className="mt-8 max-sm:mt-4">
+            {todayCheckins.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-12 text-muted-foreground">
+                <CalendarCheck className="mb-4 h-12 w-12 opacity-20" />
+                <p>{t("noCheckinToday")}</p>
+              </div>
+            ) : (
+              <div>
+                {/* 前三名特殊展示 */}
+                {topThree.length > 0 && <TopThreeDisplay checkins={topThree} />}
+
+                {/* 其余用户列表 */}
+                {restCheckins.length > 0 && (
+                  <div className="space-y-2">
+                    {restCheckins.map((checkin) => (
+                      <CheckinItem key={checkin.id} checkin={checkin} />
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   )
 }
