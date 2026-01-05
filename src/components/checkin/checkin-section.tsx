@@ -220,6 +220,9 @@ export function CheckinSection() {
   const t = useTranslations("Checkin")
   const [isChecking, setIsChecking] = useState(false)
 
+  // 获取用户时区偏移量（分钟）
+  const timezoneOffset = new Date().getTimezoneOffset()
+
   const { data: checkinStatus } = useSWR<CheckinStatus | null>(
     "/api/checkin",
     statusFetcher,
@@ -230,16 +233,13 @@ export function CheckinSection() {
 
   const { data: todayCheckins = [], mutate: mutateList } = useSWR<
     CheckinRecord[]
-  >("/api/checkin?list=today", listFetcher, {
+  >(`/api/checkin?list=today&timezoneOffset=${timezoneOffset}`, listFetcher, {
     refreshInterval: 30000,
   })
 
   const handleCheckin = async () => {
     try {
       setIsChecking(true)
-
-      // 获取用户时区偏移（分钟）
-      const timezoneOffset = new Date().getTimezoneOffset()
 
       const res = await fetch("/api/checkin", {
         method: "POST",

@@ -135,7 +135,7 @@ export async function POST(request: Request) {
 /**
  * 获取用户签到状态或当日签到列表
  * GET /api/checkin - 获取用户签到状态
- * GET /api/checkin?list=today - 获取当日所有用户签到记录
+ * GET /api/checkin?list=today&timezoneOffset=number - 获取用户本地日期的签到记录
  */
 export async function GET(request: Request) {
   try {
@@ -145,11 +145,33 @@ export async function GET(request: Request) {
 
     // 如果请求当日签到列表，不需要登录校验
     if (getTodayList) {
-      // 获取今天的日期（使用 UTC 时间避免时区问题）
+      // 获取用户时区偏移量（从URL参数获取）
+      let timezoneOffset = 0
+      const offsetParam = searchParams.get("timezoneOffset")
+      if (offsetParam) {
+        timezoneOffset = Number(offsetParam)
+        // 校验时区偏移量范围
+        if (
+          isNaN(timezoneOffset) ||
+          timezoneOffset < -840 ||
+          timezoneOffset > 720
+        ) {
+          return NextResponse.json(
+            { error: "时区偏移量不合法" },
+            { status: 400 }
+          )
+        }
+      }
+
+      // 根据用户时区计算用户本地日期
       const now = new Date()
-      const today = new Date(
-        Date.UTC(now.getFullYear(), now.getMonth(), now.getDate())
-      )
+      const userLocalTime = new Date(now.getTime() - timezoneOffset * 60 * 1000)
+      const userYear = userLocalTime.getUTCFullYear()
+      const userMonth = userLocalTime.getUTCMonth()
+      const userDay = userLocalTime.getUTCDate()
+
+      // 创建用户本地日期的UTC零点时间
+      const today = new Date(Date.UTC(userYear, userMonth, userDay))
 
       // 获取明天的日期（用于范围查询）
       const tomorrow = new Date(today)
