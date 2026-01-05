@@ -421,7 +421,7 @@ function ActivityTimeline({
                       initial={{ opacity: 0, y: 30 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{
-                        delay: index * 0.1,
+                        delay: (index % 10) * 0.1,
                         duration: 0.5,
                         ease: "easeOut",
                       }}
@@ -436,7 +436,7 @@ function ActivityTimeline({
                           initial={{ scale: 0 }}
                           animate={{ scale: 1 }}
                           transition={{
-                            delay: index * 0.1 + 0.3,
+                            delay: (index % 10) * 0.1 + 0.3,
                             type: "spring",
                           }}
                         >
@@ -448,7 +448,7 @@ function ActivityTimeline({
                           transition={{
                             duration: 2,
                             repeat: Infinity,
-                            delay: index * 0.1,
+                            delay: (index % 10) * 0.1,
                           }}
                         />
                       </div>
@@ -509,18 +509,31 @@ function ActivityTimeline({
                   </span>
                 </div>
               )}
-
-              {/* 没有更多数据 */}
-              {!hasMore && activities.length > 0 && (
-                <div className="mt-12 text-center">
-                  <span className="text-sm text-muted-foreground">
-                    已加载全部活动
-                  </span>
-                </div>
-              )}
             </>
           )}
         </div>
+
+        {/* 没有更多数据 */}
+        {!hasMore && activities.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{
+              duration: 0.5,
+              ease: "easeOut",
+            }}
+            className="mt-12 text-center md:mt-16"
+          >
+            <div className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-6 py-3">
+              <motion.div
+                animate={{ scale: [1, 1.2, 1] }}
+                transition={{ duration: 2, repeat: Infinity }}
+                className="h-2 w-2 rounded-full bg-primary"
+              />
+              <span className="text-sm font-medium">已加载全部活动</span>
+            </div>
+          </motion.div>
+        )}
       </div>
     </section>
   )
