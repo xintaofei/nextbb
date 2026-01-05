@@ -17,15 +17,24 @@ export async function POST() {
 
     const userId = sessionUser.userId
 
-    // 获取今天的日期（只保留年月日，不含时分秒）
-    const today = new Date()
-    today.setHours(0, 0, 0, 0)
+    // 获取今天的日期（使用 UTC 时间避免时区问题）
+    const now = new Date()
+    const today = new Date(
+      Date.UTC(now.getFullYear(), now.getMonth(), now.getDate())
+    )
 
-    // 检查今天是否已经签到
+    // 获取明天的日期（用于范围查询）
+    const tomorrow = new Date(today)
+    tomorrow.setUTCDate(tomorrow.getUTCDate() + 1)
+
+    // 检查今天是否已经签到（使用范围查询避免时区问题）
     const existingCheckin = await prisma.user_checkins.findFirst({
       where: {
         user_id: userId,
-        checkin_date: today,
+        checkin_date: {
+          gte: today,
+          lt: tomorrow,
+        },
       },
     })
 
@@ -111,14 +120,24 @@ export async function GET(request: Request) {
 
     // 如果请求当日签到列表，不需要登录校验
     if (getTodayList) {
-      // 获取今天的日期
-      const today = new Date()
-      today.setHours(0, 0, 0, 0)
+      // 获取今天的日期（使用 UTC 时间避免时区问题）
+      const now = new Date()
+      const today = new Date(
+        Date.UTC(now.getFullYear(), now.getMonth(), now.getDate())
+      )
+
+      // 获取明天的日期（用于范围查询）
+      const tomorrow = new Date(today)
+      tomorrow.setUTCDate(tomorrow.getUTCDate() + 1)
 
       // 查询当天所有签到记录，按创建时间排序（最先签到的最前）
+      // 使用 gte 和 lt 进行范围查询，避免时区问题
       const todayCheckins = await prisma.user_checkins.findMany({
         where: {
-          checkin_date: today,
+          checkin_date: {
+            gte: today,
+            lt: tomorrow,
+          },
         },
         orderBy: {
           created_at: "asc",
@@ -158,15 +177,24 @@ export async function GET(request: Request) {
 
     const userId = sessionUser.userId
 
-    // 获取今天的日期
-    const today = new Date()
-    today.setHours(0, 0, 0, 0)
+    // 获取今天的日期（使用 UTC 时间避免时区问题）
+    const now = new Date()
+    const today = new Date(
+      Date.UTC(now.getFullYear(), now.getMonth(), now.getDate())
+    )
 
-    // 检查今天是否已签到
+    // 获取明天的日期（用于范围查询）
+    const tomorrow = new Date(today)
+    tomorrow.setUTCDate(tomorrow.getUTCDate() + 1)
+
+    // 检查今天是否已签到（使用范围查询避免时区问题）
     const todayCheckin = await prisma.user_checkins.findFirst({
       where: {
         user_id: userId,
-        checkin_date: today,
+        checkin_date: {
+          gte: today,
+          lt: tomorrow,
+        },
       },
     })
 
