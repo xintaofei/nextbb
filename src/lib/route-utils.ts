@@ -171,11 +171,11 @@ export function routeParamsToApiQuery(params: RouteParams): {
 
   // 映射排序参数
   if (params.sort) {
-    // top → hot, new → latest, latest → latest
+    // top → hot, new → new, latest → latest
     if (params.sort === "top") {
       query.sort = "hot"
     } else if (params.sort === "new") {
-      query.sort = "latest"
+      query.sort = "new"
     } else {
       query.sort = "latest"
     }

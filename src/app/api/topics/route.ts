@@ -51,7 +51,7 @@ interface TxClient {
 const TopicListQuery = z.object({
   categoryId: z.string().regex(/^\d+$/).optional(),
   tagId: z.string().regex(/^\d+$/).optional(),
-  sort: z.enum(["latest", "hot", "community"]).optional(),
+  sort: z.enum(["latest", "hot", "community", "new"]).optional(),
   page: z.string().regex(/^\d+$/).optional(),
   pageSize: z.string().regex(/^\d+$/).optional(),
 })
@@ -130,6 +130,8 @@ export async function GET(req: Request) {
       : undefined),
   }
   const sortMode = q.success && q.data.sort ? q.data.sort : "latest"
+  // 只在 latest 模式下（首页或显式 /latest）查询置顶话题的第一个 post
+  const shouldShowFirstPost = sortMode === "latest"
   if (sortMode === "community") {
     where.is_community = true
   }
@@ -206,12 +208,12 @@ export async function GET(req: Request) {
   const topicsX = topics as unknown as TopicRow[]
   const topicIds = topicsX.map((t) => t.id)
 
-  // 在 latest 模式下，查询置顶话题的第一个 post（楼主 post）
+  // 只在首页默认情况或 latest 排序下，查询置顶话题的第一个 post（楼主 post）
   const firstPosts: Record<
     string,
     { id: bigint; content: string; created_at: Date }
   > = {}
-  if (sortMode === "latest") {
+  if (shouldShowFirstPost) {
     const pinnedTopicIds = topicsX.filter((t) => t.is_pinned).map((t) => t.id)
     if (pinnedTopicIds.length > 0) {
       const firstPostsData = await prisma.posts.findMany({
