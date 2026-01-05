@@ -40,31 +40,31 @@ export function ActivityFilter({
     {
       value: "all",
       label: t("all"),
-      icon: <Activity className="h-4 w-4" />,
+      icon: <Activity className="size-4" />,
       requiresPermission: false,
     },
     {
       value: "topics",
       label: t("topics"),
-      icon: <FileText className="h-4 w-4" />,
+      icon: <FileText className="size-4" />,
       requiresPermission: false,
     },
     {
       value: "posts",
       label: t("posts"),
-      icon: <MessageSquare className="h-4 w-4" />,
+      icon: <MessageSquare className="size-4" />,
       requiresPermission: false,
     },
     {
       value: "likes",
       label: t("likes"),
-      icon: <ThumbsUp className="h-4 w-4" />,
+      icon: <ThumbsUp className="size-4" />,
       requiresPermission: true,
     },
     {
       value: "bookmarks",
       label: t("bookmarks"),
-      icon: <Bookmark className="h-4 w-4" />,
+      icon: <Bookmark className="size-4" />,
       requiresPermission: true,
     },
   ]
