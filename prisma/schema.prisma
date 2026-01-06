@@ -43,6 +43,8 @@ model users {
   question_acceptances question_acceptances[] @relation("question_acceptances_accepter")
   checkins user_checkins[] @relation("user_checkins_user")
   credit_logs user_credit_logs[] @relation("user_credit_logs_user")
+  donations donations[] @relation("donations_user")
+  confirmed_donations donations[] @relation("donations_confirmer")
 
   @@map("users")
   @@unique([email], map: "users_email_key")
@@ -483,6 +485,27 @@ enum CreditLogType {
   OTHER
 }
 
+// 捐赠来源类型
+enum DonationSource {
+  KOFI           // Ko-fi 平台
+  PATREON        // Patreon 平台
+  PAYPAL         // PayPal 直接捐赠
+  ALIPAY         // 支付宝
+  WECHAT_PAY     // 微信支付
+  BANK_TRANSFER  // 银行转账/线下转账
+  CRYPTO         // 加密货币
+  OTHER          // 其它来源
+}
+
+// 捐赠状态
+enum DonationStatus {
+  PENDING    // 待确认（线下转账等需要人工确认）
+  CONFIRMED  // 已确认
+  FAILED     // 失败/无效
+  REFUNDED   // 已退款
+  CANCELLED  // 已取消
+}
+
 model user_credit_logs {
   id          BigInt        @id @db.BigInt
   user_id     BigInt        @db.BigInt
@@ -498,4 +521,62 @@ model user_credit_logs {
   @@index([type], map: "user_credit_logs_type_index")
   @@index([created_at], map: "user_credit_logs_created_index")
   @@map("user_credit_logs")
+}
+
+// 捐赠记录表
+model donations {
+  id              BigInt         @id @db.BigInt
+
+  // 捐赠用户（可为空，支持非注册用户捐赠）
+  user_id         BigInt?        @db.BigInt
+
+  // 金额相关
+  amount          Decimal        @db.Decimal(10, 2)  // 捐赠金额，支持小数
+  currency        String         @default("CNY") @db.VarChar(8)  // 货币类型：CNY, USD, EUR 等
+
+  // 来源区分
+  source          DonationSource // 捐赠来源
+
+  // 状态
+  status          DonationStatus @default(PENDING)
+
+  // 外部关联ID（用于对接第三方平台的交易ID）
+  external_id     String?        @db.VarChar(128)
+
+  // 是否匿名捐赠
+  is_anonymous    Boolean        @default(false)
+
+  // 捐赠者显示名称（用于非注册用户或匿名用户的展示名）
+  donor_name      String?        @db.VarChar(64)
+
+  // 捐赠者邮箱（用于非注册用户联系或发送感谢）
+  donor_email     String?        @db.VarChar(256)
+
+  // 捐赠留言
+  message         String?        @db.VarChar(500)
+
+  // 管理员备注（仅管理员可见）
+  admin_note      String?        @db.VarChar(500)
+
+  // 确认信息
+  confirmed_by    BigInt?        @db.BigInt  // 确认人（管理员）
+  confirmed_at    DateTime?                   // 确认时间
+
+  // 通用字段
+  is_deleted      Boolean        @default(false)
+  created_at      DateTime       @default(now())
+  updated_at      DateTime       @updatedAt
+
+  // 关联关系
+  user            users?         @relation("donations_user", fields: [user_id], references: [id])
+  confirmer       users?         @relation("donations_confirmer", fields: [confirmed_by], references: [id])
+
+  @@index([user_id], map: "donations_user_index")
+  @@index([source], map: "donations_source_index")
+  @@index([status], map: "donations_status_index")
+  @@index([external_id], map: "donations_external_index")
+  @@index([is_anonymous], map: "donations_anonymous_index")
+  @@index([created_at], map: "donations_created_index")
+  @@index([status, source], map: "donations_status_source_index")
+  @@map("donations")
 }
