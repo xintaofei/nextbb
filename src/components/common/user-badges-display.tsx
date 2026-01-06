@@ -7,7 +7,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover"
-import { Badge } from "@/components/ui/badge"
+import { Highlighter } from "../ui/highlighter"
 
 export type BadgeItem = {
   id: string
@@ -56,17 +56,20 @@ export function UserBadgesDisplay({
       {remainingCount > 0 && (
         <Popover open={open} onOpenChange={setOpen}>
           <PopoverTrigger asChild>
-            <Badge
-              variant="outline"
-              className="text-xs px-2 py-0.5 cursor-pointer hover:bg-accent transition-colors"
-            >
-              +{remainingCount}
-            </Badge>
+            <div className="cursor-pointer text-xs">
+              {" "}
+              <Highlighter action="circle" color="var(--primary)">
+                +{remainingCount}
+              </Highlighter>{" "}
+            </div>
           </PopoverTrigger>
           <PopoverContent className="w-80" align="start">
             <div className="space-y-3">
-              <h4 className="font-medium text-sm">所有徽章</h4>
-              <div className="flex flex-wrap gap-4">
+              {" "}
+              <Highlighter action="box" color="var(--primary)">
+                <h4 className="font-medium text-sm">所有徽章</h4>
+              </Highlighter>{" "}
+              <div className="flex flex-wrap gap-4 mt-2">
                 {badges.map((badge) => (
                   <UserBadge
                     key={badge.id}

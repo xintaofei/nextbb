@@ -261,24 +261,24 @@ export function UserInfoCard({
               {statisticsLoading ? (
                 <>
                   <div className="text-center">
-                    <Skeleton className="h-5 w-8 mx-auto mb-1" />
-                    <Skeleton className="h-3 w-12 mx-auto" />
+                    <Skeleton className="h-6 w-8 mx-auto mb-1" />
+                    <Skeleton className="h-4 w-12 mx-auto" />
                   </div>
                   <div className="text-center">
-                    <Skeleton className="h-5 w-8 mx-auto mb-1" />
-                    <Skeleton className="h-3 w-12 mx-auto" />
+                    <Skeleton className="h-6 w-8 mx-auto mb-1" />
+                    <Skeleton className="h-4 w-12 mx-auto" />
                   </div>
                   <div className="text-center">
-                    <Skeleton className="h-5 w-8 mx-auto mb-1" />
-                    <Skeleton className="h-3 w-12 mx-auto" />
+                    <Skeleton className="h-6 w-8 mx-auto mb-1" />
+                    <Skeleton className="h-4 w-12 mx-auto" />
                   </div>
                   <div className="text-center">
-                    <Skeleton className="h-5 w-8 mx-auto mb-1" />
-                    <Skeleton className="h-3 w-12 mx-auto" />
+                    <Skeleton className="h-6 w-8 mx-auto mb-1" />
+                    <Skeleton className="h-4 w-12 mx-auto" />
                   </div>
                   <div className="text-center">
-                    <Skeleton className="h-5 w-8 mx-auto mb-1" />
-                    <Skeleton className="h-3 w-12 mx-auto" />
+                    <Skeleton className="h-6 w-8 mx-auto mb-1" />
+                    <Skeleton className="h-4 w-12 mx-auto" />
                   </div>
                 </>
               ) : statisticsData ? (
@@ -330,10 +330,17 @@ export function UserInfoCard({
 
           {/* 徽章展示区域 */}
           {badgesLoading ? (
-            <div className="flex justify-center gap-2">
-              <Skeleton className="h-6 w-16" />
-              <Skeleton className="h-6 w-16" />
-              <Skeleton className="h-6 w-16" />
+            <div className="flex flex-col justify-center gap-4">
+              <div className="flex justify-center gap-4">
+                <Skeleton className="h-6 w-24" />
+                <Skeleton className="h-6 w-24" />
+                <Skeleton className="h-6 w-24" />
+              </div>
+              <div className="flex justify-center gap-4">
+                <Skeleton className="h-6 w-24" />
+                <Skeleton className="h-6 w-24" />
+                <Skeleton className="h-6 w-24" />
+              </div>
             </div>
           ) : badges.length > 0 ? (
             <div className="flex justify-center">
