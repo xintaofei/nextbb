@@ -8,6 +8,7 @@ import { notFound, useParams } from "next/navigation"
 import Link from "next/link"
 import confetti from "canvas-confetti"
 import { useEffect } from "react"
+import { NeonGradientCard } from "@/components/ui/neon-gradient-card"
 
 type DonationType = "month" | "year" | "all"
 
@@ -57,12 +58,9 @@ export default function DonationPage() {
 
   return (
     <div className="container mx-auto max-w-4xl px-4 py-6">
-      <div className="mb-6">
-        <div className="flex items-center gap-2">
-          <Heart className="size-8 text-pink-500" />
-          <h1 className="text-2xl font-bold sm:text-3xl">{t("title")}</h1>
-        </div>
-        <p className="mt-2 text-muted-foreground">{t("subtitle")}</p>
+      <div className="flex items-center gap-2 mb-6">
+        <Heart className="size-8 text-pink-500" />
+        <h1 className="text-2xl font-bold sm:text-3xl">{t("title")}</h1>
       </div>
 
       <Tabs value={activeTab}>
@@ -89,6 +87,11 @@ export default function DonationPage() {
         </TabsList>
 
         <TabsContent value="month" className="mt-6">
+          <NeonGradientCard className="w-full h-auto mb-6 items-center justify-center text-center">
+            <span className="pointer-events-none z-10 h-full bg-linear-to-br from-[#ff2975] from-35% to-[#00FFF1] bg-clip-text text-center text-3xl leading-none font-bold tracking-tighter text-balance whitespace-pre-wrap text-transparent md:text-5xl xl:text-6xl dark:drop-shadow-[0_5px_5px_rgba(0,0,0,0.8)]">
+              {t("subtitle")}
+            </span>
+          </NeonGradientCard>
           <div className="mb-4">
             <h2 className="text-xl font-semibold">{t("monthTab")}</h2>
             <p className="text-sm text-muted-foreground">{t("monthDesc")}</p>
@@ -97,6 +100,11 @@ export default function DonationPage() {
         </TabsContent>
 
         <TabsContent value="year" className="mt-6">
+          <NeonGradientCard className="w-full h-auto mb-6 items-center justify-center text-center">
+            <span className="pointer-events-none z-10 h-full bg-linear-to-br from-[#ff2975] from-35% to-[#00FFF1] bg-clip-text text-center text-3xl leading-none font-bold tracking-tighter text-balance whitespace-pre-wrap text-transparent md:text-5xl xl:text-6xl dark:drop-shadow-[0_5px_5px_rgba(0,0,0,0.8)]">
+              {t("subtitle")}
+            </span>
+          </NeonGradientCard>
           <div className="mb-4">
             <h2 className="text-xl font-semibold">{t("yearTab")}</h2>
             <p className="text-sm text-muted-foreground">{t("yearDesc")}</p>
@@ -105,6 +113,11 @@ export default function DonationPage() {
         </TabsContent>
 
         <TabsContent value="all" className="mt-6">
+          <NeonGradientCard className="w-full h-auto mb-6 items-center justify-center text-center">
+            <span className="pointer-events-none z-10 h-full bg-linear-to-br from-[#ff2975] from-35% to-[#00FFF1] bg-clip-text text-center text-3xl leading-none font-bold tracking-tighter text-balance whitespace-pre-wrap text-transparent md:text-5xl xl:text-6xl dark:drop-shadow-[0_5px_5px_rgba(0,0,0,0.8)]">
+              {t("subtitle")}
+            </span>
+          </NeonGradientCard>
           <div className="mb-4">
             <h2 className="text-xl font-semibold">{t("allTab")}</h2>
             <p className="text-sm text-muted-foreground">{t("allDesc")}</p>
