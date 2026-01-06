@@ -6,6 +6,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { DonationList } from "@/components/donation/donation-list"
 import { notFound, useParams } from "next/navigation"
 import Link from "next/link"
+import confetti from "canvas-confetti"
+import { useEffect } from "react"
 
 type DonationType = "month" | "year" | "all"
 
@@ -22,6 +24,36 @@ export default function DonationPage() {
   }
 
   const activeTab = type as DonationType
+
+  const showConfetti = () => {
+    const end = Date.now() + 3 * 1000
+    const colors = ["#a786ff", "#fd8bbc", "#eca184", "#f8deb1"]
+    const frame = () => {
+      if (Date.now() > end) return
+      confetti({
+        particleCount: 2,
+        angle: 60,
+        spread: 55,
+        startVelocity: 60,
+        origin: { x: 0, y: 0.5 },
+        colors: colors,
+      })
+      confetti({
+        particleCount: 2,
+        angle: 120,
+        spread: 55,
+        startVelocity: 60,
+        origin: { x: 1, y: 0.5 },
+        colors: colors,
+      })
+      requestAnimationFrame(frame)
+    }
+    frame()
+  }
+
+  useEffect(() => {
+    showConfetti()
+  }, [])
 
   return (
     <div className="container mx-auto max-w-4xl px-4 py-6">
