@@ -130,8 +130,6 @@ export async function GET(req: Request) {
       : undefined),
   }
   const sortMode = q.success && q.data.sort ? q.data.sort : "latest"
-  // 只在 latest 模式下（首页或显式 /latest）查询置顶话题的第一个 post
-  const shouldShowFirstPost = sortMode === "latest"
   if (sortMode === "community") {
     where.is_community = true
   }
@@ -208,33 +206,31 @@ export async function GET(req: Request) {
   const topicsX = topics as unknown as TopicRow[]
   const topicIds = topicsX.map((t) => t.id)
 
-  // 只在首页默认情况或 latest 排序下，查询置顶话题的第一个 post（楼主 post）
+  // 查询所有置顶话题的第一个 post（楼主 post），用于渲染三行预览
   const firstPosts: Record<
     string,
     { id: bigint; content: string; created_at: Date }
   > = {}
-  if (shouldShowFirstPost) {
-    const pinnedTopicIds = topicsX.filter((t) => t.is_pinned).map((t) => t.id)
-    if (pinnedTopicIds.length > 0) {
-      const firstPostsData = await prisma.posts.findMany({
-        where: {
-          topic_id: { in: pinnedTopicIds },
-          floor_number: 1,
-          is_deleted: false,
-        },
-        select: {
-          id: true,
-          topic_id: true,
-          content: true,
-          created_at: true,
-        },
-      })
-      for (const post of firstPostsData) {
-        firstPosts[String(post.topic_id)] = {
-          id: post.id,
-          content: post.content,
-          created_at: post.created_at,
-        }
+  const pinnedTopicIds = topicsX.filter((t) => t.is_pinned).map((t) => t.id)
+  if (pinnedTopicIds.length > 0) {
+    const firstPostsData = await prisma.posts.findMany({
+      where: {
+        topic_id: { in: pinnedTopicIds },
+        floor_number: 1,
+        is_deleted: false,
+      },
+      select: {
+        id: true,
+        topic_id: true,
+        content: true,
+        created_at: true,
+      },
+    })
+    for (const post of firstPostsData) {
+      firstPosts[String(post.topic_id)] = {
+        id: post.id,
+        content: post.content,
+        created_at: post.created_at,
       }
     }
   }
