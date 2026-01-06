@@ -202,7 +202,7 @@ export function UserOverviewClient({ userId }: OverviewStatsProps) {
       <motion.div
         initial="hidden"
         whileInView="visible"
-        viewport={{ once: true, amount: 0.3 }}
+        viewport={{ once: true, amount: "some" }}
         variants={titleVariants}
       >
         <h2 className="text-lg font-semibold mb-4">
@@ -212,7 +212,7 @@ export function UserOverviewClient({ userId }: OverviewStatsProps) {
           variants={containerVariants}
           initial="hidden"
           whileInView="visible"
-          viewport={{ once: true, amount: 0.3 }}
+          viewport={{ once: true, amount: "some" }}
           className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4"
         >
           <motion.div variants={cardVariants}>
@@ -321,7 +321,7 @@ export function UserOverviewClient({ userId }: OverviewStatsProps) {
       <motion.div
         initial="hidden"
         whileInView="visible"
-        viewport={{ once: true, amount: 0.3 }}
+        viewport={{ once: true, amount: "some" }}
         variants={titleVariants}
       >
         <h2 className="text-lg font-semibold mb-4">{t("honorStats.title")}</h2>
@@ -329,7 +329,7 @@ export function UserOverviewClient({ userId }: OverviewStatsProps) {
           variants={containerVariants}
           initial="hidden"
           whileInView="visible"
-          viewport={{ once: true, amount: 0.3 }}
+          viewport={{ once: true, amount: "some" }}
           className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4"
         >
           <motion.div variants={cardVariants}>
@@ -394,8 +394,8 @@ export function UserOverviewClient({ userId }: OverviewStatsProps) {
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true, amount: 0.3 }}
-        transition={{ duration: 0.2 }}
+        viewport={{ once: true, amount: "some" }}
+        transition={{ duration: 0.2, delay: 0.1 }}
       >
         <TopContentSection userId={userId} />
       </motion.div>
@@ -404,8 +404,8 @@ export function UserOverviewClient({ userId }: OverviewStatsProps) {
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true, amount: 0.3 }}
-        transition={{ duration: 0.2 }}
+        viewport={{ once: true, amount: "some" }}
+        transition={{ duration: 0.2, delay: 0.1 }}
       >
         <SocialInteractionSection userId={userId} />
       </motion.div>

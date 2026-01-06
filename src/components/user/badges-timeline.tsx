@@ -15,7 +15,7 @@ type BadgesTimelineProps = {
 
 function BadgesTimeline({ badges }: BadgesTimelineProps) {
   const ref = useRef(null)
-  const isInView = useInView(ref, { once: true, amount: 0.3 })
+  const isInView = useInView(ref, { once: true, amount: "some" })
   const t = (key: string) => {
     const translations: Record<string, string> = {
       title: "徽章列表",
