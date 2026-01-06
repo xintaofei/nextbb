@@ -88,8 +88,8 @@ function ActivityTimeline({
     const topicType = (type || "GENERAL") as TopicTypeValue
 
     return (
-      <Link href={`/topic/${topicId}`} className="block">
-        <h3 className="font-medium hover:text-primary transition-colors line-clamp-2 mb-2">
+      <Link href={`/topic/${topicId}`} className="block overflow-hidden">
+        <h3 className="font-medium hover:text-primary transition-colors line-clamp-2 mb-2 whitespace-normal wrap-break-word">
           {title}
         </h3>
         <div className="flex items-center gap-2 flex-wrap mb-2">
@@ -131,8 +131,11 @@ function ActivityTimeline({
     } = activity.postData
 
     return (
-      <Link href={`/topic/${topicId}#post-${postId}`} className="block">
-        <h3 className="font-medium hover:text-primary transition-colors line-clamp-2 mb-2">
+      <Link
+        href={`/topic/${topicId}#post-${postId}`}
+        className="block overflow-hidden"
+      >
+        <h3 className="font-medium hover:text-primary transition-colors line-clamp-2 mb-2 whitespace-normal wrap-break-word">
           {topicTitle}
         </h3>
         <div className="flex items-center gap-2 flex-wrap mb-2">
@@ -147,7 +150,7 @@ function ActivityTimeline({
             {floorNumber}
           </span>
         </div>
-        <p className="text-sm text-muted-foreground line-clamp-2 mb-2">
+        <p className="text-sm text-muted-foreground line-clamp-2 mb-2 whitespace-normal wrap-break-word overflow-hidden">
           {contentPreview}
         </p>
         <div className="flex items-center gap-2 text-sm text-muted-foreground">
@@ -172,8 +175,11 @@ function ActivityTimeline({
     } = activity.likeData
 
     return (
-      <Link href={`/topic/${topicId}#post-${postId}`} className="block">
-        <h3 className="font-medium hover:text-primary transition-colors line-clamp-2 mb-2">
+      <Link
+        href={`/topic/${topicId}#post-${postId}`}
+        className="block overflow-hidden"
+      >
+        <h3 className="font-medium hover:text-primary transition-colors line-clamp-2 mb-2 whitespace-normal wrap-break-word">
           {topicTitle}
         </h3>
         <div className="flex items-center gap-2 flex-wrap mb-2">
@@ -188,7 +194,7 @@ function ActivityTimeline({
             {floorNumber}
           </span>
         </div>
-        <p className="text-sm text-muted-foreground line-clamp-2 mb-2">
+        <p className="text-sm text-muted-foreground line-clamp-2 mb-2 whitespace-normal wrap-break-word overflow-hidden">
           {contentPreview}
         </p>
         <div className="flex items-center gap-2">
@@ -216,8 +222,11 @@ function ActivityTimeline({
     } = activity.bookmarkData
 
     return (
-      <Link href={`/topic/${topicId}#post-${postId}`} className="block">
-        <h3 className="font-medium hover:text-primary transition-colors line-clamp-2 mb-2">
+      <Link
+        href={`/topic/${topicId}#post-${postId}`}
+        className="block overflow-hidden"
+      >
+        <h3 className="font-medium hover:text-primary transition-colors line-clamp-2 mb-2 whitespace-normal wrap-break-word">
           {topicTitle}
         </h3>
         <div className="flex items-center gap-2 flex-wrap mb-2">
@@ -232,7 +241,7 @@ function ActivityTimeline({
             {floorNumber}
           </span>
         </div>
-        <p className="text-sm text-muted-foreground line-clamp-2 mb-2">
+        <p className="text-sm text-muted-foreground line-clamp-2 mb-2 whitespace-normal wrap-break-word overflow-hidden">
           {contentPreview}
         </p>
         <div className="flex items-center gap-2">
@@ -268,7 +277,7 @@ function ActivityTimeline({
 
               {/* 卡片骨架 */}
               <div
-                className={`ml-16 w-full md:ml-0 md:w-5/12 ${
+                className={`ml-16 w-full md:ml-0 md:w-5/12 min-w-0 ${
                   isEven ? "md:pr-12" : "md:pl-12"
                 }`}
               >
@@ -455,13 +464,14 @@ function ActivityTimeline({
 
                       {/* Content card */}
                       <div
-                        className={`ml-16 w-full md:ml-0 md:w-5/12 ${
+                        className={`ml-16 w-full md:ml-0 md:w-5/12 min-w-0 ${
                           isEven ? "md:pr-12" : "md:pl-12"
                         }`}
                       >
                         <motion.div
                           whileHover={{ scale: 1.02, y: -5 }}
                           transition={{ duration: 0.2 }}
+                          className="min-w-0"
                         >
                           <Card className="relative overflow-hidden border-border/50 bg-card p-4 shadow-none md:p-6">
                             <motion.div
@@ -469,7 +479,7 @@ function ActivityTimeline({
                               whileHover={{ opacity: 1 }}
                             />
 
-                            <div className="relative">
+                            <div className="relative min-w-0">
                               <div className="flex items-center gap-2 text-sm text-muted-foreground mb-3">
                                 {getActivityIcon(activity.activityType)}
                                 <span>
