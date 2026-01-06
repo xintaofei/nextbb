@@ -212,7 +212,7 @@ export function UserInfoCard({
       <PopoverContent
         side={side}
         align={align}
-        className="w-96 max-sm:w-80 p-0 overflow-hidden"
+        className="w-md max-sm:w-80 p-0 overflow-hidden"
       >
         <div className="flex flex-col gap-4 p-4">
           {/* 头部区域 */}

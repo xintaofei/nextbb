@@ -1,11 +1,11 @@
 "use client"
 
-import { Badge } from "@/components/ui/badge"
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip"
+import { Highlighter } from "@/components/ui/highlighter"
 import { cn } from "@/lib/utils"
 
 export type UserBadgeProps = {
@@ -29,36 +29,21 @@ export function UserBadge({
   size = "md",
   description,
 }: UserBadgeProps) {
-  const sizeClasses = {
-    sm: "text-xs px-1.5 py-0.5",
-    md: "text-sm px-2 py-1",
-    lg: "text-base px-3 py-1.5",
-  }
-
-  const levelClasses = {
-    1: "",
-    2: "border-2",
-    3: "border-2 shadow-sm",
-    4: "border-2 shadow-md ring-1 ring-offset-1",
-    5: "border-2 shadow-lg ring-2 ring-offset-2 animate-pulse",
-  }
-
   const badge = (
-    <Badge
-      variant="secondary"
-      className={cn(
-        sizeClasses[size],
-        levelClasses[level as keyof typeof levelClasses] || "",
-        className
-      )}
-      style={{
-        backgroundColor: bgColor || undefined,
-        color: textColor || undefined,
-        borderColor: bgColor ? `${bgColor}80` : undefined,
-      }}
-    >
-      {icon} {name}
-    </Badge>
+    <span>
+      {" "}
+      <Highlighter action="highlight" color={bgColor || undefined}>
+        <div className={cn("flex items-center gap-1", className)}>
+          <span>{icon}</span>
+          <span
+            className={"text-" + size}
+            style={{ color: textColor || undefined }}
+          >
+            {"Lv" + level + " " + name}
+          </span>
+        </div>
+      </Highlighter>{" "}
+    </span>
   )
 
   if (description) {

@@ -40,7 +40,7 @@ export function UserBadgesDisplay({
   const remainingCount = badges.length - maxDisplay
 
   return (
-    <div className="flex flex-wrap gap-2 items-center justify-center">
+    <div className="flex flex-wrap gap-4 items-center justify-center">
       {displayBadges.map((badge) => (
         <UserBadge
           key={badge.id}
@@ -66,7 +66,7 @@ export function UserBadgesDisplay({
           <PopoverContent className="w-80" align="start">
             <div className="space-y-3">
               <h4 className="font-medium text-sm">所有徽章</h4>
-              <div className="flex flex-wrap gap-1.5">
+              <div className="flex flex-wrap gap-4">
                 {badges.map((badge) => (
                   <UserBadge
                     key={badge.id}
