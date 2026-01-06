@@ -544,6 +544,7 @@
       "myPosts": "My Posts",
       "myMessages": "My Messages",
       "checkin": "Check-in",
+      "donation": "Donation",
       "leaderboard": "Leaderboard",
       "sharedResources": "Shared Resources",
       "more": "More"
@@ -1331,5 +1332,31 @@
     "pioneerShort": "Pioneer",
     "expertShort": "Expert",
     "reputationShort": "Reputation"
+  },
+  "Donation": {
+    "pageTitle": "Donation Honor Roll",
+    "title": "Donation Honor Roll",
+    "subtitle": "Thank you to every supporter for their generous donations",
+    "monthTab": "This Month",
+    "yearTab": "This Year",
+    "allTab": "All Time",
+    "monthDesc": "Show donation records for this month",
+    "yearDesc": "Show donation records for this year",
+    "allDesc": "Show all historical donation records",
+    "totalAmount": "Total Donations",
+    "totalCount": "Donation Count",
+    "amount": "Amount",
+    "message": "Message",
+    "anonymous": "Anonymous Benefactor",
+    "noData": "No donation records yet",
+    "noDataDesc": "Be the first donor!",
+    "loading": "Loading",
+    "loadingData": "Fetching donation data...",
+    "loadFailed": "Failed to load",
+    "retryLater": "Please try again later",
+    "lastUpdated": "Last Updated",
+    "people": "donations",
+    "donatedAt": "Donated at",
+    "fullLeaderboard": "Full Leaderboard"
   }
 }

@@ -544,6 +544,7 @@
       "myPosts": "我的帖子",
       "myMessages": "我的消息",
       "checkin": "签到",
+      "donation": "捐赠",
       "leaderboard": "排行榜",
       "sharedResources": "共享资源",
       "more": "更多"
@@ -1473,5 +1474,31 @@
     "pioneerShort": "先锋",
     "expertShort": "智囊",
     "reputationShort": "声望"
+  },
+  "Donation": {
+    "pageTitle": "捐赠荣誉榜",
+    "title": "捐赠荣誉榜",
+    "subtitle": "感谢每一位支持者的慷慨捐赠",
+    "monthTab": "本月榜单",
+    "yearTab": "本年榜单",
+    "allTab": "历史总榜",
+    "monthDesc": "展示本月捐赠记录",
+    "yearDesc": "展示本年度捐赠记录",
+    "allDesc": "展示所有历史捐赠记录",
+    "totalAmount": "总捐赠金额",
+    "totalCount": "捐赠人次",
+    "amount": "金额",
+    "message": "留言",
+    "anonymous": "匿名善心人士",
+    "noData": "暂无捐赠记录",
+    "noDataDesc": "成为第一个捐赠者吧！",
+    "loading": "正在加载",
+    "loadingData": "获取捐赠数据中...",
+    "loadFailed": "加载失败",
+    "retryLater": "请稍后重试",
+    "lastUpdated": "最后更新",
+    "people": "人次",
+    "donatedAt": "捐赠于",
+    "fullLeaderboard": "完整排行榜"
   }
 }

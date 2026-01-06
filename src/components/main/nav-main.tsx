@@ -10,6 +10,7 @@ import {
   ChevronRight,
   EllipsisVertical,
   FolderOpenDot,
+  Heart,
   Inbox,
   Layers,
 } from "lucide-react"
@@ -96,6 +97,12 @@ export function NavMain() {
           <SidebarMenuButton>
             <CalendarCheck />
             <span>{t("checkin")}</span>
+          </SidebarMenuButton>
+        </Link>
+        <Link href="/donation">
+          <SidebarMenuButton>
+            <Heart />
+            <span>{t("donation")}</span>
           </SidebarMenuButton>
         </Link>
         <Link href="/leaderboard">
