@@ -406,7 +406,7 @@ function DonationListSkeleton() {
       {/* 统计信息骨架 */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         {[0, 1].map((i) => (
-          <Card key={i}>
+          <Card key={i} className="shadow-none">
             <CardContent className="pt-6">
               <div className="flex items-center gap-4">
                 <Skeleton className="size-12 rounded-full" />

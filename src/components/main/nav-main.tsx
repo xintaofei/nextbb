@@ -99,7 +99,7 @@ export function NavMain() {
             <span>{t("checkin")}</span>
           </SidebarMenuButton>
         </Link>
-        <Link href="/donation">
+        <Link href="/donation/month">
           <SidebarMenuButton>
             <Heart />
             <span>{t("donation")}</span>
