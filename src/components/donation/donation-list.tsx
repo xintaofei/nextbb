@@ -360,7 +360,7 @@ function StatsSection({
 
   return (
     <div className="mb-8 grid grid-cols-1 sm:grid-cols-2 gap-4">
-      <Card>
+      <Card className="shadow-none">
         <CardContent className="pt-6">
           <div className="flex items-center gap-4">
             <div className="p-3 bg-primary/10 rounded-full">
@@ -381,7 +381,7 @@ function StatsSection({
           </div>
         </CardContent>
       </Card>
-      <Card>
+      <Card className="shadow-none">
         <CardContent className="pt-6">
           <div className="flex items-center gap-4">
             <div className="p-3 bg-primary/10 rounded-full">
