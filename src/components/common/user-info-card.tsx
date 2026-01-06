@@ -343,13 +343,11 @@ export function UserInfoCard({
               </div>
             </div>
           ) : badges.length > 0 ? (
-            <div className="flex justify-center">
-              <UserBadgesDisplay
-                badges={badges}
-                maxDisplay={maxBadgeDisplay}
-                size="sm"
-              />
-            </div>
+            <UserBadgesDisplay
+              badges={badges}
+              maxDisplay={maxBadgeDisplay}
+              size="sm"
+            />
           ) : null}
 
           {/* 操作按钮区域 */}
