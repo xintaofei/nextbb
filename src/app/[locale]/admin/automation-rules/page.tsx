@@ -19,6 +19,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Switch } from "@/components/ui/switch"
 import { toast } from "sonner"
+import { AutomationRuleDialog } from "@/components/admin/dialogs/automation-rule-dialog"
 
 type Rule = {
   id: string
@@ -62,6 +63,8 @@ export default function AutomationRulesPage() {
   const [statusFilter, setStatusFilter] = useState("all")
   const [sortBy, setSortBy] = useState("updatedAt")
   const [page, setPage] = useState(1)
+  const [createDialogOpen, setCreateDialogOpen] = useState(false)
+  const [editingRule, setEditingRule] = useState<Rule | undefined>()
 
   const apiUrl = `/api/admin/automation-rules?page=${page}&pageSize=20&q=${searchQuery}&triggerType=${triggerType}&actionType=${actionType}&sortBy=${sortBy}${
     statusFilter === "enabled"
@@ -118,6 +121,87 @@ export default function AutomationRulesPage() {
     }
   }
 
+  const handleCreateRule = async (data: {
+    name: string
+    description: string
+    triggerType: string
+    triggerConditions: Record<string, unknown>
+    actionType: string
+    actionParams: Record<string, unknown>
+    priority: number
+    isEnabled: boolean
+    isRepeatable: boolean
+    maxExecutions: number | null
+    cooldownSeconds: number | null
+    startTime: string | null
+    endTime: string | null
+  }) => {
+    try {
+      const response = await fetch("/api/admin/automation-rules", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      })
+
+      if (!response.ok) {
+        const error = await response.json()
+        throw new Error(error.error || "Failed to create rule")
+      }
+
+      toast.success(t("message.createSuccess"))
+      mutate()
+      setCreateDialogOpen(false)
+    } catch (error) {
+      toast.error(
+        error instanceof Error ? error.message : t("message.createError")
+      )
+      throw error
+    }
+  }
+
+  const handleEditRule = async (data: {
+    name: string
+    description: string
+    triggerType: string
+    triggerConditions: Record<string, unknown>
+    actionType: string
+    actionParams: Record<string, unknown>
+    priority: number
+    isEnabled: boolean
+    isRepeatable: boolean
+    maxExecutions: number | null
+    cooldownSeconds: number | null
+    startTime: string | null
+    endTime: string | null
+  }) => {
+    if (!editingRule) return
+
+    try {
+      const response = await fetch(
+        `/api/admin/automation-rules/${editingRule.id}`,
+        {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(data),
+        }
+      )
+
+      if (!response.ok) {
+        const error = await response.json()
+        throw new Error(error.error || "Failed to update rule")
+      }
+
+      toast.success(t("message.updateSuccess"))
+      mutate()
+      setEditingRule(undefined)
+    } catch (error) {
+      toast.error(
+        error instanceof Error ? error.message : t("message.updateError")
+      )
+      throw error
+    }
+  }
+
   const loading = !data && !error
   const rules = data?.items || []
   const total = data?.total || 0
@@ -130,7 +214,7 @@ export default function AutomationRulesPage() {
             <h1 className="text-2xl font-bold">{t("title")}</h1>
             <p className="text-muted-foreground">{t("description")}</p>
           </div>
-          <Button>
+          <Button onClick={() => setCreateDialogOpen(true)}>
             <Plus className="mr-2 h-4 w-4" />
             {t("createButton")}
           </Button>
@@ -365,7 +449,11 @@ export default function AutomationRulesPage() {
                         <Eye className="mr-1 h-4 w-4" />
                         {t("card.actions.viewLogs")}
                       </Button>
-                      <Button variant="outline" size="sm">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setEditingRule(rule)}
+                      >
                         <Edit className="mr-1 h-4 w-4" />
                         {t("card.actions.edit")}
                       </Button>
@@ -422,6 +510,19 @@ export default function AutomationRulesPage() {
           </div>
         </div>
       </AdminPageSection>
+
+      <AutomationRuleDialog
+        open={createDialogOpen}
+        onOpenChange={setCreateDialogOpen}
+        onSubmit={handleCreateRule}
+      />
+
+      <AutomationRuleDialog
+        open={!!editingRule}
+        onOpenChange={(open) => !open && setEditingRule(undefined)}
+        rule={editingRule}
+        onSubmit={handleEditRule}
+      />
     </AdminPageContainer>
   )
 }

@@ -1574,6 +1574,28 @@
     "dialog": {
       "createTitle": "创建规则",
       "editTitle": "编辑规则",
+      "name": "规则名称",
+      "namePlaceholder": "请输入规则名称",
+      "description": "规则描述",
+      "descriptionPlaceholder": "请输入规则描述",
+      "triggerType": "触发器类型",
+      "actionType": "动作类型",
+      "priority": "优先级",
+      "isEnabled": "启用规则",
+      "isRepeatable": "可重复触发",
+      "maxExecutions": "最大执行次数",
+      "maxExecutionsPlaceholder": "留空表示无限制",
+      "cooldownSeconds": "冷却时间（秒）",
+      "cooldownSecondsPlaceholder": "留空表示无冷却",
+      "startTime": "开始时间",
+      "endTime": "结束时间",
+      "cancel": "取消",
+      "submit": "提交",
+      "submitting": "提交中...",
+      "triggerConditions": "触发条件配置",
+      "actionParams": "动作参数配置",
+      "noTriggerConfig": "此触发器类型无需额外配置",
+      "featureNotImplemented": "此功能暂未实现",
       "basicInfo": {
         "title": "基本信息",
         "name": "规则名称",
@@ -1663,6 +1685,59 @@
       "next": "下一页"
     },
     "loading": "加载中...",
-    "empty": "暂无数据"
+    "empty": "暂无数据",
+    "triggerConfig": {
+      "cron": {
+        "cronExpression": "Cron 表达式",
+        "cronExpressionHint": "格式：秒 分 时 日 月 周，例：0 0 * * * 代表每天零点",
+        "timezone": "时区"
+      },
+      "postCreate": {
+        "categories": "指定分类",
+        "categoriesHint": "不选择则适用于所有分类",
+        "minContentLength": "最小内容长度",
+        "minContentLengthHint": "内容字符数需要达到此数值才触发"
+      },
+      "checkin": {
+        "consecutiveDays": "连续签到天数",
+        "consecutiveDaysHint": "不填写则为每次签到都触发"
+      },
+      "donation": {
+        "minAmount": "最小捐赠金额",
+        "minAmountHint": "捐赠金额需达到此数值才触发",
+        "currency": "货币类型",
+        "sources": "捐赠来源",
+        "sourcesHint": "不选择则适用于所有来源",
+        "sourceOptions": {
+          "KOFI": "Ko-fi",
+          "PATREON": "Patreon",
+          "PAYPAL": "PayPal",
+          "ALIPAY": "支付宝",
+          "WECHAT_PAY": "微信支付",
+          "BANK_TRANSFER": "银行转账",
+          "CRYPTO": "加密货币",
+          "OTHER": "其他"
+        }
+      }
+    },
+    "actionConfig": {
+      "creditChange": {
+        "amount": "积分数量",
+        "amountHint": "正数表示增加，负数表示扣除",
+        "description": "变动说明",
+        "descriptionPlaceholder": "请输入积分变动说明"
+      },
+      "badgeGrant": {
+        "badge": "选择徽章",
+        "badgePlaceholder": "请选择要授予的徽章",
+        "autoGrant": "自动授予（跳过审核）"
+      },
+      "badgeRevoke": {
+        "badge": "选择徽章",
+        "badgePlaceholder": "请选择要撤销的徽章",
+        "reason": "撤销原因",
+        "reasonPlaceholder": "请输入撤销原因（可选）"
+      }
+    }
   }
 }

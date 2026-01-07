@@ -1432,6 +1432,28 @@
     "dialog": {
       "createTitle": "Create Rule",
       "editTitle": "Edit Rule",
+      "name": "Rule Name",
+      "namePlaceholder": "Enter rule name",
+      "description": "Description",
+      "descriptionPlaceholder": "Enter rule description",
+      "triggerType": "Trigger Type",
+      "actionType": "Action Type",
+      "priority": "Priority",
+      "isEnabled": "Enable Rule",
+      "isRepeatable": "Repeatable Trigger",
+      "maxExecutions": "Max Executions",
+      "maxExecutionsPlaceholder": "Leave empty for unlimited",
+      "cooldownSeconds": "Cooldown (Seconds)",
+      "cooldownSecondsPlaceholder": "Leave empty for no cooldown",
+      "startTime": "Start Time",
+      "endTime": "End Time",
+      "cancel": "Cancel",
+      "submit": "Submit",
+      "submitting": "Submitting...",
+      "triggerConditions": "Trigger Conditions",
+      "actionParams": "Action Parameters",
+      "noTriggerConfig": "This trigger type requires no additional configuration",
+      "featureNotImplemented": "This feature is not yet implemented",
       "basicInfo": {
         "title": "Basic Information",
         "name": "Rule Name",
@@ -1521,6 +1543,59 @@
       "next": "Next"
     },
     "loading": "Loading...",
-    "empty": "No data"
+    "empty": "No data",
+    "triggerConfig": {
+      "cron": {
+        "cronExpression": "Cron Expression",
+        "cronExpressionHint": "Format: second minute hour day month week, e.g., 0 0 * * * means every day at midnight",
+        "timezone": "Timezone"
+      },
+      "postCreate": {
+        "categories": "Specify Categories",
+        "categoriesHint": "If not selected, applies to all categories",
+        "minContentLength": "Min Content Length",
+        "minContentLengthHint": "Content character count must reach this value to trigger"
+      },
+      "checkin": {
+        "consecutiveDays": "Consecutive Check-in Days",
+        "consecutiveDaysHint": "If not filled, triggers on every check-in"
+      },
+      "donation": {
+        "minAmount": "Min Donation Amount",
+        "minAmountHint": "Donation amount must reach this value to trigger",
+        "currency": "Currency",
+        "sources": "Donation Sources",
+        "sourcesHint": "If not selected, applies to all sources",
+        "sourceOptions": {
+          "KOFI": "Ko-fi",
+          "PATREON": "Patreon",
+          "PAYPAL": "PayPal",
+          "ALIPAY": "Alipay",
+          "WECHAT_PAY": "WeChat Pay",
+          "BANK_TRANSFER": "Bank Transfer",
+          "CRYPTO": "Cryptocurrency",
+          "OTHER": "Other"
+        }
+      }
+    },
+    "actionConfig": {
+      "creditChange": {
+        "amount": "Credit Amount",
+        "amountHint": "Positive number to add, negative to deduct",
+        "description": "Description",
+        "descriptionPlaceholder": "Enter credit change description"
+      },
+      "badgeGrant": {
+        "badge": "Select Badge",
+        "badgePlaceholder": "Please select a badge to grant",
+        "autoGrant": "Auto Grant (Skip Review)"
+      },
+      "badgeRevoke": {
+        "badge": "Select Badge",
+        "badgePlaceholder": "Please select a badge to revoke",
+        "reason": "Revoke Reason",
+        "reasonPlaceholder": "Enter revoke reason (optional)"
+      }
+    }
   }
 }
