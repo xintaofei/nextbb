@@ -1,0 +1,23 @@
+/**
+ * 自动化规则系统 - 类型定义
+ */
+
+// 规则触发器类型枚举
+export enum RuleTriggerType {
+  CRON = "CRON",
+  POST_CREATE = "POST_CREATE",
+  POST_REPLY = "POST_REPLY",
+  CHECKIN = "CHECKIN",
+  DONATION = "DONATION",
+  POST_LIKE = "POST_LIKE",
+  USER_REGISTER = "USER_REGISTER",
+  USER_LOGIN = "USER_LOGIN",
+}
+
+// 规则动作类型枚举
+export enum RuleActionType {
+  CREDIT_CHANGE = "CREDIT_CHANGE",
+  BADGE_GRANT = "BADGE_GRANT",
+  BADGE_REVOKE = "BADGE_REVOKE",
+  USER_GROUP_CHANGE = "USER_GROUP_CHANGE",
+}
