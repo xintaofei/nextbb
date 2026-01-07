@@ -580,3 +580,126 @@ model donations {
   @@index([status, source], map: "donations_status_source_index")
   @@map("donations")
 }
+
+// ==================== 自动化规则系统 ====================
+
+// 触发器类型枚举
+enum RuleTriggerType {
+  CRON         // 定时任务
+  POST_CREATE  // 发帖
+  POST_REPLY   // 回帖
+  CHECKIN      // 签到
+  DONATION     // 捐赠
+  POST_LIKE    // 点赞
+  USER_REGISTER // 注册
+  USER_LOGIN   // 登录
+}
+
+// 执行动作类型枚举
+enum RuleActionType {
+  CREDIT_CHANGE   // 积分变动
+  BADGE_GRANT     // 授予徽章
+  BADGE_REVOKE    // 撤销徽章
+  USER_GROUP_CHANGE // 用户组变更（预留）
+}
+
+// 自动化规则表
+model automation_rules {
+  id          BigInt           @id @db.BigInt
+
+  // 规则基本信息
+  name        String           @db.VarChar(128)  // 规则名称
+  description String?          @db.VarChar(512)  // 规则描述
+
+  // 触发器配置
+  trigger_type RuleTriggerType                   // 触发器类型
+  trigger_conditions Json?                        // 触发条件（JSON格式存储动态配置）
+  // 示例:
+  // CRON: {"cron": "0 0 * * *", "timezone": "Asia/Shanghai"}
+  // POST_CREATE: {"category_ids": [1,2,3], "min_content_length": 100}
+  // POST_REPLY: {"topic_type": "BOUNTY", "is_first_reply": true}
+  // CHECKIN: {"consecutive_days": 7}
+  // DONATION: {"min_amount": 100, "currency": "CNY", "sources": ["ALIPAY", "WECHAT_PAY"]}
+  // POST_LIKE: {"received_count": 10}
+  // USER_REGISTER: {"oauth_provider": "github"}
+  // USER_LOGIN: {"consecutive_days": 30}
+
+  // 执行动作配置
+  action_type RuleActionType                     // 动作类型
+  action_params Json                             // 动作参数（JSON格式）
+  // 示例:
+  // CREDIT_CHANGE: {"amount": 10, "description": "每日签到奖励"}
+  // BADGE_GRANT: {"badge_id": 5, "auto_grant": true}
+  // BADGE_REVOKE: {"badge_id": 3, "reason": "条件不满足"}
+  // USER_GROUP_CHANGE: {"group_id": 2, "expire_days": 30}
+
+  // 规则控制
+  priority    Int              @default(0)       // 优先级（数字越大优先级越高）
+  is_enabled  Boolean          @default(true)    // 是否启用
+  is_repeatable Boolean        @default(true)    // 是否可重复触发
+  max_executions Int?                            // 最大执行次数（null表示无限制）
+  cooldown_seconds Int?                          // 冷却时间（秒）
+
+  // 时间限制
+  start_time  DateTime?                          // 规则生效开始时间
+  end_time    DateTime?                          // 规则生效结束时间
+
+  // 审计字段
+  created_by  BigInt?          @db.BigInt        // 创建人（管理员ID）
+  updated_by  BigInt?          @db.BigInt        // 最后更新人
+  is_deleted  Boolean          @default(false)
+  created_at  DateTime         @default(now())
+  updated_at  DateTime         @updatedAt
+
+  // 关联关系
+  execution_logs automation_rule_logs[]
+
+  @@index([trigger_type], map: "automation_rules_trigger_index")
+  @@index([action_type], map: "automation_rules_action_index")
+  @@index([is_enabled, is_deleted], map: "automation_rules_status_index")
+  @@index([trigger_type, is_enabled], map: "automation_rules_trigger_enabled_index")
+  @@index([priority], map: "automation_rules_priority_index")
+  @@index([start_time, end_time], map: "automation_rules_time_range_index")
+  @@map("automation_rules")
+}
+
+// 规则执行日志表
+model automation_rule_logs {
+  id          BigInt   @id @db.BigInt
+
+  // 关联规则
+  rule_id     BigInt   @db.BigInt
+
+  // 触发信息
+  triggered_by BigInt?  @db.BigInt  // 触发用户ID（可为空，如定时任务）
+  trigger_context Json?              // 触发上下文数据
+  // 示例:
+  // {"topic_id": 123, "post_id": 456, "category_id": 1}
+  // {"donation_id": 789, "amount": 500}
+  // {"checkin_id": 111, "consecutive_days": 7}
+
+  // 执行结果
+  execution_status String @db.VarChar(32) // SUCCESS, FAILED, SKIPPED
+  execution_result Json?              // 执行结果详情
+  // 示例:
+  // {"credit_changed": 10, "new_balance": 1000}
+  // {"badge_granted": {"badge_id": 5, "badge_name": "活跃用户"}}
+  // {"error": "用户积分不足"}
+
+  error_message String? @db.Text      // 错误信息（如果失败）
+
+  // 执行时间
+  executed_at DateTime @default(now())
+  created_at  DateTime @default(now())
+
+  // 关联关系
+  rule automation_rules @relation(fields: [rule_id], references: [id])
+
+  @@index([rule_id], map: "automation_logs_rule_index")
+  @@index([triggered_by], map: "automation_logs_user_index")
+  @@index([execution_status], map: "automation_logs_status_index")
+  @@index([executed_at], map: "automation_logs_executed_index")
+  @@index([rule_id, execution_status], map: "automation_logs_rule_status_index")
+  @@index([triggered_by, executed_at], map: "automation_logs_user_time_index")
+  @@map("automation_rule_logs")
+}
