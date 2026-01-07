@@ -1,11 +1,11 @@
 /**
  * 自动化规则系统 - 事件系统
  *
- * 使用 EventEmitter 模式实现业务逻辑与规则引擎的解耦
+ * 使用 Redis Pub/Sub 实现跨进程的事件通信
  * 支持类型安全的事件监听和触发
  */
 
-import { EventEmitter } from "events"
+import { RedisEventBus } from "./redis-event-bus"
 
 // ==================== 事件类型定义 ====================
 
@@ -101,85 +101,6 @@ export interface AutomationEventMap extends Record<string, unknown> {
   "user:login": UserLoginEventData
 }
 
-// ==================== 类型安全的 EventEmitter ====================
-
-/**
- * 类型安全的事件发射器
- *
- * 使用方式:
- * ```ts
- * automationEvents.emit("post:create", { postId, userId, ... })
- * automationEvents.on("post:create", async (data) => { ... })
- * ```
- */
-export class TypedEventEmitter<T extends Record<string, unknown>> {
-  private emitter = new EventEmitter()
-
-  constructor() {
-    // 设置最大监听器数量,避免内存泄漏警告
-    this.emitter.setMaxListeners(100)
-  }
-
-  on<K extends keyof T>(
-    event: K,
-    listener: (data: T[K]) => void | Promise<void>
-  ): void {
-    this.emitter.on(event as string, listener)
-  }
-
-  once<K extends keyof T>(
-    event: K,
-    listener: (data: T[K]) => void | Promise<void>
-  ): void {
-    this.emitter.once(event as string, listener)
-  }
-
-  off<K extends keyof T>(
-    event: K,
-    listener: (data: T[K]) => void | Promise<void>
-  ): void {
-    this.emitter.off(event as string, listener)
-  }
-
-  emit<K extends keyof T>(event: K, data: T[K]): boolean {
-    return this.emitter.emit(event as string, data)
-  }
-
-  removeAllListeners<K extends keyof T>(event?: K): void {
-    if (event) {
-      this.emitter.removeAllListeners(event as string)
-    } else {
-      this.emitter.removeAllListeners()
-    }
-  }
-
-  listenerCount<K extends keyof T>(event: K): number {
-    return this.emitter.listenerCount(event as string)
-  }
-}
-
-// ==================== 单例 EventEmitter ====================
-
-/**
- * 全局自动化事件发射器单例
- *
- * 在业务代码中触发事件:
- * ```ts
- * import { automationEvents } from "@/lib/automation/events"
- *
- * // 捐赠确认后触发事件
- * automationEvents.emit("donation:confirmed", {
- *   donationId,
- *   userId,
- *   amount: 150,
- *   currency: "CNY",
- *   source: "ALIPAY",
- *   ...
- * })
- * ```
- */
-export const automationEvents = new TypedEventEmitter<AutomationEventMap>()
-
 // ==================== 事件触发辅助函数 ====================
 
 /**
@@ -188,7 +109,7 @@ export const automationEvents = new TypedEventEmitter<AutomationEventMap>()
 export async function emitPostCreateEvent(
   data: PostCreateEventData
 ): Promise<void> {
-  automationEvents.emit("post:create", data)
+  await RedisEventBus.emit("post:create", data)
 }
 
 /**
@@ -197,14 +118,14 @@ export async function emitPostCreateEvent(
 export async function emitPostReplyEvent(
   data: PostReplyEventData
 ): Promise<void> {
-  automationEvents.emit("post:reply", data)
+  await RedisEventBus.emit("post:reply", data)
 }
 
 /**
  * 触发签到事件
  */
 export async function emitCheckinEvent(data: CheckinEventData): Promise<void> {
-  automationEvents.emit("user:checkin", data)
+  await RedisEventBus.emit("user:checkin", data)
 }
 
 /**
@@ -213,7 +134,7 @@ export async function emitCheckinEvent(data: CheckinEventData): Promise<void> {
 export async function emitDonationEvent(
   data: DonationEventData
 ): Promise<void> {
-  automationEvents.emit("donation:confirmed", data)
+  await RedisEventBus.emit("donation:confirmed", data)
 }
 
 /**
@@ -222,7 +143,7 @@ export async function emitDonationEvent(
 export async function emitPostLikeEvent(
   data: PostLikeEventData
 ): Promise<void> {
-  automationEvents.emit("post:like", data)
+  await RedisEventBus.emit("post:like", data)
 }
 
 /**
@@ -231,7 +152,7 @@ export async function emitPostLikeEvent(
 export async function emitUserRegisterEvent(
   data: UserRegisterEventData
 ): Promise<void> {
-  automationEvents.emit("user:register", data)
+  await RedisEventBus.emit("user:register", data)
 }
 
 /**
@@ -240,5 +161,5 @@ export async function emitUserRegisterEvent(
 export async function emitUserLoginEvent(
   data: UserLoginEventData
 ): Promise<void> {
-  automationEvents.emit("user:login", data)
+  await RedisEventBus.emit("user:login", data)
 }

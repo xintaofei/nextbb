@@ -5,7 +5,12 @@
  */
 
 import { NextResponse } from "next/server"
-import { automationEvents } from "@/lib/automation"
+import {
+  emitDonationEvent,
+  emitCheckinEvent,
+  emitPostCreateEvent,
+  emitPostLikeEvent,
+} from "@/lib/automation/events"
 
 /**
  * 示例: 触发捐赠事件
@@ -20,7 +25,7 @@ export async function POST(request: Request) {
     switch (type) {
       case "donation":
         // 模拟捐赠事件
-        automationEvents.emit("donation:confirmed", {
+        await emitDonationEvent({
           donationId: BigInt(Date.now()),
           userId: BigInt(1),
           amount: 150, // 大于100,满足规则条件
@@ -32,7 +37,7 @@ export async function POST(request: Request) {
 
       case "checkin":
         // 模拟签到事件
-        automationEvents.emit("user:checkin", {
+        await emitCheckinEvent({
           checkinId: BigInt(Date.now()),
           userId: BigInt(1),
           checkinDate: new Date(),
@@ -43,7 +48,7 @@ export async function POST(request: Request) {
 
       case "post":
         // 模拟发帖事件
-        automationEvents.emit("post:create", {
+        await emitPostCreateEvent({
           postId: BigInt(Date.now()),
           topicId: BigInt(1),
           userId: BigInt(1),
@@ -55,7 +60,7 @@ export async function POST(request: Request) {
 
       case "like":
         // 模拟点赞事件
-        automationEvents.emit("post:like", {
+        await emitPostLikeEvent({
           postId: BigInt(1),
           userId: BigInt(2), // 点赞者
           postAuthorId: BigInt(1), // 帖子作者

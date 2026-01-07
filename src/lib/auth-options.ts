@@ -5,6 +5,7 @@ import { prisma } from "@/lib/prisma"
 import { generateId } from "@/lib/id"
 import { LinuxDoProvider } from "@/lib/providers/linuxdo"
 import { uploadAvatarFromUrl } from "@/lib/blob"
+import { emitUserRegisterEvent } from "@/lib/automation/events"
 
 function getEnv(name: string): string {
   const v = process.env[name]
@@ -142,7 +143,7 @@ export const authOptions: NextAuthOptions = {
           avatar = avatarSrc
         }
       }
-      await prisma.users.create({
+      const newUser = await prisma.users.create({
         data: {
           id,
           email,
@@ -153,6 +154,14 @@ export const authOptions: NextAuthOptions = {
           is_deleted: false,
         },
       })
+
+      // 触发用户注册事件
+      await emitUserRegisterEvent({
+        userId: newUser.id,
+        email: newUser.email,
+        oauthProvider: provider,
+      })
+
       return true
     },
     async jwt({ token, user }) {

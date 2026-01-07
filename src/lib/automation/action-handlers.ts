@@ -159,8 +159,33 @@ export class BadgeGrantHandler implements IActionHandler<BadgeGrantParams> {
     context: ActionContext
   ): Promise<ActionResult> {
     try {
-      const { badge_id, auto_grant = true } = params
+      // 从 JSON 字段解析参数，需要处理类型转换
+      const rawParams = params as unknown as Record<string, unknown>
+      const badgeIdRaw = rawParams.badge_id
+      const auto_grant = (rawParams.auto_grant as boolean) ?? true
+
+      // 将 badge_id 转换为 bigint
+      let badge_id: bigint
+      if (typeof badgeIdRaw === "string") {
+        badge_id = BigInt(badgeIdRaw)
+      } else if (typeof badgeIdRaw === "number") {
+        badge_id = BigInt(badgeIdRaw)
+      } else if (typeof badgeIdRaw === "bigint") {
+        badge_id = badgeIdRaw
+      } else {
+        return {
+          success: false,
+          error: `无效的徽章ID类型: ${typeof badgeIdRaw}`,
+        }
+      }
+
       const { userId, ruleId } = context
+
+      console.log(`[BadgeGrantHandler] 开始授予徽章:`, {
+        userId: userId.toString(),
+        badge_id: badge_id.toString(),
+        ruleId: ruleId.toString(),
+      })
 
       // 检查徽章是否存在
       const badge = await prisma.badges.findUnique({
@@ -174,9 +199,11 @@ export class BadgeGrantHandler implements IActionHandler<BadgeGrantParams> {
       })
 
       if (!badge || badge.is_deleted || !badge.is_enabled) {
+        const error = `徽章不存在或已禁用: ${badge_id}`
+        console.error(`[BadgeGrantHandler] ${error}`)
         return {
           success: false,
-          error: `徽章不存在或已禁用: ${badge_id}`,
+          error,
         }
       }
 
@@ -252,7 +279,26 @@ export class BadgeRevokeHandler implements IActionHandler<BadgeRevokeParams> {
     context: ActionContext
   ): Promise<ActionResult> {
     try {
-      const { badge_id, reason } = params
+      // 从 JSON 字段解析参数，需要处理类型转换
+      const rawParams = params as unknown as Record<string, unknown>
+      const badgeIdRaw = rawParams.badge_id
+      const reason = rawParams.reason as string | undefined
+
+      // 将 badge_id 转换为 bigint
+      let badge_id: bigint
+      if (typeof badgeIdRaw === "string") {
+        badge_id = BigInt(badgeIdRaw)
+      } else if (typeof badgeIdRaw === "number") {
+        badge_id = BigInt(badgeIdRaw)
+      } else if (typeof badgeIdRaw === "bigint") {
+        badge_id = badgeIdRaw
+      } else {
+        return {
+          success: false,
+          error: `无效的徽章ID类型: ${typeof badgeIdRaw}`,
+        }
+      }
+
       const { userId } = context
 
       // 检查用户是否拥有该徽章
