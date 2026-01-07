@@ -1500,5 +1500,169 @@
     "people": "人次",
     "donatedAt": "捐赠于",
     "fullLeaderboard": "完整排行榜"
+  },
+  "AdminAutomationRules": {
+    "title": "自动化规则",
+    "description": "管理系统自动化规则配置",
+    "createButton": "创建规则",
+    "stats": {
+      "total": "总规则数",
+      "enabled": "启用规则",
+      "disabled": "禁用规则",
+      "deleted": "已删除规则",
+      "triggerDistribution": "触发器分布",
+      "actionDistribution": "动作分布"
+    },
+    "filter": {
+      "title": "筛选条件",
+      "searchPlaceholder": "搜索规则名称或描述",
+      "triggerType": "触发器类型",
+      "actionType": "动作类型",
+      "status": "状态",
+      "sortBy": "排序方式",
+      "triggerTypeOptions": {
+        "all": "全部触发器",
+        "CRON": "定时任务",
+        "POST_CREATE": "发帖",
+        "POST_REPLY": "回帖",
+        "CHECKIN": "签到",
+        "DONATION": "捐赠",
+        "POST_LIKE": "点赞",
+        "USER_REGISTER": "注册",
+        "USER_LOGIN": "登录"
+      },
+      "actionTypeOptions": {
+        "all": "全部动作",
+        "CREDIT_CHANGE": "积分变动",
+        "BADGE_GRANT": "授予徽章",
+        "BADGE_REVOKE": "撤销徽章",
+        "USER_GROUP_CHANGE": "用户组变更"
+      },
+      "statusOptions": {
+        "all": "全部状态",
+        "enabled": "启用",
+        "disabled": "禁用",
+        "deleted": "已删除"
+      },
+      "sortByOptions": {
+        "updatedAt": "更新时间",
+        "createdAt": "创建时间",
+        "priority": "优先级"
+      }
+    },
+    "card": {
+      "priority": "优先级",
+      "enabled": "已启用",
+      "disabled": "已禁用",
+      "deleted": "已删除",
+      "repeatable": "可重复",
+      "nonRepeatable": "不可重复",
+      "maxExecutions": "最大执行次数",
+      "cooldown": "冷却时间",
+      "noLimit": "无限制",
+      "timeRange": "生效时间",
+      "createdAt": "创建时间",
+      "updatedAt": "更新时间",
+      "actions": {
+        "viewLogs": "查看日志",
+        "edit": "编辑",
+        "enable": "启用",
+        "disable": "禁用",
+        "delete": "删除"
+      }
+    },
+    "dialog": {
+      "createTitle": "创建规则",
+      "editTitle": "编辑规则",
+      "basicInfo": {
+        "title": "基本信息",
+        "name": "规则名称",
+        "namePlaceholder": "请输入规则名称",
+        "description": "规则描述",
+        "descriptionPlaceholder": "请输入规则描述",
+        "priority": "优先级",
+        "priorityHelp": "数字越大优先级越高"
+      },
+      "trigger": {
+        "title": "触发器配置",
+        "type": "触发器类型",
+        "conditions": "触发条件"
+      },
+      "action": {
+        "title": "动作配置",
+        "type": "动作类型",
+        "params": "动作参数"
+      },
+      "control": {
+        "title": "执行控制",
+        "isEnabled": "启用规则",
+        "isRepeatable": "可重复触发",
+        "maxExecutions": "最大执行次数",
+        "maxExecutionsPlaceholder": "留空表示无限制",
+        "cooldownSeconds": "冷却时间（秒）",
+        "cooldownPlaceholder": "留空表示无冷却"
+      },
+      "timeRange": {
+        "title": "生效时间范围",
+        "startTime": "开始时间",
+        "endTime": "结束时间"
+      },
+      "actions": {
+        "cancel": "取消",
+        "submit": "提交"
+      }
+    },
+    "logsDialog": {
+      "title": "规则执行日志",
+      "filter": {
+        "status": "执行状态",
+        "timeRange": "时间范围",
+        "statusOptions": {
+          "all": "全部状态",
+          "SUCCESS": "成功",
+          "FAILED": "失败",
+          "SKIPPED": "跳过"
+        },
+        "timeRangeOptions": {
+          "last7days": "最近7天",
+          "last30days": "最近30天",
+          "custom": "自定义"
+        }
+      },
+      "log": {
+        "executedAt": "执行时间",
+        "triggeredBy": "触发用户",
+        "status": "状态",
+        "context": "触发上下文",
+        "result": "执行结果",
+        "error": "错误信息"
+      }
+    },
+    "deleteConfirm": {
+      "title": "确认删除",
+      "description": "确定要删除此规则吗？此操作不可恢复。",
+      "cancel": "取消",
+      "confirm": "确认删除"
+    },
+    "message": {
+      "createSuccess": "创建成功",
+      "createError": "创建失败",
+      "updateSuccess": "更新成功",
+      "updateError": "更新失败",
+      "deleteSuccess": "删除成功",
+      "deleteError": "删除失败",
+      "enableSuccess": "启用成功",
+      "enableError": "启用失败",
+      "disableSuccess": "禁用成功",
+      "disableError": "禁用失败"
+    },
+    "pagination": {
+      "total": "共 {count} 条记录",
+      "page": "第 {page} 页",
+      "prev": "上一页",
+      "next": "下一页"
+    },
+    "loading": "加载中...",
+    "empty": "暂无数据"
   }
 }

@@ -1358,5 +1358,169 @@
     "people": "donations",
     "donatedAt": "Donated at",
     "fullLeaderboard": "Full Leaderboard"
+  },
+  "AdminAutomationRules": {
+    "title": "Automation Rules",
+    "description": "Manage system automation rules configuration",
+    "createButton": "Create Rule",
+    "stats": {
+      "total": "Total Rules",
+      "enabled": "Enabled Rules",
+      "disabled": "Disabled Rules",
+      "deleted": "Deleted Rules",
+      "triggerDistribution": "Trigger Distribution",
+      "actionDistribution": "Action Distribution"
+    },
+    "filter": {
+      "title": "Filters",
+      "searchPlaceholder": "Search rule name or description",
+      "triggerType": "Trigger Type",
+      "actionType": "Action Type",
+      "status": "Status",
+      "sortBy": "Sort By",
+      "triggerTypeOptions": {
+        "all": "All Triggers",
+        "CRON": "Scheduled Task",
+        "POST_CREATE": "Post Create",
+        "POST_REPLY": "Post Reply",
+        "CHECKIN": "Check-in",
+        "DONATION": "Donation",
+        "POST_LIKE": "Post Like",
+        "USER_REGISTER": "User Register",
+        "USER_LOGIN": "User Login"
+      },
+      "actionTypeOptions": {
+        "all": "All Actions",
+        "CREDIT_CHANGE": "Credit Change",
+        "BADGE_GRANT": "Grant Badge",
+        "BADGE_REVOKE": "Revoke Badge",
+        "USER_GROUP_CHANGE": "User Group Change"
+      },
+      "statusOptions": {
+        "all": "All Status",
+        "enabled": "Enabled",
+        "disabled": "Disabled",
+        "deleted": "Deleted"
+      },
+      "sortByOptions": {
+        "updatedAt": "Updated Time",
+        "createdAt": "Created Time",
+        "priority": "Priority"
+      }
+    },
+    "card": {
+      "priority": "Priority",
+      "enabled": "Enabled",
+      "disabled": "Disabled",
+      "deleted": "Deleted",
+      "repeatable": "Repeatable",
+      "nonRepeatable": "Non-Repeatable",
+      "maxExecutions": "Max Executions",
+      "cooldown": "Cooldown",
+      "noLimit": "No Limit",
+      "timeRange": "Time Range",
+      "createdAt": "Created At",
+      "updatedAt": "Updated At",
+      "actions": {
+        "viewLogs": "View Logs",
+        "edit": "Edit",
+        "enable": "Enable",
+        "disable": "Disable",
+        "delete": "Delete"
+      }
+    },
+    "dialog": {
+      "createTitle": "Create Rule",
+      "editTitle": "Edit Rule",
+      "basicInfo": {
+        "title": "Basic Information",
+        "name": "Rule Name",
+        "namePlaceholder": "Enter rule name",
+        "description": "Description",
+        "descriptionPlaceholder": "Enter rule description",
+        "priority": "Priority",
+        "priorityHelp": "Higher number means higher priority"
+      },
+      "trigger": {
+        "title": "Trigger Configuration",
+        "type": "Trigger Type",
+        "conditions": "Trigger Conditions"
+      },
+      "action": {
+        "title": "Action Configuration",
+        "type": "Action Type",
+        "params": "Action Parameters"
+      },
+      "control": {
+        "title": "Execution Control",
+        "isEnabled": "Enable Rule",
+        "isRepeatable": "Repeatable Trigger",
+        "maxExecutions": "Max Executions",
+        "maxExecutionsPlaceholder": "Leave empty for unlimited",
+        "cooldownSeconds": "Cooldown (Seconds)",
+        "cooldownPlaceholder": "Leave empty for no cooldown"
+      },
+      "timeRange": {
+        "title": "Effective Time Range",
+        "startTime": "Start Time",
+        "endTime": "End Time"
+      },
+      "actions": {
+        "cancel": "Cancel",
+        "submit": "Submit"
+      }
+    },
+    "logsDialog": {
+      "title": "Rule Execution Logs",
+      "filter": {
+        "status": "Execution Status",
+        "timeRange": "Time Range",
+        "statusOptions": {
+          "all": "All Status",
+          "SUCCESS": "Success",
+          "FAILED": "Failed",
+          "SKIPPED": "Skipped"
+        },
+        "timeRangeOptions": {
+          "last7days": "Last 7 Days",
+          "last30days": "Last 30 Days",
+          "custom": "Custom"
+        }
+      },
+      "log": {
+        "executedAt": "Executed At",
+        "triggeredBy": "Triggered By",
+        "status": "Status",
+        "context": "Trigger Context",
+        "result": "Execution Result",
+        "error": "Error Message"
+      }
+    },
+    "deleteConfirm": {
+      "title": "Confirm Delete",
+      "description": "Are you sure you want to delete this rule? This action cannot be undone.",
+      "cancel": "Cancel",
+      "confirm": "Confirm Delete"
+    },
+    "message": {
+      "createSuccess": "Created successfully",
+      "createError": "Failed to create",
+      "updateSuccess": "Updated successfully",
+      "updateError": "Failed to update",
+      "deleteSuccess": "Deleted successfully",
+      "deleteError": "Failed to delete",
+      "enableSuccess": "Enabled successfully",
+      "enableError": "Failed to enable",
+      "disableSuccess": "Disabled successfully",
+      "disableError": "Failed to disable"
+    },
+    "pagination": {
+      "total": "{count} records in total",
+      "page": "Page {page}",
+      "prev": "Previous",
+      "next": "Next"
+    },
+    "loading": "Loading...",
+    "empty": "No data"
   }
 }
