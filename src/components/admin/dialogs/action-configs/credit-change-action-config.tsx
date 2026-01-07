@@ -20,7 +20,7 @@ export function CreditChangeActionConfig({
   const description = (value.description as string) || ""
 
   return (
-    <div className="space-y-4 rounded-lg border p-4 bg-blue-50/50">
+    <div className="space-y-4 rounded-lg border p-4">
       <div className="space-y-2">
         <Label htmlFor="amount">{t("amount")}</Label>
         <Input

@@ -10,6 +10,7 @@ import {
   FileText,
   Award,
   Settings,
+  Workflow,
 } from "lucide-react"
 import { useState } from "react"
 import { useRouter } from "next/navigation"
@@ -28,6 +29,11 @@ export function DashboardNav() {
     { label: t("categories"), icon: Folder, path: "/admin/categories" },
     { label: t("tags"), icon: Tag, path: "/admin/tags" },
     { label: t("badges"), icon: Award, path: "/admin/badges" },
+    {
+      label: t("automationRules"),
+      icon: Workflow,
+      path: "/admin/automation-rules",
+    },
     { label: t("settings"), icon: Settings, path: "/admin/settings" },
   ]
 

@@ -561,6 +561,7 @@
       "categories": "Categories",
       "tags": "Tags",
       "badges": "Badges",
+      "automationRules": "Automation Rules",
       "settings": "Settings"
     },
     "settings": {
@@ -1445,6 +1446,8 @@
       "maxExecutionsPlaceholder": "Leave empty for unlimited",
       "cooldownSeconds": "Cooldown (Seconds)",
       "cooldownSecondsPlaceholder": "Leave empty for no cooldown",
+      "timeRangeTitle": "Effective Time Range",
+      "timeRangeHint": "If not selected, the rule will be effective at all times",
       "startTime": "Start Time",
       "endTime": "End Time",
       "cancel": "Cancel",

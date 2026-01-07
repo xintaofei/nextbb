@@ -83,7 +83,7 @@ export function AutomationRuleDialog({
     actionParams: {},
     priority: 0,
     isEnabled: true,
-    isRepeatable: true,
+    isRepeatable: false,
     maxExecutions: null,
     cooldownSeconds: null,
     startTime: null,
@@ -119,7 +119,7 @@ export function AutomationRuleDialog({
         actionParams: {},
         priority: 0,
         isEnabled: true,
-        isRepeatable: true,
+        isRepeatable: false,
         maxExecutions: null,
         cooldownSeconds: null,
         startTime: null,
@@ -180,83 +180,49 @@ export function AutomationRuleDialog({
               />
             </div>
 
-            {/* 触发器类型和动作类型 */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="triggerType">{t("dialog.triggerType")}</Label>
-                <Select
-                  value={formData.triggerType}
-                  onValueChange={(value) => {
-                    setFormData({
-                      ...formData,
-                      triggerType: value,
-                      triggerConditions: {},
-                    })
-                  }}
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="CRON">
-                      {t("filter.triggerTypeOptions.CRON")}
-                    </SelectItem>
-                    <SelectItem value="POST_CREATE">
-                      {t("filter.triggerTypeOptions.POST_CREATE")}
-                    </SelectItem>
-                    <SelectItem value="POST_REPLY">
-                      {t("filter.triggerTypeOptions.POST_REPLY")}
-                    </SelectItem>
-                    <SelectItem value="CHECKIN">
-                      {t("filter.triggerTypeOptions.CHECKIN")}
-                    </SelectItem>
-                    <SelectItem value="DONATION">
-                      {t("filter.triggerTypeOptions.DONATION")}
-                    </SelectItem>
-                    <SelectItem value="POST_LIKE">
-                      {t("filter.triggerTypeOptions.POST_LIKE")}
-                    </SelectItem>
-                    <SelectItem value="USER_REGISTER">
-                      {t("filter.triggerTypeOptions.USER_REGISTER")}
-                    </SelectItem>
-                    <SelectItem value="USER_LOGIN">
-                      {t("filter.triggerTypeOptions.USER_LOGIN")}
-                    </SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="actionType">{t("dialog.actionType")}</Label>
-                <Select
-                  value={formData.actionType}
-                  onValueChange={(value) => {
-                    setFormData({
-                      ...formData,
-                      actionType: value,
-                      actionParams: {},
-                    })
-                  }}
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="CREDIT_CHANGE">
-                      {t("filter.actionTypeOptions.CREDIT_CHANGE")}
-                    </SelectItem>
-                    <SelectItem value="BADGE_GRANT">
-                      {t("filter.actionTypeOptions.BADGE_GRANT")}
-                    </SelectItem>
-                    <SelectItem value="BADGE_REVOKE">
-                      {t("filter.actionTypeOptions.BADGE_REVOKE")}
-                    </SelectItem>
-                    <SelectItem value="USER_GROUP_CHANGE">
-                      {t("filter.actionTypeOptions.USER_GROUP_CHANGE")}
-                    </SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
+            {/* 触发器类型 */}
+            <div className="space-y-2">
+              <Label htmlFor="triggerType">{t("dialog.triggerType")}</Label>
+              <Select
+                value={formData.triggerType}
+                onValueChange={(value) => {
+                  setFormData({
+                    ...formData,
+                    triggerType: value,
+                    triggerConditions: {},
+                  })
+                }}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="CRON">
+                    {t("filter.triggerTypeOptions.CRON")}
+                  </SelectItem>
+                  <SelectItem value="POST_CREATE">
+                    {t("filter.triggerTypeOptions.POST_CREATE")}
+                  </SelectItem>
+                  <SelectItem value="POST_REPLY">
+                    {t("filter.triggerTypeOptions.POST_REPLY")}
+                  </SelectItem>
+                  <SelectItem value="CHECKIN">
+                    {t("filter.triggerTypeOptions.CHECKIN")}
+                  </SelectItem>
+                  <SelectItem value="DONATION">
+                    {t("filter.triggerTypeOptions.DONATION")}
+                  </SelectItem>
+                  <SelectItem value="POST_LIKE">
+                    {t("filter.triggerTypeOptions.POST_LIKE")}
+                  </SelectItem>
+                  <SelectItem value="USER_REGISTER">
+                    {t("filter.triggerTypeOptions.USER_REGISTER")}
+                  </SelectItem>
+                  <SelectItem value="USER_LOGIN">
+                    {t("filter.triggerTypeOptions.USER_LOGIN")}
+                  </SelectItem>
+                </SelectContent>
+              </Select>
             </div>
 
             {/* 触发器配置 */}
@@ -302,6 +268,39 @@ export function AutomationRuleDialog({
                   {t("dialog.noTriggerConfig")}
                 </div>
               )}
+            </div>
+
+            {/* 执行动作类型 */}
+            <div className="space-y-2">
+              <Label htmlFor="actionType">{t("dialog.actionType")}</Label>
+              <Select
+                value={formData.actionType}
+                onValueChange={(value) => {
+                  setFormData({
+                    ...formData,
+                    actionType: value,
+                    actionParams: {},
+                  })
+                }}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="CREDIT_CHANGE">
+                    {t("filter.actionTypeOptions.CREDIT_CHANGE")}
+                  </SelectItem>
+                  <SelectItem value="BADGE_GRANT">
+                    {t("filter.actionTypeOptions.BADGE_GRANT")}
+                  </SelectItem>
+                  <SelectItem value="BADGE_REVOKE">
+                    {t("filter.actionTypeOptions.BADGE_REVOKE")}
+                  </SelectItem>
+                  <SelectItem value="USER_GROUP_CHANGE">
+                    {t("filter.actionTypeOptions.USER_GROUP_CHANGE")}
+                  </SelectItem>
+                </SelectContent>
+              </Select>
             </div>
 
             {/* 动作配置 */}
@@ -355,104 +354,99 @@ export function AutomationRuleDialog({
               />
             </div>
 
-            {/* 开关选项 */}
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <Label htmlFor="isEnabled">{t("dialog.isEnabled")}</Label>
-                <Switch
-                  id="isEnabled"
-                  checked={formData.isEnabled}
-                  onCheckedChange={(checked) =>
-                    setFormData({ ...formData, isEnabled: checked })
-                  }
-                />
-              </div>
-
-              <div className="flex items-center justify-between">
-                <Label htmlFor="isRepeatable">{t("dialog.isRepeatable")}</Label>
-                <Switch
-                  id="isRepeatable"
-                  checked={formData.isRepeatable}
-                  onCheckedChange={(checked) =>
-                    setFormData({ ...formData, isRepeatable: checked })
-                  }
-                />
-              </div>
+            {/* 可重复触发开关 */}
+            <div className="flex items-center justify-between">
+              <Label htmlFor="isRepeatable">{t("dialog.isRepeatable")}</Label>
+              <Switch
+                id="isRepeatable"
+                checked={formData.isRepeatable}
+                onCheckedChange={(checked) =>
+                  setFormData({ ...formData, isRepeatable: checked })
+                }
+              />
             </div>
 
-            {/* 最大执行次数和冷却时间 */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="maxExecutions">
-                  {t("dialog.maxExecutions")}
-                </Label>
-                <Input
-                  id="maxExecutions"
-                  type="number"
-                  value={formData.maxExecutions || ""}
-                  onChange={(e) =>
-                    setFormData({
-                      ...formData,
-                      maxExecutions: e.target.value
-                        ? parseInt(e.target.value)
-                        : null,
-                    })
-                  }
-                  placeholder={t("dialog.maxExecutionsPlaceholder")}
-                />
-              </div>
+            {/* 最大执行次数和冷却时间（仅可重复触发时显示） */}
+            {formData.isRepeatable && (
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="maxExecutions">
+                    {t("dialog.maxExecutions")}
+                  </Label>
+                  <Input
+                    id="maxExecutions"
+                    type="number"
+                    value={formData.maxExecutions || ""}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        maxExecutions: e.target.value
+                          ? parseInt(e.target.value)
+                          : null,
+                      })
+                    }
+                    placeholder={t("dialog.maxExecutionsPlaceholder")}
+                  />
+                </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="cooldownSeconds">
-                  {t("dialog.cooldownSeconds")}
-                </Label>
-                <Input
-                  id="cooldownSeconds"
-                  type="number"
-                  value={formData.cooldownSeconds || ""}
-                  onChange={(e) =>
-                    setFormData({
-                      ...formData,
-                      cooldownSeconds: e.target.value
-                        ? parseInt(e.target.value)
-                        : null,
-                    })
-                  }
-                  placeholder={t("dialog.cooldownSecondsPlaceholder")}
-                />
+                <div className="space-y-2">
+                  <Label htmlFor="cooldownSeconds">
+                    {t("dialog.cooldownSeconds")}
+                  </Label>
+                  <Input
+                    id="cooldownSeconds"
+                    type="number"
+                    value={formData.cooldownSeconds || ""}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        cooldownSeconds: e.target.value
+                          ? parseInt(e.target.value)
+                          : null,
+                      })
+                    }
+                    placeholder={t("dialog.cooldownSecondsPlaceholder")}
+                  />
+                </div>
               </div>
-            </div>
+            )}
 
             {/* 生效时间范围 */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="startTime">{t("dialog.startTime")}</Label>
-                <Input
-                  id="startTime"
-                  type="datetime-local"
-                  value={formData.startTime || ""}
-                  onChange={(e) =>
-                    setFormData({
-                      ...formData,
-                      startTime: e.target.value || null,
-                    })
-                  }
-                />
-              </div>
+            <div className="space-y-2">
+              <Label>{t("dialog.timeRangeTitle")}</Label>
+              <p className="text-xs text-muted-foreground">
+                {t("dialog.timeRangeHint")}
+              </p>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="startTime">{t("dialog.startTime")}</Label>
+                  <Input
+                    id="startTime"
+                    type="datetime-local"
+                    value={formData.startTime || ""}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        startTime: e.target.value || null,
+                      })
+                    }
+                  />
+                </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="endTime">{t("dialog.endTime")}</Label>
-                <Input
-                  id="endTime"
-                  type="datetime-local"
-                  value={formData.endTime || ""}
-                  onChange={(e) =>
-                    setFormData({
-                      ...formData,
-                      endTime: e.target.value || null,
-                    })
-                  }
-                />
+                <div className="space-y-2">
+                  <Label htmlFor="endTime">{t("dialog.endTime")}</Label>
+                  <Input
+                    id="endTime"
+                    type="datetime-local"
+                    value={formData.endTime || ""}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        endTime: e.target.value || null,
+                      })
+                    }
+                  />
+                </div>
               </div>
             </div>
           </div>

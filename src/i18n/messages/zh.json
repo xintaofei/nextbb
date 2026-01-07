@@ -561,6 +561,7 @@
       "categories": "分类",
       "tags": "标签",
       "badges": "徽章",
+      "automationRules": "自动化规则",
       "settings": "系统配置"
     },
     "settings": {
@@ -1587,6 +1588,8 @@
       "maxExecutionsPlaceholder": "留空表示无限制",
       "cooldownSeconds": "冷却时间（秒）",
       "cooldownSecondsPlaceholder": "留空表示无冷却",
+      "timeRangeTitle": "生效时间范围",
+      "timeRangeHint": "不选择则规则在所有时间段都生效",
       "startTime": "开始时间",
       "endTime": "结束时间",
       "cancel": "取消",

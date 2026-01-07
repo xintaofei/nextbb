@@ -36,7 +36,7 @@ export function BadgeGrantActionConfig({
   const autoGrant = (value.auto_grant as boolean) ?? true
 
   return (
-    <div className="space-y-4 rounded-lg border p-4 bg-green-50/50">
+    <div className="space-y-4 rounded-lg border p-4">
       <div className="space-y-2">
         <Label htmlFor="badgeId">{t("badge")}</Label>
         <Select
