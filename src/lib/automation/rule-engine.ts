@@ -8,7 +8,7 @@ import { prisma } from "@/lib/prisma"
 import { Prisma } from "@prisma/client"
 import { generateId } from "@/lib/id"
 import { ActionHandlerFactory, type ActionContext } from "./action-handlers"
-import type { RuleTriggerType } from "./types"
+import { RuleTriggerType, RuleExecutionStatus } from "./types"
 import type { AutomationEventMap } from "./events"
 
 // ==================== 规则条件匹配器 ====================
@@ -298,7 +298,7 @@ export class RuleEngine {
           where: {
             rule_id: rule.id,
             triggered_by: userId,
-            execution_status: "SUCCESS",
+            execution_status: RuleExecutionStatus.SUCCESS,
           },
         })
 
@@ -314,7 +314,7 @@ export class RuleEngine {
           where: {
             rule_id: rule.id,
             triggered_by: userId,
-            execution_status: "SUCCESS",
+            execution_status: RuleExecutionStatus.SUCCESS,
           },
         })
 
@@ -330,7 +330,7 @@ export class RuleEngine {
           where: {
             rule_id: rule.id,
             triggered_by: userId,
-            execution_status: "SUCCESS",
+            execution_status: RuleExecutionStatus.SUCCESS,
           },
           orderBy: { executed_at: "desc" },
         })
@@ -445,8 +445,6 @@ export class RuleEngine {
     userId: bigint,
     eventData: AutomationEventMap[K]
   ): Promise<void> {
-    const startTime = Date.now()
-
     try {
       // 获取 Action Handler
       const handler = ActionHandlerFactory.getHandler(rule.action_type as never)
@@ -461,6 +459,16 @@ export class RuleEngine {
       // 执行 Action
       const result = await handler.execute(rule.action_params, context)
 
+      // 确定执行状态
+      let executionStatus: RuleExecutionStatus
+      if (result.success) {
+        executionStatus = RuleExecutionStatus.SUCCESS
+      } else if (result.skipped) {
+        executionStatus = RuleExecutionStatus.SKIPPED
+      } else {
+        executionStatus = RuleExecutionStatus.FAILED
+      }
+
       // 记录执行日志
       await prisma.automation_rule_logs.create({
         data: {
@@ -468,26 +476,34 @@ export class RuleEngine {
           rule_id: rule.id,
           triggered_by: userId,
           trigger_context: eventData as never,
-          execution_status: result.success ? "SUCCESS" : "FAILED",
+          execution_status: executionStatus,
           execution_result: result.data as never,
-          error_message: result.error || null,
+          error_message:
+            executionStatus === RuleExecutionStatus.SKIPPED
+              ? result.skipReason
+                ? JSON.stringify({
+                    key: result.skipReason,
+                    params: result.skipReasonParams || {},
+                  })
+                : null
+              : result.error
+                ? JSON.stringify({
+                    key: result.error,
+                    params: result.errorParams || {},
+                  })
+                : null,
           executed_at: new Date(),
         },
       })
-
-      const elapsed = Date.now() - startTime
-      console.log(
-        `[RuleEngine] 规则 ${rule.id} 执行${result.success ? "成功" : "失败"} (${elapsed}ms)`
-      )
     } catch (error) {
-      // 记录执行失败日志
+      // 意外错误才记录失败日志
       await prisma.automation_rule_logs.create({
         data: {
           id: generateId(),
           rule_id: rule.id,
           triggered_by: userId,
           trigger_context: eventData as never,
-          execution_status: "FAILED",
+          execution_status: RuleExecutionStatus.FAILED,
           execution_result: Prisma.JsonNull,
           error_message: error instanceof Error ? error.message : String(error),
           executed_at: new Date(),

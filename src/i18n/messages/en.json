@@ -1605,5 +1605,19 @@
         "reasonPlaceholder": "Enter revoke reason (optional)"
       }
     }
+  },
+  "Automation": {
+    "skipReason": {
+      "badgeAlreadyOwned": "User already owns badge: {badgeName}",
+      "badgeNotOwned": "User does not own badge: {badgeName}",
+      "insufficientCredits": "Insufficient credits, current: {currentCredits}, required change: {amount}"
+    },
+    "error": {
+      "userNotFound": "User not found: {userId}",
+      "badgeNotFound": "Badge not found: {badgeId}",
+      "databaseError": "Database error: {message}",
+      "invalidParams": "Invalid parameters: {message}",
+      "unknownError": "Unknown error: {message}"
+    }
   }
 }

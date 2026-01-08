@@ -1747,5 +1747,19 @@
         "reasonPlaceholder": "请输入撤销原因（可选）"
       }
     }
+  },
+  "Automation": {
+    "skipReason": {
+      "badgeAlreadyOwned": "用户已拥有徽章: {badgeName}",
+      "badgeNotOwned": "用户未拥有徽章: {badgeName}",
+      "insufficientCredits": "积分不足,当前积分: {currentCredits},需要变动: {amount}"
+    },
+    "error": {
+      "userNotFound": "用户不存在: {userId}",
+      "badgeNotFound": "徽章不存在: {badgeId}",
+      "databaseError": "数据库错误: {message}",
+      "invalidParams": "参数无效: {message}",
+      "unknownError": "未知错误: {message}"
+    }
   }
 }

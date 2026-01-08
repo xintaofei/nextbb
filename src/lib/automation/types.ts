@@ -22,3 +22,10 @@ export enum RuleActionType {
   BADGE_REVOKE = "BADGE_REVOKE",
   USER_GROUP_CHANGE = "USER_GROUP_CHANGE",
 }
+
+// 规则执行状态枚举
+export enum RuleExecutionStatus {
+  SUCCESS = "SUCCESS",
+  FAILED = "FAILED",
+  SKIPPED = "SKIPPED",
+}

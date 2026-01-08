@@ -60,8 +60,12 @@ export interface ActionContext {
  */
 export interface ActionResult {
   success: boolean
+  skipped?: boolean // 是否为预期内的跳过(如用户已有徽章、积分不足等)
+  skipReason?: string // 跳过原因的多语言键值(如 "Automation.skipReason.badgeAlreadyOwned")
+  skipReasonParams?: Record<string, string | number> // 跳过原因的变量参数
   data?: Record<string, unknown>
-  error?: string
+  error?: string // 错误信息的多语言键值或错误消息
+  errorParams?: Record<string, string | number> // 错误信息的变量参数
 }
 
 /**
@@ -97,7 +101,10 @@ export class CreditChangeHandler implements IActionHandler<CreditChangeParams> {
       if (!user) {
         return {
           success: false,
-          error: `用户不存在: ${userId}`,
+          error: "Automation.error.userNotFound",
+          errorParams: {
+            userId: userId.toString(),
+          },
         }
       }
 
@@ -107,7 +114,12 @@ export class CreditChangeHandler implements IActionHandler<CreditChangeParams> {
       if (newBalance < 0) {
         return {
           success: false,
-          error: `积分不足,当前积分: ${user.credits},需要变动: ${amount}`,
+          skipped: true,
+          skipReason: "Automation.skipReason.insufficientCredits",
+          skipReasonParams: {
+            currentCredits: user.credits,
+            amount: amount,
+          },
         }
       }
 
@@ -144,7 +156,10 @@ export class CreditChangeHandler implements IActionHandler<CreditChangeParams> {
     } catch (error) {
       return {
         success: false,
-        error: `积分变动失败: ${error instanceof Error ? error.message : String(error)}`,
+        error: "Automation.error.databaseError",
+        errorParams: {
+          message: error instanceof Error ? error.message : String(error),
+        },
       }
     }
   }
@@ -175,7 +190,10 @@ export class BadgeGrantHandler implements IActionHandler<BadgeGrantParams> {
       } else {
         return {
           success: false,
-          error: `无效的徽章ID类型: ${typeof badgeIdRaw}`,
+          error: "Automation.error.invalidParams",
+          errorParams: {
+            message: `无效的徽章ID类型: ${typeof badgeIdRaw}`,
+          },
         }
       }
 
@@ -203,7 +221,10 @@ export class BadgeGrantHandler implements IActionHandler<BadgeGrantParams> {
         console.error(`[BadgeGrantHandler] ${error}`)
         return {
           success: false,
-          error,
+          error: "Automation.error.badgeNotFound",
+          errorParams: {
+            badgeId: badge_id.toString(),
+          },
         }
       }
 
@@ -220,7 +241,11 @@ export class BadgeGrantHandler implements IActionHandler<BadgeGrantParams> {
       if (existing && !existing.is_deleted) {
         return {
           success: false,
-          error: `用户已拥有该徽章: ${badge.name}`,
+          skipped: true,
+          skipReason: "Automation.skipReason.badgeAlreadyOwned",
+          skipReasonParams: {
+            badgeName: badge.name,
+          },
         }
       }
 
@@ -264,7 +289,10 @@ export class BadgeGrantHandler implements IActionHandler<BadgeGrantParams> {
     } catch (error) {
       return {
         success: false,
-        error: `徽章授予失败: ${error instanceof Error ? error.message : String(error)}`,
+        error: "Automation.error.databaseError",
+        errorParams: {
+          message: error instanceof Error ? error.message : String(error),
+        },
       }
     }
   }
@@ -295,7 +323,10 @@ export class BadgeRevokeHandler implements IActionHandler<BadgeRevokeParams> {
       } else {
         return {
           success: false,
-          error: `无效的徽章ID类型: ${typeof badgeIdRaw}`,
+          error: "Automation.error.invalidParams",
+          errorParams: {
+            message: `无效的徽章ID类型: ${typeof badgeIdRaw}`,
+          },
         }
       }
 
@@ -319,7 +350,11 @@ export class BadgeRevokeHandler implements IActionHandler<BadgeRevokeParams> {
       if (!userBadge || userBadge.is_deleted) {
         return {
           success: false,
-          error: `用户未拥有该徽章: ${badge_id}`,
+          skipped: true,
+          skipReason: "Automation.skipReason.badgeNotOwned",
+          skipReasonParams: {
+            badgeName: userBadge?.badge.name || "Unknown",
+          },
         }
       }
 
@@ -349,7 +384,10 @@ export class BadgeRevokeHandler implements IActionHandler<BadgeRevokeParams> {
     } catch (error) {
       return {
         success: false,
-        error: `徽章撤销失败: ${error instanceof Error ? error.message : String(error)}`,
+        error: "Automation.error.databaseError",
+        errorParams: {
+          message: error instanceof Error ? error.message : String(error),
+        },
       }
     }
   }
