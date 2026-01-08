@@ -127,18 +127,38 @@ export class RuleConditionMatcher {
   }
 
   /**
-   * 匹配点赞条件
+   * 匹配送出点赞条件
    */
-  static matchPostLike(
+  static matchPostLikeGiven(
     conditions: Record<string, unknown> | null,
-    eventData: AutomationEventMap["post:like"]
+    eventData: AutomationEventMap["post:like:given"]
   ): boolean {
     if (!conditions) return true
 
-    // 检查收到的总点赞数
-    if (conditions.received_count) {
-      const count = conditions.received_count as number
-      if (eventData.totalLikes < count) {
+    // 检查最小点赞数量
+    if (conditions.min_count) {
+      const minCount = conditions.min_count as number
+      if (eventData.totalLikesGiven < minCount) {
+        return false
+      }
+    }
+
+    return true
+  }
+
+  /**
+   * 匹配收到点赞条件
+   */
+  static matchPostLikeReceived(
+    conditions: Record<string, unknown> | null,
+    eventData: AutomationEventMap["post:like:received"]
+  ): boolean {
+    if (!conditions) return true
+
+    // 检查最小点赞数量
+    if (conditions.min_count) {
+      const minCount = conditions.min_count as number
+      if (eventData.totalLikesReceived < minCount) {
         return false
       }
     }
@@ -262,7 +282,11 @@ export class RuleEngine {
       }
 
       // 提取目标用户ID
-      const userId = this.extractUserId(eventData)
+      const userId = this.extractUserId(
+        rule.trigger_type as RuleTriggerType,
+        conditions,
+        eventData
+      )
       if (!userId) {
         console.warn(`[RuleEngine] 无法提取用户ID, 规则 ${rule.id}`)
         return
@@ -357,10 +381,15 @@ export class RuleEngine {
           conditions,
           eventData as AutomationEventMap["donation:confirmed"]
         )
-      case "POST_LIKE":
-        return RuleConditionMatcher.matchPostLike(
+      case "POST_LIKE_GIVEN":
+        return RuleConditionMatcher.matchPostLikeGiven(
           conditions,
-          eventData as AutomationEventMap["post:like"]
+          eventData as AutomationEventMap["post:like:given"]
+        )
+      case "POST_LIKE_RECEIVED":
+        return RuleConditionMatcher.matchPostLikeReceived(
+          conditions,
+          eventData as AutomationEventMap["post:like:received"]
         )
       case "USER_REGISTER":
         return RuleConditionMatcher.matchUserRegister(
@@ -381,16 +410,26 @@ export class RuleEngine {
    * 提取用户ID
    */
   private static extractUserId<K extends keyof AutomationEventMap>(
+    triggerType: RuleTriggerType,
+    _conditions: Record<string, unknown> | null,
     eventData: AutomationEventMap[K]
   ): bigint | null {
     const data = eventData as Record<string, unknown>
+
+    // 对于送出点赞事件,目标用户是点赞者
+    if (triggerType === "POST_LIKE_GIVEN" && "userId" in data) {
+      return data.userId as bigint
+    }
+
+    // 对于收到点赞事件,目标用户是帖子作者
+    if (triggerType === "POST_LIKE_RECEIVED" && "postAuthorId" in data) {
+      return data.postAuthorId as bigint
+    }
+
     if ("userId" in data && typeof data.userId === "bigint") {
       return data.userId
     }
-    // 对于点赞事件,目标用户是帖子作者
-    if ("postAuthorId" in data && typeof data.postAuthorId === "bigint") {
-      return data.postAuthorId
-    }
+
     return null
   }
 

@@ -25,6 +25,7 @@ import { CronTriggerConfig } from "./trigger-configs/cron-trigger-config"
 import { PostCreateTriggerConfig } from "./trigger-configs/post-create-trigger-config"
 import { CheckinTriggerConfig } from "./trigger-configs/checkin-trigger-config"
 import { DonationTriggerConfig } from "./trigger-configs/donation-trigger-config"
+import { PostLikeTriggerConfig } from "./trigger-configs/post-like-trigger-config"
 import { CreditChangeActionConfig } from "./action-configs/credit-change-action-config"
 import { BadgeGrantActionConfig } from "./action-configs/badge-grant-action-config"
 import { BadgeRevokeActionConfig } from "./action-configs/badge-revoke-action-config"
@@ -212,8 +213,11 @@ export function AutomationRuleDialog({
                   <SelectItem value="DONATION">
                     {t("filter.triggerTypeOptions.DONATION")}
                   </SelectItem>
-                  <SelectItem value="POST_LIKE">
-                    {t("filter.triggerTypeOptions.POST_LIKE")}
+                  <SelectItem value="POST_LIKE_GIVEN">
+                    {t("filter.triggerTypeOptions.POST_LIKE_GIVEN")}
+                  </SelectItem>
+                  <SelectItem value="POST_LIKE_RECEIVED">
+                    {t("filter.triggerTypeOptions.POST_LIKE_RECEIVED")}
                   </SelectItem>
                   <SelectItem value="USER_REGISTER">
                     {t("filter.triggerTypeOptions.USER_REGISTER")}
@@ -260,8 +264,16 @@ export function AutomationRuleDialog({
                   }
                 />
               )}
+              {(formData.triggerType === "POST_LIKE_GIVEN" ||
+                formData.triggerType === "POST_LIKE_RECEIVED") && (
+                <PostLikeTriggerConfig
+                  value={formData.triggerConditions}
+                  onChange={(value) =>
+                    setFormData({ ...formData, triggerConditions: value })
+                  }
+                />
+              )}
               {(formData.triggerType === "POST_REPLY" ||
-                formData.triggerType === "POST_LIKE" ||
                 formData.triggerType === "USER_REGISTER" ||
                 formData.triggerType === "USER_LOGIN") && (
                 <div className="text-sm text-muted-foreground p-4 rounded-lg border bg-muted/50">

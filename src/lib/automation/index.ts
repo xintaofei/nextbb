@@ -83,9 +83,14 @@ function registerEventListeners(): void {
     await RuleEngine.executeRule("DONATION" as RuleTriggerType, data)
   })
 
-  // 点赞事件
-  RedisEventBus.on("post:like", async (data) => {
-    await RuleEngine.executeRule("POST_LIKE" as RuleTriggerType, data)
+  // 送出点赞事件
+  RedisEventBus.on("post:like:given", async (data) => {
+    await RuleEngine.executeRule("POST_LIKE_GIVEN" as RuleTriggerType, data)
+  })
+
+  // 收到点赞事件
+  RedisEventBus.on("post:like:received", async (data) => {
+    await RuleEngine.executeRule("POST_LIKE_RECEIVED" as RuleTriggerType, data)
   })
 
   // 注册事件

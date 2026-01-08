@@ -1,6 +1,10 @@
 import { NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
 import { getSessionUser } from "@/lib/auth"
+import {
+  emitPostLikeGivenEvent,
+  emitPostLikeReceivedEvent,
+} from "@/lib/automation/events"
 
 type LikeToggleResult = {
   liked: boolean
@@ -38,6 +42,18 @@ export async function POST(
     select: { post_id: true },
   })
 
+  // 获取帖子作者信息
+  const postWithAuthor = await prisma.posts.findUnique({
+    where: { id: postId },
+    select: { user_id: true },
+  })
+
+  if (!postWithAuthor) {
+    return NextResponse.json({ error: "Not found" }, { status: 404 })
+  }
+
+  const isLiked = !exists
+
   if (exists) {
     await prisma.post_likes.delete({ where: { post_id_user_id: key } })
   } else {
@@ -45,6 +61,45 @@ export async function POST(
   }
 
   const count = await prisma.post_likes.count({ where: { post_id: postId } })
-  const response: LikeToggleResult = { liked: !exists, count }
+
+  // 只在点赞时触发事件(取消点赞不触发)
+  if (isLiked) {
+    // 查询点赞者送出的总点赞数
+    const totalLikesGiven = await prisma.post_likes.count({
+      where: { user_id: auth.userId },
+    })
+
+    // 查询帖子作者收到的总点赞数
+    const totalLikesReceived = await prisma.post_likes.count({
+      where: {
+        post_id: {
+          in: (
+            await prisma.posts.findMany({
+              where: { user_id: postWithAuthor.user_id },
+              select: { id: true },
+            })
+          ).map((p) => p.id),
+        },
+      },
+    })
+
+    // 同时触发两个独立事件
+    await Promise.all([
+      // 送出点赞事件
+      emitPostLikeGivenEvent({
+        postId,
+        userId: auth.userId,
+        totalLikesGiven,
+      }),
+      // 收到点赞事件
+      emitPostLikeReceivedEvent({
+        postId,
+        postAuthorId: postWithAuthor.user_id,
+        totalLikesReceived,
+      }),
+    ])
+  }
+
+  const response: LikeToggleResult = { liked: isLiked, count }
   return NextResponse.json(response, { status: 200 })
 }

@@ -1386,7 +1386,8 @@
         "POST_REPLY": "Post Reply",
         "CHECKIN": "Check-in",
         "DONATION": "Donation",
-        "POST_LIKE": "Post Like",
+        "POST_LIKE_GIVEN": "Likes Given",
+        "POST_LIKE_RECEIVED": "Likes Received",
         "USER_REGISTER": "User Register",
         "USER_LOGIN": "User Login"
       },
@@ -1579,6 +1580,10 @@
           "CRYPTO": "Cryptocurrency",
           "OTHER": "Other"
         }
+      },
+      "postLike": {
+        "minCount": "Min Count",
+        "minCountHint": "User's like count must reach this value to trigger"
       }
     },
     "actionConfig": {

@@ -1528,7 +1528,8 @@
         "POST_REPLY": "回帖",
         "CHECKIN": "签到",
         "DONATION": "捐赠",
-        "POST_LIKE": "点赞",
+        "POST_LIKE_GIVEN": "送出的赞",
+        "POST_LIKE_RECEIVED": "收到的赞",
         "USER_REGISTER": "注册",
         "USER_LOGIN": "登录"
       },
@@ -1721,6 +1722,10 @@
           "CRYPTO": "加密货币",
           "OTHER": "其他"
         }
+      },
+      "postLike": {
+        "minCount": "最小数量",
+        "minCountHint": "用户的点赞数量需达到此数值才触发"
       }
     },
     "actionConfig": {

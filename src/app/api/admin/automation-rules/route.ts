@@ -40,7 +40,8 @@ function validateTriggerType(type: string): boolean {
     "POST_REPLY",
     "CHECKIN",
     "DONATION",
-    "POST_LIKE",
+    "POST_LIKE_GIVEN",
+    "POST_LIKE_RECEIVED",
     "USER_REGISTER",
     "USER_LOGIN",
   ]

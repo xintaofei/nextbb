@@ -590,7 +590,8 @@ enum RuleTriggerType {
   POST_REPLY   // 回帖
   CHECKIN      // 签到
   DONATION     // 捐赠
-  POST_LIKE    // 点赞
+  POST_LIKE_GIVEN    // 送出的赞
+  POST_LIKE_RECEIVED // 收到的赞
   USER_REGISTER // 注册
   USER_LOGIN   // 登录
 }
@@ -620,7 +621,10 @@ model automation_rules {
   // POST_REPLY: {"topic_type": "BOUNTY", "is_first_reply": true}
   // CHECKIN: {"consecutive_days": 7}
   // DONATION: {"min_amount": 100, "currency": "CNY", "sources": ["ALIPAY", "WECHAT_PAY"]}
-  // POST_LIKE: {"received_count": 10}
+  // POST_LIKE_GIVEN: {"min_count": 10}
+  //   - min_count: 用户送出的赞达到此数量才触发
+  // POST_LIKE_RECEIVED: {"min_count": 10}
+  //   - min_count: 用户收到的赞达到此数量才触发
   // USER_REGISTER: {"oauth_provider": "github"}
   // USER_LOGIN: {"consecutive_days": 30}
 

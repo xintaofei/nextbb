@@ -60,14 +60,21 @@ export interface DonationEventData {
 }
 
 /**
- * 点赞事件数据
+ * 送出点赞事件数据
  */
-export interface PostLikeEventData {
+export interface PostLikeGivenEventData {
   postId: bigint
   userId: bigint // 点赞者
+  totalLikesGiven: number // 点赞者送出的总点赞数
+}
+
+/**
+ * 收到点赞事件数据
+ */
+export interface PostLikeReceivedEventData {
+  postId: bigint
   postAuthorId: bigint // 帖子作者
-  isLiked: boolean // true: 点赞, false: 取消点赞
-  totalLikes: number // 帖子作者收到的总点赞数
+  totalLikesReceived: number // 帖子作者收到的总点赞数
 }
 
 /**
@@ -96,7 +103,8 @@ export interface AutomationEventMap extends Record<string, unknown> {
   "post:reply": PostReplyEventData
   "user:checkin": CheckinEventData
   "donation:confirmed": DonationEventData
-  "post:like": PostLikeEventData
+  "post:like:given": PostLikeGivenEventData
+  "post:like:received": PostLikeReceivedEventData
   "user:register": UserRegisterEventData
   "user:login": UserLoginEventData
 }
@@ -138,12 +146,21 @@ export async function emitDonationEvent(
 }
 
 /**
- * 触发点赞事件
+ * 触发送出点赞事件
  */
-export async function emitPostLikeEvent(
-  data: PostLikeEventData
+export async function emitPostLikeGivenEvent(
+  data: PostLikeGivenEventData
 ): Promise<void> {
-  await RedisEventBus.emit("post:like", data)
+  await RedisEventBus.emit("post:like:given", data)
+}
+
+/**
+ * 触发收到点赞事件
+ */
+export async function emitPostLikeReceivedEvent(
+  data: PostLikeReceivedEventData
+): Promise<void> {
+  await RedisEventBus.emit("post:like:received", data)
 }
 
 /**

@@ -311,8 +311,11 @@ export default function AutomationRulesPage() {
                   <SelectItem value="DONATION">
                     {t("filter.triggerTypeOptions.DONATION")}
                   </SelectItem>
-                  <SelectItem value="POST_LIKE">
-                    {t("filter.triggerTypeOptions.POST_LIKE")}
+                  <SelectItem value="POST_LIKE_GIVEN">
+                    {t("filter.triggerTypeOptions.POST_LIKE_GIVEN")}
+                  </SelectItem>
+                  <SelectItem value="POST_LIKE_RECEIVED">
+                    {t("filter.triggerTypeOptions.POST_LIKE_RECEIVED")}
                   </SelectItem>
                   <SelectItem value="USER_REGISTER">
                     {t("filter.triggerTypeOptions.USER_REGISTER")}
