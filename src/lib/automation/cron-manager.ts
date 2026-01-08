@@ -18,6 +18,32 @@ interface CronTask {
 }
 
 /**
+ * 全局状态类型，用于在 Next.js 开发模式下保持单例状态
+ */
+interface CronManagerState {
+  tasks: Map<string, CronTask>
+  isInitialized: boolean
+}
+
+/**
+ * 使用 globalThis 确保在开发模式下状态持久化
+ * 避免 HMR 导致的重复初始化问题
+ */
+const globalForCronManager = globalThis as unknown as {
+  cronManagerState: CronManagerState
+}
+
+// 初始化或获取全局状态
+if (!globalForCronManager.cronManagerState) {
+  globalForCronManager.cronManagerState = {
+    tasks: new Map(),
+    isInitialized: false,
+  }
+}
+
+const state = globalForCronManager.cronManagerState
+
+/**
  * Cron 任务管理器
  *
  * 职责:
@@ -26,14 +52,11 @@ interface CronTask {
  * 3. 执行定时规则
  */
 export class CronManager {
-  private static tasks = new Map<string, CronTask>()
-  private static isInitialized = false
-
   /**
    * 初始化定时任务管理器
    */
   static async initialize(): Promise<void> {
-    if (this.isInitialized) {
+    if (state.isInitialized) {
       return
     }
 
@@ -52,7 +75,7 @@ export class CronManager {
         await this.addTask(rule)
       }
 
-      this.isInitialized = true
+      state.isInitialized = true
       if (rules.length > 0) {
         console.log(`[CronManager] 已初始化 ${rules.length} 个定时规则`)
       } else {
@@ -96,7 +119,7 @@ export class CronManager {
       const taskKey = rule.id.toString()
 
       // 如果任务已存在,先删除
-      if (this.tasks.has(taskKey)) {
+      if (state.tasks.has(taskKey)) {
         this.removeTask(rule.id)
       }
 
@@ -111,7 +134,7 @@ export class CronManager {
         }
       )
 
-      this.tasks.set(taskKey, {
+      state.tasks.set(taskKey, {
         ruleId: rule.id,
         schedule: cronExpression,
         job,
@@ -130,11 +153,11 @@ export class CronManager {
    */
   static removeTask(ruleId: bigint): void {
     const taskKey = ruleId.toString()
-    const task = this.tasks.get(taskKey)
+    const task = state.tasks.get(taskKey)
 
     if (task) {
       task.job.stop()
-      this.tasks.delete(taskKey)
+      state.tasks.delete(taskKey)
       console.log(`[CronManager] 已移除任务: 规则=${ruleId}`)
     }
   }
@@ -205,12 +228,12 @@ export class CronManager {
    * 停止所有任务
    */
   static stopAll(): void {
-    for (const [key, task] of this.tasks.entries()) {
+    for (const [key, task] of state.tasks.entries()) {
       task.job.stop()
       console.log(`[CronManager] 已停止任务: 规则=${task.ruleId}`)
     }
-    this.tasks.clear()
-    this.isInitialized = false
+    state.tasks.clear()
+    state.isInitialized = false
     console.log("[CronManager] 已停止所有任务")
   }
 
@@ -218,7 +241,7 @@ export class CronManager {
    * 获取所有运行中的任务
    */
   static getTasks(): Array<{ ruleId: string; schedule: string }> {
-    return Array.from(this.tasks.values()).map((task) => ({
+    return Array.from(state.tasks.values()).map((task) => ({
       ruleId: task.ruleId.toString(),
       schedule: task.schedule,
     }))

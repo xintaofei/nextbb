@@ -16,11 +16,30 @@ import { CronManager } from "./cron-manager"
 import type { RuleTriggerType } from "./types"
 
 /**
- * 全局初始化标志
- * 使用全局单例模式，确保在整个应用生命周期中只初始化一次
+ * 全局状态类型，用于在 Next.js 开发模式下保持单例状态
  */
-let isInitialized = false
-let initializationPromise: Promise<void> | null = null
+interface AutomationSystemState {
+  isInitialized: boolean
+  initializationPromise: Promise<void> | null
+}
+
+/**
+ * 使用 globalThis 确保在开发模式下状态持久化
+ * 避免 HMR 导致的重复初始化问题
+ */
+const globalForAutomation = globalThis as unknown as {
+  automationSystemState: AutomationSystemState
+}
+
+// 初始化或获取全局状态
+if (!globalForAutomation.automationSystemState) {
+  globalForAutomation.automationSystemState = {
+    isInitialized: false,
+    initializationPromise: null,
+  }
+}
+
+const state = globalForAutomation.automationSystemState
 
 /**
  * 初始化自动化规则系统
@@ -29,15 +48,15 @@ let initializationPromise: Promise<void> | null = null
  * 使用单例模式确保只初始化一次
  */
 export async function initializeAutomationSystem(): Promise<void> {
-  if (isInitialized) {
+  if (state.isInitialized) {
     return
   }
 
-  if (initializationPromise) {
-    return initializationPromise
+  if (state.initializationPromise) {
+    return state.initializationPromise
   }
 
-  initializationPromise = (async () => {
+  state.initializationPromise = (async () => {
     try {
       // 1. 注册事件监听器（必须在初始化前注册）
       registerEventListeners()
@@ -48,15 +67,15 @@ export async function initializeAutomationSystem(): Promise<void> {
       // 3. 初始化定时任务管理器
       await CronManager.initialize()
 
-      isInitialized = true
+      state.isInitialized = true
     } catch (error) {
       console.error("[Automation] 初始化失败:", error)
-      initializationPromise = null
+      state.initializationPromise = null
       throw error
     }
   })()
 
-  return initializationPromise
+  return state.initializationPromise
 }
 
 /**
