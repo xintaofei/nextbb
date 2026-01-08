@@ -5,6 +5,8 @@ import { getSessionUser } from "@/lib/auth"
 import { generateId } from "@/lib/id"
 import { TopicType, BountyType } from "@/types/topic-type"
 import { topicFormSchema } from "@/lib/topic-validation"
+import { CreditService } from "@/lib/credit-service"
+import { CreditLogType } from "@prisma/client"
 
 interface TopicsDelegate {
   create(args: unknown): Promise<{ id: bigint }>
@@ -410,171 +412,193 @@ export async function POST(req: Request) {
     )
   }
 
-  const result = await prisma.$transaction(async (tx: unknown) => {
-    const client = tx as TxClient
+  // BOUNTY 类型需要先扣除积分
+  // 注意：CreditService 有自己的事务，与主事务分离
+  // 如果后续主题创建失败，需要手动回滚积分
+  let bountyDeducted = false
 
-    // BOUNTY 类型需要验证积分并预扣
-    if (body.type === TopicType.BOUNTY) {
-      const user = await client.users.findUnique({
-        where: { id: auth.userId },
-        select: { credits: true },
-      })
-      if (!user || user.credits < body.bountyTotal) {
-        throw new Error("Insufficient credits")
-      }
+  if (body.type === TopicType.BOUNTY) {
+    // 使用统一的积分服务扣除积分（并发安全）
+    const creditResult = await CreditService.subtractCredits(
+      auth.userId,
+      body.bountyTotal,
+      CreditLogType.BOUNTY_GIVEN,
+      `发布悬赏主题，总赏金 ${body.bountyTotal}`
+    )
 
-      // 预扣积分
-      await client.users.update({
-        where: { id: auth.userId },
+    if (!creditResult.success) {
+      return NextResponse.json(
+        { error: creditResult.error || "积分扣除失败" },
+        { status: 400 }
+      )
+    }
+
+    bountyDeducted = true
+  }
+
+  try {
+    const result = await prisma.$transaction(async (tx: unknown) => {
+      const client = tx as TxClient
+
+      const topic = await client.topics.create({
         data: {
-          credits: {
-            decrement: body.bountyTotal,
-          },
-        },
-      })
-    }
-
-    const topic = await client.topics.create({
-      data: {
-        id: generateId(),
-        category_id: categoryId,
-        user_id: auth.userId,
-        title: body.title,
-        type: body.type,
-        status:
-          body.type === TopicType.POLL || body.type === TopicType.LOTTERY
-            ? "ACTIVE"
-            : "ACTIVE",
-        end_time:
-          body.type === TopicType.POLL && body.endTime
-            ? new Date(body.endTime)
-            : body.type === TopicType.LOTTERY &&
-                body.drawType === "SCHEDULED" &&
-                body.endTime
+          id: generateId(),
+          category_id: categoryId,
+          user_id: auth.userId,
+          title: body.title,
+          type: body.type,
+          status:
+            body.type === TopicType.POLL || body.type === TopicType.LOTTERY
+              ? "ACTIVE"
+              : "ACTIVE",
+          end_time:
+            body.type === TopicType.POLL && body.endTime
               ? new Date(body.endTime)
-              : null,
-        is_settled: false,
-        is_pinned: isPinned,
-        is_community: isCommunity,
-        is_deleted: false,
-      },
-      select: { id: true },
-    })
-
-    await client.posts.create({
-      data: {
-        id: generateId(),
-        topic_id: topic.id,
-        user_id: auth.userId,
-        parent_id: BigInt(0),
-        reply_to_user_id: BigInt(0),
-        floor_number: 1,
-        content: body.content,
-        is_deleted: false,
-      },
-      select: { id: true },
-    })
-
-    if (tags.length > 0) {
-      await client.topic_tags.createMany({
-        data: tags.map((t: { id: bigint; name: string }) => ({
-          topic_id: topic.id,
-          tag_id: t.id,
-          created_at: new Date(),
-        })),
-        skipDuplicates: true,
+              : body.type === TopicType.LOTTERY &&
+                  body.drawType === "SCHEDULED" &&
+                  body.endTime
+                ? new Date(body.endTime)
+                : null,
+          is_settled: false,
+          is_pinned: isPinned,
+          is_community: isCommunity,
+          is_deleted: false,
+        },
+        select: { id: true },
       })
-    }
 
-    // POLL 类型创建投票选项和配置
-    if (body.type === TopicType.POLL && body.pollOptions) {
-      await client.poll_options.createMany({
-        data: body.pollOptions.map((option, index) => ({
+      await client.posts.create({
+        data: {
           id: generateId(),
           topic_id: topic.id,
-          option_text: option.text,
-          sort: index,
+          user_id: auth.userId,
+          parent_id: BigInt(0),
+          reply_to_user_id: BigInt(0),
+          floor_number: 1,
+          content: body.content,
           is_deleted: false,
-          created_at: new Date(),
-        })),
+        },
+        select: { id: true },
       })
 
-      // 创建投票配置
-      const pollConfig = (body.pollConfig || {}) as {
-        allowMultiple?: boolean
-        maxChoices?: number
-        showResultsBeforeVote?: boolean
-        showVoterList?: boolean
+      if (tags.length > 0) {
+        await client.topic_tags.createMany({
+          data: tags.map((t: { id: bigint; name: string }) => ({
+            topic_id: topic.id,
+            tag_id: t.id,
+            created_at: new Date(),
+          })),
+          skipDuplicates: true,
+        })
       }
-      await client.poll_configs.create({
-        data: {
-          topic_id: topic.id,
-          allow_multiple: pollConfig.allowMultiple ?? false,
-          max_choices: pollConfig.maxChoices ?? null,
-          show_results_before_vote: pollConfig.showResultsBeforeVote ?? false,
-          show_voter_list: pollConfig.showVoterList ?? false,
-          created_at: new Date(),
-          updated_at: new Date(),
-        },
-      })
+
+      // POLL 类型创建投票选项和配置
+      if (body.type === TopicType.POLL && body.pollOptions) {
+        await client.poll_options.createMany({
+          data: body.pollOptions.map((option, index) => ({
+            id: generateId(),
+            topic_id: topic.id,
+            option_text: option.text,
+            sort: index,
+            is_deleted: false,
+            created_at: new Date(),
+          })),
+        })
+
+        // 创建投票配置
+        const pollConfig = (body.pollConfig || {}) as {
+          allowMultiple?: boolean
+          maxChoices?: number
+          showResultsBeforeVote?: boolean
+          showVoterList?: boolean
+        }
+        await client.poll_configs.create({
+          data: {
+            topic_id: topic.id,
+            allow_multiple: pollConfig.allowMultiple ?? false,
+            max_choices: pollConfig.maxChoices ?? null,
+            show_results_before_vote: pollConfig.showResultsBeforeVote ?? false,
+            show_voter_list: pollConfig.showVoterList ?? false,
+            created_at: new Date(),
+            updated_at: new Date(),
+          },
+        })
+      }
+
+      // LOTTERY 类型创建抽奖配置
+      if (body.type === TopicType.LOTTERY) {
+        await client.lottery_configs.create({
+          data: {
+            topic_id: topic.id,
+            draw_type: body.drawType,
+            end_time:
+              body.drawType === "SCHEDULED" && body.endTime
+                ? new Date(body.endTime)
+                : null,
+            participant_threshold:
+              body.drawType === "THRESHOLD" && body.participantThreshold
+                ? body.participantThreshold
+                : null,
+            algorithm_type: body.algorithmType,
+            floor_interval:
+              body.algorithmType === "INTERVAL" && body.floorInterval
+                ? body.floorInterval
+                : null,
+            fixed_floors:
+              body.algorithmType === "FIXED" && body.fixedFloors
+                ? JSON.stringify(body.fixedFloors)
+                : null,
+            winner_count:
+              body.algorithmType === "RANDOM" && body.winnerCount
+                ? body.winnerCount
+                : null,
+            entry_cost: body.entryCost ?? 0,
+            is_drawn: false,
+            drawn_at: null,
+            created_at: new Date(),
+            updated_at: new Date(),
+          },
+        })
+      }
+
+      // BOUNTY 类型创建悬赏配置
+      if (body.type === TopicType.BOUNTY) {
+        await client.bounty_configs.create({
+          data: {
+            topic_id: topic.id,
+            bounty_total: body.bountyTotal,
+            bounty_type: body.bountyType,
+            bounty_slots: body.bountySlots,
+            remaining_slots: body.bountySlots,
+            single_amount:
+              body.bountyType === BountyType.MULTIPLE
+                ? body.singleAmount
+                : null,
+            created_at: new Date(),
+            updated_at: new Date(),
+          },
+        })
+      }
+
+      return { topicId: String(topic.id) }
+    })
+
+    const response: TopicCreateResult = { topicId: result.topicId }
+    return NextResponse.json(response, { status: 201 })
+  } catch (error) {
+    // 如果主题创建失败且已扣除积分，需要回滚积分
+    if (bountyDeducted && body.type === TopicType.BOUNTY) {
+      await CreditService.addCredits(
+        auth.userId,
+        body.bountyTotal,
+        CreditLogType.OTHER,
+        `悬赏主题创建失败，退回赏金 ${body.bountyTotal}`
+      )
     }
-
-    // LOTTERY 类型创建抽奖配置
-    if (body.type === TopicType.LOTTERY) {
-      await client.lottery_configs.create({
-        data: {
-          topic_id: topic.id,
-          draw_type: body.drawType,
-          end_time:
-            body.drawType === "SCHEDULED" && body.endTime
-              ? new Date(body.endTime)
-              : null,
-          participant_threshold:
-            body.drawType === "THRESHOLD" && body.participantThreshold
-              ? body.participantThreshold
-              : null,
-          algorithm_type: body.algorithmType,
-          floor_interval:
-            body.algorithmType === "INTERVAL" && body.floorInterval
-              ? body.floorInterval
-              : null,
-          fixed_floors:
-            body.algorithmType === "FIXED" && body.fixedFloors
-              ? JSON.stringify(body.fixedFloors)
-              : null,
-          winner_count:
-            body.algorithmType === "RANDOM" && body.winnerCount
-              ? body.winnerCount
-              : null,
-          entry_cost: body.entryCost ?? 0,
-          is_drawn: false,
-          drawn_at: null,
-          created_at: new Date(),
-          updated_at: new Date(),
-        },
-      })
-    }
-
-    // BOUNTY 类型创建悬赏配置
-    if (body.type === TopicType.BOUNTY) {
-      await client.bounty_configs.create({
-        data: {
-          topic_id: topic.id,
-          bounty_total: body.bountyTotal,
-          bounty_type: body.bountyType,
-          bounty_slots: body.bountySlots,
-          remaining_slots: body.bountySlots,
-          single_amount:
-            body.bountyType === BountyType.MULTIPLE ? body.singleAmount : null,
-          created_at: new Date(),
-          updated_at: new Date(),
-        },
-      })
-    }
-
-    return { topicId: String(topic.id) }
-  })
-
-  const response: TopicCreateResult = { topicId: result.topicId }
-  return NextResponse.json(response, { status: 201 })
+    console.error("Topic creation failed:", error)
+    return NextResponse.json(
+      { error: "Failed to create topic" },
+      { status: 500 }
+    )
+  }
 }

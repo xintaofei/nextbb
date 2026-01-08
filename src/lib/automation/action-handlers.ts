@@ -7,7 +7,8 @@
 
 import { RuleActionType, RuleExecutionStatus } from "@/lib/automation/types"
 import { prisma } from "@/lib/prisma"
-import { generateId } from "@/lib/id"
+import { CreditService } from "@/lib/credit-service"
+import { CreditLogType } from "@prisma/client"
 
 // ==================== Action 参数类型定义 ====================
 
@@ -90,59 +91,36 @@ export class CreditChangeHandler implements IActionHandler<CreditChangeParams> {
       const { amount, description } = params
       const { userId } = context
 
-      // 查询用户当前积分
-      const user = await prisma.users.findUnique({
-        where: { id: userId },
-        select: { credits: true },
+      // 使用统一的积分服务（并发安全）
+      const result = await CreditService.changeCredits({
+        userId,
+        amount,
+        type: CreditLogType.OTHER, // 自动化规则触发使用 OTHER 类型
+        description: description || "自动化规则触发",
       })
 
-      if (!user) {
+      if (!result.success) {
+        // 如果是积分不足，返回 SKIPPED
+        if (result.error?.includes("积分不足")) {
+          return {
+            status: RuleExecutionStatus.SKIPPED,
+            targetUserId: userId,
+            message: "Automation.skipReason.insufficientCredits",
+            messageParams: {
+              amount: amount,
+            },
+          }
+        }
+
+        // 其他错误返回 FAILED
         return {
           status: RuleExecutionStatus.FAILED,
-          message: "Automation.error.userNotFound",
+          message: "Automation.error.creditChangeFailed",
           messageParams: {
-            userId: userId.toString(),
+            error: result.error || "未知错误",
           },
         }
       }
-
-      const newBalance = user.credits + amount
-
-      // 防止积分变为负数
-      if (newBalance < 0) {
-        return {
-          status: RuleExecutionStatus.SKIPPED,
-          targetUserId: userId,
-          message: "Automation.skipReason.insufficientCredits",
-          messageParams: {
-            currentCredits: user.credits,
-            amount: amount,
-          },
-        }
-      }
-
-      // 使用事务更新用户积分并记录日志
-      const result = await prisma.$transaction(async (tx) => {
-        // 更新用户积分
-        await tx.users.update({
-          where: { id: userId },
-          data: { credits: newBalance },
-        })
-
-        // 记录积分日志
-        await tx.user_credit_logs.create({
-          data: {
-            id: generateId(),
-            user_id: userId,
-            amount,
-            balance: newBalance,
-            type: "OTHER",
-            description: description || "自动化规则触发",
-          },
-        })
-
-        return { newBalance }
-      })
 
       return {
         status: RuleExecutionStatus.SUCCESS,

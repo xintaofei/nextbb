@@ -2,6 +2,8 @@ import { NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
 import { getSessionUser } from "@/lib/auth"
 import { generateId } from "@/lib/id"
+import { CreditService } from "@/lib/credit-service"
+import { CreditLogType } from "@prisma/client"
 
 /**
  * 用户签到接口
@@ -76,7 +78,7 @@ export async function POST(request: Request) {
     // 配置签到奖励积分（可以后续改为可配置的）
     const CHECKIN_CREDITS = 10
 
-    // 使用事务：创建签到记录 + 增加用户积分 + 创建积分记录
+    // 使用事务：创建签到记录 + 增加用户积分
     const result = await prisma.$transaction(async (tx) => {
       // 创建签到记录
       const checkin = await tx.user_checkins.create({
@@ -88,42 +90,33 @@ export async function POST(request: Request) {
         },
       })
 
-      // 增加用户积分
-      const updatedUser = await tx.users.update({
-        where: { id: userId },
-        data: {
-          credits: {
-            increment: CHECKIN_CREDITS,
-          },
-        },
-        select: {
-          credits: true,
-        },
-      })
-
-      // 创建积分变动记录
-      await tx.user_credit_logs.create({
-        data: {
-          id: generateId(),
-          user_id: userId,
-          amount: CHECKIN_CREDITS,
-          balance: updatedUser.credits,
-          type: "CHECKIN",
-          description: "每日签到奖励",
-        },
-      })
-
-      return {
-        checkin,
-        newCredits: updatedUser.credits,
-      }
+      return { checkin }
     })
+
+    // 使用统一的积分服务增加积分（并发安全）
+    const creditResult = await CreditService.addCredits(
+      userId,
+      CHECKIN_CREDITS,
+      CreditLogType.CHECKIN,
+      "每日签到奖励"
+    )
+
+    if (!creditResult.success) {
+      // 如果积分增加失败，需要回滚签到记录
+      await prisma.user_checkins.delete({
+        where: { id: result.checkin.id },
+      })
+      return NextResponse.json(
+        { error: creditResult.error || "积分增加失败" },
+        { status: 500 }
+      )
+    }
 
     return NextResponse.json({
       success: true,
       message: "签到成功",
       creditsEarned: CHECKIN_CREDITS,
-      totalCredits: result.newCredits,
+      totalCredits: creditResult.newBalance,
       checkinDate: today,
     })
   } catch (error) {

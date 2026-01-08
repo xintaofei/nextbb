@@ -4,6 +4,8 @@ import { getSessionUser } from "@/lib/auth"
 import { TopicType, BountyType } from "@/types/topic-type"
 import { generateId } from "@/lib/id"
 import { z } from "zod"
+import { CreditService } from "@/lib/credit-service"
+import { CreditLogType } from "@prisma/client"
 
 interface BountyConfigsDelegate {
   findUnique(args: unknown): Promise<{
@@ -206,18 +208,8 @@ export async function POST(
           throw new Error("Invalid reward amount")
         }
 
-        // 增加领赏人积分
-        await client.users.update({
-          where: { id: post.user_id },
-          data: {
-            credits: {
-              increment: amount,
-            },
-          },
-        })
-
         // 创建赏金流水记录
-        await client.bounty_rewards.create({
+        const rewardRecord = await client.bounty_rewards.create({
           data: {
             id: generateId(),
             topic_id: topicId,
@@ -259,6 +251,8 @@ export async function POST(
           amount,
           remainingSlots: updatedConfig.remaining_slots,
           isSettled,
+          receiverId: post.user_id,
+          rewardId: rewardRecord.id,
         }
       },
       {
@@ -266,6 +260,26 @@ export async function POST(
         timeout: 10000, // 事务超时时间 10秒
       }
     )
+
+    // 使用统一的积分服务增加领赏人积分（并发安全）
+    // 注意：发布悬赏主题时已经扣除了总赏金，这里只需要增加领赏人积分
+    const creditResult = await CreditService.addCredits(
+      result.receiverId,
+      result.amount,
+      CreditLogType.BOUNTY_RECEIVED,
+      `主题 ${topicId.toString()} 的赏金奖励`
+    )
+
+    if (!creditResult.success) {
+      // 如果积分增加失败，需要回滚赏金记录
+      await prisma.bounty_rewards.delete({
+        where: { id: result.rewardId },
+      })
+      return NextResponse.json(
+        { error: creditResult.error || "积分增加失败" },
+        { status: 500 }
+      )
+    }
 
     const response: RewardResponse = {
       success: true,
