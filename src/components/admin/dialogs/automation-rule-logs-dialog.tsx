@@ -60,6 +60,7 @@ export function AutomationRuleLogsDialog({
   ruleName,
 }: AutomationRuleLogsDialogProps) {
   const t = useTranslations("AdminAutomationRules")
+  const tRoot = useTranslations() // 根命名空间，用于解析完整路径的多语言键
 
   const [statusFilter, setStatusFilter] = useState("all")
   const [page, setPage] = useState(1)
@@ -106,6 +107,33 @@ export function AutomationRuleLogsDialog({
         return t("logsDialog.filter.statusOptions.SKIPPED")
       default:
         return status
+    }
+  }
+
+  /**
+   * 解析并格式化错误信息
+   * error_message 存储的是 JSON 格式: {key: string, params: Record<string, unknown>}
+   * key 为完整路径，如 "Automation.skipReason.badgeAlreadyOwned"
+   */
+  const formatErrorMessage = (errorMessage: string | null): string => {
+    if (!errorMessage) return ""
+
+    try {
+      const parsed = JSON.parse(errorMessage) as {
+        key?: string
+        params?: Record<string, string | number>
+      }
+
+      // 如果有多语言键值，使用根命名空间解析完整路径
+      if (parsed.key) {
+        return tRoot(parsed.key as never, parsed.params as never)
+      }
+
+      // 否则返回原始消息
+      return errorMessage
+    } catch {
+      // JSON 解析失败，返回原始字符串（兼容旧数据或系统错误）
+      return errorMessage
     }
   }
 
@@ -234,7 +262,7 @@ export function AutomationRuleLogsDialog({
                             {t("logsDialog.log.error")}
                           </div>
                           <div className="text-xs bg-destructive/10 text-destructive p-2 rounded-md">
-                            {log.errorMessage}
+                            {formatErrorMessage(log.errorMessage)}
                           </div>
                         </div>
                       )}
