@@ -240,10 +240,26 @@ export class RuleEngine {
         return
       }
 
-      // 遍历规则并执行
-      for (const rule of rules) {
-        await this.processRule(rule, eventData)
+      // 筛选出符合执行条件的规则
+      const matchedRules = rules.filter((rule) => {
+        const conditions = rule.trigger_conditions as Record<
+          string,
+          unknown
+        > | null
+        return this.matchConditions(
+          rule.trigger_type as RuleTriggerType,
+          conditions,
+          eventData
+        )
+      })
+
+      if (matchedRules.length === 0) {
+        return
       }
+
+      // 只执行优先级最高的规则(已按 priority desc 排序,取第一个即可)
+      const highestPriorityRule = matchedRules[0]
+      await this.processRule(highestPriorityRule, eventData)
     } catch (error) {
       console.error(`[RuleEngine] 执行规则失败:`, error)
     }
@@ -280,16 +296,6 @@ export class RuleEngine {
       )
       if (!userId) {
         console.warn(`[RuleEngine] 无法提取用户ID, 规则 ${rule.id}`)
-        return
-      }
-
-      // 检查条件是否匹配
-      const isMatched = this.matchConditions(
-        rule.trigger_type as RuleTriggerType,
-        conditions,
-        eventData
-      )
-      if (!isMatched) {
         return
       }
 
