@@ -389,10 +389,6 @@ export class RuleEngine {
             `[RuleEngine] 规则 ${rule.id} 动作 ${index + 1} (${actions[index]?.type}) 执行失败:`,
             result.reason
           )
-        } else {
-          console.log(
-            `[RuleEngine] 规则 ${rule.id} 动作 ${index + 1} (${actions[index]?.type}) 执行成功`
-          )
         }
       })
     } catch (error) {
