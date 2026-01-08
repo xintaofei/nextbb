@@ -303,7 +303,9 @@ export class RuleEngine {
           where: {
             rule_id: rule.id,
             target_user_id: targetUserId,
-            execution_status: RuleExecutionStatus.SUCCESS,
+            execution_status: {
+              in: [RuleExecutionStatus.SUCCESS, RuleExecutionStatus.SKIPPED],
+            },
           },
         })
 
@@ -465,28 +467,6 @@ export class RuleEngine {
 
       // 执行 Action
       const result = await handler.execute(rule.action_params, context)
-
-      // 如果规则不可重复触发,检查是否已有SUCCESS记录
-      // 有SUCCESS记录说明该执行对象已经成功执行过,不需要记录SKIPPED日志
-      if (
-        result.status === RuleExecutionStatus.SKIPPED &&
-        !rule.is_repeatable
-      ) {
-        const existingSuccessLog = await prisma.automation_rule_logs.findFirst({
-          where: {
-            rule_id: rule.id,
-            target_user_id: targetUserId,
-            execution_status: RuleExecutionStatus.SUCCESS,
-          },
-        })
-
-        if (existingSuccessLog) {
-          console.log(
-            `[RuleEngine] 规则 ${rule.id} 跳过记录SKIPPED日志(执行对象已有SUCCESS记录)`
-          )
-          return
-        }
-      }
 
       // 记录执行日志
       await prisma.automation_rule_logs.create({
