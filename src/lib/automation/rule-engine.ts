@@ -310,7 +310,6 @@ export class RuleEngine {
         })
 
         if (existingLog) {
-          console.log(`[RuleEngine] 规则 ${rule.id} 不可重复触发`)
           return
         }
       }
@@ -326,7 +325,6 @@ export class RuleEngine {
         })
 
         if (count >= rule.max_executions) {
-          console.log(`[RuleEngine] 规则 ${rule.id} 已达最大执行次数`)
           return
         }
       }
@@ -346,7 +344,6 @@ export class RuleEngine {
           const cooldownMs = rule.cooldown_seconds * 1000
           const elapsed = Date.now() - lastLog.executed_at.getTime()
           if (elapsed < cooldownMs) {
-            console.log(`[RuleEngine] 规则 ${rule.id} 在冷却期`)
             return
           }
         }

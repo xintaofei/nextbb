@@ -8,7 +8,6 @@ export async function register() {
   if (process.env.NEXT_RUNTIME === "nodejs") {
     const { initializeAutomationSystem } =
       await import("@/lib/automation/index")
-
     try {
       await initializeAutomationSystem()
     } catch (error) {

@@ -3,10 +3,15 @@ import Redis from "ioredis"
 /**
  * Redis 客户端实例
  *
- * 使用单例模式确保全局只有一个 Redis 连接
+ * 使用 globalThis 确保在 Next.js 开发模式下单例持久化
  */
-let redisClient: Redis | null = null
-let redisSubscriber: Redis | null = null
+const globalForRedis = globalThis as unknown as {
+  redisClient: Redis | null
+  redisSubscriber: Redis | null
+}
+
+let redisClient: Redis | null = globalForRedis.redisClient ?? null
+let redisSubscriber: Redis | null = globalForRedis.redisSubscriber ?? null
 
 /**
  * 获取 Redis 客户端（用于发布消息）
@@ -29,6 +34,15 @@ export function getRedisClient(): Redis {
     redisClient.on("error", (error) => {
       console.error("[Redis] 客户端连接错误:", error)
     })
+
+    redisClient.on("connect", () => {
+      console.log("[Redis] 客户端连接成功")
+    })
+
+    // 在开发模式下保存到 globalThis
+    if (process.env.NODE_ENV !== "production") {
+      globalForRedis.redisClient = redisClient
+    }
   }
 
   return redisClient
@@ -57,6 +71,11 @@ export function getRedisSubscriber(): Redis {
     redisSubscriber.on("error", (error) => {
       console.error("[Redis] 订阅客户端连接错误:", error)
     })
+
+    // 在开发模式下保存到 globalThis
+    if (process.env.NODE_ENV !== "production") {
+      globalForRedis.redisSubscriber = redisSubscriber
+    }
   }
 
   return redisSubscriber

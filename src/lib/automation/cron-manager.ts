@@ -34,13 +34,10 @@ export class CronManager {
    */
   static async initialize(): Promise<void> {
     if (this.isInitialized) {
-      console.log("[CronManager] 已初始化,跳过")
       return
     }
 
     try {
-      console.log("[CronManager] 开始初始化...")
-
       // 加载所有启用的 CRON 规则
       const rules = await prisma.automation_rules.findMany({
         where: {
@@ -50,15 +47,17 @@ export class CronManager {
         },
       })
 
-      console.log(`[CronManager] 找到 ${rules.length} 个定时规则`)
-
       // 为每个规则创建定时任务
       for (const rule of rules) {
         await this.addTask(rule)
       }
 
       this.isInitialized = true
-      console.log("[CronManager] 初始化完成")
+      if (rules.length > 0) {
+        console.log(`[CronManager] 已初始化 ${rules.length} 个定时规则`)
+      } else {
+        console.log("[CronManager] 没有设置定时规则")
+      }
     } catch (error) {
       console.error("[CronManager] 初始化失败:", error)
       throw error

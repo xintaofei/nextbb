@@ -176,7 +176,6 @@ export class BadgeGrantHandler implements IActionHandler<BadgeGrantParams> {
       // 从 JSON 字段解析参数，需要处理类型转换
       const rawParams = params as unknown as Record<string, unknown>
       const badgeIdRaw = rawParams.badge_id
-      const auto_grant = (rawParams.auto_grant as boolean) ?? true
 
       // 将 badge_id 转换为 bigint
       let badge_id: bigint
@@ -196,13 +195,7 @@ export class BadgeGrantHandler implements IActionHandler<BadgeGrantParams> {
         }
       }
 
-      const { userId, ruleId } = context
-
-      console.log(`[BadgeGrantHandler] 开始授予徽章:`, {
-        userId: userId.toString(),
-        badge_id: badge_id.toString(),
-        ruleId: ruleId.toString(),
-      })
+      const { userId } = context
 
       // 检查徽章是否存在
       const badge = await prisma.badges.findUnique({
