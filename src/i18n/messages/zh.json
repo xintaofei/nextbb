@@ -1582,6 +1582,8 @@
       "descriptionPlaceholder": "请输入规则描述",
       "triggerType": "触发器类型",
       "actionType": "动作类型",
+      "addAction": "添加动作",
+      "actionIndex": "动作 {index}",
       "priority": "优先级",
       "isEnabled": "启用规则",
       "isRepeatable": "可重复触发",
@@ -1634,6 +1636,7 @@
         "endTime": "结束时间"
       },
       "actions": {
+        "title": "执行动作列表",
         "cancel": "取消",
         "submit": "提交"
       }

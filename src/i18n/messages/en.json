@@ -1440,6 +1440,8 @@
       "descriptionPlaceholder": "Enter rule description",
       "triggerType": "Trigger Type",
       "actionType": "Action Type",
+      "addAction": "Add Action",
+      "actionIndex": "Action {index}",
       "priority": "Priority",
       "isEnabled": "Enable Rule",
       "isRepeatable": "Repeatable Trigger",
@@ -1492,6 +1494,7 @@
         "endTime": "End Time"
       },
       "actions": {
+        "title": "Action List",
         "cancel": "Cancel",
         "submit": "Submit"
       }

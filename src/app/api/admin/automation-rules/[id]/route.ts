@@ -4,14 +4,18 @@ import { prisma } from "@/lib/prisma"
 import { requireAdmin } from "@/lib/guard"
 import { CronManager } from "@/lib/automation/cron-manager"
 
+type RuleAction = {
+  type: string
+  params: Record<string, unknown>
+}
+
 type RuleDTO = {
   id: string
   name: string
   description: string | null
   triggerType: string
   triggerConditions: unknown
-  actionType: string
-  actionParams: unknown
+  actions: RuleAction[]
   priority: number
   isEnabled: boolean
   isRepeatable: boolean
@@ -40,15 +44,28 @@ function validateTriggerType(type: string): boolean {
   return validTypes.includes(type)
 }
 
-// 验证动作类型
-function validateActionType(type: string): boolean {
-  const validTypes = [
+// 验证动作数组
+function validateActions(actions: unknown): boolean {
+  if (!Array.isArray(actions) || actions.length === 0) {
+    return false
+  }
+
+  const validActionTypes = [
     "CREDIT_CHANGE",
     "BADGE_GRANT",
     "BADGE_REVOKE",
     "USER_GROUP_CHANGE",
   ]
-  return validTypes.includes(type)
+
+  return actions.every((action) => {
+    return (
+      typeof action === "object" &&
+      action !== null &&
+      "type" in action &&
+      "params" in action &&
+      validActionTypes.includes(action.type as string)
+    )
+  })
 }
 
 // PATCH - 更新规则
@@ -80,8 +97,7 @@ export async function PATCH(
       description,
       triggerType,
       triggerConditions,
-      actionType,
-      actionParams,
+      actions,
       priority,
       isEnabled,
       isRepeatable,
@@ -121,9 +137,12 @@ export async function PATCH(
       )
     }
 
-    if (actionType !== undefined && !validateActionType(actionType)) {
+    if (actions !== undefined && !validateActions(actions)) {
       return NextResponse.json(
-        { error: "Invalid action type" },
+        {
+          error:
+            "Invalid actions: must be a non-empty array with valid action objects",
+        },
         { status: 400 }
       )
     }
@@ -160,9 +179,8 @@ export async function PATCH(
     if (triggerType !== undefined) updateData.trigger_type = triggerType
     if (triggerConditions !== undefined)
       updateData.trigger_conditions = triggerConditions as Prisma.InputJsonValue
-    if (actionType !== undefined) updateData.action_type = actionType
-    if (actionParams !== undefined)
-      updateData.action_params = actionParams as Prisma.InputJsonValue
+    if (actions !== undefined)
+      updateData.actions = actions as Prisma.InputJsonValue
     if (priority !== undefined) updateData.priority = priority
     if (isEnabled !== undefined) updateData.is_enabled = isEnabled
     if (isRepeatable !== undefined) updateData.is_repeatable = isRepeatable
@@ -186,8 +204,7 @@ export async function PATCH(
         description: true,
         trigger_type: true,
         trigger_conditions: true,
-        action_type: true,
-        action_params: true,
+        actions: true,
         priority: true,
         is_enabled: true,
         is_repeatable: true,
@@ -212,8 +229,7 @@ export async function PATCH(
           await CronManager.updateTask({
             id: rule.id,
             trigger_conditions: rule.trigger_conditions,
-            action_type: rule.action_type,
-            action_params: rule.action_params,
+            actions: rule.actions,
           })
         }
       } catch (error) {
@@ -227,8 +243,7 @@ export async function PATCH(
       description: rule.description,
       triggerType: rule.trigger_type,
       triggerConditions: rule.trigger_conditions,
-      actionType: rule.action_type,
-      actionParams: rule.action_params,
+      actions: (rule.actions as RuleAction[]) || [],
       priority: rule.priority,
       isEnabled: rule.is_enabled,
       isRepeatable: rule.is_repeatable,

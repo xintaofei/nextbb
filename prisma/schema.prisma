@@ -628,14 +628,17 @@ model automation_rules {
   // USER_REGISTER: {"oauth_provider": "github"}
   // USER_LOGIN: {"consecutive_days": 30}
 
-  // 执行动作配置
-  action_type RuleActionType                     // 动作类型
-  action_params Json                             // 动作参数（JSON格式）
+  // 执行动作配置（支持多个动作）
+  actions Json                                   // 动作列表（JSON数组格式）
   // 示例:
-  // CREDIT_CHANGE: {"amount": 10, "description": "每日签到奖励"}
-  // BADGE_GRANT: {"badge_id": 5, "auto_grant": true}
-  // BADGE_REVOKE: {"badge_id": 3, "reason": "条件不满足"}
-  // USER_GROUP_CHANGE: {"group_id": 2, "expire_days": 30}
+  // [
+  //   {"type": "CREDIT_CHANGE", "params": {"amount": 10, "description": "每日签到奖励"}},
+  //   {"type": "BADGE_GRANT", "params": {"badge_id": 5, "auto_grant": true}},
+  //   {"type": "BADGE_REVOKE", "params": {"badge_id": 3, "reason": "条件不满足"}}
+  // ]
+  // 每个 action 对象包含:
+  // - type: 动作类型字符串 ("CREDIT_CHANGE" | "BADGE_GRANT" | "BADGE_REVOKE" | "USER_GROUP_CHANGE")
+  // - params: 动作参数对象
 
   // 规则控制
   priority    Int              @default(0)       // 优先级（数字越大优先级越高）
@@ -659,7 +662,6 @@ model automation_rules {
   execution_logs automation_rule_logs[]
 
   @@index([trigger_type], map: "automation_rules_trigger_index")
-  @@index([action_type], map: "automation_rules_action_index")
   @@index([is_enabled, is_deleted], map: "automation_rules_status_index")
   @@index([trigger_type, is_enabled], map: "automation_rules_trigger_enabled_index")
   @@index([priority], map: "automation_rules_priority_index")

@@ -28,8 +28,7 @@ type Rule = {
   description: string | null
   triggerType: string
   triggerConditions: unknown
-  actionType: string
-  actionParams: unknown
+  actions: unknown
   priority: number
   isEnabled: boolean
   isRepeatable: boolean
@@ -132,8 +131,7 @@ export default function AutomationRulesPage() {
     description: string
     triggerType: string
     triggerConditions: Record<string, unknown>
-    actionType: string
-    actionParams: Record<string, unknown>
+    actions: Array<{ type: string; params: Record<string, unknown> }>
     priority: number
     isEnabled: boolean
     isRepeatable: boolean
@@ -170,8 +168,7 @@ export default function AutomationRulesPage() {
     description: string
     triggerType: string
     triggerConditions: Record<string, unknown>
-    actionType: string
-    actionParams: Record<string, unknown>
+    actions: Array<{ type: string; params: Record<string, unknown> }>
     priority: number
     isEnabled: boolean
     isRepeatable: boolean
@@ -444,9 +441,16 @@ export default function AutomationRulesPage() {
                     <Badge variant="outline">
                       {t(`filter.triggerTypeOptions.${rule.triggerType}`)}
                     </Badge>
-                    <Badge variant="outline">
-                      {t(`filter.actionTypeOptions.${rule.actionType}`)}
-                    </Badge>
+                    {Array.isArray(rule.actions) &&
+                      (rule.actions as Array<{ type: string }>).map(
+                        (action, idx) => (
+                          <Badge key={idx} variant="outline">
+                            {t(
+                              `filter.actionTypeOptions.${action.type as string}`
+                            )}
+                          </Badge>
+                        )
+                      )}
                   </div>
                   <div className="flex items-center justify-between border-t pt-4">
                     <div className="text-sm text-muted-foreground">

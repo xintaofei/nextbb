@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { useTranslations } from "next-intl"
+import { Plus, Trash2 } from "lucide-react"
 import {
   Dialog,
   DialogContent,
@@ -30,13 +31,17 @@ import { CreditChangeActionConfig } from "./action-configs/credit-change-action-
 import { BadgeGrantActionConfig } from "./action-configs/badge-grant-action-config"
 import { BadgeRevokeActionConfig } from "./action-configs/badge-revoke-action-config"
 
+type RuleAction = {
+  type: string
+  params: Record<string, unknown>
+}
+
 type RuleFormData = {
   name: string
   description: string
   triggerType: string
   triggerConditions: Record<string, unknown>
-  actionType: string
-  actionParams: Record<string, unknown>
+  actions: RuleAction[]
   priority: number
   isEnabled: boolean
   isRepeatable: boolean
@@ -55,8 +60,7 @@ type RuleDialogProps = {
     description: string | null
     triggerType: string
     triggerConditions: unknown
-    actionType: string
-    actionParams: unknown
+    actions: unknown
     priority: number
     isEnabled: boolean
     isRepeatable: boolean
@@ -80,8 +84,7 @@ export function AutomationRuleDialog({
     description: "",
     triggerType: "POST_CREATE",
     triggerConditions: {},
-    actionType: "CREDIT_CHANGE",
-    actionParams: {},
+    actions: [{ type: "CREDIT_CHANGE", params: {} }],
     priority: 0,
     isEnabled: true,
     isRepeatable: false,
@@ -94,14 +97,16 @@ export function AutomationRuleDialog({
 
   useEffect(() => {
     if (rule) {
+      const actions = Array.isArray(rule.actions)
+        ? (rule.actions as RuleAction[])
+        : [{ type: "CREDIT_CHANGE", params: {} }]
       setFormData({
         name: rule.name,
         description: rule.description || "",
         triggerType: rule.triggerType,
         triggerConditions:
           (rule.triggerConditions as Record<string, unknown>) || {},
-        actionType: rule.actionType,
-        actionParams: (rule.actionParams as Record<string, unknown>) || {},
+        actions,
         priority: rule.priority,
         isEnabled: rule.isEnabled,
         isRepeatable: rule.isRepeatable,
@@ -116,8 +121,7 @@ export function AutomationRuleDialog({
         description: "",
         triggerType: "POST_CREATE",
         triggerConditions: {},
-        actionType: "CREDIT_CHANGE",
-        actionParams: {},
+        actions: [{ type: "CREDIT_CHANGE", params: {} }],
         priority: 0,
         isEnabled: true,
         isRepeatable: false,
@@ -282,71 +286,128 @@ export function AutomationRuleDialog({
               )}
             </div>
 
-            {/* 执行动作类型 */}
-            <div className="space-y-2">
-              <Label htmlFor="actionType">{t("dialog.actionType")}</Label>
-              <Select
-                value={formData.actionType}
-                onValueChange={(value) => {
-                  setFormData({
-                    ...formData,
-                    actionType: value,
-                    actionParams: {},
-                  })
-                }}
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="CREDIT_CHANGE">
-                    {t("filter.actionTypeOptions.CREDIT_CHANGE")}
-                  </SelectItem>
-                  <SelectItem value="BADGE_GRANT">
-                    {t("filter.actionTypeOptions.BADGE_GRANT")}
-                  </SelectItem>
-                  <SelectItem value="BADGE_REVOKE">
-                    {t("filter.actionTypeOptions.BADGE_REVOKE")}
-                  </SelectItem>
-                  <SelectItem value="USER_GROUP_CHANGE">
-                    {t("filter.actionTypeOptions.USER_GROUP_CHANGE")}
-                  </SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+            {/* 执行动作列表 */}
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <Label>{t("dialog.actions.title")}</Label>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    setFormData({
+                      ...formData,
+                      actions: [
+                        ...formData.actions,
+                        { type: "CREDIT_CHANGE", params: {} },
+                      ],
+                    })
+                  }}
+                >
+                  <Plus className="mr-1 h-4 w-4" />
+                  {t("dialog.addAction")}
+                </Button>
+              </div>
 
-            {/* 动作配置 */}
-            <div className="space-y-2">
-              <Label>{t("dialog.actionParams")}</Label>
-              {formData.actionType === "CREDIT_CHANGE" && (
-                <CreditChangeActionConfig
-                  value={formData.actionParams}
-                  onChange={(value) =>
-                    setFormData({ ...formData, actionParams: value })
-                  }
-                />
-              )}
-              {formData.actionType === "BADGE_GRANT" && (
-                <BadgeGrantActionConfig
-                  value={formData.actionParams}
-                  onChange={(value) =>
-                    setFormData({ ...formData, actionParams: value })
-                  }
-                />
-              )}
-              {formData.actionType === "BADGE_REVOKE" && (
-                <BadgeRevokeActionConfig
-                  value={formData.actionParams}
-                  onChange={(value) =>
-                    setFormData({ ...formData, actionParams: value })
-                  }
-                />
-              )}
-              {formData.actionType === "USER_GROUP_CHANGE" && (
-                <div className="text-sm text-muted-foreground p-4 rounded-lg border bg-muted/50">
-                  {t("dialog.featureNotImplemented")}
+              {formData.actions.map((action, index) => (
+                <div
+                  key={index}
+                  className="space-y-3 rounded-lg border p-4 bg-muted/30"
+                >
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm font-medium">
+                      {t("dialog.actionIndex", { index: index + 1 })}
+                    </span>
+                    {formData.actions.length > 1 && (
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => {
+                          setFormData({
+                            ...formData,
+                            actions: formData.actions.filter(
+                              (_, i) => i !== index
+                            ),
+                          })
+                        }}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    )}
+                  </div>
+
+                  {/* 动作类型选择 */}
+                  <div className="space-y-2">
+                    <Label>{t("dialog.actionType")}</Label>
+                    <Select
+                      value={action.type}
+                      onValueChange={(value) => {
+                        const newActions = [...formData.actions]
+                        newActions[index] = { type: value, params: {} }
+                        setFormData({ ...formData, actions: newActions })
+                      }}
+                    >
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="CREDIT_CHANGE">
+                          {t("filter.actionTypeOptions.CREDIT_CHANGE")}
+                        </SelectItem>
+                        <SelectItem value="BADGE_GRANT">
+                          {t("filter.actionTypeOptions.BADGE_GRANT")}
+                        </SelectItem>
+                        <SelectItem value="BADGE_REVOKE">
+                          {t("filter.actionTypeOptions.BADGE_REVOKE")}
+                        </SelectItem>
+                        <SelectItem value="USER_GROUP_CHANGE">
+                          {t("filter.actionTypeOptions.USER_GROUP_CHANGE")}
+                        </SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  {/* 动作参数配置 */}
+                  <div>
+                    {action.type === "CREDIT_CHANGE" && (
+                      <CreditChangeActionConfig
+                        value={action.params}
+                        onChange={(value) => {
+                          const newActions = [...formData.actions]
+                          newActions[index] = { ...action, params: value }
+                          setFormData({ ...formData, actions: newActions })
+                        }}
+                      />
+                    )}
+                    {action.type === "BADGE_GRANT" && (
+                      <BadgeGrantActionConfig
+                        value={action.params}
+                        onChange={(value) => {
+                          const newActions = [...formData.actions]
+                          newActions[index] = { ...action, params: value }
+                          setFormData({ ...formData, actions: newActions })
+                        }}
+                      />
+                    )}
+                    {action.type === "BADGE_REVOKE" && (
+                      <BadgeRevokeActionConfig
+                        value={action.params}
+                        onChange={(value) => {
+                          const newActions = [...formData.actions]
+                          newActions[index] = { ...action, params: value }
+                          setFormData({ ...formData, actions: newActions })
+                        }}
+                      />
+                    )}
+                    {action.type === "USER_GROUP_CHANGE" && (
+                      <div className="text-sm text-muted-foreground p-4 rounded-lg border bg-muted/50">
+                        {t("dialog.featureNotImplemented")}
+                      </div>
+                    )}
+                  </div>
                 </div>
-              )}
+              ))}
             </div>
 
             {/* 优先级 */}

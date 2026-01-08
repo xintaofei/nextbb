@@ -273,8 +273,7 @@ export class RuleEngine {
       id: bigint
       trigger_type: string
       trigger_conditions: unknown
-      action_type: string
-      action_params: unknown
+      actions: unknown
       is_repeatable: boolean
       max_executions: number | null
       cooldown_seconds: number | null
@@ -355,8 +354,47 @@ export class RuleEngine {
         }
       }
 
-      // 执行 Action
-      await this.executeAction(rule, userId, targetUserId, eventData)
+      // 执行所有 Actions
+      const actions = rule.actions as Array<{
+        type: string
+        params: Record<string, unknown>
+      }>
+
+      if (!Array.isArray(actions) || actions.length === 0) {
+        console.warn(`[RuleEngine] 规则 ${rule.id} 没有配置动作`)
+        return
+      }
+
+      // 使用 Promise.allSettled 异步并行执行所有动作
+      const results = await Promise.allSettled(
+        actions.map((action) =>
+          this.executeAction(
+            {
+              id: rule.id,
+              action_type: action.type,
+              action_params: action.params,
+              is_repeatable: rule.is_repeatable,
+            },
+            userId,
+            targetUserId,
+            eventData
+          )
+        )
+      )
+
+      // 记录执行结果
+      results.forEach((result, index) => {
+        if (result.status === "rejected") {
+          console.error(
+            `[RuleEngine] 规则 ${rule.id} 动作 ${index + 1} (${actions[index]?.type}) 执行失败:`,
+            result.reason
+          )
+        } else {
+          console.log(
+            `[RuleEngine] 规则 ${rule.id} 动作 ${index + 1} (${actions[index]?.type}) 执行成功`
+          )
+        }
+      })
     } catch (error) {
       console.error(`[RuleEngine] 处理规则 ${rule.id} 失败:`, error)
     }

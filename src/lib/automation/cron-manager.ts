@@ -93,8 +93,7 @@ export class CronManager {
   static async addTask(rule: {
     id: bigint
     trigger_conditions: unknown
-    action_type: string
-    action_params: unknown
+    actions: unknown
   }): Promise<void> {
     try {
       const conditions = rule.trigger_conditions as Record<
@@ -168,8 +167,7 @@ export class CronManager {
   static async updateTask(rule: {
     id: bigint
     trigger_conditions: unknown
-    action_type: string
-    action_params: unknown
+    actions: unknown
   }): Promise<void> {
     this.removeTask(rule.id)
     await this.addTask(rule)
