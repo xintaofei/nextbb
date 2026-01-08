@@ -266,20 +266,11 @@ export class RuleEngine {
     eventData: AutomationEventMap[K]
   ): Promise<void> {
     try {
-      // 检查条件是否匹配
+      // 解析条件
       const conditions = rule.trigger_conditions as Record<
         string,
         unknown
       > | null
-      const isMatched = this.matchConditions(
-        rule.trigger_type as RuleTriggerType,
-        conditions,
-        eventData
-      )
-
-      if (!isMatched) {
-        return
-      }
 
       // 提取目标用户ID
       const userId = this.extractUserId(
@@ -292,12 +283,26 @@ export class RuleEngine {
         return
       }
 
+      // 检查条件是否匹配
+      const isMatched = this.matchConditions(
+        rule.trigger_type as RuleTriggerType,
+        conditions,
+        eventData
+      )
+      if (!isMatched) {
+        return
+      }
+
+      // 预先计算执行对象(默认为触发用户)
+      // 对于积分变动、徽章授予/撤销等操作,执行对象就是 userId
+      const targetUserId = userId
+
       // 检查是否可重复触发
       if (!rule.is_repeatable) {
         const existingLog = await prisma.automation_rule_logs.findFirst({
           where: {
             rule_id: rule.id,
-            triggered_by: userId,
+            target_user_id: targetUserId,
             execution_status: RuleExecutionStatus.SUCCESS,
           },
         })
@@ -313,7 +318,7 @@ export class RuleEngine {
         const count = await prisma.automation_rule_logs.count({
           where: {
             rule_id: rule.id,
-            triggered_by: userId,
+            target_user_id: targetUserId,
             execution_status: RuleExecutionStatus.SUCCESS,
           },
         })
@@ -329,7 +334,7 @@ export class RuleEngine {
         const lastLog = await prisma.automation_rule_logs.findFirst({
           where: {
             rule_id: rule.id,
-            triggered_by: userId,
+            target_user_id: targetUserId,
             execution_status: RuleExecutionStatus.SUCCESS,
           },
           orderBy: { executed_at: "desc" },
@@ -346,7 +351,7 @@ export class RuleEngine {
       }
 
       // 执行 Action
-      await this.executeAction(rule, userId, eventData)
+      await this.executeAction(rule, userId, targetUserId, eventData)
     } catch (error) {
       console.error(`[RuleEngine] 处理规则 ${rule.id} 失败:`, error)
     }
@@ -444,6 +449,7 @@ export class RuleEngine {
       is_repeatable: boolean
     },
     userId: bigint,
+    targetUserId: bigint,
     eventData: AutomationEventMap[K]
   ): Promise<void> {
     try {
@@ -459,9 +465,6 @@ export class RuleEngine {
 
       // 执行 Action
       const result = await handler.execute(rule.action_params, context)
-
-      // 确定执行对象(默认为触发用户)
-      const targetUserId = result.targetUserId || userId
 
       // 如果规则不可重复触发,检查是否已有SUCCESS记录
       // 有SUCCESS记录说明该执行对象已经成功执行过,不需要记录SKIPPED日志
