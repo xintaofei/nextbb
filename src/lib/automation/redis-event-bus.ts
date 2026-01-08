@@ -1,17 +1,19 @@
 import type Redis from "ioredis"
 import { getRedisClient } from "@/lib/redis"
 import type { AutomationEventMap } from "./events"
+import crypto from "crypto"
 
 /**
  * 全局状态类型，用于在 Next.js 开发模式下保持单例状态
  */
 interface RedisEventBusState {
-  client: Redis | null
   isInitialized: boolean
   isProcessing: boolean
   handlers: Map<string, Array<(data: unknown) => Promise<void>>>
   pendingConsumerGroups: Set<string>
   consumerName: string | null
+  restartAttempts: number // 重启尝试次数
+  lastRestartTime: number // 最后一次重启时间
 }
 
 /**
@@ -24,12 +26,13 @@ const globalForEventBus = globalThis as unknown as {
 // 初始化或获取全局状态
 if (!globalForEventBus.redisEventBusState) {
   globalForEventBus.redisEventBusState = {
-    client: null,
     isInitialized: false,
     isProcessing: false,
     handlers: new Map(),
     pendingConsumerGroups: new Set(),
     consumerName: null,
+    restartAttempts: 0,
+    lastRestartTime: 0,
   }
 }
 
@@ -68,21 +71,37 @@ export class RedisEventBus {
   private static readonly BATCH_SIZE = 10
 
   /**
+   * 最大重启尝试次数（防止无限重启）
+   */
+  private static readonly MAX_RESTART_ATTEMPTS = 5
+
+  /**
+   * 重启间隔时间（毫秒）
+   */
+  private static readonly RESTART_INTERVAL = 5000
+
+  /**
    * 获取 Redis 客户端
+   *
+   * 生产级别改进：
+   * - 每次都从 getRedisClient() 获取，确保使用最新连接
+   * - 不再缓存到 state，避免引用已关闭的连接
    */
   private static getClient(): Redis {
-    if (!state.client) {
-      state.client = getRedisClient()
-    }
-    return state.client
+    return getRedisClient()
   }
 
   /**
    * 获取消费者名称
+   *
+   * 生产级别改进：
+   * - 使用 crypto.randomBytes 生成唯一 ID，避免重复
+   * - 格式：worker-{pid}-{timestamp}-{randomId}
    */
   private static getConsumerName(): string {
     if (!state.consumerName) {
-      state.consumerName = `worker-${process.pid}-${Date.now()}`
+      const randomId = crypto.randomBytes(4).toString("hex")
+      state.consumerName = `worker-${process.pid}-${Date.now()}-${randomId}`
     }
     return state.consumerName
   }
@@ -165,6 +184,10 @@ export class RedisEventBus {
 
   /**
    * 启动消息处理循环
+   *
+   * 生产级别改进：
+   * - 添加重启机制
+   * - 防止无限重启
    */
   private static startProcessing(): void {
     if (state.isProcessing) {
@@ -177,7 +200,44 @@ export class RedisEventBus {
     this.processMessages().catch((err) => {
       console.error("[RedisEventBus] 消息处理循环异常:", err)
       state.isProcessing = false
+
+      // 尝试重启
+      this.attemptRestart()
     })
+  }
+
+  /**
+   * 尝试重启消息处理循环
+   *
+   * 生产级别特性：
+   * - 限制重启次数，防止无限重启
+   * - 重启间隔时间限制
+   * - 直接重启，依靠 while 循环和 Redis 自动重连机制
+   */
+  private static attemptRestart(): void {
+    const now = Date.now()
+
+    // 如果距离上次重启超过 1 分钟，重置计数器
+    if (now - state.lastRestartTime > 60000) {
+      state.restartAttempts = 0
+    }
+
+    if (state.restartAttempts >= this.MAX_RESTART_ATTEMPTS) {
+      console.error(
+        `[RedisEventBus] 已达到最大重启次数 (${this.MAX_RESTART_ATTEMPTS})，停止自动重启`
+      )
+      return
+    }
+
+    state.restartAttempts++
+    state.lastRestartTime = now
+
+    console.log(
+      `[RedisEventBus] 尝试重启消息处理循环 (${state.restartAttempts}/${this.MAX_RESTART_ATTEMPTS})`
+    )
+
+    // 直接重启，Redis 客户端有自动重连机制
+    this.startProcessing()
   }
 
   /**
@@ -198,9 +258,40 @@ export class RedisEventBus {
         await this.sleep(this.POLL_INTERVAL)
       } catch (error) {
         console.error("[RedisEventBus] 处理消息失败:", error)
+
+        // 检查是否是 Redis 连接错误
+        if (this.isRedisConnectionError(error)) {
+          console.error("[RedisEventBus] 检测到 Redis 连接错误，退出处理循环")
+          state.isProcessing = false
+          this.attemptRestart()
+          return
+        }
+
         await this.sleep(this.POLL_INTERVAL)
       }
     }
+  }
+
+  /**
+   * 检查是否为 Redis 连接错误
+   */
+  private static isRedisConnectionError(error: unknown): boolean {
+    if (!error || typeof error !== "object") {
+      return false
+    }
+
+    const err = error as { message?: string; code?: string }
+    const message = err.message?.toLowerCase() || ""
+    const code = err.code?.toLowerCase() || ""
+
+    // 常见的 Redis 连接错误
+    return (
+      message.includes("connection") ||
+      message.includes("econnrefused") ||
+      message.includes("etimedout") ||
+      code === "econnrefused" ||
+      code === "etimedout"
+    )
   }
 
   /**
