@@ -20,6 +20,7 @@ import { Badge } from "@/components/ui/badge"
 import { Switch } from "@/components/ui/switch"
 import { toast } from "sonner"
 import { AutomationRuleDialog } from "@/components/admin/dialogs/automation-rule-dialog"
+import { AutomationRuleLogsDialog } from "@/components/admin/dialogs/automation-rule-logs-dialog"
 
 type Rule = {
   id: string
@@ -65,6 +66,11 @@ export default function AutomationRulesPage() {
   const [page, setPage] = useState(1)
   const [createDialogOpen, setCreateDialogOpen] = useState(false)
   const [editingRule, setEditingRule] = useState<Rule | undefined>()
+  const [logsDialogOpen, setLogsDialogOpen] = useState(false)
+  const [selectedRuleForLogs, setSelectedRuleForLogs] = useState<{
+    id: string
+    name: string
+  } | null>(null)
 
   const apiUrl = `/api/admin/automation-rules?page=${page}&pageSize=20&q=${searchQuery}&triggerType=${triggerType}&actionType=${actionType}&sortBy=${sortBy}${
     statusFilter === "enabled"
@@ -448,7 +454,17 @@ export default function AutomationRulesPage() {
                       {new Date(rule.updatedAt).toLocaleString()}
                     </div>
                     <div className="flex items-center gap-2">
-                      <Button variant="outline" size="sm">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          setSelectedRuleForLogs({
+                            id: rule.id,
+                            name: rule.name,
+                          })
+                          setLogsDialogOpen(true)
+                        }}
+                      >
                         <Eye className="mr-1 h-4 w-4" />
                         {t("card.actions.viewLogs")}
                       </Button>
@@ -526,6 +542,15 @@ export default function AutomationRulesPage() {
         rule={editingRule}
         onSubmit={handleEditRule}
       />
+
+      {selectedRuleForLogs && (
+        <AutomationRuleLogsDialog
+          open={logsDialogOpen}
+          onOpenChange={setLogsDialogOpen}
+          ruleId={selectedRuleForLogs.id}
+          ruleName={selectedRuleForLogs.name}
+        />
+      )}
     </AdminPageContainer>
   )
 }
