@@ -29,3 +29,9 @@ export enum RuleExecutionStatus {
   FAILED = "FAILED",
   SKIPPED = "SKIPPED",
 }
+
+// 规则动作类型定义
+export type RuleAction = {
+  type: RuleActionType
+  params: Record<string, unknown>
+}

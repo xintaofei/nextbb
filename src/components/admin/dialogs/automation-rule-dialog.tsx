@@ -21,6 +21,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
+import { RuleActionType, RuleAction } from "@/lib/automation/types"
 
 import { CronTriggerConfig } from "./trigger-configs/cron-trigger-config"
 import { PostCreateTriggerConfig } from "./trigger-configs/post-create-trigger-config"
@@ -30,11 +31,6 @@ import { PostLikeTriggerConfig } from "./trigger-configs/post-like-trigger-confi
 import { CreditChangeActionConfig } from "./action-configs/credit-change-action-config"
 import { BadgeGrantActionConfig } from "./action-configs/badge-grant-action-config"
 import { BadgeRevokeActionConfig } from "./action-configs/badge-revoke-action-config"
-
-type RuleAction = {
-  type: string
-  params: Record<string, unknown>
-}
 
 type RuleFormData = {
   name: string
@@ -84,7 +80,7 @@ export function AutomationRuleDialog({
     description: "",
     triggerType: "POST_CREATE",
     triggerConditions: {},
-    actions: [{ type: "CREDIT_CHANGE", params: {} }],
+    actions: [{ type: RuleActionType.CREDIT_CHANGE, params: {} }],
     priority: 0,
     isEnabled: true,
     isRepeatable: false,
@@ -99,7 +95,7 @@ export function AutomationRuleDialog({
     if (rule) {
       const actions = Array.isArray(rule.actions)
         ? (rule.actions as RuleAction[])
-        : [{ type: "CREDIT_CHANGE", params: {} }]
+        : [{ type: RuleActionType.CREDIT_CHANGE, params: {} }]
       setFormData({
         name: rule.name,
         description: rule.description || "",
@@ -121,7 +117,7 @@ export function AutomationRuleDialog({
         description: "",
         triggerType: "POST_CREATE",
         triggerConditions: {},
-        actions: [{ type: "CREDIT_CHANGE", params: {} }],
+        actions: [{ type: RuleActionType.CREDIT_CHANGE, params: {} }],
         priority: 0,
         isEnabled: true,
         isRepeatable: false,
@@ -299,7 +295,7 @@ export function AutomationRuleDialog({
                       ...formData,
                       actions: [
                         ...formData.actions,
-                        { type: "CREDIT_CHANGE", params: {} },
+                        { type: RuleActionType.CREDIT_CHANGE, params: {} },
                       ],
                     })
                   }}
@@ -344,7 +340,10 @@ export function AutomationRuleDialog({
                       value={action.type}
                       onValueChange={(value) => {
                         const newActions = [...formData.actions]
-                        newActions[index] = { type: value, params: {} }
+                        newActions[index] = {
+                          type: value as RuleActionType,
+                          params: {},
+                        }
                         setFormData({ ...formData, actions: newActions })
                       }}
                     >
@@ -352,16 +351,16 @@ export function AutomationRuleDialog({
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="CREDIT_CHANGE">
+                        <SelectItem value={RuleActionType.CREDIT_CHANGE}>
                           {t("filter.actionTypeOptions.CREDIT_CHANGE")}
                         </SelectItem>
-                        <SelectItem value="BADGE_GRANT">
+                        <SelectItem value={RuleActionType.BADGE_GRANT}>
                           {t("filter.actionTypeOptions.BADGE_GRANT")}
                         </SelectItem>
-                        <SelectItem value="BADGE_REVOKE">
+                        <SelectItem value={RuleActionType.BADGE_REVOKE}>
                           {t("filter.actionTypeOptions.BADGE_REVOKE")}
                         </SelectItem>
-                        <SelectItem value="USER_GROUP_CHANGE">
+                        <SelectItem value={RuleActionType.USER_GROUP_CHANGE}>
                           {t("filter.actionTypeOptions.USER_GROUP_CHANGE")}
                         </SelectItem>
                       </SelectContent>
@@ -370,7 +369,7 @@ export function AutomationRuleDialog({
 
                   {/* 动作参数配置 */}
                   <div>
-                    {action.type === "CREDIT_CHANGE" && (
+                    {action.type === RuleActionType.CREDIT_CHANGE && (
                       <CreditChangeActionConfig
                         value={action.params}
                         onChange={(value) => {
@@ -380,7 +379,7 @@ export function AutomationRuleDialog({
                         }}
                       />
                     )}
-                    {action.type === "BADGE_GRANT" && (
+                    {action.type === RuleActionType.BADGE_GRANT && (
                       <BadgeGrantActionConfig
                         value={action.params}
                         onChange={(value) => {
@@ -390,7 +389,7 @@ export function AutomationRuleDialog({
                         }}
                       />
                     )}
-                    {action.type === "BADGE_REVOKE" && (
+                    {action.type === RuleActionType.BADGE_REVOKE && (
                       <BadgeRevokeActionConfig
                         value={action.params}
                         onChange={(value) => {
@@ -400,7 +399,7 @@ export function AutomationRuleDialog({
                         }}
                       />
                     )}
-                    {action.type === "USER_GROUP_CHANGE" && (
+                    {action.type === RuleActionType.USER_GROUP_CHANGE && (
                       <div className="text-sm text-muted-foreground p-4 rounded-lg border bg-muted/50">
                         {t("dialog.featureNotImplemented")}
                       </div>

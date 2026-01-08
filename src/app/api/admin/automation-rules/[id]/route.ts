@@ -3,11 +3,7 @@ import { Prisma } from "@prisma/client"
 import { prisma } from "@/lib/prisma"
 import { requireAdmin } from "@/lib/guard"
 import { CronManager } from "@/lib/automation/cron-manager"
-
-type RuleAction = {
-  type: string
-  params: Record<string, unknown>
-}
+import { RuleActionType, RuleAction } from "@/lib/automation/types"
 
 type RuleDTO = {
   id: string
@@ -50,12 +46,7 @@ function validateActions(actions: unknown): boolean {
     return false
   }
 
-  const validActionTypes = [
-    "CREDIT_CHANGE",
-    "BADGE_GRANT",
-    "BADGE_REVOKE",
-    "USER_GROUP_CHANGE",
-  ]
+  const validActionTypes = Object.values(RuleActionType)
 
   return actions.every((action) => {
     return (
@@ -63,7 +54,7 @@ function validateActions(actions: unknown): boolean {
       action !== null &&
       "type" in action &&
       "params" in action &&
-      validActionTypes.includes(action.type as string)
+      validActionTypes.includes(action.type as RuleActionType)
     )
   })
 }

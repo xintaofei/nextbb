@@ -8,7 +8,7 @@ import { prisma } from "@/lib/prisma"
 import { Prisma } from "@prisma/client"
 import { generateId } from "@/lib/id"
 import { ActionHandlerFactory, type ActionContext } from "./action-handlers"
-import { RuleTriggerType, RuleExecutionStatus } from "./types"
+import { RuleTriggerType, RuleActionType, RuleExecutionStatus } from "./types"
 import type { AutomationEventMap } from "./events"
 
 // ==================== 规则条件匹配器 ====================
@@ -356,7 +356,7 @@ export class RuleEngine {
 
       // 执行所有 Actions
       const actions = rule.actions as Array<{
-        type: string
+        type: RuleActionType
         params: Record<string, unknown>
       }>
 
