@@ -441,6 +441,7 @@ export class RuleEngine {
       id: bigint
       action_type: string
       action_params: unknown
+      is_repeatable: boolean
     },
     userId: bigint,
     eventData: AutomationEventMap[K]
@@ -459,14 +460,29 @@ export class RuleEngine {
       // 执行 Action
       const result = await handler.execute(rule.action_params, context)
 
-      // 确定执行状态
-      let executionStatus: RuleExecutionStatus
-      if (result.success) {
-        executionStatus = RuleExecutionStatus.SUCCESS
-      } else if (result.skipped) {
-        executionStatus = RuleExecutionStatus.SKIPPED
-      } else {
-        executionStatus = RuleExecutionStatus.FAILED
+      // 确定执行对象(默认为触发用户)
+      const targetUserId = result.targetUserId || userId
+
+      // 如果规则不可重复触发,检查是否已有SUCCESS记录
+      // 有SUCCESS记录说明该执行对象已经成功执行过,不需要记录SKIPPED日志
+      if (
+        result.status === RuleExecutionStatus.SKIPPED &&
+        !rule.is_repeatable
+      ) {
+        const existingSuccessLog = await prisma.automation_rule_logs.findFirst({
+          where: {
+            rule_id: rule.id,
+            target_user_id: targetUserId,
+            execution_status: RuleExecutionStatus.SUCCESS,
+          },
+        })
+
+        if (existingSuccessLog) {
+          console.log(
+            `[RuleEngine] 规则 ${rule.id} 跳过记录SKIPPED日志(执行对象已有SUCCESS记录)`
+          )
+          return
+        }
       }
 
       // 记录执行日志
@@ -475,23 +491,16 @@ export class RuleEngine {
           id: generateId(),
           rule_id: rule.id,
           triggered_by: userId,
+          target_user_id: targetUserId,
           trigger_context: eventData as never,
-          execution_status: executionStatus,
+          execution_status: result.status,
           execution_result: result.data as never,
-          error_message:
-            executionStatus === RuleExecutionStatus.SKIPPED
-              ? result.skipReason
-                ? JSON.stringify({
-                    key: result.skipReason,
-                    params: result.skipReasonParams || {},
-                  })
-                : null
-              : result.error
-                ? JSON.stringify({
-                    key: result.error,
-                    params: result.errorParams || {},
-                  })
-                : null,
+          error_message: result.message
+            ? JSON.stringify({
+                key: result.message,
+                params: result.messageParams || {},
+              })
+            : null,
           executed_at: new Date(),
         },
       })

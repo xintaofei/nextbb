@@ -5,7 +5,7 @@
  * 便于扩展新的动作类型,而无需修改核心代码
  */
 
-import { RuleActionType } from "@/lib/automation/types"
+import { RuleActionType, RuleExecutionStatus } from "@/lib/automation/types"
 import { prisma } from "@/lib/prisma"
 import { generateId } from "@/lib/id"
 
@@ -59,13 +59,11 @@ export interface ActionContext {
  * Action 执行结果
  */
 export interface ActionResult {
-  success: boolean
-  skipped?: boolean // 是否为预期内的跳过(如用户已有徽章、积分不足等)
-  skipReason?: string // 跳过原因的多语言键值(如 "Automation.skipReason.badgeAlreadyOwned")
-  skipReasonParams?: Record<string, string | number> // 跳过原因的变量参数
+  status: RuleExecutionStatus // 执行状态: SUCCESS, FAILED, SKIPPED
+  targetUserId?: bigint // 执行对象的用户ID(如授予徽章的目标用户)
+  message?: string // 失败/跳过原因的多语言键值(如 "Automation.skipReason.badgeAlreadyOwned")
+  messageParams?: Record<string, string | number> // 失败/跳过原因的变量参数
   data?: Record<string, unknown>
-  error?: string // 错误信息的多语言键值或错误消息
-  errorParams?: Record<string, string | number> // 错误信息的变量参数
 }
 
 /**
@@ -100,9 +98,9 @@ export class CreditChangeHandler implements IActionHandler<CreditChangeParams> {
 
       if (!user) {
         return {
-          success: false,
-          error: "Automation.error.userNotFound",
-          errorParams: {
+          status: RuleExecutionStatus.FAILED,
+          message: "Automation.error.userNotFound",
+          messageParams: {
             userId: userId.toString(),
           },
         }
@@ -113,10 +111,10 @@ export class CreditChangeHandler implements IActionHandler<CreditChangeParams> {
       // 防止积分变为负数
       if (newBalance < 0) {
         return {
-          success: false,
-          skipped: true,
-          skipReason: "Automation.skipReason.insufficientCredits",
-          skipReasonParams: {
+          status: RuleExecutionStatus.SKIPPED,
+          targetUserId: userId,
+          message: "Automation.skipReason.insufficientCredits",
+          messageParams: {
             currentCredits: user.credits,
             amount: amount,
           },
@@ -147,7 +145,8 @@ export class CreditChangeHandler implements IActionHandler<CreditChangeParams> {
       })
 
       return {
-        success: true,
+        status: RuleExecutionStatus.SUCCESS,
+        targetUserId: userId,
         data: {
           credit_changed: amount,
           new_balance: result.newBalance,
@@ -155,9 +154,9 @@ export class CreditChangeHandler implements IActionHandler<CreditChangeParams> {
       }
     } catch (error) {
       return {
-        success: false,
-        error: "Automation.error.databaseError",
-        errorParams: {
+        status: RuleExecutionStatus.FAILED,
+        message: "Automation.error.databaseError",
+        messageParams: {
           message: error instanceof Error ? error.message : String(error),
         },
       }
@@ -189,9 +188,9 @@ export class BadgeGrantHandler implements IActionHandler<BadgeGrantParams> {
         badge_id = badgeIdRaw
       } else {
         return {
-          success: false,
-          error: "Automation.error.invalidParams",
-          errorParams: {
+          status: RuleExecutionStatus.FAILED,
+          message: "Automation.error.invalidParams",
+          messageParams: {
             message: `无效的徽章ID类型: ${typeof badgeIdRaw}`,
           },
         }
@@ -220,9 +219,9 @@ export class BadgeGrantHandler implements IActionHandler<BadgeGrantParams> {
         const error = `徽章不存在或已禁用: ${badge_id}`
         console.error(`[BadgeGrantHandler] ${error}`)
         return {
-          success: false,
-          error: "Automation.error.badgeNotFound",
-          errorParams: {
+          status: RuleExecutionStatus.FAILED,
+          message: "Automation.error.badgeNotFound",
+          messageParams: {
             badgeId: badge_id.toString(),
           },
         }
@@ -240,10 +239,10 @@ export class BadgeGrantHandler implements IActionHandler<BadgeGrantParams> {
 
       if (existing && !existing.is_deleted) {
         return {
-          success: false,
-          skipped: true,
-          skipReason: "Automation.skipReason.badgeAlreadyOwned",
-          skipReasonParams: {
+          status: RuleExecutionStatus.SKIPPED,
+          targetUserId: userId,
+          message: "Automation.skipReason.badgeAlreadyOwned",
+          messageParams: {
             badgeName: badge.name,
           },
         }
@@ -278,7 +277,8 @@ export class BadgeGrantHandler implements IActionHandler<BadgeGrantParams> {
       }
 
       return {
-        success: true,
+        status: RuleExecutionStatus.SUCCESS,
+        targetUserId: userId,
         data: {
           badge_granted: {
             badge_id: badge_id.toString(),
@@ -288,9 +288,9 @@ export class BadgeGrantHandler implements IActionHandler<BadgeGrantParams> {
       }
     } catch (error) {
       return {
-        success: false,
-        error: "Automation.error.databaseError",
-        errorParams: {
+        status: RuleExecutionStatus.FAILED,
+        message: "Automation.error.databaseError",
+        messageParams: {
           message: error instanceof Error ? error.message : String(error),
         },
       }
@@ -322,9 +322,9 @@ export class BadgeRevokeHandler implements IActionHandler<BadgeRevokeParams> {
         badge_id = badgeIdRaw
       } else {
         return {
-          success: false,
-          error: "Automation.error.invalidParams",
-          errorParams: {
+          status: RuleExecutionStatus.FAILED,
+          message: "Automation.error.invalidParams",
+          messageParams: {
             message: `无效的徽章ID类型: ${typeof badgeIdRaw}`,
           },
         }
@@ -349,10 +349,10 @@ export class BadgeRevokeHandler implements IActionHandler<BadgeRevokeParams> {
 
       if (!userBadge || userBadge.is_deleted) {
         return {
-          success: false,
-          skipped: true,
-          skipReason: "Automation.skipReason.badgeNotOwned",
-          skipReasonParams: {
+          status: RuleExecutionStatus.SKIPPED,
+          targetUserId: userId,
+          message: "Automation.skipReason.badgeNotOwned",
+          messageParams: {
             badgeName: userBadge?.badge.name || "Unknown",
           },
         }
@@ -372,7 +372,8 @@ export class BadgeRevokeHandler implements IActionHandler<BadgeRevokeParams> {
       })
 
       return {
-        success: true,
+        status: RuleExecutionStatus.SUCCESS,
+        targetUserId: userId,
         data: {
           badge_revoked: {
             badge_id: badge_id.toString(),
@@ -383,9 +384,9 @@ export class BadgeRevokeHandler implements IActionHandler<BadgeRevokeParams> {
       }
     } catch (error) {
       return {
-        success: false,
-        error: "Automation.error.databaseError",
-        errorParams: {
+        status: RuleExecutionStatus.FAILED,
+        message: "Automation.error.databaseError",
+        messageParams: {
           message: error instanceof Error ? error.message : String(error),
         },
       }
@@ -403,8 +404,8 @@ export class UserGroupChangeHandler implements IActionHandler<UserGroupChangePar
   ): Promise<ActionResult> {
     // TODO: 实现用户组变更逻辑
     return {
-      success: false,
-      error: "用户组变更功能暂未实现",
+      status: RuleExecutionStatus.FAILED,
+      message: "用户组变更功能暂未实现",
     }
   }
 }

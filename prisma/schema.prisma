@@ -675,7 +675,8 @@ model automation_rule_logs {
   rule_id     BigInt   @db.BigInt
 
   // 触发信息
-  triggered_by BigInt?  @db.BigInt  // 触发用户ID（可为空，如定时任务）
+  triggered_by BigInt?  @db.BigInt  // 触发用户ID(可为空,如定时任务)
+  target_user_id BigInt? @db.BigInt // 执行对象的用户ID(如授予徽章的目标用户)
   trigger_context Json?              // 触发上下文数据
   // 示例:
   // {"topic_id": 123, "post_id": 456, "category_id": 1}
@@ -701,9 +702,11 @@ model automation_rule_logs {
 
   @@index([rule_id], map: "automation_logs_rule_index")
   @@index([triggered_by], map: "automation_logs_user_index")
+  @@index([target_user_id], map: "automation_logs_target_index")
   @@index([execution_status], map: "automation_logs_status_index")
   @@index([executed_at], map: "automation_logs_executed_index")
   @@index([rule_id, execution_status], map: "automation_logs_rule_status_index")
+  @@index([rule_id, target_user_id, execution_status], map: "automation_logs_rule_target_status_index")
   @@index([triggered_by, executed_at], map: "automation_logs_user_time_index")
   @@map("automation_rule_logs")
 }
