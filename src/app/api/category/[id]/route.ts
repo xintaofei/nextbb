@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
 import { getLocale } from "next-intl/server"
+import { getTranslationsQuery, getTranslationFields } from "@/lib/locale"
 
 type CategoryDTO = {
   id: string
@@ -29,16 +30,10 @@ export async function GET(
     select: {
       id: true,
       icon: true,
-      translations: {
-        where: { OR: [{ locale, is_source: false }, { is_source: true }] },
-        select: {
-          locale: true,
-          name: true,
-          description: true,
-          is_source: true,
-        },
-        take: 2,
-      },
+      translations: getTranslationsQuery(locale, {
+        name: true,
+        description: true,
+      }),
     },
   })
 
@@ -46,16 +41,17 @@ export async function GET(
     return NextResponse.json(null, { status: 404 })
   }
 
-  // 查找当前语言翻译，如果没有则回退到源语言
-  const translation =
-    category.translations.find((t) => t.locale === locale && !t.is_source) ||
-    category.translations.find((t) => t.is_source)
+  // 使用通用工具函数获取翻译字段
+  const fields = getTranslationFields(category.translations, locale, {
+    name: "",
+    description: null,
+  })
 
   const result: CategoryDTO = {
     id: String(category.id),
-    name: translation?.name || "",
+    name: fields.name,
     icon: category.icon ?? undefined,
-    description: translation?.description ?? null,
+    description: fields.description,
   }
 
   return NextResponse.json(result)

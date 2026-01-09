@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma"
 import { Prisma } from "@prisma/client"
 import { getSessionUser } from "@/lib/auth"
 import { getLocale } from "next-intl/server"
+import { getTranslationsQuery, getTranslationFields } from "@/lib/locale"
 
 type TopicInfo = {
   id: string
@@ -60,18 +61,10 @@ export async function GET(
           icon: true,
           bg_color: true,
           text_color: true,
-          translations: {
-            where: {
-              OR: [{ locale, is_source: false }, { is_source: true }],
-            },
-            select: {
-              locale: true,
-              name: true,
-              description: true,
-              is_source: true,
-            },
-            take: 2,
-          },
+          translations: getTranslationsQuery(locale, {
+            name: true,
+            description: true,
+          }),
         },
       },
       tag_links: {
@@ -98,10 +91,11 @@ export async function GET(
     Prisma.sql`UPDATE topics SET views = views + 1 WHERE id = ${topic.id}`
   )
 
-  const translation =
-    topic.category.translations.find(
-      (t) => t.locale === locale && !t.is_source
-    ) || topic.category.translations.find((t) => t.is_source)
+  const categoryFields = getTranslationFields(
+    topic.category.translations,
+    locale,
+    { name: "", description: null }
+  )
 
   const result: TopicInfo = {
     id: String(topic.id),
@@ -113,9 +107,9 @@ export async function GET(
     isSettled: topic.is_settled,
     category: {
       id: String(topic.category.id),
-      name: translation?.name || "",
+      name: categoryFields.name,
       icon: topic.category.icon ?? undefined,
-      description: translation?.description || null,
+      description: categoryFields.description,
       bgColor: topic.category.bg_color,
       textColor: topic.category.text_color,
     },

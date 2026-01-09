@@ -8,6 +8,7 @@ import { topicFormSchema } from "@/lib/topic-validation"
 import { CreditService } from "@/lib/credit-service"
 import { CreditLogType } from "@prisma/client"
 import { getLocale } from "next-intl/server"
+import { getTranslationsQuery, getTranslationFields } from "@/lib/locale"
 
 interface TopicsDelegate {
   create(args: unknown): Promise<{ id: bigint }>
@@ -155,18 +156,10 @@ export async function GET(req: Request) {
           icon: true,
           bg_color: true,
           text_color: true,
-          translations: {
-            where: {
-              OR: [{ locale, is_source: false }, { is_source: true }],
-            },
-            select: {
-              locale: true,
-              name: true,
-              description: true,
-              is_source: true,
-            },
-            take: 2,
-          },
+          translations: getTranslationsQuery(locale, {
+            name: true,
+            description: true,
+          }),
         },
       },
       tag_links: {
@@ -294,11 +287,15 @@ export async function GET(req: Request) {
   }
   const items: TopicListItem[] = topicsX.map((t) => {
     const agg = byTopic[String(t.id)]
-    // 查找当前语言翻译，如果没有则回退到源语言
-    const translation =
-      t.category.translations.find(
-        (tr) => tr.locale === locale && !tr.is_source
-      ) || t.category.translations.find((tr) => tr.is_source)
+    // 使用通用工具函数获取翻译字段
+    const categoryFields = getTranslationFields(
+      t.category.translations,
+      locale,
+      {
+        name: "",
+        description: null,
+      }
+    )
     const tags = t.tag_links.map(
       (l: {
         tag: {
@@ -325,9 +322,9 @@ export async function GET(req: Request) {
       type: t.type || "GENERAL",
       category: {
         id: String(t.category.id),
-        name: translation?.name || "",
+        name: categoryFields.name,
         icon: t.category.icon ?? undefined,
-        description: translation?.description || undefined,
+        description: categoryFields.description ?? undefined,
         bgColor: t.category.bg_color,
         textColor: t.category.text_color,
       },
