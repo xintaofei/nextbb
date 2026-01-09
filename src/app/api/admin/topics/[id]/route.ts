@@ -96,10 +96,16 @@ export async function GET(
         category: {
           select: {
             id: true,
-            name: true,
             icon: true,
             bg_color: true,
             text_color: true,
+            translations: {
+              where: { is_source: true },
+              select: {
+                name: true,
+              },
+              take: 1,
+            },
           },
         },
         tag_links: {
@@ -157,7 +163,7 @@ export async function GET(
       },
       category: {
         id: String(topic.category.id),
-        name: topic.category.name,
+        name: topic.category.translations[0]?.name || "",
         icon: topic.category.icon,
         bgColor: topic.category.bg_color,
         textColor: topic.category.text_color,

@@ -2,6 +2,7 @@ import { NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
 import { Prisma } from "@prisma/client"
 import { getSessionUser } from "@/lib/auth"
+import { getLocale } from "next-intl/server"
 
 type TopicInfo = {
   id: string
@@ -34,6 +35,7 @@ export async function GET(
   ctx: { params: Promise<{ id: string }> }
 ) {
   await getSessionUser() // ensure session lookup for consistency (may be used later)
+  const locale = await getLocale()
   const { id: idStr } = await ctx.params
   let topicId: bigint
   try {
@@ -55,11 +57,21 @@ export async function GET(
       category: {
         select: {
           id: true,
-          name: true,
           icon: true,
-          description: true,
           bg_color: true,
           text_color: true,
+          translations: {
+            where: {
+              OR: [{ locale, is_source: false }, { is_source: true }],
+            },
+            select: {
+              locale: true,
+              name: true,
+              description: true,
+              is_source: true,
+            },
+            take: 2,
+          },
         },
       },
       tag_links: {
@@ -86,6 +98,11 @@ export async function GET(
     Prisma.sql`UPDATE topics SET views = views + 1 WHERE id = ${topic.id}`
   )
 
+  const translation =
+    topic.category.translations.find(
+      (t) => t.locale === locale && !t.is_source
+    ) || topic.category.translations.find((t) => t.is_source)
+
   const result: TopicInfo = {
     id: String(topic.id),
     title: topic.title,
@@ -96,9 +113,9 @@ export async function GET(
     isSettled: topic.is_settled,
     category: {
       id: String(topic.category.id),
-      name: topic.category.name,
+      name: translation?.name || "",
       icon: topic.category.icon ?? undefined,
-      description: topic.category.description,
+      description: translation?.description || null,
       bgColor: topic.category.bg_color,
       textColor: topic.category.text_color,
     },

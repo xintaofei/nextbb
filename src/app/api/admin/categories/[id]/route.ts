@@ -145,10 +145,10 @@ export async function PATCH(
         })
       }
 
-      // 2. 如果有 name 或 description 更新，更新翻译表
+      // 2. 如果有 name 或 description 更新,更新翻译表
       if (hasTranslationUpdate) {
         // 获取当前源语言翻译
-        const sourceTranslation = await tx.categoryTranslations.findFirst({
+        const sourceTranslation = await tx.category_translations.findFirst({
           where: {
             category_id: categoryId,
             is_source: true,
@@ -170,7 +170,7 @@ export async function PATCH(
             translationUpdateData.description = description || null
           }
 
-          await tx.categoryTranslations.update({
+          await tx.category_translations.update({
             where: {
               category_id_locale: {
                 category_id: categoryId,

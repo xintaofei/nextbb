@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
-import { getLocaleFromRequest } from "@/lib/locale"
+import { getLocale } from "next-intl/server"
 
 type CategoryDTO = {
   id: string
@@ -10,9 +10,9 @@ type CategoryDTO = {
   sort: number
 }
 
-export async function GET(request: Request) {
+export async function GET() {
   // 获取当前请求的语言
-  const locale = getLocaleFromRequest(request)
+  const locale = await getLocale()
 
   const categories = await prisma.categories.findMany({
     where: { is_deleted: false },

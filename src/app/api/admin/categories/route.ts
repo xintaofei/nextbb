@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
 import { getSessionUser } from "@/lib/auth"
 import { generateId } from "@/lib/id"
-import { getLocaleFromRequest } from "@/lib/locale"
+import { getLocale } from "next-intl/server"
 
 type CategoryDTO = {
   id: string
@@ -245,7 +245,7 @@ export async function POST(request: NextRequest) {
     }
 
     // 获取当前请求的语言作为源语言
-    const sourceLocale = getLocaleFromRequest(request)
+    const sourceLocale = await getLocale()
 
     // 创建分类（使用事务）
     const categoryId = generateId()
@@ -264,7 +264,7 @@ export async function POST(request: NextRequest) {
       })
 
       // 2. 创建源语言翻译记录
-      await tx.categoryTranslations.create({
+      await tx.category_translations.create({
         data: {
           category_id: categoryId,
           locale: sourceLocale,

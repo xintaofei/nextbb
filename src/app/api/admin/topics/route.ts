@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
 import { getSessionUser } from "@/lib/auth"
+import { getLocale } from "next-intl/server"
 
 type TopicListItem = {
   id: string
@@ -58,6 +59,7 @@ async function verifyAdmin(userId: bigint) {
 // GET - 获取主题列表
 export async function GET(request: NextRequest) {
   try {
+    const locale = await getLocale()
     const auth = await getSessionUser()
     if (!auth) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
@@ -176,10 +178,20 @@ export async function GET(request: NextRequest) {
         category: {
           select: {
             id: true,
-            name: true,
             icon: true,
             bg_color: true,
             text_color: true,
+            translations: {
+              where: {
+                OR: [{ locale, is_source: false }, { is_source: true }],
+              },
+              select: {
+                locale: true,
+                name: true,
+                is_source: true,
+              },
+              take: 2,
+            },
           },
         },
         tag_links: {
@@ -238,6 +250,12 @@ export async function GET(request: NextRequest) {
       }
       const replies = Math.max(stats.count - 1, 0) // 减去首帖
 
+      // 查找当前语言翻译，如果没有则回退到源语言
+      const translation =
+        topic.category.translations.find(
+          (t) => t.locale === locale && !t.is_source
+        ) || topic.category.translations.find((t) => t.is_source)
+
       return {
         id: String(topic.id),
         title: topic.title,
@@ -249,7 +267,7 @@ export async function GET(request: NextRequest) {
         },
         category: {
           id: String(topic.category.id),
-          name: topic.category.name,
+          name: translation?.name || "",
           icon: topic.category.icon,
           bgColor: topic.category.bg_color,
           textColor: topic.category.text_color,

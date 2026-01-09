@@ -1,5 +1,7 @@
 import * as React from "react"
 import { prisma } from "@/lib/prisma"
+import { getLocale } from "next-intl/server"
+import { getCategoryTranslationsQuery, getTranslationField } from "@/lib/locale"
 
 import { NavMain } from "@/components/main/nav-main"
 import { NavCategory } from "@/components/main/nav-category"
@@ -15,12 +17,14 @@ import {
 export async function AppSidebar({
   ...props
 }: React.ComponentProps<typeof Sidebar>) {
+  const locale = await getLocale()
+
   const categories = await prisma.categories.findMany({
     where: { is_deleted: false },
     select: {
       id: true,
-      name: true,
       icon: true,
+      translations: getCategoryTranslationsQuery(locale, { name: true }),
       _count: {
         select: {
           topics: {
@@ -34,8 +38,12 @@ export async function AppSidebar({
 
   interface CategoryRow {
     id: bigint
-    name: string
     icon: string
+    translations: {
+      locale: string
+      name: string
+      is_source: boolean
+    }[]
     _count: {
       topics: number
     }
@@ -43,7 +51,7 @@ export async function AppSidebar({
 
   const categoryItems = categories.map((c: CategoryRow) => ({
     id: String(c.id),
-    name: c.name,
+    name: getTranslationField(c.translations, locale, "name", ""),
     icon: c.icon ?? "📁",
     topicCount: c._count.topics,
   }))

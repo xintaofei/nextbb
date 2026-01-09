@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
 import { getSessionUser } from "@/lib/auth"
+import { getLocale } from "next-intl/server"
+import { getCategoryTranslationsQuery, getTranslationField } from "@/lib/locale"
 import type {
   ActivityType,
   ActivityItem,
@@ -20,16 +22,23 @@ function stripHtmlAndTruncate(html: string, maxLength: number): string {
 }
 
 // 辅助函数：格式化分类信息
-function formatCategoryInfo(category: {
-  id: bigint
-  name: string
-  icon: string
-  bg_color: string | null
-  text_color: string | null
-}): CategoryInfo {
+function formatCategoryInfo(
+  category: {
+    id: bigint
+    icon: string
+    bg_color: string | null
+    text_color: string | null
+    translations: {
+      locale: string
+      name: string
+      is_source: boolean
+    }[]
+  },
+  locale: string
+): CategoryInfo {
   return {
     id: String(category.id),
-    name: category.name,
+    name: getTranslationField(category.translations, locale, "name", ""),
     icon: category.icon,
     bgColor: category.bg_color,
     textColor: category.text_color,
@@ -40,7 +49,8 @@ function formatCategoryInfo(category: {
 async function getTopicsActivities(
   userId: bigint,
   limit: number,
-  offset: number
+  offset: number,
+  locale: string
 ): Promise<ActivityItem[]> {
   const topics = await prisma.topics.findMany({
     where: {
@@ -56,10 +66,12 @@ async function getTopicsActivities(
       category: {
         select: {
           id: true,
-          name: true,
           icon: true,
           bg_color: true,
           text_color: true,
+          translations: getCategoryTranslationsQuery(locale, {
+            name: true,
+          }),
         },
       },
       posts: {
@@ -81,7 +93,7 @@ async function getTopicsActivities(
     topicData: {
       topicId: String(topic.id),
       title: topic.title,
-      category: formatCategoryInfo(topic.category),
+      category: formatCategoryInfo(topic.category, locale),
       type: topic.type,
       views: topic.views,
       repliesCount: topic.posts.length,
@@ -93,7 +105,8 @@ async function getTopicsActivities(
 async function getPostsActivities(
   userId: bigint,
   limit: number,
-  offset: number
+  offset: number,
+  locale: string
 ): Promise<ActivityItem[]> {
   const posts = await prisma.posts.findMany({
     where: {
@@ -115,10 +128,12 @@ async function getPostsActivities(
           category: {
             select: {
               id: true,
-              name: true,
               icon: true,
               bg_color: true,
               text_color: true,
+              translations: getCategoryTranslationsQuery(locale, {
+                name: true,
+              }),
             },
           },
         },
@@ -157,7 +172,7 @@ async function getPostsActivities(
       contentPreview: stripHtmlAndTruncate(post.content, 150),
       topicId: String(post.topic.id),
       topicTitle: post.topic.title,
-      category: formatCategoryInfo(post.topic.category),
+      category: formatCategoryInfo(post.topic.category, locale),
       likesCount: likeCountMap.get(String(post.id)) || 0,
     },
   }))
@@ -167,7 +182,8 @@ async function getPostsActivities(
 async function getLikesActivities(
   userId: bigint,
   limit: number,
-  offset: number
+  offset: number,
+  locale: string
 ): Promise<ActivityItem[]> {
   const likes = await prisma.post_likes.findMany({
     where: {
@@ -194,10 +210,12 @@ async function getLikesActivities(
               category: {
                 select: {
                   id: true,
-                  name: true,
                   icon: true,
                   bg_color: true,
                   text_color: true,
+                  translations: getCategoryTranslationsQuery(locale, {
+                    name: true,
+                  }),
                 },
               },
             },
@@ -228,7 +246,7 @@ async function getLikesActivities(
       contentPreview: stripHtmlAndTruncate(like.post.content, 150),
       topicId: String(like.post.topic.id),
       topicTitle: like.post.topic.title,
-      category: formatCategoryInfo(like.post.topic.category),
+      category: formatCategoryInfo(like.post.topic.category, locale),
       author: {
         id: String(like.post.user.id),
         name: like.post.user.name,
@@ -242,7 +260,8 @@ async function getLikesActivities(
 async function getBookmarksActivities(
   userId: bigint,
   limit: number,
-  offset: number
+  offset: number,
+  locale: string
 ): Promise<ActivityItem[]> {
   const bookmarks = await prisma.post_bookmarks.findMany({
     where: {
@@ -269,10 +288,12 @@ async function getBookmarksActivities(
               category: {
                 select: {
                   id: true,
-                  name: true,
                   icon: true,
                   bg_color: true,
                   text_color: true,
+                  translations: getCategoryTranslationsQuery(locale, {
+                    name: true,
+                  }),
                 },
               },
             },
@@ -303,7 +324,7 @@ async function getBookmarksActivities(
       contentPreview: stripHtmlAndTruncate(bookmark.post.content, 150),
       topicId: String(bookmark.post.topic.id),
       topicTitle: bookmark.post.topic.title,
-      category: formatCategoryInfo(bookmark.post.topic.category),
+      category: formatCategoryInfo(bookmark.post.topic.category, locale),
       author: {
         id: String(bookmark.post.user.id),
         name: bookmark.post.user.name,
@@ -335,6 +356,9 @@ export async function GET(req: Request, props: { params: Params }) {
     if (!user) {
       return NextResponse.json({ error: "User not found" }, { status: 404 })
     }
+
+    // 获取当前语言
+    const locale = await getLocale()
 
     // 解析查询参数
     const url = new URL(req.url)
@@ -377,12 +401,12 @@ export async function GET(req: Request, props: { params: Params }) {
 
     // 根据类型查询不同的活动
     if (type === "topics") {
-      items = await getTopicsActivities(userId, pageSize, offset)
+      items = await getTopicsActivities(userId, pageSize, offset, locale)
       total = await prisma.topics.count({
         where: { user_id: userId, is_deleted: false },
       })
     } else if (type === "posts") {
-      items = await getPostsActivities(userId, pageSize, offset)
+      items = await getPostsActivities(userId, pageSize, offset, locale)
       total = await prisma.posts.count({
         where: {
           user_id: userId,
@@ -391,7 +415,7 @@ export async function GET(req: Request, props: { params: Params }) {
         },
       })
     } else if (type === "likes") {
-      items = await getLikesActivities(userId, pageSize, offset)
+      items = await getLikesActivities(userId, pageSize, offset, locale)
       total = await prisma.post_likes.count({
         where: {
           user_id: userId,
@@ -404,7 +428,7 @@ export async function GET(req: Request, props: { params: Params }) {
         },
       })
     } else if (type === "bookmarks") {
-      items = await getBookmarksActivities(userId, pageSize, offset)
+      items = await getBookmarksActivities(userId, pageSize, offset, locale)
       total = await prisma.post_bookmarks.count({
         where: {
           user_id: userId,
@@ -422,10 +446,10 @@ export async function GET(req: Request, props: { params: Params }) {
       const perTypeOffset = Math.floor(offset / 4)
 
       const [topics, posts, likes, bookmarks] = await Promise.all([
-        getTopicsActivities(userId, perTypeLimit, perTypeOffset),
-        getPostsActivities(userId, perTypeLimit, perTypeOffset),
-        getLikesActivities(userId, perTypeLimit, perTypeOffset),
-        getBookmarksActivities(userId, perTypeLimit, perTypeOffset),
+        getTopicsActivities(userId, perTypeLimit, perTypeOffset, locale),
+        getPostsActivities(userId, perTypeLimit, perTypeOffset, locale),
+        getLikesActivities(userId, perTypeLimit, perTypeOffset, locale),
+        getBookmarksActivities(userId, perTypeLimit, perTypeOffset, locale),
       ])
 
       // 合并所有活动并按时间排序

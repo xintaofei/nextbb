@@ -2,6 +2,7 @@ import { NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
 import { Prisma } from "@prisma/client"
 import { getSessionUser } from "@/lib/auth"
+import { getLocale } from "next-intl/server"
 
 type Author = {
   id: string
@@ -48,6 +49,7 @@ export async function GET(
   ctx: { params: Promise<{ id: string }> }
 ) {
   const auth = await getSessionUser()
+  const locale = await getLocale()
   const { id: idStr } = await ctx.params
   let topicId: bigint
   try {
@@ -62,7 +64,23 @@ export async function GET(
       id: true,
       title: true,
       type: true,
-      category: { select: { id: true, name: true, icon: true } },
+      category: {
+        select: {
+          id: true,
+          icon: true,
+          translations: {
+            where: {
+              OR: [{ locale, is_source: false }, { is_source: true }],
+            },
+            select: {
+              locale: true,
+              name: true,
+              is_source: true,
+            },
+            take: 2,
+          },
+        },
+      },
       tag_links: {
         select: {
           tag: { select: { id: true, name: true, icon: true } },
@@ -147,7 +165,23 @@ export async function GET(
       id: true,
       title: true,
       type: true,
-      category: { select: { id: true, name: true, icon: true } },
+      category: {
+        select: {
+          id: true,
+          icon: true,
+          translations: {
+            where: {
+              OR: [{ locale, is_source: false }, { is_source: true }],
+            },
+            select: {
+              locale: true,
+              name: true,
+              is_source: true,
+            },
+            take: 2,
+          },
+        },
+      },
       tag_links: {
         select: {
           tag: { select: { id: true, name: true, icon: true } },
@@ -162,7 +196,11 @@ export async function GET(
       id: bigint
       title: string
       type: string
-      category: { id: bigint; name: string; icon: string | null }
+      category: {
+        id: bigint
+        icon: string | null
+        translations: { locale: string; name: string; is_source: boolean }[]
+      }
       tag_links: { tag: { id: bigint; name: string; icon: string } }[]
     }) => t.id
   )
@@ -196,17 +234,26 @@ export async function GET(
         id: bigint
         title: string
         type: string
-        category: { id: bigint; name: string; icon: string | null }
+        category: {
+          id: bigint
+          icon: string | null
+          translations: { locale: string; name: string; is_source: boolean }[]
+        }
         tag_links: { tag: { id: bigint; name: string; icon: string } }[]
       }) => {
         const a = agg[String(t.id)]
+        // 查找当前语言翻译，如果没有则回退到源语言
+        const translation =
+          t.category.translations.find(
+            (tr) => tr.locale === locale && !tr.is_source
+          ) || t.category.translations.find((tr) => tr.is_source)
         return {
           id: String(t.id),
           title: t.title,
           type: t.type || "GENERAL",
           category: {
             id: String(t.category.id),
-            name: t.category.name,
+            name: translation?.name || "",
             icon: t.category.icon ?? undefined,
           },
           tags: t.tag_links.map(
@@ -231,7 +278,12 @@ export async function GET(
       type: topic.type || "GENERAL",
       category: {
         id: String(topic.category.id),
-        name: topic.category.name,
+        name:
+          topic.category.translations.find(
+            (t) => t.locale === locale && !t.is_source
+          )?.name ||
+          topic.category.translations.find((t) => t.is_source)?.name ||
+          "",
         icon: topic.category.icon ?? undefined,
       },
       tags: topic.tag_links.map(

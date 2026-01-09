@@ -7,6 +7,7 @@ import { TopicType, BountyType } from "@/types/topic-type"
 import { topicFormSchema } from "@/lib/topic-validation"
 import { CreditService } from "@/lib/credit-service"
 import { CreditLogType } from "@prisma/client"
+import { getLocale } from "next-intl/server"
 
 interface TopicsDelegate {
   create(args: unknown): Promise<{ id: bigint }>
@@ -104,6 +105,7 @@ type TopicListResult = {
 }
 
 export async function GET(req: Request) {
+  const locale = await getLocale()
   const url = new URL(req.url)
   const q = TopicListQuery.safeParse({
     categoryId: url.searchParams.get("categoryId") ?? undefined,
@@ -150,11 +152,21 @@ export async function GET(req: Request) {
       category: {
         select: {
           id: true,
-          name: true,
           icon: true,
-          description: true,
           bg_color: true,
           text_color: true,
+          translations: {
+            where: {
+              OR: [{ locale, is_source: false }, { is_source: true }],
+            },
+            select: {
+              locale: true,
+              name: true,
+              description: true,
+              is_source: true,
+            },
+            take: 2,
+          },
         },
       },
       tag_links: {
@@ -188,11 +200,15 @@ export async function GET(req: Request) {
     is_community: boolean
     category: {
       id: bigint
-      name: string
       icon: string
-      description: string | null
       bg_color: string | null
       text_color: string | null
+      translations: {
+        locale: string
+        name: string
+        description: string | null
+        is_source: boolean
+      }[]
     }
     tag_links: {
       tag: {
@@ -278,6 +294,11 @@ export async function GET(req: Request) {
   }
   const items: TopicListItem[] = topicsX.map((t) => {
     const agg = byTopic[String(t.id)]
+    // 查找当前语言翻译，如果没有则回退到源语言
+    const translation =
+      t.category.translations.find(
+        (tr) => tr.locale === locale && !tr.is_source
+      ) || t.category.translations.find((tr) => tr.is_source)
     const tags = t.tag_links.map(
       (l: {
         tag: {
@@ -304,9 +325,9 @@ export async function GET(req: Request) {
       type: t.type || "GENERAL",
       category: {
         id: String(t.category.id),
-        name: t.category.name,
+        name: translation?.name || "",
         icon: t.category.icon ?? undefined,
-        description: t.category.description,
+        description: translation?.description || undefined,
         bgColor: t.category.bg_color,
         textColor: t.category.text_color,
       },
