@@ -312,38 +312,87 @@ export class RuleEngine {
       const needCheckCooldown = rule.cooldown_seconds !== null
 
       if (needCheckRepeat || needCheckMaxExec || needCheckCooldown) {
-        // 一次查询获取所有需要的数据
-        const logs = await prisma.automation_rule_logs.findMany({
-          where: {
-            rule_id: rule.id,
-            target_user_id: targetUserId,
-          },
-          select: {
-            id: true,
-            executed_at: true,
-          },
-          orderBy: { executed_at: "desc" },
-          // 如果只需要检查是否存在，只取1条；否则取所有记录用于计数
-          take: needCheckMaxExec ? undefined : 1,
-        })
+        // 分情况处理：根据需要的检查类型选择最优查询策略
+        if (needCheckRepeat) {
+          // 不可重复规则：只需要检查是否存在任意一条记录
+          const existingLog = await prisma.automation_rule_logs.findFirst({
+            where: {
+              rule_id: rule.id,
+              target_user_id: targetUserId,
+            },
+            select: { id: true },
+          })
 
-        // 检查是否可重复触发（只要有记录就不允许）
-        if (needCheckRepeat && logs.length > 0) {
-          return
-        }
+          if (existingLog) {
+            return // 已有记录，不允许重复执行
+          }
 
-        // 检查最大执行次数（不判断状态，所有记录都计入）
-        if (needCheckMaxExec && logs.length >= rule.max_executions!) {
-          return
-        }
+          // 注意：如果 is_repeatable=false，则 max_executions 和 cooldown_seconds 无意义
+          // 因为规则只会执行一次，早期 return 避免额外查询
+        } else {
+          // 可重复规则：需要检查最大次数和/或冷却时间
+          if (needCheckMaxExec && needCheckCooldown) {
+            // 同时需要检查次数和冷却：查询总数 + 最近一条
+            const [count, lastLog] = await Promise.all([
+              prisma.automation_rule_logs.count({
+                where: {
+                  rule_id: rule.id,
+                  target_user_id: targetUserId,
+                },
+              }),
+              prisma.automation_rule_logs.findFirst({
+                where: {
+                  rule_id: rule.id,
+                  target_user_id: targetUserId,
+                },
+                select: { executed_at: true },
+                orderBy: { executed_at: "desc" },
+              }),
+            ])
 
-        // 检查冷却时间（使用最近一次记录，不判断状态）
-        if (needCheckCooldown && logs.length > 0) {
-          const lastLog = logs[0] // 已按 executed_at desc 排序
-          const cooldownMs = rule.cooldown_seconds! * 1000
-          const elapsed = Date.now() - lastLog.executed_at.getTime()
-          if (elapsed < cooldownMs) {
-            return
+            // 检查最大执行次数
+            if (count >= rule.max_executions!) {
+              return
+            }
+
+            // 检查冷却时间
+            if (lastLog) {
+              const cooldownMs = rule.cooldown_seconds! * 1000
+              const elapsed = Date.now() - lastLog.executed_at.getTime()
+              if (elapsed < cooldownMs) {
+                return
+              }
+            }
+          } else if (needCheckMaxExec) {
+            // 只需要检查最大次数
+            const count = await prisma.automation_rule_logs.count({
+              where: {
+                rule_id: rule.id,
+                target_user_id: targetUserId,
+              },
+            })
+
+            if (count >= rule.max_executions!) {
+              return
+            }
+          } else if (needCheckCooldown) {
+            // 只需要检查冷却时间
+            const lastLog = await prisma.automation_rule_logs.findFirst({
+              where: {
+                rule_id: rule.id,
+                target_user_id: targetUserId,
+              },
+              select: { executed_at: true },
+              orderBy: { executed_at: "desc" },
+            })
+
+            if (lastLog) {
+              const cooldownMs = rule.cooldown_seconds! * 1000
+              const elapsed = Date.now() - lastLog.executed_at.getTime()
+              if (elapsed < cooldownMs) {
+                return
+              }
+            }
           }
         }
       }

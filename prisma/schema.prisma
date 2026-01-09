@@ -715,6 +715,7 @@ model automation_rule_logs {
   @@index([execution_status], map: "automation_logs_status_index")
   @@index([executed_at], map: "automation_logs_executed_index")
   @@index([rule_id, execution_status], map: "automation_logs_rule_status_index")
+  @@index([rule_id, target_user_id], map: "automation_logs_rule_target_index") // 优化：支持不可重复检查
   @@index([rule_id, target_user_id, execution_status], map: "automation_logs_rule_target_status_index")
   @@index([triggered_by, executed_at], map: "automation_logs_user_time_index")
   @@map("automation_rule_logs")
