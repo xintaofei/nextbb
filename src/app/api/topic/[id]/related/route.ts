@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
 import { Prisma } from "@prisma/client"
+import { getLocale } from "next-intl/server"
+import { getTranslationsQuery, getTranslationField } from "@/lib/locale"
 
 type RelatedTopicItem = {
   id: string
@@ -29,6 +31,7 @@ export async function GET(
   _req: Request,
   ctx: { params: Promise<{ id: string }> }
 ) {
+  const locale = await getLocale()
   const { id: idStr } = await ctx.params
   let topicId: bigint
   try {
@@ -58,11 +61,13 @@ export async function GET(
       category: {
         select: {
           id: true,
-          name: true,
           icon: true,
-          description: true,
           bg_color: true,
           text_color: true,
+          translations: getTranslationsQuery(locale, {
+            name: true,
+            description: true,
+          }),
         },
       },
       tag_links: {
@@ -118,9 +123,20 @@ export async function GET(
         type: t.type || "GENERAL",
         category: {
           id: String(t.category.id),
-          name: t.category.name,
+          name: getTranslationField(
+            t.category.translations,
+            locale,
+            "name",
+            ""
+          ),
           icon: t.category.icon ?? undefined,
-          description: t.category.description,
+          description:
+            getTranslationField(
+              t.category.translations,
+              locale,
+              "description",
+              null
+            ) ?? undefined,
           bgColor: t.category.bg_color,
           textColor: t.category.text_color,
         },

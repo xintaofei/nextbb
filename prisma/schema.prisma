@@ -51,20 +51,38 @@ model users {
 }
 
 model categories {
-  id          BigInt   @id @db.BigInt
+  id            BigInt   @id @db.BigInt
+  source_locale String   @default("zh") @db.VarChar(8)
+  icon          String   @db.VarChar(32)
+  sort          Int      @default(0)
+  bg_color      String?  @db.VarChar(16)
+  text_color    String?  @db.VarChar(16)
+  is_deleted    Boolean
+  created_at    DateTime @default(now())
+  updated_at    DateTime @updatedAt
+
+  topics       topics[]
+  translations category_translations[]
+
+  @@map("categories")
+}
+
+model category_translations {
+  category_id BigInt   @db.BigInt
+  locale      String   @db.VarChar(8)
   name        String   @db.VarChar(32)
-  icon        String   @db.VarChar(32)
   description String?  @db.VarChar(255)
-  sort        Int      @default(0)
-  bg_color    String?  @db.VarChar(16)
-  text_color  String?  @db.VarChar(16)
-  is_deleted  Boolean
+  is_source   Boolean  @default(false)
+  version     Int      @default(0)
   created_at  DateTime @default(now())
   updated_at  DateTime @updatedAt
 
-  topics topics[]
+  category categories @relation(fields: [category_id], references: [id], onDelete: Cascade)
 
-  @@map("categories")
+  @@id([category_id, locale])
+  @@index([locale, is_source], map: "category_translations_locale_source_index")
+  @@index([category_id, is_source], map: "category_translations_category_source_index")
+  @@map("category_translations")
 }
 
 model tags {

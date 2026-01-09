@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
 import { getSessionUser } from "@/lib/auth"
+import { getLocale } from "next-intl/server"
+import { getTranslationsQuery, getTranslationField } from "@/lib/locale"
 
 type TopicListItem = {
   id: string
@@ -58,6 +60,7 @@ async function verifyAdmin(userId: bigint) {
 // GET - 获取主题列表
 export async function GET(request: NextRequest) {
   try {
+    const locale = await getLocale()
     const auth = await getSessionUser()
     if (!auth) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
@@ -176,10 +179,10 @@ export async function GET(request: NextRequest) {
         category: {
           select: {
             id: true,
-            name: true,
             icon: true,
             bg_color: true,
             text_color: true,
+            translations: getTranslationsQuery(locale, { name: true }),
           },
         },
         tag_links: {
@@ -249,7 +252,12 @@ export async function GET(request: NextRequest) {
         },
         category: {
           id: String(topic.category.id),
-          name: topic.category.name,
+          name: getTranslationField(
+            topic.category.translations,
+            locale,
+            "name",
+            ""
+          ),
           icon: topic.category.icon,
           bgColor: topic.category.bg_color,
           textColor: topic.category.text_color,
