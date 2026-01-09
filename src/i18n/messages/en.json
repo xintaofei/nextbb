@@ -1364,6 +1364,12 @@
     "title": "Automation Rules",
     "description": "Manage system automation rules configuration",
     "createButton": "Create Rule",
+    "actionTypes": {
+      "CREDIT_CHANGE": "Credit Change",
+      "BADGE_GRANT": "Grant Badge",
+      "BADGE_REVOKE": "Revoke Badge",
+      "USER_GROUP_CHANGE": "User Group Change"
+    },
     "stats": {
       "total": "Total Rules",
       "enabled": "Enabled Rules",
@@ -1620,6 +1626,8 @@
       "badgeNotFound": "Badge not found: {badgeId}",
       "databaseError": "Database error: {message}",
       "invalidParams": "Invalid parameters: {message}",
+      "creditChangeFailed": "Credit change failed: {error}",
+      "unexpectedError": "Unexpected error: {error}",
       "unknownError": "Unknown error: {message}"
     }
   }

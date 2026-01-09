@@ -686,12 +686,19 @@ model automation_rule_logs {
   // {"checkin_id": 111, "consecutive_days": 7}
 
   // 执行结果
-  execution_status String @db.VarChar(32) // SUCCESS, FAILED, SKIPPED
-  execution_result Json?              // 执行结果详情
-  // 示例:
-  // {"credit_changed": 10, "new_balance": 1000}
-  // {"badge_granted": {"badge_id": 5, "badge_name": "活跃用户"}}
-  // {"error": "用户积分不足"}
+  execution_status String @db.VarChar(32) // SUCCESS, FAILED, SKIPPED (按优先级: FAILED > SKIPPED > SUCCESS)
+  execution_result Json?              // 执行结果详情(聚合所有动作的结果)
+  // 格式示例(一次规则执行记录一条日志，包含所有动作结果):
+  // [
+  //   {"actionType": "CREDIT_CHANGE", "status": "SUCCESS", "data": {"credit_changed": 10, "new_balance": 1000}},
+  //   {"actionType": "BADGE_GRANT", "status": "SKIPPED", "message": "Automation.skipReason.badgeAlreadyOwned", "messageParams": {"badgeName": "活跃用户"}}
+  // ]
+  // 每个 actionResult 包含:
+  // - actionType: RuleActionType 枚举值
+  // - status: 动作执行状态 (SUCCESS/FAILED/SKIPPED)
+  // - data: 成功执行的数据
+  // - message: 失败/跳过的多语言键值
+  // - messageParams: 失败/跳过消息的参数
 
   error_message String? @db.Text      // 错误信息（如果失败）
 

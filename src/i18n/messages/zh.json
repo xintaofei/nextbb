@@ -1506,6 +1506,12 @@
     "title": "自动化规则",
     "description": "管理系统自动化规则配置",
     "createButton": "创建规则",
+    "actionTypes": {
+      "CREDIT_CHANGE": "积分变动",
+      "BADGE_GRANT": "授予徽章",
+      "BADGE_REVOKE": "撤销徽章",
+      "USER_GROUP_CHANGE": "用户组变更"
+    },
     "stats": {
       "total": "总规则数",
       "enabled": "启用规则",
@@ -1762,6 +1768,8 @@
       "badgeNotFound": "徽章不存在: {badgeId}",
       "databaseError": "数据库错误: {message}",
       "invalidParams": "参数无效: {message}",
+      "creditChangeFailed": "积分变动失败: {error}",
+      "unexpectedError": "意外错误: {error}",
       "unknownError": "未知错误: {message}"
     }
   }

@@ -137,6 +137,30 @@ export function AutomationRuleLogsDialog({
     }
   }
 
+  /**
+   * 格式化单个动作的消息或数据
+   */
+  const formatActionMessage = (
+    message?: string,
+    messageParams?: Record<string, string | number>
+  ): string => {
+    if (!message) return ""
+    return tRoot(message as never, messageParams as never)
+  }
+
+  /**
+   * 获取动作类型的显示名称
+   */
+  const getActionTypeLabel = (actionType: string): string => {
+    const mapping: Record<string, string> = {
+      CREDIT_CHANGE: t("actionTypes.CREDIT_CHANGE"),
+      BADGE_GRANT: t("actionTypes.BADGE_GRANT"),
+      BADGE_REVOKE: t("actionTypes.BADGE_REVOKE"),
+      USER_GROUP_CHANGE: t("actionTypes.USER_GROUP_CHANGE"),
+    }
+    return mapping[actionType] || actionType
+  }
+
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent className="max-w-4xl max-h-[90vh]">
@@ -246,11 +270,76 @@ export function AutomationRuleLogsDialog({
                           <div className="text-xs font-medium text-muted-foreground">
                             {t("logsDialog.log.result")}
                           </div>
-                          <div className="text-xs font-mono bg-muted p-2 rounded-md overflow-x-auto">
-                            <pre className="whitespace-pre-wrap break-all">
-                              {JSON.stringify(log.executionResult, null, 2) ||
-                                ""}
-                            </pre>
+                          <div className="space-y-2">
+                            {Array.isArray(log.executionResult) ? (
+                              // 新的聚合格式：显示每个动作的结果
+                              log.executionResult.map(
+                                (
+                                  actionResult: {
+                                    actionType: string
+                                    status: string
+                                    data?: Record<string, unknown>
+                                    message?: string
+                                    messageParams?: Record<
+                                      string,
+                                      string | number
+                                    >
+                                  },
+                                  index: number
+                                ) => (
+                                  <div
+                                    key={index}
+                                    className="text-xs bg-muted p-2 rounded-md"
+                                  >
+                                    <div className="flex items-center gap-2 mb-1">
+                                      <Badge
+                                        variant={getStatusBadgeVariant(
+                                          actionResult.status
+                                        )}
+                                        className="text-xs"
+                                      >
+                                        {getStatusLabel(actionResult.status)}
+                                      </Badge>
+                                      <span className="font-medium">
+                                        {getActionTypeLabel(
+                                          actionResult.actionType
+                                        )}
+                                      </span>
+                                    </div>
+                                    {actionResult.message && (
+                                      <div className="text-muted-foreground mt-1">
+                                        {formatActionMessage(
+                                          actionResult.message,
+                                          actionResult.messageParams
+                                        )}
+                                      </div>
+                                    )}
+                                    {actionResult.data && (
+                                      <div className="font-mono text-xs mt-1 text-muted-foreground">
+                                        <pre className="whitespace-pre-wrap break-all">
+                                          {JSON.stringify(
+                                            actionResult.data,
+                                            null,
+                                            2
+                                          )}
+                                        </pre>
+                                      </div>
+                                    )}
+                                  </div>
+                                )
+                              )
+                            ) : (
+                              // 兼容旧格式：JSON 显示
+                              <div className="text-xs font-mono bg-muted p-2 rounded-md overflow-x-auto">
+                                <pre className="whitespace-pre-wrap break-all">
+                                  {JSON.stringify(
+                                    log.executionResult,
+                                    null,
+                                    2
+                                  ) || ""}
+                                </pre>
+                              </div>
+                            )}
                           </div>
                         </div>
                       )}

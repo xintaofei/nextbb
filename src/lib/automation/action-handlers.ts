@@ -60,6 +60,7 @@ export interface ActionContext {
  * Action 执行结果
  */
 export interface ActionResult {
+  actionType: RuleActionType // 动作类型(枚举)
   status: RuleExecutionStatus // 执行状态: SUCCESS, FAILED, SKIPPED
   targetUserId?: bigint // 执行对象的用户ID(如授予徽章的目标用户)
   message?: string // 失败/跳过原因的多语言键值(如 "Automation.skipReason.badgeAlreadyOwned")
@@ -103,6 +104,7 @@ export class CreditChangeHandler implements IActionHandler<CreditChangeParams> {
         // 如果是积分不足，返回 SKIPPED
         if (result.error?.includes("积分不足")) {
           return {
+            actionType: RuleActionType.CREDIT_CHANGE,
             status: RuleExecutionStatus.SKIPPED,
             targetUserId: userId,
             message: "Automation.skipReason.insufficientCredits",
@@ -114,6 +116,7 @@ export class CreditChangeHandler implements IActionHandler<CreditChangeParams> {
 
         // 其他错误返回 FAILED
         return {
+          actionType: RuleActionType.CREDIT_CHANGE,
           status: RuleExecutionStatus.FAILED,
           message: "Automation.error.creditChangeFailed",
           messageParams: {
@@ -123,6 +126,7 @@ export class CreditChangeHandler implements IActionHandler<CreditChangeParams> {
       }
 
       return {
+        actionType: RuleActionType.CREDIT_CHANGE,
         status: RuleExecutionStatus.SUCCESS,
         targetUserId: userId,
         data: {
@@ -132,6 +136,7 @@ export class CreditChangeHandler implements IActionHandler<CreditChangeParams> {
       }
     } catch (error) {
       return {
+        actionType: RuleActionType.CREDIT_CHANGE,
         status: RuleExecutionStatus.FAILED,
         message: "Automation.error.databaseError",
         messageParams: {
@@ -165,6 +170,7 @@ export class BadgeGrantHandler implements IActionHandler<BadgeGrantParams> {
         badge_id = badgeIdRaw
       } else {
         return {
+          actionType: RuleActionType.BADGE_GRANT,
           status: RuleExecutionStatus.FAILED,
           message: "Automation.error.invalidParams",
           messageParams: {
@@ -190,6 +196,7 @@ export class BadgeGrantHandler implements IActionHandler<BadgeGrantParams> {
         const error = `徽章不存在或已禁用: ${badge_id}`
         console.error(`[BadgeGrantHandler] ${error}`)
         return {
+          actionType: RuleActionType.BADGE_GRANT,
           status: RuleExecutionStatus.FAILED,
           message: "Automation.error.badgeNotFound",
           messageParams: {
@@ -210,6 +217,7 @@ export class BadgeGrantHandler implements IActionHandler<BadgeGrantParams> {
 
       if (existing && !existing.is_deleted) {
         return {
+          actionType: RuleActionType.BADGE_GRANT,
           status: RuleExecutionStatus.SKIPPED,
           targetUserId: userId,
           message: "Automation.skipReason.badgeAlreadyOwned",
@@ -248,6 +256,7 @@ export class BadgeGrantHandler implements IActionHandler<BadgeGrantParams> {
       }
 
       return {
+        actionType: RuleActionType.BADGE_GRANT,
         status: RuleExecutionStatus.SUCCESS,
         targetUserId: userId,
         data: {
@@ -259,6 +268,7 @@ export class BadgeGrantHandler implements IActionHandler<BadgeGrantParams> {
       }
     } catch (error) {
       return {
+        actionType: RuleActionType.BADGE_GRANT,
         status: RuleExecutionStatus.FAILED,
         message: "Automation.error.databaseError",
         messageParams: {
@@ -293,6 +303,7 @@ export class BadgeRevokeHandler implements IActionHandler<BadgeRevokeParams> {
         badge_id = badgeIdRaw
       } else {
         return {
+          actionType: RuleActionType.BADGE_REVOKE,
           status: RuleExecutionStatus.FAILED,
           message: "Automation.error.invalidParams",
           messageParams: {
@@ -320,6 +331,7 @@ export class BadgeRevokeHandler implements IActionHandler<BadgeRevokeParams> {
 
       if (!userBadge || userBadge.is_deleted) {
         return {
+          actionType: RuleActionType.BADGE_REVOKE,
           status: RuleExecutionStatus.SKIPPED,
           targetUserId: userId,
           message: "Automation.skipReason.badgeNotOwned",
@@ -343,6 +355,7 @@ export class BadgeRevokeHandler implements IActionHandler<BadgeRevokeParams> {
       })
 
       return {
+        actionType: RuleActionType.BADGE_REVOKE,
         status: RuleExecutionStatus.SUCCESS,
         targetUserId: userId,
         data: {
@@ -355,6 +368,7 @@ export class BadgeRevokeHandler implements IActionHandler<BadgeRevokeParams> {
       }
     } catch (error) {
       return {
+        actionType: RuleActionType.BADGE_REVOKE,
         status: RuleExecutionStatus.FAILED,
         message: "Automation.error.databaseError",
         messageParams: {
@@ -370,11 +384,12 @@ export class BadgeRevokeHandler implements IActionHandler<BadgeRevokeParams> {
  */
 export class UserGroupChangeHandler implements IActionHandler<UserGroupChangeParams> {
   async execute(
-    params: UserGroupChangeParams,
-    context: ActionContext
+    _params: UserGroupChangeParams,
+    _context: ActionContext
   ): Promise<ActionResult> {
     // TODO: 实现用户组变更逻辑
     return {
+      actionType: RuleActionType.USER_GROUP_CHANGE,
       status: RuleExecutionStatus.FAILED,
       message: "用户组变更功能暂未实现",
     }
