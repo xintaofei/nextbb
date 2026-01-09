@@ -47,20 +47,6 @@ export function getTranslationsQuery<T extends Record<string, boolean>>(
 }
 
 /**
- * 生成分类多语言查询配置（向后兼容的便捷函数）
- * @deprecated 建议使用 getTranslationsQuery 以支持更多实体类型
- */
-export function getCategoryTranslationsQuery(
-  locale: string,
-  fields: { name?: boolean; description?: boolean } = {
-    name: true,
-    description: true,
-  }
-) {
-  return getTranslationsQuery(locale, fields)
-}
-
-/**
  * 从翻译列表中选择合适的翻译
  * 优先返回当前语言的翻译，如果不存在则返回源语言翻译
  *

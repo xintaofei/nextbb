@@ -2,7 +2,7 @@ import { NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
 import { getSessionUser } from "@/lib/auth"
 import { getLocale } from "next-intl/server"
-import { getCategoryTranslationsQuery, getTranslationField } from "@/lib/locale"
+import { getTranslationsQuery, getTranslationField } from "@/lib/locale"
 import type {
   ActivityType,
   ActivityItem,
@@ -69,7 +69,7 @@ async function getTopicsActivities(
           icon: true,
           bg_color: true,
           text_color: true,
-          translations: getCategoryTranslationsQuery(locale, {
+          translations: getTranslationsQuery(locale, {
             name: true,
           }),
         },
@@ -131,7 +131,7 @@ async function getPostsActivities(
               icon: true,
               bg_color: true,
               text_color: true,
-              translations: getCategoryTranslationsQuery(locale, {
+              translations: getTranslationsQuery(locale, {
                 name: true,
               }),
             },
@@ -213,7 +213,7 @@ async function getLikesActivities(
                   icon: true,
                   bg_color: true,
                   text_color: true,
-                  translations: getCategoryTranslationsQuery(locale, {
+                  translations: getTranslationsQuery(locale, {
                     name: true,
                   }),
                 },
@@ -291,7 +291,7 @@ async function getBookmarksActivities(
                   icon: true,
                   bg_color: true,
                   text_color: true,
-                  translations: getCategoryTranslationsQuery(locale, {
+                  translations: getTranslationsQuery(locale, {
                     name: true,
                   }),
                 },

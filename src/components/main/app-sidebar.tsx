@@ -1,7 +1,7 @@
 import * as React from "react"
 import { prisma } from "@/lib/prisma"
 import { getLocale } from "next-intl/server"
-import { getCategoryTranslationsQuery, getTranslationField } from "@/lib/locale"
+import { getTranslationsQuery, getTranslationField } from "@/lib/locale"
 
 import { NavMain } from "@/components/main/nav-main"
 import { NavCategory } from "@/components/main/nav-category"
@@ -24,7 +24,7 @@ export async function AppSidebar({
     select: {
       id: true,
       icon: true,
-      translations: getCategoryTranslationsQuery(locale, { name: true }),
+      translations: getTranslationsQuery(locale, { name: true }),
       _count: {
         select: {
           topics: {
