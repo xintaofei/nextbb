@@ -305,51 +305,42 @@ export class RuleEngine {
       // 对于积分变动、徽章授予/撤销等操作,执行对象就是 userId
       const targetUserId = userId
 
-      // 检查是否可重复触发
-      if (!rule.is_repeatable) {
-        const existingLog = await prisma.automation_rule_logs.findFirst({
+      // 优化：合并检查逻辑，减少数据库查询次数
+      // 根据规则配置决定需要查询什么数据
+      const needCheckRepeat = !rule.is_repeatable
+      const needCheckMaxExec = rule.max_executions !== null
+      const needCheckCooldown = rule.cooldown_seconds !== null
+
+      if (needCheckRepeat || needCheckMaxExec || needCheckCooldown) {
+        // 一次查询获取所有需要的数据
+        const logs = await prisma.automation_rule_logs.findMany({
           where: {
             rule_id: rule.id,
             target_user_id: targetUserId,
-            execution_status: {
-              in: [RuleExecutionStatus.SUCCESS, RuleExecutionStatus.SKIPPED],
-            },
           },
-        })
-
-        if (existingLog) {
-          return
-        }
-      }
-
-      // 检查最大执行次数
-      if (rule.max_executions !== null) {
-        const count = await prisma.automation_rule_logs.count({
-          where: {
-            rule_id: rule.id,
-            target_user_id: targetUserId,
-            execution_status: RuleExecutionStatus.SUCCESS,
-          },
-        })
-
-        if (count >= rule.max_executions) {
-          return
-        }
-      }
-
-      // 检查冷却时间
-      if (rule.cooldown_seconds !== null) {
-        const lastLog = await prisma.automation_rule_logs.findFirst({
-          where: {
-            rule_id: rule.id,
-            target_user_id: targetUserId,
-            execution_status: RuleExecutionStatus.SUCCESS,
+          select: {
+            id: true,
+            executed_at: true,
           },
           orderBy: { executed_at: "desc" },
+          // 如果只需要检查是否存在，只取1条；否则取所有记录用于计数
+          take: needCheckMaxExec ? undefined : 1,
         })
 
-        if (lastLog) {
-          const cooldownMs = rule.cooldown_seconds * 1000
+        // 检查是否可重复触发（只要有记录就不允许）
+        if (needCheckRepeat && logs.length > 0) {
+          return
+        }
+
+        // 检查最大执行次数（不判断状态，所有记录都计入）
+        if (needCheckMaxExec && logs.length >= rule.max_executions!) {
+          return
+        }
+
+        // 检查冷却时间（使用最近一次记录，不判断状态）
+        if (needCheckCooldown && logs.length > 0) {
+          const lastLog = logs[0] // 已按 executed_at desc 排序
+          const cooldownMs = rule.cooldown_seconds! * 1000
           const elapsed = Date.now() - lastLog.executed_at.getTime()
           if (elapsed < cooldownMs) {
             return
