@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
 import { getSessionUser } from "@/lib/auth"
 import { generateId } from "@/lib/id"
+import { getLocaleFromRequest } from "@/lib/locale"
 
 type CategoryDTO = {
   id: string
@@ -11,6 +12,7 @@ type CategoryDTO = {
   sort: number
   bgColor: string | null
   textColor: string | null
+  sourceLocale: string
   isDeleted: boolean
   createdAt: string
   updatedAt: string
@@ -72,12 +74,22 @@ export async function GET(request: NextRequest) {
 
     // 构建查询条件
     const where: {
-      name?: { contains: string; mode: "insensitive" }
+      translations?: {
+        some: {
+          name?: { contains: string; mode: "insensitive" }
+          is_source: boolean
+        }
+      }
       is_deleted?: boolean
     } = {}
 
     if (q.trim().length > 0) {
-      where.name = { contains: q.trim(), mode: "insensitive" }
+      where.translations = {
+        some: {
+          name: { contains: q.trim(), mode: "insensitive" },
+          is_source: true,
+        },
+      }
     }
 
     if (deleted === "true") {
@@ -103,15 +115,22 @@ export async function GET(request: NextRequest) {
       where,
       select: {
         id: true,
-        name: true,
+        source_locale: true,
         icon: true,
-        description: true,
         sort: true,
         bg_color: true,
         text_color: true,
         is_deleted: true,
         created_at: true,
         updated_at: true,
+        translations: {
+          where: { is_source: true },
+          select: {
+            name: true,
+            description: true,
+          },
+          take: 1,
+        },
         _count: {
           select: {
             topics: true,
@@ -124,19 +143,23 @@ export async function GET(request: NextRequest) {
     })
 
     // 转换为 DTO
-    const items: CategoryDTO[] = categories.map((c) => ({
-      id: String(c.id),
-      name: c.name,
-      icon: c.icon,
-      description: c.description,
-      sort: c.sort,
-      bgColor: c.bg_color,
-      textColor: c.text_color,
-      isDeleted: c.is_deleted,
-      createdAt: c.created_at.toISOString(),
-      updatedAt: c.updated_at.toISOString(),
-      topicCount: c._count.topics,
-    }))
+    const items: CategoryDTO[] = categories.map((c) => {
+      const translation = c.translations[0]
+      return {
+        id: String(c.id),
+        name: translation?.name || "",
+        icon: c.icon,
+        description: translation?.description || null,
+        sort: c.sort,
+        bgColor: c.bg_color,
+        textColor: c.text_color,
+        sourceLocale: c.source_locale,
+        isDeleted: c.is_deleted,
+        createdAt: c.created_at.toISOString(),
+        updatedAt: c.updated_at.toISOString(),
+        topicCount: c._count.topics,
+      }
+    })
 
     // 如果按话题数排序，在内存中排序
     if (sortBy === "topic_count") {
@@ -221,52 +244,88 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // 创建分类
-    const category = await prisma.categories.create({
-      data: {
-        id: generateId(),
-        name,
-        icon: icon || "",
-        description: description || null,
-        sort,
-        bg_color: bgColor || null,
-        text_color: textColor || null,
-        is_deleted: false,
-      },
-      select: {
-        id: true,
-        name: true,
-        icon: true,
-        description: true,
-        sort: true,
-        bg_color: true,
-        text_color: true,
-        is_deleted: true,
-        created_at: true,
-        updated_at: true,
-        _count: {
-          select: {
-            topics: true,
+    // 获取当前请求的语言作为源语言
+    const sourceLocale = getLocaleFromRequest(request)
+
+    // 创建分类（使用事务）
+    const categoryId = generateId()
+    const result = await prisma.$transaction(async (tx) => {
+      // 1. 创建分类记录
+      await tx.categories.create({
+        data: {
+          id: categoryId,
+          source_locale: sourceLocale,
+          icon: icon || "",
+          sort,
+          bg_color: bgColor || null,
+          text_color: textColor || null,
+          is_deleted: false,
+        },
+      })
+
+      // 2. 创建源语言翻译记录
+      await tx.categoryTranslations.create({
+        data: {
+          category_id: categoryId,
+          locale: sourceLocale,
+          name,
+          description: description || null,
+          is_source: true,
+          version: 0,
+        },
+      })
+
+      // 3. 查询完整数据返回
+      const fullCategory = await tx.categories.findUnique({
+        where: { id: categoryId },
+        select: {
+          id: true,
+          source_locale: true,
+          icon: true,
+          sort: true,
+          bg_color: true,
+          text_color: true,
+          is_deleted: true,
+          created_at: true,
+          updated_at: true,
+          translations: {
+            where: { is_source: true },
+            select: {
+              name: true,
+              description: true,
+            },
+          },
+          _count: {
+            select: {
+              topics: true,
+            },
           },
         },
-      },
+      })
+
+      if (!fullCategory) {
+        throw new Error("Failed to create category")
+      }
+
+      return fullCategory
     })
 
-    const result: CategoryDTO = {
-      id: String(category.id),
-      name: category.name,
-      icon: category.icon,
-      description: category.description,
-      sort: category.sort,
-      bgColor: category.bg_color,
-      textColor: category.text_color,
-      isDeleted: category.is_deleted,
-      createdAt: category.created_at.toISOString(),
-      updatedAt: category.updated_at.toISOString(),
-      topicCount: category._count.topics,
+    const categoryDTO: CategoryDTO = {
+      id: String(result.id),
+      name: result.translations[0]?.name || "",
+      icon: result.icon,
+      description: result.translations[0]?.description || null,
+      sort: result.sort,
+      bgColor: result.bg_color,
+      textColor: result.text_color,
+      sourceLocale: result.source_locale,
+      isDeleted: result.is_deleted,
+      createdAt: result.created_at.toISOString(),
+      updatedAt: result.updated_at.toISOString(),
+      topicCount: result._count.topics,
     }
 
-    return NextResponse.json(result, { status: 201 })
+    return NextResponse.json(categoryDTO, { status: 201 })
   } catch (error) {
     console.error("Create category error:", error)
     return NextResponse.json(
