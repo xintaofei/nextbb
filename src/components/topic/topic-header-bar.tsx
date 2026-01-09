@@ -30,7 +30,7 @@ export function TopicHeaderBar({
             initialCategoryId={categoryId}
           />
         </div>
-        <div className="flex flex-row flex-wrap gap-4 items-center justify-between">
+        <div className="flex flex-row flex-wrap gap-4 items-center justify-between md:p-2 md:bg-muted md:rounded-lg">
           <TopicSortTabs
             className="max-sm:hidden"
             onSortStart={(next) => {

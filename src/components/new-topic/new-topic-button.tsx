@@ -48,11 +48,7 @@ export function NewTopicButton({ onClick, className }: NewTopicButtonProps) {
     onClick()
   }
   return (
-    <Button
-      variant="secondary"
-      onClick={handleClick}
-      className={`${className}`}
-    >
+    <Button size="sm" onClick={handleClick} className={`${className}`}>
       <Icon className="mr-2" />
       {label}
     </Button>
