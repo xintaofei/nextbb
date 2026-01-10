@@ -1089,6 +1089,154 @@
       "next": "Next"
     }
   },
+  "Config": {
+    "basic": {
+      "name": {
+        "label": "Forum Name",
+        "description": "Displayed in website title, header, etc."
+      },
+      "description": {
+        "label": "Forum Description",
+        "description": "SEO metadata description"
+      },
+      "logo": {
+        "label": "Forum Logo",
+        "description": "Image URL for website branding"
+      },
+      "contact_email": {
+        "label": "Contact Email",
+        "description": "Administrator contact email"
+      },
+      "icp": {
+        "label": "Website Registration Info",
+        "description": "ICP registration number, etc."
+      }
+    },
+    "registration": {
+      "enabled": {
+        "label": "Allow Registration",
+        "description": "Global switch to control whether new user registration is allowed"
+      },
+      "email_verify": {
+        "label": "Email Verification",
+        "description": "Whether email verification is required after registration"
+      },
+      "username_min_length": {
+        "label": "Minimum Username Length",
+        "description": "Minimum allowed username characters"
+      },
+      "username_max_length": {
+        "label": "Maximum Username Length",
+        "description": "Maximum allowed username characters"
+      }
+    },
+    "oauth": {
+      "github": {
+        "enabled": {
+          "label": "Enable GitHub OAuth",
+          "description": "Whether GitHub account login is allowed"
+        },
+        "client_id": {
+          "label": "GitHub Client ID",
+          "description": "GitHub OAuth application Client ID"
+        },
+        "client_secret": {
+          "label": "GitHub Client Secret",
+          "description": "GitHub OAuth application Client Secret"
+        }
+      },
+      "google": {
+        "enabled": {
+          "label": "Enable Google OAuth",
+          "description": "Whether Google account login is allowed"
+        },
+        "client_id": {
+          "label": "Google Client ID",
+          "description": "Google OAuth application Client ID"
+        },
+        "client_secret": {
+          "label": "Google Client Secret",
+          "description": "Google OAuth application Client Secret"
+        }
+      },
+      "linuxdo": {
+        "enabled": {
+          "label": "Enable LinuxDo OAuth",
+          "description": "Whether LinuxDo account login is allowed"
+        },
+        "client_id": {
+          "label": "LinuxDo Client ID",
+          "description": "LinuxDo OAuth application Client ID"
+        },
+        "client_secret": {
+          "label": "LinuxDo Client Secret",
+          "description": "LinuxDo OAuth application Client Secret"
+        }
+      }
+    },
+    "content": {
+      "topic": {
+        "publish_permission": {
+          "label": "Topic Publish Permission",
+          "description": "Control which users can publish topics (all/verified/admin)"
+        }
+      },
+      "post": {
+        "reply_permission": {
+          "label": "Reply Permission",
+          "description": "Control which users can reply to posts (all/verified/admin)"
+        }
+      },
+      "moderation": {
+        "enabled": {
+          "label": "Content Moderation",
+          "description": "Whether to enable content moderation"
+        }
+      },
+      "filter": {
+        "enabled": {
+          "label": "Sensitive Word Filter",
+          "description": "Whether to enable sensitive word filtering"
+        }
+      },
+      "upload": {
+        "max_size": {
+          "label": "Upload File Size Limit",
+          "description": "Maximum file size for uploads (MB)"
+        }
+      }
+    },
+    "system": {
+      "pagination": {
+        "page_size": {
+          "label": "Page Size",
+          "description": "Number of items per page in lists"
+        }
+      },
+      "cache": {
+        "ttl": {
+          "label": "Cache Expiration Time",
+          "description": "Cache data expiration time (seconds)"
+        }
+      },
+      "maintenance": {
+        "enabled": {
+          "label": "Maintenance Mode",
+          "description": "Whether to enable website maintenance mode"
+        },
+        "message": {
+          "label": "Maintenance Message",
+          "description": "Message displayed during maintenance mode"
+        }
+      },
+      "translation": {
+        "enabled_locales": {
+          "label": "Enabled Translation Languages",
+          "description": "Select target languages for automatic translation tasks, multiple selection supported"
+        }
+      }
+    }
+  },
   "User": {
     "profile": {
       "title": "User Profile",

@@ -1228,6 +1228,12 @@
           "label": "维护提示信息",
           "description": "维护模式下显示的提示文字"
         }
+      },
+      "translation": {
+        "enabled_locales": {
+          "label": "启用自动翻译的语言",
+          "description": "选择自动翻译任务需要生成的目标语言，可多选"
+        }
       }
     }
   },

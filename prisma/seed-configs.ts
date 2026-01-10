@@ -326,6 +326,16 @@ const defaultConfigs: ConfigItem[] = [
     isSensitive: false,
     defaultValue: "系统维护中，请稍后访问",
   },
+  {
+    configKey: "system.translation.enabled_locales",
+    configValue: JSON.stringify(["en", "zh"]),
+    configType: "json",
+    category: "system",
+    description: "自动翻译启用的语言列表",
+    isPublic: false,
+    isSensitive: false,
+    defaultValue: JSON.stringify(["en", "zh"]),
+  },
 ]
 
 async function seedConfigs() {

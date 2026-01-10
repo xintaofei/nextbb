@@ -13,6 +13,8 @@ import { Label } from "@/components/ui/label"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Save, RotateCcw } from "lucide-react"
 import { toast } from "sonner"
+import { routing } from "@/i18n/routing"
+import { LocaleMultiSelect } from "@/components/admin/fields/locale-multi-select"
 
 type ConfigItem = {
   id: string
@@ -97,7 +99,7 @@ export default function SettingsPage() {
         configValue: value,
       }))
 
-      const res = await fetch("/api/admin/configs/batch", {
+      const res = await fetch("/api/admin/configs", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ configs }),
@@ -136,6 +138,40 @@ export default function SettingsPage() {
 
     const label = tConfig(labelKey as never)
     const description = tConfig(descKey as never)
+
+    // 特殊处理：多语言选择器
+    if (config.configKey === "system.translation.enabled_locales") {
+      let locales: string[] = []
+      try {
+        locales = JSON.parse(value)
+      } catch {
+        locales = []
+      }
+
+      const getLocaleName = (locale: string) => {
+        const localeNames: Record<string, string> = {
+          en: "English",
+          zh: "中文",
+        }
+        return localeNames[locale] || locale
+      }
+
+      return (
+        <div key={config.configKey}>
+          <LocaleMultiSelect
+            value={locales}
+            onChange={(newLocales) =>
+              handleValueChange(config.configKey, JSON.stringify(newLocales))
+            }
+            allLocales={Array.from(routing.locales)}
+            getLocaleName={getLocaleName}
+            label={label}
+            description={description}
+            placeholder="选择语言"
+          />
+        </div>
+      )
+    }
 
     switch (config.configType) {
       case "boolean":
