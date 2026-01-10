@@ -738,3 +738,65 @@ model automation_rule_logs {
   @@index([triggered_by, executed_at], map: "automation_logs_user_time_index")
   @@map("automation_rule_logs")
 }
+
+// ==================== 翻译任务系统 ====================
+
+// 翻译实体类型枚举
+enum TranslationEntityType {
+  CATEGORY  // 分类
+  TAG       // 标签
+  BADGE     // 徽章
+  TOPIC     // 话题
+  POST      // 帖子
+}
+
+// 翻译任务状态枚举
+enum TranslationTaskStatus {
+  PENDING     // 待处理
+  PROCESSING  // 处理中
+  COMPLETED   // 已完成
+  FAILED      // 失败
+  CANCELLED   // 已取消
+}
+
+// 翻译任务表
+model translation_tasks {
+  id          BigInt                 @id @db.BigInt
+
+  // 目标实体信息
+  entity_type TranslationEntityType  // 实体类型
+  entity_id   BigInt                  @db.BigInt  // 目标实体ID
+
+  // 翻译配置
+  target_locale String                @db.VarChar(8)  // 目标语言代码
+  version     Int                     @default(1)     // 版本号(参考 category_translations)
+
+  // 任务状态
+  status      TranslationTaskStatus  @default(PENDING)  // 任务状态
+  priority    Int                     @default(0)        // 优先级(数字越大优先级越高)
+
+  // 重试机制
+  retry_count Int                     @default(0)        // 重试次数
+  error_message String?               @db.Text           // 错误信息
+
+  // 时间戳
+  created_at  DateTime               @default(now())
+  updated_at  DateTime               @updatedAt
+
+  // 复合索引：查询特定状态和优先级的任务
+  @@index([status, priority], map: "translation_tasks_status_priority_index")
+
+  // 复合索引：查询特定实体的翻译任务
+  @@index([entity_type, entity_id], map: "translation_tasks_entity_index")
+
+  // 单字段索引：按目标语言查询
+  @@index([target_locale], map: "translation_tasks_locale_index")
+
+  // 复合索引：查询特定实体和语言的任务(避免重复创建)
+  @@index([entity_type, entity_id, target_locale], map: "translation_tasks_entity_locale_index")
+
+  // 复合索引：查询特定语言和状态的任务
+  @@index([target_locale, status], map: "translation_tasks_locale_status_index")
+
+  @@map("translation_tasks")
+}
