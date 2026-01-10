@@ -17,19 +17,6 @@ type CategoryDTO = {
   topicCount: number
 }
 
-// 权限验证
-async function verifyAdmin(userId: bigint) {
-  const user = await prisma.users.findUnique({
-    where: { id: userId },
-    select: { is_admin: true, is_deleted: true, status: true },
-  })
-
-  if (!user || user.is_deleted || user.status !== 1 || !user.is_admin) {
-    return false
-  }
-  return true
-}
-
 // 颜色格式验证
 function validateColor(color: string | null): boolean {
   if (!color) return true
@@ -52,11 +39,6 @@ export async function PATCH(
     const auth = await getSessionUser()
     if (!auth) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
-    }
-
-    const isAdmin = await verifyAdmin(auth.userId)
-    if (!isAdmin) {
-      return NextResponse.json({ error: "Forbidden" }, { status: 403 })
     }
 
     const params = await context.params
@@ -239,11 +221,6 @@ export async function DELETE(
     const auth = await getSessionUser()
     if (!auth) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
-    }
-
-    const isAdmin = await verifyAdmin(auth.userId)
-    if (!isAdmin) {
-      return NextResponse.json({ error: "Forbidden" }, { status: 403 })
     }
 
     const params = await context.params

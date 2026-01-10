@@ -22,35 +22,6 @@ type ConfigListResult = {
   total: number
 }
 
-// 权限验证
-async function verifyAdmin(userId: bigint): Promise<boolean> {
-  const user = await prisma.users.findUnique({
-    where: { id: userId },
-    select: { is_admin: true, is_deleted: true, status: true },
-  })
-
-  if (!user || user.is_deleted || user.status !== 1 || !user.is_admin) {
-    return false
-  }
-  return true
-}
-
-// 解析配置值
-function parseConfigValue(value: string, type: string): unknown {
-  if (type === "boolean") {
-    return value === "true"
-  } else if (type === "number") {
-    return Number(value)
-  } else if (type === "json") {
-    try {
-      return JSON.parse(value)
-    } catch {
-      return value
-    }
-  }
-  return value
-}
-
 // 格式化配置值为字符串
 function stringifyConfigValue(value: unknown): string {
   if (typeof value === "boolean") {
@@ -75,11 +46,6 @@ export async function GET(request: NextRequest) {
     const auth = await getSessionUser()
     if (!auth) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
-    }
-
-    const isAdmin = await verifyAdmin(auth.userId)
-    if (!isAdmin) {
-      return NextResponse.json({ error: "Forbidden" }, { status: 403 })
     }
 
     const searchParams = request.nextUrl.searchParams
@@ -133,11 +99,6 @@ export async function PUT(request: NextRequest) {
     const auth = await getSessionUser()
     if (!auth) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
-    }
-
-    const isAdmin = await verifyAdmin(auth.userId)
-    if (!isAdmin) {
-      return NextResponse.json({ error: "Forbidden" }, { status: 403 })
     }
 
     const body = await request.json()

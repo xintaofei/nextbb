@@ -16,6 +16,7 @@ function getSecret(): Uint8Array {
 export type AuthTokenPayload = {
   sub: string
   email: string
+  isAdmin: boolean
 }
 
 export async function signAuthToken(
@@ -45,13 +46,14 @@ export async function verifyAuthToken(
     return {
       sub: String(payload.sub),
       email: String(payload.email),
+      isAdmin: Boolean(payload.isAdmin),
     }
   } catch {
     return null
   }
 }
 
-const AUTH_COOKIE_NAME = "nextbb_auth"
+export const AUTH_COOKIE_NAME = "nextbb_auth"
 
 export async function setAuthCookie(token: string): Promise<void> {
   const jar = await cookies()
@@ -78,6 +80,7 @@ export async function getAuthTokenFromCookies(): Promise<string | null> {
 export type SessionUser = {
   userId: bigint
   email: string
+  isAdmin: boolean
 }
 
 export async function getSessionUser(): Promise<SessionUser | null> {
@@ -88,5 +91,6 @@ export async function getSessionUser(): Promise<SessionUser | null> {
   return {
     userId: BigInt(payload.sub),
     email: payload.email,
+    isAdmin: payload.isAdmin,
   }
 }

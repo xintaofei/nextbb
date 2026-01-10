@@ -14,7 +14,7 @@ export async function GET(request: Request) {
   const email = session.user.email
   const user = await prisma.users.findUnique({
     where: { email },
-    select: { id: true, email: true },
+    select: { id: true, email: true, is_admin: true },
   })
   if (!user) {
     return NextResponse.redirect(new URL(`/${locale}/login`, url.origin))
@@ -22,6 +22,7 @@ export async function GET(request: Request) {
   const token = await signAuthToken({
     sub: user.id.toString(),
     email: user.email,
+    isAdmin: user.is_admin,
   })
   await setAuthCookie(token)
   return NextResponse.redirect(new URL(`/${locale}`, url.origin))

@@ -11,28 +11,11 @@ type ReorderRequest = {
   items: ReorderItem[]
 }
 
-async function verifyAdmin(userId: bigint): Promise<boolean> {
-  const user = await prisma.users.findUnique({
-    where: { id: userId },
-    select: { is_admin: true, is_deleted: true, status: true },
-  })
-
-  if (!user || user.is_deleted || user.status !== 1 || !user.is_admin) {
-    return false
-  }
-  return true
-}
-
 export async function POST(request: NextRequest) {
   try {
     const auth = await getSessionUser()
     if (!auth) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
-    }
-
-    const isAdmin = await verifyAdmin(auth.userId)
-    if (!isAdmin) {
-      return NextResponse.json({ error: "Forbidden" }, { status: 403 })
     }
 
     const body = await request.json()

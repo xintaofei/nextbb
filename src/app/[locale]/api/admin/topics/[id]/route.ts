@@ -35,19 +35,6 @@ type TopicDetail = {
   lastActivity: string
 }
 
-// 权限验证
-async function verifyAdmin(userId: bigint) {
-  const user = await prisma.users.findUnique({
-    where: { id: userId },
-    select: { is_admin: true, is_deleted: true, status: true },
-  })
-
-  if (!user || user.is_deleted || user.status !== 1 || !user.is_admin) {
-    return false
-  }
-  return true
-}
-
 // GET - 获取主题详情
 export async function GET(
   request: NextRequest,
@@ -57,11 +44,6 @@ export async function GET(
     const auth = await getSessionUser()
     if (!auth) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
-    }
-
-    const isAdmin = await verifyAdmin(auth.userId)
-    if (!isAdmin) {
-      return NextResponse.json({ error: "Forbidden" }, { status: 403 })
     }
 
     const { id: idStr } = await context.params
@@ -203,11 +185,6 @@ export async function PATCH(
     const auth = await getSessionUser()
     if (!auth) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
-    }
-
-    const isAdmin = await verifyAdmin(auth.userId)
-    if (!isAdmin) {
-      return NextResponse.json({ error: "Forbidden" }, { status: 403 })
     }
 
     const { id: idStr } = await context.params
