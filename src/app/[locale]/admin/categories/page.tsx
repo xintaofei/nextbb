@@ -3,13 +3,28 @@
 import { useMemo, useState } from "react"
 import useSWR from "swr"
 import { useTranslations } from "next-intl"
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragEndEvent,
+} from "@dnd-kit/core"
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  verticalListSortingStrategy,
+} from "@dnd-kit/sortable"
 import { AdminPageContainer } from "@/components/admin/layout/admin-page-container"
 import { AdminPageSection } from "@/components/admin/layout/admin-page-section"
 import { Search, Filter, Plus } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { CategoryStatsCard } from "@/components/admin/stats/category-stats-card"
-import { CategoryCard } from "@/components/admin/cards/category-card"
+import { CategoryListItem } from "@/components/admin/lists/category-list-item"
 import { CategoryDialog } from "@/components/admin/dialogs/category-dialog"
 import {
   Select,
@@ -62,8 +77,8 @@ const fetcher = async (url: string): Promise<CategoryListResult> => {
 export default function AdminCategoriesPage() {
   const t = useTranslations("AdminCategories")
   const [q, setQ] = useState("")
-  const [deleted, setDeleted] = useState<string | undefined>(undefined)
-  const [sortBy, setSortBy] = useState("updated_at")
+  const [deleted, setDeleted] = useState<string>("false")
+  const [sortBy, setSortBy] = useState("sort")
   const [page, setPage] = useState(1)
   const pageSize = 20
 
@@ -73,13 +88,21 @@ export default function AdminCategoriesPage() {
   >(undefined)
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [deletingId, setDeletingId] = useState<string | null>(null)
+  const [isReordering, setIsReordering] = useState(false)
+
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  )
 
   const query = useMemo(() => {
     const params = new URLSearchParams()
     params.set("page", String(page))
     params.set("pageSize", String(pageSize))
     if (q.trim().length > 0) params.set("q", q.trim())
-    if (typeof deleted === "string") params.set("deleted", deleted)
+    if (deleted !== "all") params.set("deleted", deleted)
     params.set("sortBy", sortBy)
     return `/api/admin/categories?${params.toString()}`
   }, [q, deleted, sortBy, page])
@@ -158,7 +181,6 @@ export default function AdminCategoriesPage() {
     name: string
     icon: string
     description: string
-    sort: number
     bgColor: string | null
     textColor: string | null
   }) => {
@@ -194,6 +216,46 @@ export default function AdminCategoriesPage() {
       toast.error(
         editingCategory ? t("message.updateError") : t("message.createError")
       )
+    }
+  }
+
+  const handleDragEnd = async (event: DragEndEvent) => {
+    const { active, over } = event
+    if (!over || active.id === over.id) return
+
+    const activeId = String(active.id)
+    const overId = String(over.id)
+
+    const oldIndex = data?.items.findIndex((c) => c.id === activeId) ?? -1
+    const newIndex = data?.items.findIndex((c) => c.id === overId) ?? -1
+
+    if (oldIndex === -1 || newIndex === -1 || !data) return
+
+    const newItems = arrayMove(data.items, oldIndex, newIndex)
+
+    try {
+      setIsReordering(true)
+      const itemsWithSort = newItems.map((item, index) => ({
+        id: item.id,
+        sort: index,
+      }))
+
+      const res = await fetch("/api/admin/categories/reorder", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ items: itemsWithSort }),
+      })
+
+      if (res.ok) {
+        toast.success(t("message.reorderSuccess"))
+        await mutate()
+      } else {
+        toast.error(t("message.reorderError"))
+      }
+    } catch {
+      toast.error(t("message.reorderError"))
+    } finally {
+      setIsReordering(false)
     }
   }
 
@@ -246,12 +308,7 @@ export default function AdminCategoriesPage() {
               />
             </div>
 
-            <Select
-              value={deleted ?? "all"}
-              onValueChange={(value) =>
-                setDeleted(value === "all" ? undefined : value)
-              }
-            >
+            <Select value={deleted} onValueChange={setDeleted}>
               <SelectTrigger className="bg-background/60 border-border/40 focus:border-border/60">
                 <SelectValue placeholder={t("filter.deleted.all")} />
               </SelectTrigger>
@@ -271,11 +328,11 @@ export default function AdminCategoriesPage() {
                 <SelectValue placeholder={t("filter.sortBy")} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="updated_at">
-                  {t("filter.sortByOptions.updatedAt")}
-                </SelectItem>
                 <SelectItem value="sort">
                   {t("filter.sortByOptions.sort")}
+                </SelectItem>
+                <SelectItem value="updated_at">
+                  {t("filter.sortByOptions.updatedAt")}
                 </SelectItem>
                 <SelectItem value="topic_count">
                   {t("filter.sortByOptions.topicCount")}
@@ -301,18 +358,41 @@ export default function AdminCategoriesPage() {
       ) : !data || data.items.length === 0 ? (
         <div className="text-center py-12 text-foreground/60">{t("empty")}</div>
       ) : (
-        <AdminPageSection
-          delay={0.3}
-          className="grid gap-4 sm:grid-cols-1 lg:grid-cols-2 xl:grid-cols-3"
-        >
-          {data.items.map((category) => (
-            <CategoryCard
-              key={category.id}
-              category={category}
-              onEdit={handleEdit}
-              onDelete={handleDelete}
-            />
-          ))}
+        <AdminPageSection delay={0.3} className="space-y-4 relative">
+          <div className="text-sm text-muted-foreground mb-2">
+            {t("list.dragHint")}
+          </div>
+          <DndContext
+            sensors={sensors}
+            collisionDetection={closestCenter}
+            onDragEnd={handleDragEnd}
+          >
+            <SortableContext
+              items={data.items.map((c) => c.id)}
+              strategy={verticalListSortingStrategy}
+            >
+              {data.items.map((category) => (
+                <CategoryListItem
+                  key={category.id}
+                  category={category}
+                  onEdit={handleEdit}
+                  onDelete={handleDelete}
+                  disabled={isReordering || deleted === "true"}
+                />
+              ))}
+            </SortableContext>
+          </DndContext>
+
+          {isReordering && (
+            <div className="absolute inset-0 flex items-center justify-center bg-background/80 backdrop-blur-sm z-10">
+              <div className="flex flex-col items-center gap-2">
+                <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+                <span className="text-sm text-muted-foreground">
+                  {t("list.reordering")}
+                </span>
+              </div>
+            </div>
+          )}
         </AdminPageSection>
       )}
 

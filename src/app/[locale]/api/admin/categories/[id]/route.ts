@@ -72,8 +72,7 @@ export async function PATCH(
     }
 
     const body = await request.json()
-    const { name, icon, description, sort, bgColor, textColor, isDeleted } =
-      body
+    const { name, icon, description, bgColor, textColor, isDeleted } = body
 
     // 验证字段
     if (name !== undefined) {
@@ -89,15 +88,6 @@ export async function PATCH(
       if (typeof description !== "string" || description.length > 255) {
         return NextResponse.json(
           { error: "Description must not exceed 255 characters" },
-          { status: 400 }
-        )
-      }
-    }
-
-    if (sort !== undefined) {
-      if (typeof sort !== "number" || !Number.isInteger(sort)) {
-        return NextResponse.json(
-          { error: "Sort must be an integer" },
           { status: 400 }
         )
       }
@@ -122,14 +112,12 @@ export async function PATCH(
     const hasTranslationUpdate = name !== undefined || description !== undefined
     const categoryUpdateData: {
       icon?: string
-      sort?: number
       bg_color?: string | null
       text_color?: string | null
       is_deleted?: boolean
     } = {}
 
     if (icon !== undefined) categoryUpdateData.icon = icon
-    if (sort !== undefined) categoryUpdateData.sort = sort
     if (bgColor !== undefined) categoryUpdateData.bg_color = bgColor || null
     if (textColor !== undefined)
       categoryUpdateData.text_color = textColor || null

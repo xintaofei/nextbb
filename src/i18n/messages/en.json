@@ -694,8 +694,11 @@
       },
       "apply": "Apply Filter"
     },
+    "list": {
+      "dragHint": "Drag to reorder",
+      "reordering": "Updating order..."
+    },
     "card": {
-      "sort": "Sort",
       "topics": "Topics",
       "updatedAt": "Updated",
       "deleted": "Deleted",
@@ -731,9 +734,11 @@
       "createSuccess": "Category created successfully",
       "updateSuccess": "Category updated successfully",
       "deleteSuccess": "Category deleted successfully",
+      "reorderSuccess": "Reorder successful",
       "createError": "Failed to create category",
       "updateError": "Failed to update category",
-      "deleteError": "Failed to delete category"
+      "deleteError": "Failed to delete category",
+      "reorderError": "Failed to reorder"
     },
     "loading": "Loading...",
     "empty": "No data",

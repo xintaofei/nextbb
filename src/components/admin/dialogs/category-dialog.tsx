@@ -19,7 +19,6 @@ type CategoryFormData = {
   name: string
   icon: string
   description: string
-  sort: number
   bgColor: string | null
   textColor: string | null
 }
@@ -32,7 +31,6 @@ type CategoryDialogProps = {
     name: string
     icon: string
     description: string | null
-    sort: number
     bgColor: string | null
     textColor: string | null
   }
@@ -50,7 +48,6 @@ export function CategoryDialog({
     name: "",
     icon: "",
     description: "",
-    sort: 0,
     bgColor: null,
     textColor: null,
   })
@@ -62,7 +59,6 @@ export function CategoryDialog({
         name: category.name,
         icon: category.icon,
         description: category.description || "",
-        sort: category.sort,
         bgColor: category.bgColor,
         textColor: category.textColor,
       })
@@ -71,7 +67,6 @@ export function CategoryDialog({
         name: "",
         icon: "",
         description: "",
-        sort: 0,
         bgColor: null,
         textColor: null,
       })
@@ -114,7 +109,7 @@ export function CategoryDialog({
               />
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="space-y-2">
               <EmojiPickerField
                 label={t("dialog.icon")}
                 value={formData.icon}
@@ -123,22 +118,6 @@ export function CategoryDialog({
                 }
                 placeholder={t("dialog.iconPlaceholder")}
               />
-
-              <div className="space-y-2">
-                <Label htmlFor="sort">{t("dialog.sortValue")}</Label>
-                <Input
-                  id="sort"
-                  type="number"
-                  value={formData.sort}
-                  onChange={(e) =>
-                    setFormData({
-                      ...formData,
-                      sort: parseInt(e.target.value) || 0,
-                    })
-                  }
-                  required
-                />
-              </div>
             </div>
 
             <div className="space-y-2">

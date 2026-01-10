@@ -197,7 +197,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json()
-    const { name, icon, description, sort, bgColor, textColor } = body
+    const { name, icon, description, bgColor, textColor } = body
 
     // 验证必填字段
     if (
@@ -222,12 +222,11 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    if (typeof sort !== "number" || !Number.isInteger(sort)) {
-      return NextResponse.json(
-        { error: "Sort must be an integer" },
-        { status: 400 }
-      )
-    }
+    // 自动分配排序值
+    const maxSortResult = await prisma.categories.aggregate({
+      _max: { sort: true },
+    })
+    const sort = (maxSortResult._max.sort ?? -1) + 1
 
     // 验证颜色格式
     if (!validateColor(bgColor)) {

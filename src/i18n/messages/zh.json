@@ -694,8 +694,11 @@
       },
       "apply": "应用筛选"
     },
+    "list": {
+      "dragHint": "拖拽可调整排序",
+      "reordering": "正在更新排序..."
+    },
     "card": {
-      "sort": "排序",
       "topics": "话题",
       "updatedAt": "更新于",
       "deleted": "已删除",
@@ -731,9 +734,11 @@
       "createSuccess": "分类创建成功",
       "updateSuccess": "分类更新成功",
       "deleteSuccess": "分类删除成功",
+      "reorderSuccess": "排序更新成功",
       "createError": "分类创建失败",
       "updateError": "分类更新失败",
-      "deleteError": "分类删除失败"
+      "deleteError": "分类删除失败",
+      "reorderError": "排序更新失败"
     },
     "loading": "加载中...",
     "empty": "暂无数据",
