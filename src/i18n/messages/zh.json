@@ -747,6 +747,18 @@
       "page": "第 {page} 页",
       "prev": "上一页",
       "next": "下一页"
+    },
+    "translationDialog": {
+      "title": "管理多语言翻译",
+      "sourceLanguage": "源语言",
+      "translated": "已翻译",
+      "missing": "未翻译",
+      "noName": "未填写名称",
+      "edit": "编辑",
+      "save": "保存",
+      "cancel": "取消",
+      "name": "名称",
+      "description": "描述"
     }
   },
   "AdminTags": {

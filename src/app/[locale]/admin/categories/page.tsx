@@ -26,6 +26,7 @@ import { Button } from "@/components/ui/button"
 import { CategoryStatsCard } from "@/components/admin/stats/category-stats-card"
 import { CategoryListItem } from "@/components/admin/lists/category-list-item"
 import { CategoryDialog } from "@/components/admin/dialogs/category-dialog"
+import { CategoryTranslationDialog } from "@/components/admin/dialogs/category-translation-dialog"
 import {
   Select,
   SelectContent,
@@ -57,6 +58,7 @@ type CategoryListItem = {
   createdAt: string
   updatedAt: string
   topicCount: number
+  sourceLocale: string
 }
 
 type CategoryListResult = {
@@ -85,6 +87,8 @@ export default function AdminCategoriesPage() {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [deletingId, setDeletingId] = useState<string | null>(null)
   const [isReordering, setIsReordering] = useState(false)
+  const [translationDialogOpen, setTranslationDialogOpen] = useState(false)
+  const [translatingCategoryId, setTranslatingCategoryId] = useState<string | null>(null)
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -144,6 +148,11 @@ export default function AdminCategoriesPage() {
       setEditingCategory(category)
       setDialogOpen(true)
     }
+  }
+
+  const handleManageTranslations = (id: string) => {
+    setTranslatingCategoryId(id)
+    setTranslationDialogOpen(true)
   }
 
   const handleDelete = (id: string) => {
@@ -386,6 +395,7 @@ export default function AdminCategoriesPage() {
                   category={category}
                   onEdit={handleEdit}
                   onDelete={handleDelete}
+                  onManageTranslations={handleManageTranslations}
                   disabled={
                     isReordering || deleted !== "false" || sortBy !== "sort"
                   }
@@ -401,6 +411,12 @@ export default function AdminCategoriesPage() {
         onOpenChange={setDialogOpen}
         category={editingCategory}
         onSubmit={handleSubmit}
+      />
+
+      <CategoryTranslationDialog
+        open={translationDialogOpen}
+        onOpenChange={setTranslationDialogOpen}
+        categoryId={translatingCategoryId}
       />
 
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>

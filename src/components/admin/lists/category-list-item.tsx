@@ -3,7 +3,7 @@
 import { useSortable } from "@dnd-kit/sortable"
 import { CSS } from "@dnd-kit/utilities"
 import { useTranslations } from "next-intl"
-import { Edit, Trash2, FolderOpen, GripVertical } from "lucide-react"
+import { Edit, Trash2, FolderOpen, GripVertical, Globe } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { formatRelative } from "@/lib/time"
@@ -21,9 +21,11 @@ type CategoryListItemProps = {
     createdAt: string
     updatedAt: string
     topicCount: number
+    sourceLocale: string
   }
   onEdit: (id: string) => void
   onDelete: (id: string) => void
+  onManageTranslations: (id: string) => void
   disabled?: boolean
 }
 
@@ -31,6 +33,7 @@ export function CategoryListItem({
   category,
   onEdit,
   onDelete,
+  onManageTranslations,
   disabled = false,
 }: CategoryListItemProps) {
   const t = useTranslations("AdminCategories")
@@ -102,6 +105,12 @@ export function CategoryListItem({
             <h3 className="font-semibold text-base truncate">
               {category.name}
             </h3>
+            <Badge
+              variant="secondary"
+              className="text-[10px] h-5 px-1.5 font-mono"
+            >
+              {category.sourceLocale}
+            </Badge>
             {category.isDeleted && (
               <Badge variant="destructive" className="shrink-0">
                 {t("card.deleted")}
@@ -128,6 +137,15 @@ export function CategoryListItem({
         </div>
 
         <div className="flex items-center gap-2 shrink-0">
+          <Button
+            size="sm"
+            variant="ghost"
+            onClick={() => onManageTranslations(category.id)}
+            className="h-8 w-8 p-0 text-muted-foreground hover:text-foreground"
+            title={t("translationDialog.title")}
+          >
+            <Globe className="h-4 w-4" />
+          </Button>
           <Button
             size="sm"
             variant="ghost"

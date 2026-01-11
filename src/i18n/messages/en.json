@@ -747,6 +747,18 @@
       "page": "Page {page}",
       "prev": "Previous",
       "next": "Next"
+    },
+    "translationDialog": {
+      "title": "Manage Translations",
+      "sourceLanguage": "Source Language",
+      "translated": "Translated",
+      "missing": "Missing",
+      "noName": "No Name",
+      "edit": "Edit",
+      "save": "Save",
+      "cancel": "Cancel",
+      "name": "Name",
+      "description": "Description"
     }
   },
   "AdminTags": {
