@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
 import { getSessionUser } from "@/lib/auth"
-import { routing } from "@/i18n/routing"
+import { Locale, routing } from "@/i18n/routing"
 
 // GET - 获取分类的所有翻译信息
 export async function GET(
@@ -103,7 +103,7 @@ export async function PUT(
     const body = await request.json()
     const { locale, name, description } = body
 
-    if (!locale || !routing.locales.includes(locale as any)) {
+    if (!locale || !routing.locales.includes(locale as Locale)) {
       return NextResponse.json({ error: "Invalid locale" }, { status: 400 })
     }
 
