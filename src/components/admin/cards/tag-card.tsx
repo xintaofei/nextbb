@@ -2,7 +2,7 @@
 
 import { motion } from "framer-motion"
 import { useTranslations } from "next-intl"
-import { Edit, Trash2, Tag } from "lucide-react"
+import { Edit, Trash2, Tag, Globe } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { formatRelative } from "@/lib/time"
@@ -12,7 +12,7 @@ type TagCardProps = {
     id: string
     name: string
     icon: string
-    description: string
+    description: string | null
     sort: number
     bgColor: string | null
     textColor: string | null
@@ -23,9 +23,15 @@ type TagCardProps = {
   }
   onEdit: (id: string) => void
   onDelete: (id: string) => void
+  onManageTranslations: (id: string) => void
 }
 
-export function TagCard({ tag, onEdit, onDelete }: TagCardProps) {
+export function TagCard({
+  tag,
+  onEdit,
+  onDelete,
+  onManageTranslations,
+}: TagCardProps) {
   const t = useTranslations("AdminTags")
 
   return (
@@ -75,11 +81,22 @@ export function TagCard({ tag, onEdit, onDelete }: TagCardProps) {
               )}
             </div>
           </div>
-          {tag.isDeleted && (
-            <Badge variant="destructive" className="shrink-0">
-              {t("card.deleted")}
-            </Badge>
-          )}
+          <div className="flex flex-col gap-2 items-end">
+            {tag.isDeleted && (
+              <Badge variant="destructive" className="shrink-0">
+                {t("card.deleted")}
+              </Badge>
+            )}
+            <Button
+              size="icon"
+              variant="ghost"
+              onClick={() => onManageTranslations(tag.id)}
+              className="h-8 w-8 text-muted-foreground hover:text-primary"
+              title={t("translationDialog.title")}
+            >
+              <Globe className="h-4 w-4" />
+            </Button>
+          </div>
         </div>
 
         <div className="flex items-center gap-4 text-sm text-muted-foreground">

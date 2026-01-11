@@ -18,7 +18,7 @@ import { EmojiPickerField } from "../fields/emoji-picker-field"
 type CategoryFormData = {
   name: string
   icon: string
-  description: string
+  description: string | null
   bgColor: string | null
   textColor: string | null
 }
@@ -124,7 +124,7 @@ export function CategoryDialog({
               <Label htmlFor="description">{t("dialog.description")}</Label>
               <Textarea
                 id="description"
-                value={formData.description}
+                value={formData.description || ""}
                 onChange={(e) =>
                   setFormData({ ...formData, description: e.target.value })
                 }

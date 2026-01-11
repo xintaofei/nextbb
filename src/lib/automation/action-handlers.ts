@@ -9,6 +9,7 @@ import { RuleActionType, RuleExecutionStatus } from "@/lib/automation/types"
 import { prisma } from "@/lib/prisma"
 import { CreditService } from "@/lib/credit-service"
 import { CreditLogType } from "@prisma/client"
+import { getTranslationsQuery, selectTranslation } from "@/lib/locale"
 
 // ==================== Action 参数类型定义 ====================
 
@@ -186,9 +187,9 @@ export class BadgeGrantHandler implements IActionHandler<BadgeGrantParams> {
         where: { id: badge_id },
         select: {
           id: true,
-          name: true,
           is_enabled: true,
           is_deleted: true,
+          translations: getTranslationsQuery("zh", { name: true }),
         },
       })
 
@@ -204,6 +205,9 @@ export class BadgeGrantHandler implements IActionHandler<BadgeGrantParams> {
           },
         }
       }
+
+      const translation = selectTranslation(badge.translations, "zh")
+      const badgeName = translation?.name || "Unknown Badge"
 
       // 检查用户是否已拥有该徽章
       const existing = await prisma.user_badges.findUnique({
@@ -222,7 +226,7 @@ export class BadgeGrantHandler implements IActionHandler<BadgeGrantParams> {
           targetUserId: userId,
           message: "Automation.skipReason.badgeAlreadyOwned",
           messageParams: {
-            badgeName: badge.name,
+            badgeName,
           },
         }
       }
@@ -262,7 +266,7 @@ export class BadgeGrantHandler implements IActionHandler<BadgeGrantParams> {
         data: {
           badge_granted: {
             badge_id: badge_id.toString(),
-            badge_name: badge.name,
+            badge_name: badgeName,
           },
         },
       }
@@ -324,10 +328,17 @@ export class BadgeRevokeHandler implements IActionHandler<BadgeRevokeParams> {
         },
         include: {
           badge: {
-            select: { name: true },
+            select: {
+              translations: getTranslationsQuery("zh", { name: true }),
+            },
           },
         },
       })
+
+      const badgeName = userBadge
+        ? selectTranslation(userBadge.badge.translations, "zh")?.name ||
+          "Unknown Badge"
+        : "Unknown Badge"
 
       if (!userBadge || userBadge.is_deleted) {
         return {
@@ -336,7 +347,7 @@ export class BadgeRevokeHandler implements IActionHandler<BadgeRevokeParams> {
           targetUserId: userId,
           message: "Automation.skipReason.badgeNotOwned",
           messageParams: {
-            badgeName: userBadge?.badge.name || "Unknown",
+            badgeName,
           },
         }
       }
@@ -361,7 +372,7 @@ export class BadgeRevokeHandler implements IActionHandler<BadgeRevokeParams> {
         data: {
           badge_revoked: {
             badge_id: badge_id.toString(),
-            badge_name: userBadge.badge.name,
+            badge_name: badgeName,
             reason: reason || "自动化规则触发",
           },
         },

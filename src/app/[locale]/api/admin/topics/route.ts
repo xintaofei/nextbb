@@ -172,10 +172,10 @@ export async function GET(request: NextRequest) {
             tag: {
               select: {
                 id: true,
-                name: true,
                 icon: true,
                 bg_color: true,
                 text_color: true,
+                translations: getTranslationsQuery(locale, { name: true }),
               },
             },
           },
@@ -246,7 +246,7 @@ export async function GET(request: NextRequest) {
         },
         tags: topic.tag_links.map((link) => ({
           id: String(link.tag.id),
-          name: link.tag.name,
+          name: getTranslationField(link.tag.translations, locale, "name", ""),
           icon: link.tag.icon,
           bgColor: link.tag.bg_color,
           textColor: link.tag.text_color,

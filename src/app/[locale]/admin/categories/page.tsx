@@ -189,7 +189,7 @@ export default function AdminCategoriesPage() {
   const handleSubmit = async (formData: {
     name: string
     icon: string
-    description: string
+    description: string | null
     bgColor: string | null
     textColor: string | null
   }) => {

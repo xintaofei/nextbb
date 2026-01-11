@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button"
 import { BadgeStatsCard } from "@/components/admin/stats/badge-stats-card"
 import { BadgeCard } from "@/components/admin/cards/badge-card"
 import { BadgeDialog } from "@/components/admin/dialogs/badge-dialog"
+import { BadgeTranslationDialog } from "@/components/admin/dialogs/badge-translation-dialog"
 import {
   Select,
   SelectContent,
@@ -40,6 +41,7 @@ type BadgeListItem = {
   sort: number
   bgColor: string | null
   textColor: string | null
+  sourceLocale: string
   isEnabled: boolean
   isVisible: boolean
   isDeleted: boolean
@@ -78,6 +80,10 @@ export default function AdminBadgesPage() {
   )
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [deletingId, setDeletingId] = useState<string | null>(null)
+  const [translationDialogOpen, setTranslationDialogOpen] = useState(false)
+  const [translatingBadgeId, setTranslatingBadgeId] = useState<string | null>(
+    null
+  )
 
   const query = useMemo(() => {
     const params = new URLSearchParams()
@@ -141,6 +147,11 @@ export default function AdminBadgesPage() {
     }
   }
 
+  const handleManageTranslations = (id: string) => {
+    setTranslatingBadgeId(id)
+    setTranslationDialogOpen(true)
+  }
+
   const handleDelete = (id: string) => {
     setDeletingId(id)
     setDeleteDialogOpen(true)
@@ -173,7 +184,7 @@ export default function AdminBadgesPage() {
   const handleSubmit = async (formData: {
     name: string
     icon: string
-    description: string
+    description: string | null
     badgeType: string
     level: number
     sort: number
@@ -183,32 +194,29 @@ export default function AdminBadgesPage() {
     isVisible: boolean
   }) => {
     try {
-      if (editingBadge) {
-        const res = await fetch(`/api/admin/badges/${editingBadge.id}`, {
-          method: "PATCH",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(formData),
-        })
+      const url = editingBadge
+        ? `/api/admin/badges/${editingBadge.id}`
+        : "/api/admin/badges"
+      const method = editingBadge ? "PATCH" : "POST"
 
-        if (res.ok) {
-          toast.success(t("message.updateSuccess"))
-          await mutate()
-        } else {
-          toast.error(t("message.updateError"))
-        }
+      const res = await fetch(url, {
+        method,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formData),
+      })
+
+      if (res.ok) {
+        toast.success(
+          editingBadge ? t("message.updateSuccess") : t("message.createSuccess")
+        )
+        await mutate()
+        setDialogOpen(false)
       } else {
-        const res = await fetch("/api/admin/badges", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(formData),
-        })
-
-        if (res.ok) {
-          toast.success(t("message.createSuccess"))
-          await mutate()
-        } else {
-          toast.error(t("message.createError"))
-        }
+        const errorData = await res.json()
+        toast.error(
+          errorData.error ||
+            (editingBadge ? t("message.updateError") : t("message.createError"))
+        )
       }
     } catch {
       toast.error(
@@ -381,6 +389,7 @@ export default function AdminBadgesPage() {
               badge={badge}
               onEdit={handleEdit}
               onDelete={handleDelete}
+              onManageTranslations={handleManageTranslations}
             />
           ))}
         </AdminPageSection>
@@ -419,6 +428,12 @@ export default function AdminBadgesPage() {
         onOpenChange={setDialogOpen}
         badge={editingBadge}
         onSubmit={handleSubmit}
+      />
+
+      <BadgeTranslationDialog
+        open={translationDialogOpen}
+        onOpenChange={setTranslationDialogOpen}
+        badgeId={translatingBadgeId}
       />
 
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>

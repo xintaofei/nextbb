@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button"
 import { TagStatsCard } from "@/components/admin/stats/tag-stats-card"
 import { TagCard } from "@/components/admin/cards/tag-card"
 import { TagDialog } from "@/components/admin/dialogs/tag-dialog"
+import { TagTranslationDialog } from "@/components/admin/dialogs/tag-translation-dialog"
 import {
   Select,
   SelectContent,
@@ -34,10 +35,11 @@ type TagListItem = {
   id: string
   name: string
   icon: string
-  description: string
+  description: string | null
   sort: number
   bgColor: string | null
   textColor: string | null
+  sourceLocale: string
   isDeleted: boolean
   createdAt: string
   updatedAt: string
@@ -73,6 +75,8 @@ export default function AdminTagsPage() {
   )
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [deletingId, setDeletingId] = useState<string | null>(null)
+  const [translationDialogOpen, setTranslationDialogOpen] = useState(false)
+  const [translatingTagId, setTranslatingTagId] = useState<string | null>(null)
 
   const query = useMemo(() => {
     const params = new URLSearchParams()
@@ -125,6 +129,11 @@ export default function AdminTagsPage() {
     }
   }
 
+  const handleManageTranslations = (id: string) => {
+    setTranslatingTagId(id)
+    setTranslationDialogOpen(true)
+  }
+
   const handleDelete = (id: string) => {
     setDeletingId(id)
     setDeleteDialogOpen(true)
@@ -157,7 +166,7 @@ export default function AdminTagsPage() {
   const handleSubmit = async (formData: {
     name: string
     icon: string
-    description: string
+    description: string | null
     sort: number
     bgColor: string | null
     textColor: string | null
@@ -311,6 +320,7 @@ export default function AdminTagsPage() {
               tag={tag}
               onEdit={handleEdit}
               onDelete={handleDelete}
+              onManageTranslations={handleManageTranslations}
             />
           ))}
         </AdminPageSection>
@@ -349,6 +359,12 @@ export default function AdminTagsPage() {
         onOpenChange={setDialogOpen}
         tag={editingTag}
         onSubmit={handleSubmit}
+      />
+
+      <TagTranslationDialog
+        open={translationDialogOpen}
+        onOpenChange={setTranslationDialogOpen}
+        tagId={translatingTagId}
       />
 
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>

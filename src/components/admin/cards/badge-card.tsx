@@ -2,7 +2,7 @@
 
 import { useTranslations } from "next-intl"
 import { motion } from "framer-motion"
-import { Pencil, Trash2, Eye, EyeOff, Award } from "lucide-react"
+import { Pencil, Trash2, Eye, EyeOff, Award, Globe } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 
@@ -27,9 +27,15 @@ type BadgeCardProps = {
   badge: BadgeItem
   onEdit: (id: string) => void
   onDelete: (id: string) => void
+  onManageTranslations: (id: string) => void
 }
 
-export function BadgeCard({ badge, onEdit, onDelete }: BadgeCardProps) {
+export function BadgeCard({
+  badge,
+  onEdit,
+  onDelete,
+  onManageTranslations,
+}: BadgeCardProps) {
   const t = useTranslations("AdminBadges")
 
   const getLevelColor = (level: number) => {
@@ -140,6 +146,15 @@ export function BadgeCard({ badge, onEdit, onDelete }: BadgeCardProps) {
           </div>
 
           <div className="flex items-center gap-2">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => onManageTranslations(badge.id)}
+              className="h-8 w-8 p-0 text-muted-foreground hover:text-primary"
+              title={t("translationDialog.title")}
+            >
+              <Globe className="h-4 w-4" />
+            </Button>
             <Button
               variant="ghost"
               size="sm"

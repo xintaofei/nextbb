@@ -2,15 +2,17 @@ import { NextRequest, NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
 import { getSessionUser } from "@/lib/auth"
 import { generateId } from "@/lib/id"
+import { getLocale } from "next-intl/server"
 
 type TagDTO = {
   id: string
   name: string
   icon: string
-  description: string
+  description: string | null
   sort: number
   bgColor: string | null
   textColor: string | null
+  sourceLocale: string
   isDeleted: boolean
   createdAt: string
   updatedAt: string
@@ -46,6 +48,7 @@ export async function GET(request: NextRequest) {
     }
 
     const searchParams = request.nextUrl.searchParams
+    const locale = (request.nextUrl.pathname.split("/")[1] || "zh") as string
     const page = parseInt(searchParams.get("page") || "1")
     const pageSize = parseInt(searchParams.get("pageSize") || "20")
     const q = searchParams.get("q") || ""
@@ -54,12 +57,26 @@ export async function GET(request: NextRequest) {
 
     // 构建查询条件
     const where: {
-      name?: { contains: string; mode: "insensitive" }
+      OR?: Array<{
+        translations: {
+          some: {
+            name: { contains: string; mode: "insensitive" }
+          }
+        }
+      }>
       is_deleted?: boolean
     } = {}
 
     if (q.trim().length > 0) {
-      where.name = { contains: q.trim(), mode: "insensitive" }
+      where.OR = [
+        {
+          translations: {
+            some: {
+              name: { contains: q.trim(), mode: "insensitive" },
+            },
+          },
+        },
+      ]
     }
 
     if (deleted === "true") {
@@ -73,7 +90,6 @@ export async function GET(request: NextRequest) {
     if (sortBy === "sort") {
       orderBy = { sort: "desc" }
     } else if (sortBy === "usage_count") {
-      // 注意：按使用次数排序需要特殊处理
       orderBy = { updated_at: "desc" }
     }
 
@@ -85,15 +101,26 @@ export async function GET(request: NextRequest) {
       where,
       select: {
         id: true,
-        name: true,
+        source_locale: true,
         icon: true,
-        description: true,
         sort: true,
         bg_color: true,
         text_color: true,
         is_deleted: true,
         created_at: true,
         updated_at: true,
+        translations: {
+          where: {
+            OR: [{ locale, is_source: false }, { is_source: true }],
+          },
+          select: {
+            locale: true,
+            name: true,
+            description: true,
+            is_source: true,
+          },
+          take: 2,
+        },
         _count: {
           select: {
             topic_links: true,
@@ -106,19 +133,27 @@ export async function GET(request: NextRequest) {
     })
 
     // 转换为 DTO
-    const items: TagDTO[] = tags.map((t) => ({
-      id: String(t.id),
-      name: t.name,
-      icon: t.icon,
-      description: t.description,
-      sort: t.sort,
-      bgColor: t.bg_color,
-      textColor: t.text_color,
-      isDeleted: t.is_deleted,
-      createdAt: t.created_at.toISOString(),
-      updatedAt: t.updated_at.toISOString(),
-      usageCount: t._count.topic_links,
-    }))
+    const items: TagDTO[] = tags.map((t) => {
+      // 选择翻译：优先匹配当前 locale，否则取 is_source 为 true 的
+      const translation =
+        t.translations.find((tr) => tr.locale === locale && !tr.is_source) ||
+        t.translations.find((tr) => tr.is_source)
+
+      return {
+        id: String(t.id),
+        name: translation?.name || "",
+        icon: t.icon,
+        description: translation?.description || null,
+        sort: t.sort,
+        bgColor: t.bg_color,
+        textColor: t.text_color,
+        sourceLocale: t.source_locale,
+        isDeleted: t.is_deleted,
+        createdAt: t.created_at.toISOString(),
+        updatedAt: t.updated_at.toISOString(),
+        usageCount: t._count.topic_links,
+      }
+    })
 
     // 如果按使用次数排序，在内存中排序
     if (sortBy === "usage_count") {
@@ -166,12 +201,12 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // 检查名称唯一性
-    const existingTag = await prisma.tags.findUnique({
-      where: { name },
+    // 检查名称唯一性（在当前 locale 的翻译中检查）
+    const existingTranslation = await prisma.tag_translations.findFirst({
+      where: { name, locale: "zh" }, // 默认检查中文名称
     })
 
-    if (existingTag) {
+    if (existingTranslation) {
       return NextResponse.json(
         { error: "Tag name already exists" },
         { status: 400 }
@@ -210,52 +245,58 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // 创建标签
-    const tag = await prisma.tags.create({
-      data: {
-        id: generateId(),
-        name,
-        icon: icon || "",
-        description: description || "",
-        sort,
-        bg_color: bgColor || null,
-        text_color: textColor || null,
-        is_deleted: false,
-      },
-      select: {
-        id: true,
-        name: true,
-        icon: true,
-        description: true,
-        sort: true,
-        bg_color: true,
-        text_color: true,
-        is_deleted: true,
-        created_at: true,
-        updated_at: true,
-        _count: {
-          select: {
-            topic_links: true,
-          },
+    // 获取当前请求的语言作为源语言
+    const sourceLocale = await getLocale()
+
+    // 创建标签和初始翻译
+    const result = await prisma.$transaction(async (tx) => {
+      const tagId = generateId()
+      const newTag = await tx.tags.create({
+        data: {
+          id: tagId,
+          icon: icon || "",
+          sort,
+          bg_color: bgColor || null,
+          text_color: textColor || null,
+          is_deleted: false,
+          source_locale: sourceLocale,
         },
-      },
+      })
+
+      const translation = await tx.tag_translations.create({
+        data: {
+          tag_id: tagId,
+          locale: sourceLocale,
+          name,
+          description: description || null,
+          is_source: true,
+          version: 0,
+        },
+      })
+
+      const count = await tx.topic_tags.count({
+        where: { tag_id: tagId },
+      })
+
+      return { ...newTag, translation, usageCount: count }
     })
 
-    const result: TagDTO = {
-      id: String(tag.id),
-      name: tag.name,
-      icon: tag.icon,
-      description: tag.description,
-      sort: tag.sort,
-      bgColor: tag.bg_color,
-      textColor: tag.text_color,
-      isDeleted: tag.is_deleted,
-      createdAt: tag.created_at.toISOString(),
-      updatedAt: tag.updated_at.toISOString(),
-      usageCount: tag._count.topic_links,
+    const tagDTO: TagDTO = {
+      id: String(result.id),
+      name: result.translation.name,
+      icon: result.icon,
+      description: result.translation.description,
+      sort: result.sort,
+      bgColor: result.bg_color,
+      textColor: result.text_color,
+      sourceLocale: result.source_locale,
+      isDeleted: result.is_deleted,
+      createdAt: result.created_at.toISOString(),
+      updatedAt: result.updated_at.toISOString(),
+      usageCount: result.usageCount,
     }
 
-    return NextResponse.json(result, { status: 201 })
+    return NextResponse.json(tagDTO, { status: 201 })
   } catch (error) {
     console.error("Create tag error:", error)
     return NextResponse.json(

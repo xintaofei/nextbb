@@ -74,7 +74,13 @@ export async function GET(
       },
       tag_links: {
         select: {
-          tag: { select: { id: true, name: true, icon: true } },
+          tag: {
+            select: {
+              id: true,
+              icon: true,
+              translations: getTranslationsQuery(locale, { name: true }),
+            },
+          },
         },
       },
     },
@@ -165,7 +171,13 @@ export async function GET(
       },
       tag_links: {
         select: {
-          tag: { select: { id: true, name: true, icon: true } },
+          tag: {
+            select: {
+              id: true,
+              icon: true,
+              translations: getTranslationsQuery(locale, { name: true }),
+            },
+          },
         },
       },
     },
@@ -182,7 +194,13 @@ export async function GET(
         icon: string | null
         translations: { locale: string; name: string; is_source: boolean }[]
       }
-      tag_links: { tag: { id: bigint; name: string; icon: string } }[]
+      tag_links: {
+        tag: {
+          id: bigint
+          icon: string
+          translations: { locale: string; name: string; is_source: boolean }[]
+        }
+      }[]
     }) => t.id
   )
   let relatedTopics: RelatedTopicItem[] = []
@@ -220,7 +238,13 @@ export async function GET(
           icon: string | null
           translations: { locale: string; name: string; is_source: boolean }[]
         }
-        tag_links: { tag: { id: bigint; name: string; icon: string } }[]
+        tag_links: {
+          tag: {
+            id: bigint
+            icon: string
+            translations: { locale: string; name: string; is_source: boolean }[]
+          }
+        }[]
       }) => {
         const a = agg[String(t.id)]
         // 查找当前语言翻译，如果没有则回退到源语言
@@ -240,9 +264,19 @@ export async function GET(
             icon: t.category.icon ?? undefined,
           },
           tags: t.tag_links.map(
-            (l: { tag: { id: bigint; name: string; icon: string } }) => ({
+            (l: {
+              tag: {
+                id: bigint
+                icon: string
+                translations: {
+                  locale: string
+                  name: string
+                  is_source: boolean
+                }[]
+              }
+            }) => ({
               id: String(l.tag.id),
-              name: l.tag.name,
+              name: getTranslationField(l.tag.translations, locale, "name", ""),
               icon: l.tag.icon,
             })
           ),
@@ -270,9 +304,15 @@ export async function GET(
         icon: topic.category.icon ?? undefined,
       },
       tags: topic.tag_links.map(
-        (l: { tag: { id: bigint; name: string; icon: string } }) => ({
+        (l: {
+          tag: {
+            id: bigint
+            icon: string
+            translations: { locale: string; name: string; is_source: boolean }[]
+          }
+        }) => ({
           id: String(l.tag.id),
-          name: l.tag.name,
+          name: getTranslationField(l.tag.translations, locale, "name", ""),
           icon: l.tag.icon,
         })
       ),

@@ -18,7 +18,7 @@ import { EmojiPickerField } from "../fields/emoji-picker-field"
 type TagFormData = {
   name: string
   icon: string
-  description: string
+  description: string | null
   sort: number
   bgColor: string | null
   textColor: string | null
@@ -31,7 +31,7 @@ type TagDialogProps = {
     id: string
     name: string
     icon: string
-    description: string
+    description: string | null
     sort: number
     bgColor: string | null
     textColor: string | null
@@ -61,7 +61,7 @@ export function TagDialog({
       setFormData({
         name: tag.name,
         icon: tag.icon,
-        description: tag.description,
+        description: tag.description || "",
         sort: tag.sort,
         bgColor: tag.bgColor,
         textColor: tag.textColor,
@@ -145,7 +145,7 @@ export function TagDialog({
               <Label htmlFor="description">{t("dialog.description")}</Label>
               <Textarea
                 id="description"
-                value={formData.description}
+                value={formData.description || ""}
                 onChange={(e) =>
                   setFormData({ ...formData, description: e.target.value })
                 }

@@ -12,6 +12,7 @@ type BadgeDTO = {
   sort: number
   bgColor: string | null
   textColor: string | null
+  sourceLocale: string
   isEnabled: boolean
   isVisible: boolean
   isDeleted: boolean
@@ -144,10 +145,9 @@ export async function PATCH(
     }
 
     // 构建更新数据
-    type UpdateData = {
-      name?: string
+    const hasTranslationUpdate = name !== undefined || description !== undefined
+    const badgeUpdateData: {
       icon?: string
-      description?: string | null
       badge_type?: string
       level?: number
       sort?: number
@@ -156,62 +156,118 @@ export async function PATCH(
       is_enabled?: boolean
       is_visible?: boolean
       is_deleted?: boolean
-    }
+    } = {}
 
-    const updateData: UpdateData = {}
+    if (icon !== undefined) badgeUpdateData.icon = icon
+    if (badgeType !== undefined) badgeUpdateData.badge_type = badgeType
+    if (level !== undefined) badgeUpdateData.level = level
+    if (sort !== undefined) badgeUpdateData.sort = sort
+    if (bgColor !== undefined) badgeUpdateData.bg_color = bgColor || null
+    if (textColor !== undefined) badgeUpdateData.text_color = textColor || null
+    if (isEnabled !== undefined) badgeUpdateData.is_enabled = isEnabled
+    if (isVisible !== undefined) badgeUpdateData.is_visible = isVisible
+    if (isDeleted !== undefined) badgeUpdateData.is_deleted = isDeleted
 
-    if (name !== undefined) updateData.name = name
-    if (icon !== undefined) updateData.icon = icon
-    if (description !== undefined) updateData.description = description || null
-    if (badgeType !== undefined) updateData.badge_type = badgeType
-    if (level !== undefined) updateData.level = level
-    if (sort !== undefined) updateData.sort = sort
-    if (bgColor !== undefined) updateData.bg_color = bgColor || null
-    if (textColor !== undefined) updateData.text_color = textColor || null
-    if (isEnabled !== undefined) updateData.is_enabled = isEnabled
-    if (isVisible !== undefined) updateData.is_visible = isVisible
-    if (isDeleted !== undefined) updateData.is_deleted = isDeleted
+    // 使用事务更新
+    const result = await prisma.$transaction(async (tx) => {
+      // 1. 更新主表字段
+      if (Object.keys(badgeUpdateData).length > 0) {
+        await tx.badges.update({
+          where: { id: badgeId },
+          data: badgeUpdateData,
+        })
+      }
 
-    // 更新徽章
-    const badge = await prisma.badges.update({
-      where: { id: badgeId },
-      data: updateData,
-      select: {
-        id: true,
-        name: true,
-        icon: true,
-        description: true,
-        badge_type: true,
-        level: true,
-        sort: true,
-        bg_color: true,
-        text_color: true,
-        is_enabled: true,
-        is_visible: true,
-        is_deleted: true,
-        created_at: true,
-        updated_at: true,
-      },
+      // 2. 如果有 name 或 description 更新,更新翻译表
+      if (hasTranslationUpdate) {
+        // 获取当前源语言翻译
+        const sourceTranslation = await tx.badge_translations.findFirst({
+          where: {
+            badge_id: badgeId,
+            is_source: true,
+          },
+        })
+
+        if (sourceTranslation) {
+          // 构建翻译更新数据
+          const translationUpdateData: {
+            name?: string
+            description?: string | null
+            version: number
+          } = {
+            version: sourceTranslation.version + 1, // 递增版本号
+          }
+
+          if (name !== undefined) translationUpdateData.name = name
+          if (description !== undefined) {
+            translationUpdateData.description = description || null
+          }
+
+          await tx.badge_translations.update({
+            where: {
+              badge_id_locale: {
+                badge_id: badgeId,
+                locale: sourceTranslation.locale,
+              },
+            },
+            data: translationUpdateData,
+          })
+        }
+      }
+
+      // 3. 查询完整数据返回
+      return await tx.badges.findUnique({
+        where: { id: badgeId },
+        select: {
+          id: true,
+          source_locale: true,
+          icon: true,
+          badge_type: true,
+          level: true,
+          sort: true,
+          bg_color: true,
+          text_color: true,
+          is_enabled: true,
+          is_visible: true,
+          is_deleted: true,
+          created_at: true,
+          updated_at: true,
+          translations: {
+            where: { is_source: true },
+            select: {
+              name: true,
+              description: true,
+            },
+            take: 1,
+          },
+        },
+      })
     })
 
-    const result: BadgeDTO = {
-      id: String(badge.id),
-      name: badge.name,
-      icon: badge.icon,
-      description: badge.description,
-      badgeType: badge.badge_type,
-      level: badge.level,
-      sort: badge.sort,
-      bgColor: badge.bg_color,
-      textColor: badge.text_color,
-      isEnabled: badge.is_enabled,
-      isVisible: badge.is_visible,
-      isDeleted: badge.is_deleted,
-      createdAt: badge.created_at.toISOString(),
-      updatedAt: badge.updated_at.toISOString(),
+    if (!result) {
+      return NextResponse.json({ error: "Badge not found" }, { status: 404 })
     }
 
-    return NextResponse.json(result)
+    const translation = result.translations[0]
+    const badgeDTO: BadgeDTO = {
+      id: String(result.id),
+      name: translation?.name || "",
+      icon: result.icon,
+      description: translation?.description || null,
+      badgeType: result.badge_type,
+      level: result.level,
+      sort: result.sort,
+      bgColor: result.bg_color,
+      textColor: result.text_color,
+      sourceLocale: result.source_locale,
+      isEnabled: result.is_enabled,
+      isVisible: result.is_visible,
+      isDeleted: result.is_deleted,
+      createdAt: result.created_at.toISOString(),
+      updatedAt: result.updated_at.toISOString(),
+    }
+
+    return NextResponse.json(badgeDTO)
   } catch (error) {
     console.error("Update badge error:", error)
     return NextResponse.json(

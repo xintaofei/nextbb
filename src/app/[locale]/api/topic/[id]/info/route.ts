@@ -72,11 +72,13 @@ export async function GET(
           tag: {
             select: {
               id: true,
-              name: true,
               icon: true,
-              description: true,
               bg_color: true,
               text_color: true,
+              translations: getTranslationsQuery(locale, {
+                name: true,
+                description: true,
+              }),
             },
           },
         },
@@ -113,25 +115,20 @@ export async function GET(
       bgColor: topic.category.bg_color,
       textColor: topic.category.text_color,
     },
-    tags: topic.tag_links.map(
-      (l: {
-        tag: {
-          id: bigint
-          name: string
-          icon: string
-          description: string
-          bg_color: string | null
-          text_color: string | null
-        }
-      }) => ({
+    tags: topic.tag_links.map((l) => {
+      const tagFields = getTranslationFields(l.tag.translations, locale, {
+        name: "",
+        description: null,
+      })
+      return {
         id: String(l.tag.id),
-        name: l.tag.name,
+        name: tagFields.name,
         icon: l.tag.icon,
-        description: l.tag.description,
+        description: tagFields.description,
         bgColor: l.tag.bg_color,
         textColor: l.tag.text_color,
-      })
-    ),
+      }
+    }),
   }
   return NextResponse.json({ topic: result })
 }

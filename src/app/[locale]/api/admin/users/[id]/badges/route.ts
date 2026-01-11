@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
 import { requireAdmin } from "@/lib/guard"
 import { BadgeListResponse, BadgeItem } from "@/types/badge"
+import { getTranslationsQuery, getTranslationField } from "@/lib/locale"
 
 type RouteContext = {
   params: Promise<{
@@ -17,6 +18,7 @@ export async function GET(req: NextRequest, context: RouteContext) {
 
   const { id } = await context.params
   const userIdBigInt = BigInt(id)
+  const locale = (req.nextUrl.pathname.split("/")[1] || "zh") as string
 
   try {
     const userBadges = await prisma.user_badges.findMany({
@@ -28,28 +30,31 @@ export async function GET(req: NextRequest, context: RouteContext) {
         badge: {
           select: {
             id: true,
-            name: true,
             icon: true,
             badge_type: true,
             level: true,
             bg_color: true,
             text_color: true,
+            translations: getTranslationsQuery(locale, { name: true }),
           },
         },
       },
       orderBy: [{ badge: { level: "desc" } }, { awarded_at: "desc" }],
     })
 
-    const items: BadgeItem[] = userBadges.map((ub) => ({
-      id: String(ub.badge.id),
-      name: ub.badge.name,
-      icon: ub.badge.icon,
-      badgeType: ub.badge.badge_type,
-      level: ub.badge.level,
-      bgColor: ub.badge.bg_color,
-      textColor: ub.badge.text_color,
-      awardedAt: ub.awarded_at.toISOString(),
-    }))
+    const items: BadgeItem[] = userBadges.map((ub) => {
+      const name = getTranslationField(ub.badge.translations, locale, "name", "")
+      return {
+        id: String(ub.badge.id),
+        name,
+        icon: ub.badge.icon,
+        badgeType: ub.badge.badge_type,
+        level: ub.badge.level,
+        bgColor: ub.badge.bg_color,
+        textColor: ub.badge.text_color,
+        awardedAt: ub.awarded_at.toISOString(),
+      }
+    })
 
     const result: BadgeListResponse = { items }
     return NextResponse.json(result)

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
 import { getSessionUser } from "@/lib/auth"
 import { generateId } from "@/lib/id"
+import { getLocale } from "next-intl/server"
 
 type BadgeDTO = {
   id: string
@@ -13,6 +14,7 @@ type BadgeDTO = {
   sort: number
   bgColor: string | null
   textColor: string | null
+  sourceLocale: string
   isEnabled: boolean
   isVisible: boolean
   isDeleted: boolean
@@ -60,6 +62,7 @@ export async function GET(request: NextRequest) {
     }
 
     const searchParams = request.nextUrl.searchParams
+    const locale = (request.nextUrl.pathname.split("/")[1] || "zh") as string
     const page = parseInt(searchParams.get("page") || "1")
     const pageSize = parseInt(searchParams.get("pageSize") || "20")
     const q = searchParams.get("q") || ""
@@ -72,8 +75,12 @@ export async function GET(request: NextRequest) {
     // 构建查询条件
     type WhereClause = {
       OR?: Array<{
-        name?: { contains: string; mode: "insensitive" }
-        description?: { contains: string; mode: "insensitive" }
+        translations: {
+          some: {
+            name?: { contains: string; mode: "insensitive" }
+            description?: { contains: string; mode: "insensitive" }
+          }
+        }
       }>
       badge_type?: string
       level?: number
@@ -85,8 +92,20 @@ export async function GET(request: NextRequest) {
 
     if (q.trim().length > 0) {
       where.OR = [
-        { name: { contains: q.trim(), mode: "insensitive" } },
-        { description: { contains: q.trim(), mode: "insensitive" } },
+        {
+          translations: {
+            some: {
+              name: { contains: q.trim(), mode: "insensitive" },
+            },
+          },
+        },
+        {
+          translations: {
+            some: {
+              description: { contains: q.trim(), mode: "insensitive" },
+            },
+          },
+        },
       ]
     }
 
@@ -129,9 +148,8 @@ export async function GET(request: NextRequest) {
       where,
       select: {
         id: true,
-        name: true,
+        source_locale: true,
         icon: true,
-        description: true,
         badge_type: true,
         level: true,
         sort: true,
@@ -142,6 +160,18 @@ export async function GET(request: NextRequest) {
         is_deleted: true,
         created_at: true,
         updated_at: true,
+        translations: {
+          where: {
+            OR: [{ locale, is_source: false }, { is_source: true }],
+          },
+          select: {
+            locale: true,
+            name: true,
+            description: true,
+            is_source: true,
+          },
+          take: 2,
+        },
       },
       orderBy,
       skip: (page - 1) * pageSize,
@@ -149,22 +179,30 @@ export async function GET(request: NextRequest) {
     })
 
     // 转换为 DTO
-    const items: BadgeDTO[] = badges.map((b) => ({
-      id: String(b.id),
-      name: b.name,
-      icon: b.icon,
-      description: b.description,
-      badgeType: b.badge_type,
-      level: b.level,
-      sort: b.sort,
-      bgColor: b.bg_color,
-      textColor: b.text_color,
-      isEnabled: b.is_enabled,
-      isVisible: b.is_visible,
-      isDeleted: b.is_deleted,
-      createdAt: b.created_at.toISOString(),
-      updatedAt: b.updated_at.toISOString(),
-    }))
+    const items: BadgeDTO[] = badges.map((b) => {
+      // 选择翻译：优先匹配当前 locale，否则取 is_source 为 true 的
+      const translation =
+        b.translations.find((tr) => tr.locale === locale && !tr.is_source) ||
+        b.translations.find((tr) => tr.is_source)
+
+      return {
+        id: String(b.id),
+        name: translation?.name || "",
+        icon: b.icon,
+        description: translation?.description || null,
+        badgeType: b.badge_type,
+        level: b.level,
+        sort: b.sort,
+        bgColor: b.bg_color,
+        textColor: b.text_color,
+        sourceLocale: b.source_locale,
+        isEnabled: b.is_enabled,
+        isVisible: b.is_visible,
+        isDeleted: b.is_deleted,
+        createdAt: b.created_at.toISOString(),
+        updatedAt: b.updated_at.toISOString(),
+      }
+    })
 
     const result: BadgeListResult = {
       items,
@@ -268,58 +306,61 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // 创建徽章
-    const badge = await prisma.badges.create({
-      data: {
-        id: generateId(),
-        name,
-        icon,
-        description: description || null,
-        badge_type: badgeType,
-        level,
-        sort,
-        bg_color: bgColor || null,
-        text_color: textColor || null,
-        is_enabled: typeof isEnabled === "boolean" ? isEnabled : true,
-        is_visible: typeof isVisible === "boolean" ? isVisible : true,
-        is_deleted: false,
-      },
-      select: {
-        id: true,
-        name: true,
-        icon: true,
-        description: true,
-        badge_type: true,
-        level: true,
-        sort: true,
-        bg_color: true,
-        text_color: true,
-        is_enabled: true,
-        is_visible: true,
-        is_deleted: true,
-        created_at: true,
-        updated_at: true,
-      },
+    // 获取当前请求的语言作为源语言
+    const sourceLocale = await getLocale()
+
+    // 创建徽章和初始翻译
+    const result = await prisma.$transaction(async (tx) => {
+      const badgeId = generateId()
+      const newBadge = await tx.badges.create({
+        data: {
+          id: badgeId,
+          icon,
+          badge_type: badgeType,
+          level,
+          sort,
+          bg_color: bgColor || null,
+          text_color: textColor || null,
+          is_enabled: typeof isEnabled === "boolean" ? isEnabled : true,
+          is_visible: typeof isVisible === "boolean" ? isVisible : true,
+          is_deleted: false,
+          source_locale: sourceLocale,
+        },
+      })
+
+      const translation = await tx.badge_translations.create({
+        data: {
+          badge_id: badgeId,
+          locale: sourceLocale,
+          name,
+          description: description || null,
+          is_source: true,
+          version: 0,
+        },
+      })
+
+      return { ...newBadge, translation }
     })
 
-    const result: BadgeDTO = {
-      id: String(badge.id),
-      name: badge.name,
-      icon: badge.icon,
-      description: badge.description,
-      badgeType: badge.badge_type,
-      level: badge.level,
-      sort: badge.sort,
-      bgColor: badge.bg_color,
-      textColor: badge.text_color,
-      isEnabled: badge.is_enabled,
-      isVisible: badge.is_visible,
-      isDeleted: badge.is_deleted,
-      createdAt: badge.created_at.toISOString(),
-      updatedAt: badge.updated_at.toISOString(),
+    const badgeDTO: BadgeDTO = {
+      id: String(result.id),
+      name: result.translation.name,
+      icon: result.icon,
+      description: result.translation.description,
+      badgeType: result.badge_type,
+      level: result.level,
+      sort: result.sort,
+      bgColor: result.bg_color,
+      textColor: result.text_color,
+      sourceLocale: result.source_locale,
+      isEnabled: result.is_enabled,
+      isVisible: result.is_visible,
+      isDeleted: result.is_deleted,
+      createdAt: result.created_at.toISOString(),
+      updatedAt: result.updated_at.toISOString(),
     }
 
-    return NextResponse.json(result, { status: 201 })
+    return NextResponse.json(badgeDTO, { status: 201 })
   } catch (error) {
     console.error("Create badge error:", error)
     return NextResponse.json(

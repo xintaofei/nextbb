@@ -26,7 +26,7 @@ import { EmojiPickerField } from "../fields/emoji-picker-field"
 type BadgeFormData = {
   name: string
   icon: string
-  description: string
+  description: string | null
   badgeType: string
   level: number
   sort: number
@@ -186,7 +186,7 @@ export function BadgeDialog({
               <Label htmlFor="description">{t("dialog.description")}</Label>
               <Textarea
                 id="description"
-                value={formData.description}
+                value={formData.description || ""}
                 onChange={(e) =>
                   setFormData({ ...formData, description: e.target.value })
                 }

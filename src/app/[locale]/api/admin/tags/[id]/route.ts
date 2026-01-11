@@ -6,10 +6,11 @@ type TagDTO = {
   id: string
   name: string
   icon: string
-  description: string
+  description: string | null
   sort: number
   bgColor: string | null
   textColor: string | null
+  sourceLocale: string
   isDeleted: boolean
   createdAt: string
   updatedAt: string
@@ -64,20 +65,6 @@ export async function PATCH(
           { status: 400 }
         )
       }
-
-      // 检查名称唯一性（如果名称有变化）
-      if (name !== existingTag.name) {
-        const duplicateTag = await prisma.tags.findUnique({
-          where: { name },
-        })
-
-        if (duplicateTag) {
-          return NextResponse.json(
-            { error: "Tag name already exists" },
-            { status: 400 }
-          )
-        }
-      }
     }
 
     if (description !== undefined && description !== null) {
@@ -113,62 +100,119 @@ export async function PATCH(
     }
 
     // 构建更新数据
-    const updateData: {
-      name?: string
+    const hasTranslationUpdate = name !== undefined || description !== undefined
+    const tagUpdateData: {
       icon?: string
-      description?: string
       sort?: number
       bg_color?: string | null
       text_color?: string | null
       is_deleted?: boolean
     } = {}
 
-    if (name !== undefined) updateData.name = name
-    if (icon !== undefined) updateData.icon = icon
-    if (description !== undefined) updateData.description = description || ""
-    if (sort !== undefined) updateData.sort = sort
-    if (bgColor !== undefined) updateData.bg_color = bgColor || null
-    if (textColor !== undefined) updateData.text_color = textColor || null
-    if (isDeleted !== undefined) updateData.is_deleted = isDeleted
+    if (icon !== undefined) tagUpdateData.icon = icon
+    if (sort !== undefined) tagUpdateData.sort = sort
+    if (bgColor !== undefined) tagUpdateData.bg_color = bgColor || null
+    if (textColor !== undefined) tagUpdateData.text_color = textColor || null
+    if (isDeleted !== undefined) tagUpdateData.is_deleted = isDeleted
 
-    // 更新标签
-    const tag = await prisma.tags.update({
-      where: { id: tagId },
-      data: updateData,
-      select: {
-        id: true,
-        name: true,
-        icon: true,
-        description: true,
-        sort: true,
-        bg_color: true,
-        text_color: true,
-        is_deleted: true,
-        created_at: true,
-        updated_at: true,
-        _count: {
-          select: {
-            topic_links: true,
+    // 使用事务更新
+    const result = await prisma.$transaction(async (tx) => {
+      // 1. 更新主表字段
+      if (Object.keys(tagUpdateData).length > 0) {
+        await tx.tags.update({
+          where: { id: tagId },
+          data: tagUpdateData,
+        })
+      }
+
+      // 2. 如果有 name 或 description 更新,更新翻译表
+      if (hasTranslationUpdate) {
+        // 获取当前源语言翻译
+        const sourceTranslation = await tx.tag_translations.findFirst({
+          where: {
+            tag_id: tagId,
+            is_source: true,
+          },
+        })
+
+        if (sourceTranslation) {
+          // 构建翻译更新数据
+          const translationUpdateData: {
+            name?: string
+            description?: string | null
+            version: number
+          } = {
+            version: sourceTranslation.version + 1, // 递增版本号
+          }
+
+          if (name !== undefined) translationUpdateData.name = name
+          if (description !== undefined) {
+            translationUpdateData.description = description || null
+          }
+
+          await tx.tag_translations.update({
+            where: {
+              tag_id_locale: {
+                tag_id: tagId,
+                locale: sourceTranslation.locale,
+              },
+            },
+            data: translationUpdateData,
+          })
+        }
+      }
+
+      // 3. 查询完整数据返回
+      return await tx.tags.findUnique({
+        where: { id: tagId },
+        select: {
+          id: true,
+          source_locale: true,
+          icon: true,
+          sort: true,
+          bg_color: true,
+          text_color: true,
+          is_deleted: true,
+          created_at: true,
+          updated_at: true,
+          translations: {
+            where: { is_source: true },
+            select: {
+              name: true,
+              description: true,
+            },
+            take: 1,
+          },
+          _count: {
+            select: {
+              topic_links: true,
+            },
           },
         },
-      },
+      })
     })
 
-    const result: TagDTO = {
-      id: String(tag.id),
-      name: tag.name,
-      icon: tag.icon,
-      description: tag.description,
-      sort: tag.sort,
-      bgColor: tag.bg_color,
-      textColor: tag.text_color,
-      isDeleted: tag.is_deleted,
-      createdAt: tag.created_at.toISOString(),
-      updatedAt: tag.updated_at.toISOString(),
-      usageCount: tag._count.topic_links,
+    if (!result) {
+      return NextResponse.json({ error: "Tag not found" }, { status: 404 })
     }
 
-    return NextResponse.json(result)
+    const translation = result.translations[0]
+    const tagDTO: TagDTO = {
+      id: String(result.id),
+      name: translation?.name || "",
+      icon: result.icon,
+      description: translation?.description || null,
+      sort: result.sort,
+      bgColor: result.bg_color,
+      textColor: result.text_color,
+      sourceLocale: result.source_locale,
+      isDeleted: result.is_deleted,
+      createdAt: result.created_at.toISOString(),
+      updatedAt: result.updated_at.toISOString(),
+      usageCount: result._count.topic_links,
+    }
+
+    return NextResponse.json(tagDTO)
   } catch (error) {
     console.error("Update tag error:", error)
     return NextResponse.json(

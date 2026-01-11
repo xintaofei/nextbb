@@ -12,15 +12,9 @@ export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url)
   const q = searchParams.get("q") || ""
   const badgeType = searchParams.get("badgeType") || ""
+  const locale = (req.nextUrl.pathname.split("/")[1] || "zh") as string
 
-  const where: {
-    is_enabled: boolean
-    is_deleted: boolean
-    badge_type?: string
-    OR?: Array<
-      { name: { contains: string } } | { description: { contains: string } }
-    >
-  } = {
+  const where: any = {
     is_enabled: true,
     is_deleted: false,
   }
@@ -30,10 +24,14 @@ export async function GET(req: NextRequest) {
   }
 
   if (q.trim()) {
-    where.OR = [
-      { name: { contains: q.trim() } },
-      { description: { contains: q.trim() } },
-    ]
+    where.translations = {
+      some: {
+        OR: [
+          { name: { contains: q.trim(), mode: "insensitive" } },
+          { description: { contains: q.trim(), mode: "insensitive" } },
+        ],
+      },
+    }
   }
 
   try {
@@ -41,26 +39,44 @@ export async function GET(req: NextRequest) {
       where,
       select: {
         id: true,
-        name: true,
         icon: true,
         badge_type: true,
         level: true,
         sort: true,
         bg_color: true,
         text_color: true,
+        translations: {
+          where: {
+            OR: [{ locale, is_source: false }, { is_source: true }],
+          },
+          select: {
+            locale: true,
+            name: true,
+            description: true,
+            is_source: true,
+          },
+          take: 2,
+        },
       },
       orderBy: [{ level: "desc" }, { sort: "asc" }],
     })
 
-    const items: BadgeItem[] = badges.map((badge) => ({
-      id: String(badge.id),
-      name: badge.name,
-      icon: badge.icon,
-      badgeType: badge.badge_type,
-      level: badge.level,
-      bgColor: badge.bg_color,
-      textColor: badge.text_color,
-    }))
+    const items: BadgeItem[] = badges.map((badge) => {
+      const translation =
+        badge.translations.find((tr) => tr.locale === locale && !tr.is_source) ||
+        badge.translations.find((tr) => tr.is_source)
+
+      return {
+        id: String(badge.id),
+        name: translation?.name || "",
+        icon: badge.icon,
+        badgeType: badge.badge_type,
+        level: badge.level,
+        bgColor: badge.bg_color,
+        textColor: badge.text_color,
+        description: translation?.description,
+      }
+    })
 
     const result: BadgeListResponse = { items }
     return NextResponse.json(result)

@@ -75,11 +75,12 @@ export async function GET(
           tag: {
             select: {
               id: true,
-              name: true,
               icon: true,
-              description: true,
               bg_color: true,
               text_color: true,
+              translations: getTranslationsQuery(locale, {
+                name: true,
+              }),
             },
           },
         },
@@ -142,9 +143,8 @@ export async function GET(
         },
         tags: t.tag_links.map((l) => ({
           id: String(l.tag.id),
-          name: l.tag.name,
+          name: getTranslationField(l.tag.translations, locale, "name", ""),
           icon: l.tag.icon,
-          description: l.tag.description,
           bgColor: l.tag.bg_color,
           textColor: l.tag.text_color,
         })),

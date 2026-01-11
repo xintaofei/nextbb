@@ -95,8 +95,14 @@ export async function GET(
             tag: {
               select: {
                 id: true,
-                name: true,
                 icon: true,
+                translations: {
+                  where: { is_source: true },
+                  select: {
+                    name: true,
+                  },
+                  take: 1,
+                },
               },
             },
           },
@@ -152,7 +158,7 @@ export async function GET(
       },
       tags: topic.tag_links.map((link) => ({
         id: String(link.tag.id),
-        name: link.tag.name,
+        name: link.tag.translations[0]?.name || "",
         icon: link.tag.icon,
       })),
       content: topic.posts[0]?.content || "",
