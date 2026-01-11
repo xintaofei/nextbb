@@ -108,6 +108,7 @@ export function CategoryListItem({
             <Badge
               variant="secondary"
               className="text-[10px] h-5 px-1.5 font-mono"
+              title={t("card.sourceLocale")}
             >
               {category.sourceLocale}
             </Badge>

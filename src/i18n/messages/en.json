@@ -703,7 +703,8 @@
       "updatedAt": "Updated",
       "deleted": "Deleted",
       "edit": "Edit",
-      "delete": "Delete"
+      "delete": "Delete",
+      "sourceLocale": "Category Source Language"
     },
     "dialog": {
       "createTitle": "Create Category",

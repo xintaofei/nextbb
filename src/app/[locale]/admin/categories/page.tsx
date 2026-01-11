@@ -88,7 +88,9 @@ export default function AdminCategoriesPage() {
   const [deletingId, setDeletingId] = useState<string | null>(null)
   const [isReordering, setIsReordering] = useState(false)
   const [translationDialogOpen, setTranslationDialogOpen] = useState(false)
-  const [translatingCategoryId, setTranslatingCategoryId] = useState<string | null>(null)
+  const [translatingCategoryId, setTranslatingCategoryId] = useState<
+    string | null
+  >(null)
 
   const sensors = useSensors(
     useSensor(PointerSensor, {

@@ -703,7 +703,8 @@
       "updatedAt": "更新于",
       "deleted": "已删除",
       "edit": "编辑",
-      "delete": "删除"
+      "delete": "删除",
+      "sourceLocale": "分类源语言"
     },
     "dialog": {
       "createTitle": "创建分类",
