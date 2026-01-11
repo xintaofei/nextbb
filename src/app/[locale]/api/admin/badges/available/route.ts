@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server"
+import { Prisma } from "@prisma/client"
 import { prisma } from "@/lib/prisma"
 import { requireAdmin } from "@/lib/guard"
 import { BadgeListResponse, BadgeItem } from "@/types/badge"
@@ -14,7 +15,7 @@ export async function GET(req: NextRequest) {
   const badgeType = searchParams.get("badgeType") || ""
   const locale = (req.nextUrl.pathname.split("/")[1] || "zh") as string
 
-  const where: any = {
+  const where: Prisma.badgesWhereInput = {
     is_enabled: true,
     is_deleted: false,
   }
@@ -63,8 +64,9 @@ export async function GET(req: NextRequest) {
 
     const items: BadgeItem[] = badges.map((badge) => {
       const translation =
-        badge.translations.find((tr) => tr.locale === locale && !tr.is_source) ||
-        badge.translations.find((tr) => tr.is_source)
+        badge.translations.find(
+          (tr) => tr.locale === locale && !tr.is_source
+        ) || badge.translations.find((tr) => tr.is_source)
 
       return {
         id: String(badge.id),

@@ -43,7 +43,12 @@ export async function GET(req: NextRequest, context: RouteContext) {
     })
 
     const items: BadgeItem[] = userBadges.map((ub) => {
-      const name = getTranslationField(ub.badge.translations, locale, "name", "")
+      const name = getTranslationField(
+        ub.badge.translations,
+        locale,
+        "name",
+        ""
+      )
       return {
         id: String(ub.badge.id),
         name,
