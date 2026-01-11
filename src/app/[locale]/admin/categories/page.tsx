@@ -61,8 +61,6 @@ type CategoryListItem = {
 
 type CategoryListResult = {
   items: CategoryListItem[]
-  page: number
-  pageSize: number
   total: number
 }
 
@@ -79,8 +77,6 @@ export default function AdminCategoriesPage() {
   const [q, setQ] = useState("")
   const [deleted, setDeleted] = useState<string>("false")
   const [sortBy, setSortBy] = useState("sort")
-  const [page, setPage] = useState(1)
-  const pageSize = 20
 
   const [dialogOpen, setDialogOpen] = useState(false)
   const [editingCategory, setEditingCategory] = useState<
@@ -103,13 +99,11 @@ export default function AdminCategoriesPage() {
 
   const query = useMemo(() => {
     const params = new URLSearchParams()
-    params.set("page", String(page))
-    params.set("pageSize", String(pageSize))
     if (q.trim().length > 0) params.set("q", q.trim())
     if (deleted !== "all") params.set("deleted", deleted)
     params.set("sortBy", sortBy)
     return `/api/admin/categories?${params.toString()}`
-  }, [q, deleted, sortBy, page])
+  }, [q, deleted, sortBy])
 
   const { data, isLoading, mutate } = useSWR<CategoryListResult>(query, fetcher)
 
@@ -356,8 +350,8 @@ export default function AdminCategoriesPage() {
             </Select>
 
             <Button
-              onClick={() => setPage(1)}
-              className="w-full"
+              disabled
+              className="w-full opacity-0 cursor-default"
               variant="default"
             >
               {t("filter.apply")}
@@ -401,34 +395,6 @@ export default function AdminCategoriesPage() {
           </DndContext>
         </AdminPageSection>
       )}
-
-      <AdminPageSection
-        delay={0.4}
-        className="flex items-center justify-between rounded-2xl border border-border/40 bg-background/60 p-4 backdrop-blur"
-      >
-        <span className="text-sm text-foreground/60">
-          {t("pagination.total", { count: data?.total ?? 0 })}
-        </span>
-        <div className="flex items-center gap-2">
-          <Button
-            variant="ghost"
-            disabled={(data?.page ?? 1) <= 1}
-            onClick={() => setPage((p) => Math.max(1, p - 1))}
-          >
-            {t("pagination.prev")}
-          </Button>
-          <span className="text-sm min-w-20 text-center">
-            {t("pagination.page", { page: data?.page ?? 1 })}
-          </span>
-          <Button
-            variant="ghost"
-            disabled={!data ? true : data.page * data.pageSize >= data.total}
-            onClick={() => setPage((p) => p + 1)}
-          >
-            {t("pagination.next")}
-          </Button>
-        </div>
-      </AdminPageSection>
 
       <CategoryDialog
         open={dialogOpen}

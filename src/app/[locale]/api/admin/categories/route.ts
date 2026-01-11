@@ -21,8 +21,6 @@ type CategoryDTO = {
 
 type CategoryListResult = {
   items: CategoryDTO[]
-  page: number
-  pageSize: number
   total: number
 }
 
@@ -48,8 +46,6 @@ export async function GET(request: NextRequest) {
     }
 
     const searchParams = request.nextUrl.searchParams
-    const page = parseInt(searchParams.get("page") || "1")
-    const pageSize = parseInt(searchParams.get("pageSize") || "20")
     const q = searchParams.get("q") || ""
     const deleted = searchParams.get("deleted")
     const sortBy = searchParams.get("sortBy") || "updated_at"
@@ -120,8 +116,6 @@ export async function GET(request: NextRequest) {
         },
       },
       orderBy,
-      skip: (page - 1) * pageSize,
-      take: pageSize,
     })
 
     // 转换为 DTO
@@ -150,8 +144,6 @@ export async function GET(request: NextRequest) {
 
     const result: CategoryListResult = {
       items,
-      page,
-      pageSize,
       total,
     }
 
