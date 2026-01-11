@@ -37,6 +37,7 @@ export function CategoryListItem({
   disabled = false,
 }: CategoryListItemProps) {
   const t = useTranslations("AdminCategories")
+  const tAdmin = useTranslations("Admin")
   const {
     attributes,
     listeners,
@@ -143,7 +144,7 @@ export function CategoryListItem({
             variant="ghost"
             onClick={() => onManageTranslations(category.id)}
             className="h-8 w-8 p-0 text-muted-foreground hover:text-foreground"
-            title={t("translationDialog.title")}
+            title={tAdmin("translationDialog.title")}
           >
             <Globe className="h-4 w-4" />
           </Button>

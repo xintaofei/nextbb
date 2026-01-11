@@ -564,6 +564,18 @@
       "automationRules": "Automation Rules",
       "settings": "Settings"
     },
+    "translationDialog": {
+      "title": "Manage Translations",
+      "sourceLanguage": "Source Language",
+      "translated": "Translated",
+      "missing": "Missing",
+      "noName": "No Name",
+      "edit": "Edit",
+      "save": "Save",
+      "cancel": "Cancel",
+      "name": "Name",
+      "description": "Description"
+    },
     "settings": {
       "title": "System Settings",
       "description": "Manage system configuration items",
@@ -748,18 +760,6 @@
       "page": "Page {page}",
       "prev": "Previous",
       "next": "Next"
-    },
-    "translationDialog": {
-      "title": "Manage Translations",
-      "sourceLanguage": "Source Language",
-      "translated": "Translated",
-      "missing": "Missing",
-      "noName": "No Name",
-      "edit": "Edit",
-      "save": "Save",
-      "cancel": "Cancel",
-      "name": "Name",
-      "description": "Description"
     }
   },
   "AdminTags": {
@@ -1000,18 +1000,6 @@
       "page": "Page {page}",
       "prev": "Previous",
       "next": "Next"
-    },
-    "translationDialog": {
-      "title": "Manage Translations",
-      "sourceLanguage": "Source Language",
-      "translated": "Translated",
-      "missing": "Missing",
-      "noName": "No Name",
-      "edit": "Edit",
-      "save": "Save",
-      "cancel": "Cancel",
-      "name": "Name",
-      "description": "Description"
     }
   },
   "AdminBadges": {

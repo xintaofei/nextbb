@@ -37,6 +37,7 @@ export function BadgeCard({
   onManageTranslations,
 }: BadgeCardProps) {
   const t = useTranslations("AdminBadges")
+  const tAdmin = useTranslations("Admin")
 
   const getLevelColor = (level: number) => {
     switch (level) {
@@ -151,7 +152,7 @@ export function BadgeCard({
               size="sm"
               onClick={() => onManageTranslations(badge.id)}
               className="h-8 w-8 p-0 text-muted-foreground hover:text-primary"
-              title={t("translationDialog.title")}
+              title={tAdmin("translationDialog.title")}
             >
               <Globe className="h-4 w-4" />
             </Button>

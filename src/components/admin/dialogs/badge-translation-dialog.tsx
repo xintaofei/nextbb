@@ -46,6 +46,7 @@ export function BadgeTranslationDialog({
   badgeId,
 }: BadgeTranslationDialogProps) {
   const t = useTranslations("AdminBadges")
+  const tAdmin = useTranslations("Admin")
   const { data, isLoading, mutate } = useSWR<TranslationsResponse>(
     open && badgeId ? `/api/admin/badges/${badgeId}/translations` : null,
     fetcher
@@ -104,7 +105,7 @@ export function BadgeTranslationDialog({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Globe className="h-5 w-5" />
-            {t("translationDialog.title")}
+            {tAdmin("translationDialog.title")}
           </DialogTitle>
         </DialogHeader>
 
@@ -138,7 +139,7 @@ export function BadgeTranslationDialog({
                         </span>
                         {item.isSource && (
                           <Badge variant="default" className="text-xs">
-                            {t("translationDialog.sourceLanguage")}
+                            {tAdmin("translationDialog.sourceLanguage")}
                           </Badge>
                         )}
                         {item.isTranslated ? (
@@ -146,14 +147,14 @@ export function BadgeTranslationDialog({
                             variant="outline"
                             className="text-xs text-green-600 border-green-200 bg-green-50 dark:bg-green-900/20 dark:border-green-900/50 dark:text-green-400"
                           >
-                            {t("translationDialog.translated")}
+                            {tAdmin("translationDialog.translated")}
                           </Badge>
                         ) : (
                           <Badge
                             variant="outline"
                             className="text-xs text-muted-foreground"
                           >
-                            {t("translationDialog.missing")}
+                            {tAdmin("translationDialog.missing")}
                           </Badge>
                         )}
                       </div>
@@ -161,7 +162,7 @@ export function BadgeTranslationDialog({
                         <div className="text-sm text-muted-foreground">
                           {item.name || (
                             <span className="italic opacity-50">
-                              {t("translationDialog.noName")}
+                              {tAdmin("translationDialog.noName")}
                             </span>
                           )}
                         </div>
@@ -175,7 +176,7 @@ export function BadgeTranslationDialog({
                         onClick={() => handleEdit(item)}
                       >
                         <Edit2 className="h-4 w-4 mr-2" />
-                        {t("translationDialog.edit")}
+                        {tAdmin("translationDialog.edit")}
                       </Button>
                     )}
                   </div>
@@ -183,7 +184,7 @@ export function BadgeTranslationDialog({
                   {editingLocale === item.locale && (
                     <form onSubmit={handleSubmit} className="mt-4 space-y-4">
                       <div className="space-y-2">
-                        <Label>{t("translationDialog.name")}</Label>
+                        <Label>{tAdmin("translationDialog.name")}</Label>
                         <Input
                           value={formData.name}
                           onChange={(e) =>
@@ -195,7 +196,7 @@ export function BadgeTranslationDialog({
                         />
                       </div>
                       <div className="space-y-2">
-                        <Label>{t("translationDialog.description")}</Label>
+                        <Label>{tAdmin("translationDialog.description")}</Label>
                         <Textarea
                           value={formData.description}
                           onChange={(e) =>
@@ -217,13 +218,13 @@ export function BadgeTranslationDialog({
                           onClick={handleCancelEdit}
                           disabled={isSubmitting}
                         >
-                          {t("translationDialog.cancel")}
+                          {tAdmin("translationDialog.cancel")}
                         </Button>
                         <Button type="submit" size="sm" disabled={isSubmitting}>
                           {isSubmitting && (
                             <Loader2 className="h-3 w-3 mr-2 animate-spin" />
                           )}
-                          {t("translationDialog.save")}
+                          {tAdmin("translationDialog.save")}
                         </Button>
                       </div>
                     </form>

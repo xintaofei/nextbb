@@ -33,6 +33,7 @@ export function TagCard({
   onManageTranslations,
 }: TagCardProps) {
   const t = useTranslations("AdminTags")
+  const tAdmin = useTranslations("Admin")
 
   return (
     <motion.div
@@ -92,7 +93,7 @@ export function TagCard({
               variant="ghost"
               onClick={() => onManageTranslations(tag.id)}
               className="h-8 w-8 text-muted-foreground hover:text-primary"
-              title={t("translationDialog.title")}
+              title={tAdmin("translationDialog.title")}
             >
               <Globe className="h-4 w-4" />
             </Button>
