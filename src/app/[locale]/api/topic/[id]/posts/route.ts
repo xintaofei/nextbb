@@ -1,6 +1,12 @@
 import { NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
 import { getSessionUser } from "@/lib/auth"
+import { getLocale } from "next-intl/server"
+import {
+  getTranslationsQuery,
+  getTranslationFields,
+  BadgeTranslation,
+} from "@/lib/locale"
 
 type Author = {
   id: string
@@ -59,6 +65,7 @@ export async function GET(
   req: Request,
   ctx: { params: Promise<{ id: string }> }
 ) {
+  const locale = await getLocale()
   const auth = await getSessionUser()
   const { id: idStr } = await ctx.params
   let topicId: bigint
@@ -120,12 +127,14 @@ export async function GET(
         badge: {
           select: {
             id: true,
-            name: true,
             icon: true,
             level: true,
             bg_color: true,
             text_color: true,
-            description: true,
+            translations: getTranslationsQuery(locale, {
+              name: true,
+              description: true,
+            }),
           },
         },
       },
@@ -137,14 +146,22 @@ export async function GET(
       if (!userBadgesMap.has(userId)) {
         userBadgesMap.set(userId, [])
       }
+      const badgeFields = getTranslationFields(
+        ub.badge.translations as unknown as BadgeTranslation[],
+        locale,
+        {
+          name: "",
+          description: null as string | null,
+        }
+      )
       userBadgesMap.get(userId)!.push({
         id: String(ub.badge.id),
-        name: ub.badge.name,
+        name: badgeFields.name,
         icon: ub.badge.icon,
         level: ub.badge.level,
         bgColor: ub.badge.bg_color,
         textColor: ub.badge.text_color,
-        description: ub.badge.description,
+        description: badgeFields.description,
       })
     }
   }

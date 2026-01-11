@@ -1,6 +1,12 @@
 import { NextRequest, NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
 import { BadgeListResponse, BadgeItem } from "@/types/badge"
+import { getLocale } from "next-intl/server"
+import {
+  getTranslationsQuery,
+  getTranslationFields,
+  BadgeTranslation,
+} from "@/lib/locale"
 
 type RouteContext = {
   params: Promise<{
@@ -9,6 +15,7 @@ type RouteContext = {
 }
 
 export async function GET(req: NextRequest, context: RouteContext) {
+  const locale = await getLocale()
   const { id } = await context.params
   const userIdBigInt = BigInt(id)
 
@@ -27,13 +34,15 @@ export async function GET(req: NextRequest, context: RouteContext) {
         badge: {
           select: {
             id: true,
-            name: true,
             icon: true,
             badge_type: true,
             level: true,
             bg_color: true,
             text_color: true,
-            description: true,
+            translations: getTranslationsQuery(locale, {
+              name: true,
+              description: true,
+            }),
           },
         },
         awarder: {
@@ -47,20 +56,31 @@ export async function GET(req: NextRequest, context: RouteContext) {
       orderBy: [{ badge: { level: "desc" } }, { awarded_at: "desc" }],
     })
 
-    const items: BadgeItem[] = userBadges.map((ub) => ({
-      id: String(ub.badge.id),
-      name: ub.badge.name,
-      icon: ub.badge.icon,
-      badgeType: ub.badge.badge_type,
-      level: ub.badge.level,
-      bgColor: ub.badge.bg_color,
-      textColor: ub.badge.text_color,
-      description: ub.badge.description,
-      awardedAt: ub.awarded_at.toISOString(),
-      awardedBy: ub.awarded_by ? String(ub.awarded_by) : null,
-      awarderName: ub.awarder?.name || null,
-      awarderAvatar: ub.awarder?.avatar || null,
-    }))
+    const items: BadgeItem[] = userBadges.map((ub) => {
+      const badgeFields = getTranslationFields(
+        ub.badge.translations as unknown as BadgeTranslation[],
+        locale,
+        {
+          name: "",
+          description: null as string | null,
+        }
+      )
+
+      return {
+        id: String(ub.badge.id),
+        name: badgeFields.name,
+        icon: ub.badge.icon,
+        badgeType: ub.badge.badge_type,
+        level: ub.badge.level,
+        bgColor: ub.badge.bg_color,
+        textColor: ub.badge.text_color,
+        description: badgeFields.description,
+        awardedAt: ub.awarded_at.toISOString(),
+        awardedBy: ub.awarded_by ? String(ub.awarded_by) : null,
+        awarderName: ub.awarder?.name || null,
+        awarderAvatar: ub.awarder?.avatar || null,
+      }
+    })
 
     const result: BadgeListResponse = { items }
     return NextResponse.json(result)

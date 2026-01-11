@@ -16,6 +16,22 @@ export interface CategoryTranslation extends BaseTranslation {
 }
 
 /**
+ * 标签翻译类型
+ */
+export interface TagTranslation extends BaseTranslation {
+  name: string
+  description?: string | null
+}
+
+/**
+ * 徽章翻译类型
+ */
+export interface BadgeTranslation extends BaseTranslation {
+  name: string
+  description?: string | null
+}
+
+/**
  * 生成多语言查询配置
  * @param locale 当前语言标识
  * @param fields 需要查询的翻译字段，例如 { name: true, description: true }

@@ -1,5 +1,11 @@
 import { NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
+import { getLocale } from "next-intl/server"
+import {
+  getTranslationsQuery,
+  getTranslationFields,
+  BadgeTranslation,
+} from "@/lib/locale"
 
 type LeaderboardType = "wealth" | "pioneer" | "expert" | "reputation"
 
@@ -28,6 +34,7 @@ type LeaderboardResponse = {
 }
 
 export async function GET(req: Request) {
+  const locale = await getLocale()
   const url = new URL(req.url)
   const type = url.searchParams.get("type") as LeaderboardType | null
   const limitParam = url.searchParams.get("limit")
@@ -58,16 +65,16 @@ export async function GET(req: Request) {
 
     switch (type) {
       case "wealth":
-        rankings = await getWealthRankings(limit)
+        rankings = await getWealthRankings(limit, locale)
         break
       case "pioneer":
-        rankings = await getPioneerRankings(limit)
+        rankings = await getPioneerRankings(limit, locale)
         break
       case "expert":
-        rankings = await getExpertRankings(limit)
+        rankings = await getExpertRankings(limit, locale)
         break
       case "reputation":
-        rankings = await getReputationRankings(limit)
+        rankings = await getReputationRankings(limit, locale)
         break
     }
 
@@ -88,7 +95,10 @@ export async function GET(req: Request) {
 }
 
 // 富豪榜：基于用户当前的 credits 余额
-async function getWealthRankings(limit: number): Promise<RankingUser[]> {
+async function getWealthRankings(
+  limit: number,
+  locale: string
+): Promise<RankingUser[]> {
   const users = await prisma.users.findMany({
     where: {
       is_deleted: false,
@@ -106,7 +116,7 @@ async function getWealthRankings(limit: number): Promise<RankingUser[]> {
   })
 
   const userIds = users.map((u) => u.id)
-  const userBadges = await getUserBadges(userIds)
+  const userBadges = await getUserBadges(userIds, locale)
 
   return users.map((user, index) => ({
     rank: index + 1,
@@ -121,7 +131,10 @@ async function getWealthRankings(limit: number): Promise<RankingUser[]> {
 }
 
 // 先锋榜：基于近 7 天内用户发布的 Topic 和 Post 总数
-async function getPioneerRankings(limit: number): Promise<RankingUser[]> {
+async function getPioneerRankings(
+  limit: number,
+  locale: string
+): Promise<RankingUser[]> {
   const sevenDaysAgo = new Date()
   sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7)
 
@@ -189,7 +202,7 @@ async function getPioneerRankings(limit: number): Promise<RankingUser[]> {
   })
 
   const userMap = new Map(users.map((u) => [String(u.id), u]))
-  const userBadges = await getUserBadges(userIds)
+  const userBadges = await getUserBadges(userIds, locale)
 
   return sortedActivities
     .map(([userId, activity], index) => {
@@ -210,7 +223,10 @@ async function getPioneerRankings(limit: number): Promise<RankingUser[]> {
 }
 
 // 智囊榜：基于用户在提问主题中被采纳为"最佳答案"的次数
-async function getExpertRankings(limit: number): Promise<RankingUser[]> {
+async function getExpertRankings(
+  limit: number,
+  locale: string
+): Promise<RankingUser[]> {
   const acceptances = await prisma.question_acceptances.findMany({
     select: {
       post: {
@@ -253,7 +269,7 @@ async function getExpertRankings(limit: number): Promise<RankingUser[]> {
   })
 
   const userMap = new Map(users.map((u) => [String(u.id), u]))
-  const userBadges = await getUserBadges(userIds)
+  const userBadges = await getUserBadges(userIds, locale)
 
   return sortedAcceptances
     .map(([userId, count], index) => {
@@ -274,7 +290,10 @@ async function getExpertRankings(limit: number): Promise<RankingUser[]> {
 }
 
 // 声望榜：基于用户发布的所有帖子收到的点赞总数 + 收藏总数
-async function getReputationRankings(limit: number): Promise<RankingUser[]> {
+async function getReputationRankings(
+  limit: number,
+  locale: string
+): Promise<RankingUser[]> {
   // 获取点赞统计
   const likes = await prisma.post_likes.groupBy({
     by: ["post_id"],
@@ -346,7 +365,7 @@ async function getReputationRankings(limit: number): Promise<RankingUser[]> {
   })
 
   const userMap = new Map(users.map((u) => [String(u.id), u]))
-  const userBadges = await getUserBadges(userIds)
+  const userBadges = await getUserBadges(userIds, locale)
 
   return sortedReputations
     .map(([userId, reputation], index) => {
@@ -367,7 +386,7 @@ async function getReputationRankings(limit: number): Promise<RankingUser[]> {
 }
 
 // 获取用户徽章（最多3个，按等级和获得时间排序）
-async function getUserBadges(userIds: bigint[]) {
+async function getUserBadges(userIds: bigint[], locale: string) {
   const userBadges = await prisma.user_badges.findMany({
     where: {
       user_id: { in: userIds },
@@ -382,11 +401,13 @@ async function getUserBadges(userIds: bigint[]) {
       badge: {
         select: {
           id: true,
-          name: true,
           icon: true,
           level: true,
           bg_color: true,
           text_color: true,
+          translations: getTranslationsQuery(locale, {
+            name: true,
+          }),
         },
       },
     },
@@ -412,9 +433,16 @@ async function getUserBadges(userIds: bigint[]) {
     }
     const badges = badgesMap.get(userId)!
     if (badges.length < 3) {
+      const badgeFields = getTranslationFields(
+        ub.badge.translations as unknown as BadgeTranslation[],
+        locale,
+        {
+          name: "",
+        }
+      )
       badges.push({
         id: String(ub.badge.id),
-        name: ub.badge.name,
+        name: badgeFields.name,
         icon: ub.badge.icon,
         level: ub.badge.level,
         bgColor: ub.badge.bg_color,

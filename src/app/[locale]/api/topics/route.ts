@@ -167,11 +167,13 @@ export async function GET(req: Request) {
           tag: {
             select: {
               id: true,
-              name: true,
               icon: true,
-              description: true,
               bg_color: true,
               text_color: true,
+              translations: getTranslationsQuery(locale, {
+                name: true,
+                description: true,
+              }),
             },
           },
         },
@@ -206,11 +208,15 @@ export async function GET(req: Request) {
     tag_links: {
       tag: {
         id: bigint
-        name: string
         icon: string
-        description: string
         bg_color: string | null
         text_color: string | null
+        translations: {
+          locale: string
+          name: string
+          description: string | null
+          is_source: boolean
+        }[]
       }
     }[]
   }
@@ -293,27 +299,37 @@ export async function GET(req: Request) {
       locale,
       {
         name: "",
-        description: null,
+        description: null as string | null,
       }
     )
     const tags = t.tag_links.map(
       (l: {
         tag: {
           id: bigint
-          name: string
           icon: string
-          description: string
           bg_color: string | null
           text_color: string | null
+          translations: {
+            locale: string
+            name: string
+            description: string | null
+            is_source: boolean
+          }[]
         }
-      }) => ({
-        id: String(l.tag.id),
-        name: l.tag.name,
-        icon: l.tag.icon,
-        description: l.tag.description,
-        bgColor: l.tag.bg_color,
-        textColor: l.tag.text_color,
-      })
+      }) => {
+        const tagFields = getTranslationFields(l.tag.translations, locale, {
+          name: "",
+          description: null as string | null,
+        })
+        return {
+          id: String(l.tag.id),
+          name: tagFields.name,
+          icon: l.tag.icon,
+          description: tagFields.description,
+          bgColor: l.tag.bg_color,
+          textColor: l.tag.text_color,
+        }
+      }
     )
     const firstPost = firstPosts[String(t.id)]
     return {
@@ -415,13 +431,31 @@ export async function POST(req: Request) {
   )
 
   const tags = await prisma.tags.findMany({
-    where: { name: { in: tagNames }, is_deleted: false },
-    select: { id: true, name: true },
+    where: {
+      is_deleted: false,
+      translations: {
+        some: {
+          name: { in: tagNames },
+        },
+      },
+    },
+    select: {
+      id: true,
+      translations: {
+        where: {
+          name: { in: tagNames },
+        },
+        select: {
+          name: true,
+        },
+      },
+    },
   })
 
-  const foundNames = new Set(
-    tags.map((t: { id: bigint; name: string }) => t.name)
-  )
+  const foundNames = new Set<string>()
+  tags.forEach((t: { id: bigint; translations: { name: string }[] }) => {
+    t.translations.forEach((trans) => foundNames.add(trans.name))
+  })
   const missing = tagNames.filter((n) => !foundNames.has(n))
   if (missing.length > 0) {
     return NextResponse.json(
@@ -501,11 +535,13 @@ export async function POST(req: Request) {
 
       if (tags.length > 0) {
         await client.topic_tags.createMany({
-          data: tags.map((t: { id: bigint; name: string }) => ({
-            topic_id: topic.id,
-            tag_id: t.id,
-            created_at: new Date(),
-          })),
+          data: tags.map(
+            (t: { id: bigint; translations: { name: string }[] }) => ({
+              topic_id: topic.id,
+              tag_id: t.id,
+              created_at: new Date(),
+            })
+          ),
           skipDuplicates: true,
         })
       }

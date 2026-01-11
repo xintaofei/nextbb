@@ -4,6 +4,12 @@ import { BadgeItem } from "@/types/badge"
 import { decodeUsername } from "@/lib/utils"
 import { prisma } from "@/lib/prisma"
 import BadgesTimeline from "@/components/user/badges-timeline"
+import { getLocale } from "next-intl/server"
+import {
+  getTranslationsQuery,
+  getTranslationFields,
+  BadgeTranslation,
+} from "@/lib/locale"
 
 type BadgesPageProps = {
   params: Promise<{ username: string }>
@@ -20,6 +26,7 @@ export async function generateMetadata({
 }
 
 export default async function BadgesPage({ params }: BadgesPageProps) {
+  const locale = await getLocale()
   const { username } = await params
   const decodedUsername = decodeUsername(username)
   const t = (key: string) => {
@@ -83,13 +90,15 @@ export default async function BadgesPage({ params }: BadgesPageProps) {
       badge: {
         select: {
           id: true,
-          name: true,
           icon: true,
           badge_type: true,
           level: true,
           bg_color: true,
           text_color: true,
-          description: true,
+          translations: getTranslationsQuery(locale, {
+            name: true,
+            description: true,
+          }),
         },
       },
       awarder: {
@@ -103,20 +112,31 @@ export default async function BadgesPage({ params }: BadgesPageProps) {
     orderBy: [{ badge: { level: "desc" } }, { awarded_at: "desc" }],
   })
 
-  const badges: BadgeItem[] = userBadges.map((ub) => ({
-    id: String(ub.badge.id),
-    name: ub.badge.name,
-    icon: ub.badge.icon,
-    badgeType: ub.badge.badge_type,
-    level: ub.badge.level,
-    bgColor: ub.badge.bg_color,
-    textColor: ub.badge.text_color,
-    description: ub.badge.description,
-    awardedAt: ub.awarded_at.toISOString(),
-    awardedBy: ub.awarded_by ? String(ub.awarded_by) : null,
-    awarderName: ub.awarder?.name || null,
-    awarderAvatar: ub.awarder?.avatar || null,
-  }))
+  const badges: BadgeItem[] = userBadges.map((ub) => {
+    const badgeFields = getTranslationFields(
+      ub.badge.translations as unknown as BadgeTranslation[],
+      locale,
+      {
+        name: "",
+        description: null as string | null,
+      }
+    )
+
+    return {
+      id: String(ub.badge.id),
+      name: badgeFields.name,
+      icon: ub.badge.icon,
+      badgeType: ub.badge.badge_type,
+      level: ub.badge.level,
+      bgColor: ub.badge.bg_color,
+      textColor: ub.badge.text_color,
+      description: badgeFields.description,
+      awardedAt: ub.awarded_at.toISOString(),
+      awardedBy: ub.awarded_by ? String(ub.awarded_by) : null,
+      awarderName: ub.awarder?.name || null,
+      awarderAvatar: ub.awarder?.avatar || null,
+    }
+  })
 
   if (badges.length === 0) {
     return (
