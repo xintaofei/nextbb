@@ -44,11 +44,7 @@ export function createTopicFormSchema(t: TranslateFn) {
   // BOUNTY 类型 - 悬赏功能(单人/多人模式)
   const bountySingleSchema = baseTopicSchema.extend({
     type: z.literal(TopicType.BOUNTY),
-    bountyType: z
-      .enum([BountyType.SINGLE, BountyType.MULTIPLE])
-      .refine((val) => val === BountyType.SINGLE, {
-        message: t("Topic.Validation.bounty.typeMismatch"),
-      }),
+    bountyType: z.literal(BountyType.SINGLE),
     bountyTotal: z
       .number()
       .int()
@@ -59,11 +55,7 @@ export function createTopicFormSchema(t: TranslateFn) {
 
   const bountyMultipleSchema = baseTopicSchema.extend({
     type: z.literal(TopicType.BOUNTY),
-    bountyType: z
-      .enum([BountyType.SINGLE, BountyType.MULTIPLE])
-      .refine((val) => val === BountyType.MULTIPLE, {
-        message: t("Topic.Validation.bounty.typeMismatch"),
-      }),
+    bountyType: z.literal(BountyType.MULTIPLE),
     bountyTotal: z
       .number()
       .int()
@@ -74,6 +66,11 @@ export function createTopicFormSchema(t: TranslateFn) {
       .int()
       .positive(t("Topic.Validation.bounty.singleAmountPositive")),
   })
+
+  const bountySchema = z.discriminatedUnion("bountyType", [
+    bountySingleSchema,
+    bountyMultipleSchema,
+  ])
 
   // POLL 类型 - 需要投票选项和配置
   const pollTopicSchema = baseTopicSchema
@@ -314,8 +311,7 @@ export function createTopicFormSchema(t: TranslateFn) {
   return z.union([
     generalTopicSchema,
     questionTopicSchema,
-    bountySingleSchema,
-    bountyMultipleSchema,
+    bountySchema,
     pollTopicSchema,
     lotteryScheduledIntervalSchema,
     lotteryScheduledRandomSchema,
@@ -368,11 +364,7 @@ export function createTopicFormSchemaWithCredits(
   // BOUNTY 类型(带积分验证)
   const bountySingleWithCredits = baseTopicSchema.extend({
     type: z.literal(TopicType.BOUNTY),
-    bountyType: z
-      .enum([BountyType.SINGLE, BountyType.MULTIPLE])
-      .refine((val) => val === BountyType.SINGLE, {
-        message: t("Topic.Validation.bounty.typeMismatch"),
-      }),
+    bountyType: z.literal(BountyType.SINGLE),
     bountyTotal: z
       .number()
       .int()
@@ -386,11 +378,7 @@ export function createTopicFormSchemaWithCredits(
 
   const bountyMultipleWithCredits = baseTopicSchema.extend({
     type: z.literal(TopicType.BOUNTY),
-    bountyType: z
-      .enum([BountyType.SINGLE, BountyType.MULTIPLE])
-      .refine((val) => val === BountyType.MULTIPLE, {
-        message: t("Topic.Validation.bounty.typeMismatch"),
-      }),
+    bountyType: z.literal(BountyType.MULTIPLE),
     bountyTotal: z
       .number()
       .int()
@@ -404,6 +392,11 @@ export function createTopicFormSchemaWithCredits(
       .int()
       .positive(t("Topic.Validation.bounty.singleAmountPositive")),
   })
+
+  const bountySchemaWithCredits = z.discriminatedUnion("bountyType", [
+    bountySingleWithCredits,
+    bountyMultipleWithCredits,
+  ])
 
   // POLL 类型
   const pollTopicSchema = baseTopicSchema
@@ -637,8 +630,7 @@ export function createTopicFormSchemaWithCredits(
   return z.union([
     generalTopicSchema,
     questionTopicSchema,
-    bountySingleWithCredits,
-    bountyMultipleWithCredits,
+    bountySchemaWithCredits,
     pollTopicSchema,
     lotteryScheduledIntervalSchema,
     lotteryScheduledRandomSchema,
