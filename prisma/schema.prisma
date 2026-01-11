@@ -86,21 +86,38 @@ model category_translations {
 }
 
 model tags {
-  id          BigInt   @id @db.BigInt
+  id            BigInt   @id @db.BigInt
+  source_locale String   @default("zh") @db.VarChar(8)
+  icon          String   @db.VarChar(32)
+  sort          Int      @default(0)
+  bg_color      String?  @db.VarChar(16)
+  text_color    String?  @db.VarChar(16)
+  is_deleted    Boolean
+  created_at    DateTime @default(now())
+  updated_at    DateTime @updatedAt
+
+  topic_links  topic_tags[]
+  translations tag_translations[]
+
+  @@map("tags")
+}
+
+model tag_translations {
+  tag_id      BigInt   @db.BigInt
+  locale      String   @db.VarChar(8)
   name        String   @db.VarChar(32)
-  icon        String   @db.VarChar(32)
-  description String   @default("") @db.VarChar(256)
-  sort        Int      @default(0)
-  bg_color    String?  @db.VarChar(16)
-  text_color  String?  @db.VarChar(16)
-  is_deleted  Boolean
+  description String?  @db.VarChar(255)
+  is_source   Boolean  @default(false)
+  version     Int      @default(0)
   created_at  DateTime @default(now())
   updated_at  DateTime @updatedAt
 
-  topic_links topic_tags[]
+  tag tags @relation(fields: [tag_id], references: [id], onDelete: Cascade)
 
-  @@map("tags")
-  @@unique([name], map: "name_index")
+  @@id([tag_id, locale])
+  @@index([locale, is_source], map: "tag_translations_locale_source_index")
+  @@index([tag_id, is_source], map: "tag_translations_tag_source_index")
+  @@map("tag_translations")
 }
 
 model topics {
@@ -209,26 +226,44 @@ model post_bookmarks {
 }
 
 model badges {
-  id          BigInt   @id @db.BigInt
-  name        String   @db.VarChar(32)
-  icon        String   @db.VarChar(32)
-  description String?  @db.VarChar(256)
-  badge_type  String   @db.VarChar(32)
-  level       Int      @default(1)
-  sort        Int      @default(0)
-  bg_color    String?  @db.VarChar(16)
-  text_color  String?  @db.VarChar(16)
-  is_enabled  Boolean  @default(true)
-  is_visible  Boolean  @default(true)
-  is_deleted  Boolean  @default(false)
-  created_at  DateTime @default(now())
-  updated_at  DateTime @updatedAt
+  id            BigInt   @id @db.BigInt
+  source_locale String   @default("zh") @db.VarChar(8)
+  icon          String   @db.VarChar(32)
+  badge_type    String   @db.VarChar(32)
+  level         Int      @default(1)
+  sort          Int      @default(0)
+  bg_color      String?  @db.VarChar(16)
+  text_color    String?  @db.VarChar(16)
+  is_enabled    Boolean  @default(true)
+  is_visible    Boolean  @default(true)
+  is_deleted    Boolean  @default(false)
+  created_at    DateTime @default(now())
+  updated_at    DateTime @updatedAt
 
-  user_badges user_badges[] @relation("user_badges_badge")
+  user_badges  user_badges[] @relation("user_badges_badge")
+  translations badge_translations[]
 
   @@index([badge_type], map: "badges_type_index")
   @@index([is_deleted, is_enabled], map: "badges_status_index")
   @@map("badges")
+}
+
+model badge_translations {
+  badge_id    BigInt   @db.BigInt
+  locale      String   @db.VarChar(8)
+  name        String   @db.VarChar(32)
+  description String?  @db.VarChar(255)
+  is_source   Boolean  @default(false)
+  version     Int      @default(0)
+  created_at  DateTime @default(now())
+  updated_at  DateTime @updatedAt
+
+  badge badges @relation(fields: [badge_id], references: [id], onDelete: Cascade)
+
+  @@id([badge_id, locale])
+  @@index([locale, is_source], map: "badge_translations_locale_source_index")
+  @@index([badge_id, is_source], map: "badge_translations_badge_source_index")
+  @@map("badge_translations")
 }
 
 model user_badges {
