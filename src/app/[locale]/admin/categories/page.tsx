@@ -91,7 +91,11 @@ export default function AdminCategoriesPage() {
   const [isReordering, setIsReordering] = useState(false)
 
   const sensors = useSensors(
-    useSensor(PointerSensor),
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 8,
+      },
+    }),
     useSensor(KeyboardSensor, {
       coordinateGetter: sortableKeyboardCoordinates,
     })
@@ -235,6 +239,15 @@ export default function AdminCategoriesPage() {
 
     try {
       setIsReordering(true)
+      // Optimistic update
+      await mutate(
+        {
+          ...data,
+          items: newItems,
+        },
+        false
+      )
+
       const itemsWithSort = newItems.map((item, index) => ({
         id: item.id,
         sort: index,
@@ -251,9 +264,11 @@ export default function AdminCategoriesPage() {
         await mutate()
       } else {
         toast.error(t("message.reorderError"))
+        await mutate() // Revert
       }
     } catch {
       toast.error(t("message.reorderError"))
+      await mutate() // Revert
     } finally {
       setIsReordering(false)
     }
@@ -377,22 +392,13 @@ export default function AdminCategoriesPage() {
                   category={category}
                   onEdit={handleEdit}
                   onDelete={handleDelete}
-                  disabled={isReordering || deleted === "true"}
+                  disabled={
+                    isReordering || deleted !== "false" || sortBy !== "sort"
+                  }
                 />
               ))}
             </SortableContext>
           </DndContext>
-
-          {isReordering && (
-            <div className="absolute inset-0 flex items-center justify-center bg-background/80 backdrop-blur-sm z-10">
-              <div className="flex flex-col items-center gap-2">
-                <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
-                <span className="text-sm text-muted-foreground">
-                  {t("list.reordering")}
-                </span>
-              </div>
-            </div>
-          )}
         </AdminPageSection>
       )}
 
