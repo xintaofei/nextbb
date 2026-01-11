@@ -1476,7 +1476,10 @@
     "followSuccess": "Followed successfully",
     "unfollowSuccess": "Unfollowed successfully",
     "followError": "Operation failed, please try again later",
-    "messageError": "Failed to create conversation, please try again later"
+    "messageError": "Failed to create conversation, please try again later",
+    "website": "Website",
+    "location": "Location",
+    "birthday": "Birthday"
   },
   "Leaderboard": {
     "title": "Community Leaderboard",

@@ -24,7 +24,17 @@ import {
   UserPlus,
   UserCheck,
   Calendar,
+  MapPin,
+  Link as LinkIcon,
+  Cake,
 } from "lucide-react"
+
+type UserProfile = {
+  bio: string | null
+  website: string | null
+  location: string | null
+  birthday: string | null
+}
 
 type BadgeItem = {
   id: string
@@ -100,6 +110,15 @@ export function UserInfoCard({
       revalidateOnFocus: false,
       dedupingInterval: 300000, // 5分钟缓存
     })
+
+  // 使用 SWR 获取用户资料，仅在卡片打开时才请求
+  const { data: profileData } = useSWR<UserProfile>(
+    open ? `/api/users/${userId}/profile` : null,
+    {
+      revalidateOnFocus: false,
+      dedupingInterval: 300000, // 5分钟缓存
+    }
+  )
 
   // 使用 SWR 获取用户统计数据，仅在需要显示统计且卡片打开时才请求
   const { data: statisticsData, isLoading: statisticsLoading } =
@@ -203,7 +222,8 @@ export function UserInfoCard({
     const date = new Date(dateString)
     const year = date.getFullYear()
     const month = String(date.getMonth() + 1).padStart(2, "0")
-    return `${year}-${month}`
+    const day = String(date.getDate()).padStart(2, "0")
+    return `${year}-${month}-${day}`
   }
 
   return (
@@ -216,9 +236,9 @@ export function UserInfoCard({
       >
         <div className="flex flex-col gap-4 p-4">
           {/* 头部区域 */}
-          <div className="flex flex-row items-center gap-4">
+          <div className="flex flex-row items-start gap-4">
             {/* 头像区域 */}
-            <div className="relative">
+            <div className="relative shrink-0">
               <div className="absolute inset-0 rounded-full bg-linear-to-br from-primary to-accent opacity-20 blur-sm" />
               <Avatar className="h-16 w-16 max-sm:h-14 max-sm:w-14 relative border-2 border-primary/30">
                 <AvatarImage src={userAvatar} alt={userName} />
@@ -227,31 +247,86 @@ export function UserInfoCard({
                 </AvatarFallback>
               </Avatar>
             </div>
-            <div className="flex flex-col gap-1">
+            <div className="flex flex-col gap-1 w-full min-w-0">
               {/* 用户信息区域 */}
-              <div className="flex items-center gap-2">
-                <h3 className="text-xl max-sm:text-lg font-semibold">
+              <div className="flex items-center gap-2 flex-wrap">
+                <h3 className="text-xl max-sm:text-lg font-semibold truncate">
                   {userName}
                 </h3>
                 {isAdmin && (
                   <Badge
                     variant="secondary"
-                    className="text-xs bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400"
+                    className="text-xs bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400 shrink-0"
                   >
                     <Shield className="h-3 w-3 mr-1" />
                     {t("admin")}
                   </Badge>
                 )}
               </div>
-              {/* 加入时间 */}
-              {statisticsData?.joinedAt && (
-                <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                  <Calendar className="h-3 w-3" />
-                  <span>
-                    {t("joinedAt")} {formatJoinedDate(statisticsData.joinedAt)}
-                  </span>
+
+              {/* 个人简介 */}
+              {profileData?.bio && (
+                <div className="text-sm text-muted-foreground line-clamp-2 break-all">
+                  {profileData.bio}
                 </div>
               )}
+
+              {/* 详细信息列表 */}
+              <div className="flex flex-wrap gap-x-3 gap-y-1 text-xs text-muted-foreground mt-1">
+                {profileData?.location && (
+                  <div
+                    className="flex items-center gap-1"
+                    title={t("location")}
+                  >
+                    <MapPin className="h-3 w-3 shrink-0" />
+                    <span className="truncate max-w-[120px]">
+                      {profileData.location}
+                    </span>
+                  </div>
+                )}
+
+                {profileData?.website && (
+                  <a
+                    href={
+                      profileData.website.startsWith("http")
+                        ? profileData.website
+                        : `https://${profileData.website}`
+                    }
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-1 hover:text-primary transition-colors"
+                    title={t("website")}
+                  >
+                    <LinkIcon className="h-3 w-3 shrink-0" />
+                    <span className="truncate max-w-[120px]">
+                      {profileData.website.replace(/^https?:\/\//, "")}
+                    </span>
+                  </a>
+                )}
+
+                {profileData?.birthday && (
+                  <div
+                    className="flex items-center gap-1"
+                    title={t("birthday")}
+                  >
+                    <Cake className="h-3 w-3 shrink-0" />
+                    <span>
+                      {new Date(profileData.birthday).toLocaleDateString()}
+                    </span>
+                  </div>
+                )}
+
+                {/* 加入时间 */}
+                {statisticsData?.joinedAt && (
+                  <div
+                    className="flex items-center gap-1"
+                    title={t("joinedAt")}
+                  >
+                    <Calendar className="h-3 w-3 shrink-0" />
+                    <span>{formatJoinedDate(statisticsData.joinedAt)}</span>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
 
