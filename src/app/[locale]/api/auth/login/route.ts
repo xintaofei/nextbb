@@ -2,7 +2,7 @@ import { NextResponse } from "next/server"
 import { z } from "zod"
 import bcrypt from "bcryptjs"
 import { prisma } from "@/lib/prisma"
-import { signAuthToken, setAuthCookie } from "@/lib/auth"
+import { signAuthToken, setAuthCookie, recordLogin } from "@/lib/auth"
 
 const schema = z.object({
   email: z.email(),
@@ -24,12 +24,14 @@ export async function POST(request: Request) {
   })
 
   if (!user || user.is_deleted || user.status !== 1) {
+    await recordLogin(user?.id || null, "FAILED")
     return NextResponse.json({ error: "邮箱或密码错误" }, { status: 401 })
   }
 
   const ok = await bcrypt.compare(password, user.password)
 
   if (!ok) {
+    await recordLogin(user.id, "FAILED")
     return NextResponse.json({ error: "邮箱或密码错误" }, { status: 401 })
   }
 
@@ -40,6 +42,7 @@ export async function POST(request: Request) {
   })
 
   await setAuthCookie(token)
+  await recordLogin(user.id, "SUCCESS")
 
   return NextResponse.json(
     {

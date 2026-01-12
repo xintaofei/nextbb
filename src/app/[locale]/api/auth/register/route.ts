@@ -3,7 +3,7 @@ import { z } from "zod"
 import bcrypt from "bcryptjs"
 import { prisma } from "@/lib/prisma"
 import { generateId } from "@/lib/id"
-import { signAuthToken, setAuthCookie } from "@/lib/auth"
+import { signAuthToken, setAuthCookie, recordLogin } from "@/lib/auth"
 import { createHash } from "crypto"
 import { emitUserRegisterEvent } from "@/lib/automation/events"
 
@@ -87,6 +87,7 @@ export async function POST(request: Request) {
   })
 
   await setAuthCookie(token)
+  await recordLogin(user.id, "SUCCESS")
 
   return NextResponse.json(
     {
