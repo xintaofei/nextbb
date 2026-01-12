@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Coins, Users, Award } from "lucide-react"
 import { useTranslations } from "next-intl"
-import { formatRelative } from "@/lib/time"
+import { RelativeTime } from "@/components/common/relative-time"
 import useSWR from "swr"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Alert, AlertDescription } from "@/components/ui/alert"
@@ -179,7 +179,7 @@ export function BountyDisplay({
                     <div>
                       <div className="font-medium">{reward.receiver.name}</div>
                       <div className="text-xs text-muted-foreground">
-                        {formatRelative(reward.createdAt)}
+                        <RelativeTime date={reward.createdAt} />
                       </div>
                     </div>
                   </div>

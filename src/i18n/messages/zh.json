@@ -55,7 +55,11 @@
       "ariaLabel": "语言"
     },
     "Time": {
-      "minutesAgo": "{count} 分钟前"
+      "minutesAgo": "{count} 分钟前",
+      "second": "{count}秒",
+      "minute": "{count}分钟",
+      "hour": "{count}小时",
+      "day": "{count}天"
     },
     "ThemeSwitcher": {
       "light": "浅色",

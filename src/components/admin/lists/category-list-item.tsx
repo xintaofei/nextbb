@@ -6,7 +6,7 @@ import { useTranslations } from "next-intl"
 import { Edit, Trash2, FolderOpen, GripVertical, Globe } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { formatRelative } from "@/lib/time"
+import { RelativeTime } from "@/components/common/relative-time"
 
 type CategoryListItemProps = {
   category: {
@@ -134,7 +134,7 @@ export function CategoryListItem({
             </span>
           </div>
           <div className="text-muted-foreground">
-            {formatRelative(category.updatedAt)}
+            <RelativeTime date={category.updatedAt} />
           </div>
         </div>
 
@@ -175,7 +175,7 @@ export function CategoryListItem({
           </span>
         </div>
         <div className="text-muted-foreground">
-          {formatRelative(category.updatedAt)}
+          <RelativeTime date={category.updatedAt} />
         </div>
       </div>
     </div>

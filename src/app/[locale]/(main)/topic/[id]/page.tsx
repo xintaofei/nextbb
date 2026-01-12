@@ -16,7 +16,7 @@ import {
 import { useTranslations } from "next-intl"
 import { useEffect, useMemo, useRef, useState } from "react"
 import { toast } from "sonner"
-import { formatRelative } from "@/lib/time"
+import { RelativeTime } from "@/components/common/relative-time"
 import { Skeleton } from "@/components/ui/skeleton"
 import useSWR from "swr"
 import useSWRInfinite from "swr/infinite"
@@ -1023,14 +1023,14 @@ export default function TopicPage() {
                       {t.views}
                     </TableCell>
                     <TableCell className="text-center text-muted-foreground max-sm:hidden">
-                      {formatRelative(t.activity)}
+                      <RelativeTime date={t.activity} />
                     </TableCell>
                     <TableCell className="w-16 text-center text-muted-foreground hidden max-sm:table-cell relative">
                       <span className="absolute top-2 right-0 text-primary">
                         {t.replies}
                       </span>
                       <span className="absolute bottom-2 right-0">
-                        {formatRelative(t.activity)}
+                        <RelativeTime date={t.activity} />
                       </span>
                     </TableCell>
                   </TableRow>

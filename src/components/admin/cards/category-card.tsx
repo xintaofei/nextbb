@@ -5,7 +5,7 @@ import { useTranslations } from "next-intl"
 import { Edit, Trash2, FolderOpen } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { formatRelative } from "@/lib/time"
+import { RelativeTime } from "@/components/common/relative-time"
 
 type CategoryCardProps = {
   category: {
@@ -100,7 +100,7 @@ export function CategoryCard({
         </div>
 
         <div className="text-xs text-muted-foreground">
-          {t("card.updatedAt")} {formatRelative(category.updatedAt)}
+          {t("card.updatedAt")} <RelativeTime date={category.updatedAt} />
         </div>
 
         <div className="flex items-center gap-2 pt-2 border-t border-border/40">

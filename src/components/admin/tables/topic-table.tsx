@@ -31,7 +31,7 @@ import { Button } from "@/components/ui/button"
 import { Avatar } from "@/components/ui/avatar"
 import { CategoryBadge } from "@/components/common/category-badge"
 import { TagBadge } from "@/components/common/tag-badge"
-import { formatRelative } from "@/lib/time"
+import { RelativeTime } from "@/components/common/relative-time"
 import { Checkbox } from "@/components/ui/checkbox"
 import {
   DropdownMenu,
@@ -395,13 +395,17 @@ export function TopicTable({
                           <span className="text-xs text-foreground/40">
                             {t("created")}:
                           </span>
-                          <span>{formatRelative(topic.createdAt)}</span>
+                          <span>
+                            <RelativeTime date={topic.createdAt} />
+                          </span>
                         </div>
                         <div className="flex items-center gap-1">
                           <span className="text-xs text-foreground/40">
                             {t("active")}:
                           </span>
-                          <span>{formatRelative(topic.lastActivityAt)}</span>
+                          <span>
+                            <RelativeTime date={topic.lastActivityAt} />
+                          </span>
                         </div>
                       </div>
                     </TableCell>

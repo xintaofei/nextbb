@@ -20,7 +20,7 @@ import {
   X,
   Gift,
 } from "lucide-react"
-import { formatRelative } from "@/lib/time"
+import { RelativeTime } from "@/components/common/relative-time"
 import { PostItem } from "@/types/topic"
 import { UserBadgesDisplay } from "@/components/common/user-badges-display"
 import { UserInfoCard } from "@/components/common/user-info-card"
@@ -275,7 +275,7 @@ export function TopicPostItem({
               <div className="flex gap-5 h-5">
                 <Separator orientation="vertical" />
                 <div className="flex flex-row gap-1 items-center text-muted-foreground">
-                  {formatRelative(post.createdAt)}
+                  <RelativeTime date={post.createdAt} />
                 </div>
               </div>
             </>

@@ -20,7 +20,7 @@ import { Button } from "@/components/ui/button"
 import { Avatar } from "@/components/ui/avatar"
 import { CategoryBadge } from "@/components/common/category-badge"
 import { TagBadge } from "@/components/common/tag-badge"
-import { formatRelative } from "@/lib/time"
+import { RelativeTime } from "@/components/common/relative-time"
 
 export interface TopicCardProps {
   topic: {
@@ -182,13 +182,13 @@ export function TopicCard({
           <div className="flex items-center gap-2 text-sm text-foreground/60">
             <Calendar className="h-4 w-4" />
             <span className="truncate">
-              {t("created")} {formatRelative(topic.createdAt)}
+              {t("created")} <RelativeTime date={topic.createdAt} />
             </span>
           </div>
           <div className="flex items-center gap-2 text-sm text-foreground/60">
             <Clock className="h-4 w-4" />
             <span className="truncate">
-              {t("lastActivity")} {formatRelative(topic.lastActivityAt)}
+              {t("lastActivity")} <RelativeTime date={topic.lastActivityAt} />
             </span>
           </div>
         </div>

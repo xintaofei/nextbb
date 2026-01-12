@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { CheckCircle2 } from "lucide-react"
 import { useTranslations } from "next-intl"
-import { formatRelative } from "@/lib/time"
+import { RelativeTime } from "@/components/common/relative-time"
 import useSWR from "swr"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Alert, AlertDescription } from "@/components/ui/alert"
@@ -133,7 +133,9 @@ export function QuestionAcceptanceDisplay({
               <span>{t("acceptance.info.acceptedBy")}:</span>
               <span className="font-medium">{data.acceptedBy!.name}</span>
               <span>•</span>
-              <span>{formatRelative(data.acceptedAt!)}</span>
+              <span>
+                <RelativeTime date={data.acceptedAt!} />
+              </span>
             </div>
           </div>
         ) : (

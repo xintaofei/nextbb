@@ -8,7 +8,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import { Skeleton } from "@/components/ui/skeleton"
 import { UserInfoCard } from "@/components/common/user-info-card"
-import { formatRelative } from "@/lib/time"
+import { RelativeTime } from "@/components/common/relative-time"
 
 type User = {
   id: string
@@ -72,7 +72,7 @@ function UserListItem({ user }: { user: User }) {
             )}
           </div>
           <p className="text-sm text-muted-foreground mt-1">
-            {t("followedAt")} {formatRelative(user.followedAt)}
+            {t("followedAt")} <RelativeTime date={user.followedAt} />
           </p>
         </div>
       </div>

@@ -15,7 +15,7 @@ import { Card } from "@/components/ui/card"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { CategoryBadge } from "@/components/common/category-badge"
 import { TopicStatusTags } from "@/components/common/topic-status-tags"
-import { formatRelative } from "@/lib/time"
+import { RelativeTime } from "@/components/common/relative-time"
 import { useTranslations } from "next-intl"
 import Link from "next/link"
 import type { ActivityItem, ActivityType } from "@/types/activity"
@@ -488,7 +488,7 @@ function ActivityTimeline({
                                 <span>·</span>
                                 <Calendar className="h-3 w-3" />
                                 <span>
-                                  {formatRelative(activity.activityTime)}
+                                  <RelativeTime date={activity.activityTime} />
                                 </span>
                               </div>
 

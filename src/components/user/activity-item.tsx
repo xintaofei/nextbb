@@ -14,7 +14,7 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { CategoryBadge } from "@/components/common/category-badge"
 import { TopicStatusTags } from "@/components/common/topic-status-tags"
-import { formatRelative } from "@/lib/time"
+import { RelativeTime } from "@/components/common/relative-time"
 import { useTranslations } from "next-intl"
 import type { ActivityItem as ActivityItemType } from "@/types/activity"
 import { TopicType, type TopicTypeValue } from "@/types/topic-type"
@@ -71,7 +71,8 @@ export function ActivityItem({ activity }: ActivityItemProps) {
               <div className="text-primary mt-1">{getIcon()}</div>
               <div className="flex-1 min-w-0">
                 <div className="text-sm text-muted-foreground mb-1">
-                  {getActivityLabel()} · {formatRelative(activity.activityTime)}
+                  {getActivityLabel()} {" · "}
+                  <RelativeTime date={activity.activityTime} />
                 </div>
                 <h3 className="font-medium group-hover:text-primary transition-colors line-clamp-2 mb-2">
                   {title}
@@ -126,7 +127,8 @@ export function ActivityItem({ activity }: ActivityItemProps) {
               <div className="text-primary mt-1">{getIcon()}</div>
               <div className="flex-1 min-w-0">
                 <div className="text-sm text-muted-foreground mb-1">
-                  {getActivityLabel()} · {formatRelative(activity.activityTime)}
+                  {getActivityLabel()} {" · "}
+                  <RelativeTime date={activity.activityTime} />
                 </div>
                 <h3 className="font-medium group-hover:text-primary transition-colors line-clamp-2 mb-2">
                   {topicTitle}
@@ -179,7 +181,8 @@ export function ActivityItem({ activity }: ActivityItemProps) {
               <div className="text-primary mt-1">{getIcon()}</div>
               <div className="flex-1 min-w-0">
                 <div className="text-sm text-muted-foreground mb-1">
-                  {getActivityLabel()} · {formatRelative(activity.activityTime)}
+                  {getActivityLabel()} {" · "}
+                  <RelativeTime date={activity.activityTime} />
                 </div>
                 <h3 className="font-medium group-hover:text-primary transition-colors line-clamp-2 mb-2">
                   {topicTitle}
@@ -237,7 +240,8 @@ export function ActivityItem({ activity }: ActivityItemProps) {
               <div className="text-primary mt-1">{getIcon()}</div>
               <div className="flex-1 min-w-0">
                 <div className="text-sm text-muted-foreground mb-1">
-                  {getActivityLabel()} · {formatRelative(activity.activityTime)}
+                  {getActivityLabel()} {" · "}
+                  <RelativeTime date={activity.activityTime} />
                 </div>
                 <h3 className="font-medium group-hover:text-primary transition-colors line-clamp-2 mb-2">
                   {topicTitle}
