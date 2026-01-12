@@ -46,6 +46,9 @@ model users {
   donations donations[] @relation("donations_user")
   confirmed_donations donations[] @relation("donations_confirmer")
 
+  login_stats user_login_stats?
+  login_logs  user_login_logs[]
+
   @@map("users")
   @@unique([email], map: "users_email_key")
 }
@@ -526,6 +529,40 @@ model user_checkins {
   @@index([checkin_date], map: "user_checkins_date_index")
   @@index([created_at], map: "user_checkins_created_index")
   @@map("user_checkins")
+}
+
+model user_login_stats {
+  user_id                BigInt   @id @db.BigInt
+  last_login_at          DateTime @default(now())
+  last_login_ip          String   @db.VarChar(64)
+  consecutive_login_days Int      @default(0)
+  total_login_days       Int      @default(1)
+  location_lat           String?  @db.VarChar(32)
+  location_long          String?  @db.VarChar(32)
+  created_at             DateTime @default(now())
+  updated_at             DateTime @updatedAt
+
+  user users @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@map("user_login_stats")
+}
+
+model user_login_logs {
+  id            BigInt   @id @db.BigInt
+  user_id       BigInt   @db.BigInt
+  ip            String   @db.VarChar(64)
+  user_agent    String?  @db.VarChar(512)
+  location_lat  String?  @db.VarChar(32)
+  location_long String?  @db.VarChar(32)
+  status        String   @db.VarChar(16) // SUCCESS, FAILED
+  login_at      DateTime @default(now())
+
+  user users @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@index([user_id], map: "user_login_logs_user_index")
+  @@index([login_at], map: "user_login_logs_time_index")
+  @@index([status], map: "user_login_logs_status_index")
+  @@map("user_login_logs")
 }
 
 enum CreditLogType {

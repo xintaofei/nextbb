@@ -5,7 +5,13 @@ import { prisma } from "@/lib/prisma"
 import { generateId } from "@/lib/id"
 import { LinuxDoProvider } from "@/lib/providers/linuxdo"
 import { uploadAvatarFromUrl } from "@/lib/blob"
-import { emitUserRegisterEvent } from "@/lib/automation/events"
+import {
+  emitUserRegisterEvent,
+  emitUserLoginEvent,
+} from "@/lib/automation/events"
+import { headers } from "next/headers"
+import { getGeoInfo } from "@/lib/geo"
+import { differenceInCalendarDays } from "date-fns"
 
 function getEnv(name: string): string {
   const v = process.env[name]
@@ -66,6 +72,88 @@ async function ensureUniqueName(name: string): Promise<string> {
 
   // 如果10次都失败，使用时间戳作为后备方案
   return `${name}${Date.now().toString().slice(-8)}`
+}
+
+/**
+ * 记录用户登录信息
+ */
+async function recordLogin(userId: bigint) {
+  try {
+    const headersList = await headers()
+    const ip = headersList.get("x-forwarded-for") || "unknown"
+    const userAgent = headersList.get("user-agent")
+    const geo = await getGeoInfo(ip)
+
+    // Get current stats
+    const stats = await prisma.user_login_stats.findUnique({
+      where: { user_id: userId },
+    })
+
+    const now = new Date()
+    let consecutiveDays = stats?.consecutive_login_days || 0
+    let totalLoginDays = stats?.total_login_days || 0
+
+    if (stats?.last_login_at) {
+      const diff = differenceInCalendarDays(now, stats.last_login_at)
+      if (diff === 1) {
+        consecutiveDays += 1
+        totalLoginDays += 1
+      } else if (diff > 1) {
+        consecutiveDays = 1 // reset
+        totalLoginDays += 1
+      }
+      // if diff == 0, same day, do not increase total or consecutive
+    } else {
+      // first time
+      consecutiveDays = 1
+      totalLoginDays = 1
+    }
+
+    // Upsert stats
+    await prisma.user_login_stats.upsert({
+      where: { user_id: userId },
+      create: {
+        user_id: userId,
+        last_login_at: now,
+        last_login_ip: ip,
+        consecutive_login_days: consecutiveDays,
+        total_login_days: totalLoginDays,
+        location_lat: geo.latitude,
+        location_long: geo.longitude,
+      },
+      update: {
+        last_login_at: now,
+        last_login_ip: ip,
+        consecutive_login_days: consecutiveDays,
+        total_login_days: totalLoginDays,
+        location_lat: geo.latitude,
+        location_long: geo.longitude,
+      },
+    })
+
+    // Create log
+    await prisma.user_login_logs.create({
+      data: {
+        id: generateId(),
+        user_id: userId,
+        ip: ip,
+        user_agent: userAgent,
+        location_lat: geo.latitude,
+        location_long: geo.longitude,
+        status: "SUCCESS",
+        login_at: now,
+      },
+    })
+
+    // Emit event
+    await emitUserLoginEvent({
+      userId: userId,
+      loginTime: now,
+      consecutiveDays: consecutiveDays,
+    })
+  } catch (error) {
+    console.error("Error recording login:", error)
+  }
 }
 
 export const authOptions: NextAuthOptions = {
@@ -161,6 +249,8 @@ export const authOptions: NextAuthOptions = {
         email: newUser.email,
         oauthProvider: provider,
       })
+
+      await recordLogin(newUser.id)
 
       return true
     },
