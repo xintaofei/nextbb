@@ -8,6 +8,7 @@ import { Card } from "@/components/ui/card"
 import { BadgeItem } from "@/types/badge"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Highlighter } from "@/components/ui/highlighter"
+import { useLocale, useTranslations } from "next-intl"
 
 type BadgesTimelineProps = {
   badges: BadgeItem[]
@@ -16,18 +17,8 @@ type BadgesTimelineProps = {
 function BadgesTimeline({ badges }: BadgesTimelineProps) {
   const ref = useRef(null)
   const isInView = useInView(ref, { once: true, amount: "some" })
-  const t = (key: string) => {
-    const translations: Record<string, string> = {
-      title: "徽章列表",
-      description: "用户获得的所有徽章及获得时间线",
-      awardedAt: "授予时间",
-      awardedBy: "授予人",
-      system: "系统",
-      empty: "暂未获得任何徽章",
-      emptyDescription: "参与社区活动获取徽章吧！",
-    }
-    return translations[key] || key
-  }
+  const t = useTranslations("User.profile.badgeList")
+  const locale = useLocale()
 
   return (
     <section ref={ref} className="w-full bg-background px-4 py-8 max-md:py-4">
@@ -41,7 +32,7 @@ function BadgesTimeline({ badges }: BadgesTimelineProps) {
         >
           <Badge className="mb-4" variant="secondary">
             <Calendar className="mr-1 h-3 w-3" />
-            徽章旅程
+            {t("journey")}
           </Badge>
           <h2 className="mb-4 text-3xl font-bold tracking-tight md:text-4xl lg:text-5xl">
             {t("title")}
@@ -168,7 +159,7 @@ function BadgesTimeline({ badges }: BadgesTimelineProps) {
                               <span>{t("awardedAt")}: </span>
                               <span>
                                 {new Date(badge.awardedAt).toLocaleString(
-                                  "zh-CN",
+                                  locale === "zh" ? "zh-CN" : "en-US",
                                   {
                                     year: "numeric",
                                     month: "long",
@@ -233,7 +224,7 @@ function BadgesTimeline({ badges }: BadgesTimelineProps) {
               className="h-2 w-2 rounded-full bg-primary"
             />
             <span className="text-sm font-medium">
-              共获得{badges.length}个徽章
+              {t("totalBadges", { count: badges.length })}
             </span>
           </div>
         </motion.div>

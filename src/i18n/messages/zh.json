@@ -1456,15 +1456,21 @@
       },
       "badgeList": {
         "title": "徽章列表",
-        "description": "用户获得的所有徽章",
+        "description": "用户获得的所有徽章及获得时间线",
+        "journey": "徽章旅程",
         "awardedAt": "授予时间",
         "awardedBy": "授予人",
         "system": "系统",
         "empty": "暂未获得任何徽章",
-        "emptyDescription": "参与社区活动获取徽章吧！"
+        "emptyDescription": "参与社区活动获取徽章吧！",
+        "totalBadges": "共获得{count}个徽章"
       },
       "activity": {
         "title": "活动",
+        "timelineTitle": "活动时间线",
+        "timelineDescription": "记录每一次互动和贡献",
+        "scrollLoadMore": "向下滚动加载更多...",
+        "allLoaded": "已加载全部活动",
         "filter": {
           "all": "所有",
           "topics": "主题",
@@ -1504,6 +1510,7 @@
       "title": "设置",
       "account": {
         "title": "账户设置",
+        "description": "管理你的账户信息和个人资料",
         "basicInfo": "基本信息",
         "username": "用户名",
         "email": "邮箱",

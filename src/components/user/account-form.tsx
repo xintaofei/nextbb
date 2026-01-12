@@ -76,7 +76,7 @@ export function AccountForm({ user }: AccountFormProps) {
         if (response.status === 409) {
           throw new Error(t("usernameTaken"))
         }
-        throw new Error("Failed to save")
+        throw new Error(t("saveError"))
       }
 
       toast.success(t("saveSuccess"))
@@ -242,7 +242,7 @@ export function AccountForm({ user }: AccountFormProps) {
 
       if (!response.ok) {
         const error = await response.json()
-        throw new Error(error.error || "Upload failed")
+        throw new Error(error.error || t("uploadError"))
       }
 
       const data = await response.json()

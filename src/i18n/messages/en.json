@@ -1444,15 +1444,21 @@
       },
       "badgeList": {
         "title": "Badge List",
-        "description": "All badges earned by the user",
+        "description": "All badges earned by the user and their timeline",
+        "journey": "Badge Journey",
         "awardedAt": "Awarded at",
         "awardedBy": "Awarded by",
         "system": "System",
         "empty": "No badges earned yet",
-        "emptyDescription": "Participate in community activities to earn badges!"
+        "emptyDescription": "Participate in community activities to earn badges!",
+        "totalBadges": "Total {count} badges earned"
       },
       "activity": {
         "title": "Activity",
+        "timelineTitle": "Activity Timeline",
+        "timelineDescription": "Recording every interaction and contribution",
+        "scrollLoadMore": "Scroll down to load more...",
+        "allLoaded": "All activities loaded",
         "filter": {
           "all": "All",
           "topics": "Topics",
@@ -1492,6 +1498,7 @@
       "title": "Settings",
       "account": {
         "title": "Account Settings",
+        "description": "Manage your account information and profile",
         "basicInfo": "Basic Information",
         "username": "Username",
         "email": "Email",

@@ -4,7 +4,7 @@ import { BadgeItem } from "@/types/badge"
 import { decodeUsername } from "@/lib/utils"
 import { prisma } from "@/lib/prisma"
 import BadgesTimeline from "@/components/user/badges-timeline"
-import { getLocale } from "next-intl/server"
+import { getLocale, getTranslations } from "next-intl/server"
 import {
   getTranslationsQuery,
   getTranslationFields,
@@ -20,8 +20,9 @@ export async function generateMetadata({
 }: BadgesPageProps): Promise<Metadata> {
   const { username } = await params
   const decodedUsername = decodeUsername(username)
+  const t = await getTranslations("User.profile")
   return {
-    title: `${decodedUsername} - 徽章`,
+    title: `${decodedUsername} - ${t("badges")}`,
   }
 }
 
@@ -29,18 +30,8 @@ export default async function BadgesPage({ params }: BadgesPageProps) {
   const locale = await getLocale()
   const { username } = await params
   const decodedUsername = decodeUsername(username)
-  const t = (key: string) => {
-    const translations: Record<string, string> = {
-      title: "徽章列表",
-      description: "用户获得的所有徽章",
-      awardedAt: "授予时间",
-      awardedBy: "授予人",
-      system: "系统",
-      empty: "暂未获得任何徽章",
-      emptyDescription: "参与社区活动获取徽章吧！",
-    }
-    return translations[key] || key
-  }
+  const t = await getTranslations("User.profile.badgeList")
+  const pt = await getTranslations("User.profile")
 
   // 查询用户信息
   const user = await prisma.users.findFirst({
@@ -67,7 +58,7 @@ export default async function BadgesPage({ params }: BadgesPageProps) {
           <Award className="h-16 w-16 text-muted-foreground/30" />
           <div className="text-center space-y-2">
             <p className="text-lg font-medium text-muted-foreground">
-              用户不存在
+              {pt("notFound")}
             </p>
           </div>
         </div>

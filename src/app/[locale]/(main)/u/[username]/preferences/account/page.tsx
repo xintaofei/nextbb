@@ -3,6 +3,7 @@ import { getSessionUser } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import { decodeUsername } from "@/lib/utils"
 import { AccountForm } from "@/components/user/account-form"
+import { getTranslations } from "next-intl/server"
 
 type AccountPageProps = {
   params: Promise<{ username: string }>
@@ -13,14 +14,16 @@ export async function generateMetadata({
 }: AccountPageProps): Promise<Metadata> {
   const { username } = await params
   const decodedUsername = decodeUsername(username)
+  const t = await getTranslations("User.preferences.account")
   return {
-    title: `${decodedUsername} - 账户设置`,
+    title: `${decodedUsername} - ${t("title")}`,
   }
 }
 
 export default async function AccountPage({ params }: AccountPageProps) {
   const { username } = await params
   const decodedUsername = decodeUsername(username)
+  const t = await getTranslations("User.preferences.account")
 
   // 获取当前用户信息
   const session = await getSessionUser()
@@ -49,10 +52,8 @@ export default async function AccountPage({ params }: AccountPageProps) {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold">账户设置</h1>
-        <p className="text-sm text-muted-foreground mt-1">
-          管理你的账户信息和个人资料
-        </p>
+        <h1 className="text-2xl font-bold">{t("title")}</h1>
+        <p className="text-sm text-muted-foreground mt-1">{t("description")}</p>
       </div>
       <AccountForm user={user} />
     </div>

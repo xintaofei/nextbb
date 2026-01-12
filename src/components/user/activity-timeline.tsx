@@ -333,10 +333,10 @@ function ActivityTimeline({
               {t("title")}
             </Badge>
             <h2 className="mb-4 text-2xl font-bold tracking-tight md:text-3xl lg:text-4xl">
-              活动时间线
+              {t("timelineTitle")}
             </h2>
             <p className="mx-auto max-w-2xl text-sm text-muted-foreground md:text-base">
-              记录每一次互动和贡献
+              {t("timelineDescription")}
             </p>
           </div>
 
@@ -379,10 +379,10 @@ function ActivityTimeline({
             {t("title")}
           </Badge>
           <h2 className="mb-4 text-2xl font-bold tracking-tight md:text-3xl lg:text-4xl">
-            活动时间线
+            {t("timelineTitle")}
           </h2>
           <p className="mx-auto max-w-2xl text-sm text-muted-foreground md:text-base">
-            记录每一次互动和贡献
+            {t("timelineDescription")}
           </p>
         </motion.div>
 
@@ -515,7 +515,7 @@ function ActivityTimeline({
                   className="mt-8 h-20 flex items-center justify-center"
                 >
                   <span className="text-sm text-muted-foreground">
-                    向下滚动加载更多...
+                    {t("scrollLoadMore")}
                   </span>
                 </div>
               )}
@@ -540,7 +540,7 @@ function ActivityTimeline({
                 transition={{ duration: 2, repeat: Infinity }}
                 className="h-2 w-2 rounded-full bg-primary"
               />
-              <span className="text-sm font-medium">已加载全部活动</span>
+              <span className="text-sm font-medium">{t("allLoaded")}</span>
             </div>
           </motion.div>
         )}
