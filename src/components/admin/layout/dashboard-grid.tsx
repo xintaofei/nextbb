@@ -182,7 +182,11 @@ function TrendsSection() {
         title="Content Activity"
         description="Topics & Posts (Last 30 days)"
         data={data.contentGrowth}
-        dataKey="value"
+        lines={[
+          { dataKey: "value", label: "Total", color: "var(--primary)" },
+          { dataKey: "topics", label: "Topics", color: "#10b981" },
+          { dataKey: "posts", label: "Posts", color: "#3b82f6" },
+        ]}
         height={300}
       />
     </div>

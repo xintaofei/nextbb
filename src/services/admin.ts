@@ -9,7 +9,13 @@ export interface DashboardOverview {
 
 export interface DashboardTrends {
   userGrowth: { date: string; name: string; value: number }[]
-  contentGrowth: { date: string; name: string; value: number }[]
+  contentGrowth: {
+    date: string
+    name: string
+    value: number
+    topics: number
+    posts: number
+  }[]
 }
 
 export interface DashboardTaxonomy {
@@ -121,10 +127,14 @@ export async function getTrendStats(): Promise<DashboardTrends> {
     const d = new Date()
     d.setDate(d.getDate() - (29 - i))
     const dateStr = d.toISOString().split("T")[0]
+    const topics = topicMap.get(dateStr) || 0
+    const posts = postMap.get(dateStr) || 0
     contentGrowth.push({
       date: dateStr,
       name: dateStr.slice(5),
-      value: (topicMap.get(dateStr) || 0) + (postMap.get(dateStr) || 0),
+      value: topics + posts,
+      topics,
+      posts,
     })
   }
 

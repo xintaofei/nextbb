@@ -12,11 +12,18 @@ import {
   LineChart,
 } from "recharts"
 
+export interface ChartLineConfig {
+  dataKey: string
+  label: string
+  color: string
+}
+
 export interface ChartCardProps {
   title: string
   description: string
-  data: Array<{ name: string; value: number }>
-  dataKey: string
+  data: Record<string, unknown>[]
+  lines?: ChartLineConfig[]
+  dataKey?: string
   height?: number
 }
 
@@ -24,9 +31,14 @@ export function ChartCard({
   title,
   description,
   data,
+  lines,
   dataKey,
   height = 300,
 }: ChartCardProps) {
+  const chartLines =
+    lines ||
+    (dataKey ? [{ dataKey, label: title, color: "var(--primary)" }] : [])
+
   return (
     <motion.div
       whileHover={{ y: -4 }}
@@ -61,24 +73,27 @@ export function ChartCard({
               margin={{ top: 5, right: 10, left: -25, bottom: 5 }}
             >
               <defs>
-                <linearGradient
-                  id={`colorGradient-${title}`}
-                  x1="0"
-                  y1="0"
-                  x2="0"
-                  y2="1"
-                >
-                  <stop
-                    offset="5%"
-                    stopColor="var(--primary)"
-                    stopOpacity={0.5}
-                  />
-                  <stop
-                    offset="95%"
-                    stopColor="var(--primary)"
-                    stopOpacity={0.05}
-                  />
-                </linearGradient>
+                {chartLines.map((line) => (
+                  <linearGradient
+                    key={`colorGradient-${line.dataKey}`}
+                    id={`colorGradient-${line.dataKey}`}
+                    x1="0"
+                    y1="0"
+                    x2="0"
+                    y2="1"
+                  >
+                    <stop
+                      offset="5%"
+                      stopColor={line.color}
+                      stopOpacity={0.3}
+                    />
+                    <stop
+                      offset="95%"
+                      stopColor={line.color}
+                      stopOpacity={0.01}
+                    />
+                  </linearGradient>
+                ))}
               </defs>
               <CartesianGrid
                 strokeDasharray="3 3"
@@ -110,17 +125,21 @@ export function ChartCard({
                 labelStyle={{ color: "var(--foreground)" }}
                 cursor={{ stroke: "var(--primary)", strokeOpacity: 0.2 }}
               />
-              <Line
-                type="natural"
-                dataKey={dataKey}
-                stroke="var(--primary)"
-                strokeWidth={2.5}
-                dot={false}
-                activeDot={{ r: 6 }}
-                fill={`url(#colorGradient-${title})`}
-                isAnimationActive={true}
-                animationDuration={800}
-              />
+              {chartLines.map((line) => (
+                <Line
+                  key={line.dataKey}
+                  type="natural"
+                  dataKey={line.dataKey}
+                  name={line.label}
+                  stroke={line.color}
+                  strokeWidth={2.5}
+                  dot={false}
+                  activeDot={{ r: 6 }}
+                  fill={`url(#colorGradient-${line.dataKey})`}
+                  isAnimationActive={true}
+                  animationDuration={800}
+                />
+              ))}
             </LineChart>
           </ResponsiveContainer>
         </div>
