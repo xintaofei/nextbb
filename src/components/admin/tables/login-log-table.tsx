@@ -52,13 +52,18 @@ export function LoginLogTable({ logs }: LoginLogTableProps) {
               <TableHead className="w-40">{t("table.ip")}</TableHead>
               <TableHead>{t("table.userAgent")}</TableHead>
               <TableHead className="w-40">{t("table.location")}</TableHead>
-              <TableHead className="w-40 text-right">{t("table.time")}</TableHead>
+              <TableHead className="w-40 text-right">
+                {t("table.time")}
+              </TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {logs.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={6} className="text-center py-12 text-foreground/60">
+                <TableCell
+                  colSpan={6}
+                  className="text-center py-12 text-foreground/60"
+                >
                   {t("empty")}
                 </TableCell>
               </TableRow>
@@ -83,7 +88,9 @@ export function LoginLogTable({ logs }: LoginLogTableProps) {
                   </TableCell>
                   <TableCell>
                     <Badge
-                      variant={log.status === "SUCCESS" ? "secondary" : "destructive"}
+                      variant={
+                        log.status === "SUCCESS" ? "secondary" : "destructive"
+                      }
                       className={
                         log.status === "SUCCESS"
                           ? "bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 border-emerald-500/40 text-[10px]"
