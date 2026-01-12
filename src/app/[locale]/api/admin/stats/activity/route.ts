@@ -26,7 +26,7 @@ export async function GET() {
           _count: { user_id: true },
           where: { created_at: { gte: sevenDaysAgo }, is_deleted: false },
           orderBy: { _count: { user_id: "desc" } },
-          take: 5,
+          take: 20,
         }),
       ])
 

@@ -15,6 +15,7 @@ import {
 import useSWR from "swr"
 import { ChartCard } from "@/components/admin/cards/chat-card"
 import { DetailedCard } from "@/components/admin/cards/detailed-card"
+import { InfiniteDetailedCard } from "@/components/admin/cards/infinite-detailed-card"
 import { MetricCard } from "@/components/admin/stats/metric-card"
 import {
   Select,
@@ -285,12 +286,10 @@ function TrendsSection() {
 }
 
 function DetailedSection() {
-  const { data: taxonomy, isLoading: taxonomyLoading } =
-    useSWR<DashboardTaxonomy>("/api/admin/stats/taxonomy", fetcher)
   const { data: activity, isLoading: activityLoading } =
     useSWR<DashboardActivity>("/api/admin/stats/activity", fetcher)
 
-  if (taxonomyLoading || activityLoading) {
+  if (activityLoading) {
     return (
       <div className="grid gap-6 lg:grid-cols-3">
         <DetailedCardSkeleton />
@@ -300,26 +299,10 @@ function DetailedSection() {
     )
   }
 
-  if (!taxonomy || !activity) return null
+  if (!activity) return null
 
   return (
     <div className="grid gap-6 lg:grid-cols-3">
-      <DetailedCard
-        title="Top Tags"
-        items={taxonomy.tags.map((tag) => ({
-          label: tag.name,
-          value: tag.count.toString(),
-          subtitle: "uses",
-        }))}
-      />
-      <DetailedCard
-        title="Category Distribution"
-        items={taxonomy.categories.map((cat) => ({
-          label: cat.name,
-          value: cat.count.toString(),
-          subtitle: "topics",
-        }))}
-      />
       <DetailedCard
         title="Top Active Users (7d)"
         items={activity.topActiveUsers.map((user) => ({
@@ -327,6 +310,14 @@ function DetailedSection() {
           value: user.postCount.toString(),
           subtitle: "posts",
         }))}
+      />
+      <InfiniteDetailedCard
+        title="Badge Award Records"
+        apiUrl="/api/admin/stats/logs/badges"
+      />
+      <InfiniteDetailedCard
+        title="New User Registrations"
+        apiUrl="/api/admin/stats/logs/users"
       />
     </div>
   )

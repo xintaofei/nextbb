@@ -42,3 +42,17 @@ export interface DashboardActivity {
     postCount: number
   }[]
 }
+
+export interface DashboardLogItem {
+  id: string
+  label: string
+  value: string
+  subtitle: string
+  timestamp: string
+  avatar?: string
+}
+
+export interface DashboardLogsResponse {
+  items: DashboardLogItem[]
+  nextCursor?: string
+}
