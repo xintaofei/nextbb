@@ -636,6 +636,7 @@
         "table": {
           "user": "用户",
           "status": "状态",
+          "method": "登录方式",
           "ip": "IP 地址",
           "userAgent": "浏览器标识",
           "location": "地理位置",

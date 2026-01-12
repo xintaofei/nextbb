@@ -636,6 +636,7 @@
         "table": {
           "user": "User",
           "status": "Status",
+          "method": "Method",
           "ip": "IP Address",
           "userAgent": "User Agent",
           "location": "Location",

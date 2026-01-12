@@ -49,6 +49,7 @@ export async function GET(
           : null,
       status: log.status,
       statusLabel: statusMap[locale]?.[log.status] || log.status,
+      loginMethod: log.login_method,
       loginAt: log.login_at.toISOString(),
     }))
 

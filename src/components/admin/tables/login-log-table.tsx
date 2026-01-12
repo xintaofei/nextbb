@@ -31,6 +31,7 @@ export interface LoginLogItem {
   location: string | null
   status: string
   statusLabel: string
+  loginMethod: string
   loginAt: string
 }
 
@@ -49,6 +50,7 @@ export function LoginLogTable({ logs }: LoginLogTableProps) {
             <TableRow className="hover:bg-transparent border-border/40">
               <TableHead className="w-48">{t("table.user")}</TableHead>
               <TableHead className="w-32">{t("table.status")}</TableHead>
+              <TableHead className="w-32">{t("table.method")}</TableHead>
               <TableHead className="w-40">{t("table.ip")}</TableHead>
               <TableHead>{t("table.userAgent")}</TableHead>
               <TableHead className="w-40">{t("table.location")}</TableHead>
@@ -61,7 +63,7 @@ export function LoginLogTable({ logs }: LoginLogTableProps) {
             {logs.length === 0 ? (
               <TableRow>
                 <TableCell
-                  colSpan={6}
+                  colSpan={7}
                   className="text-center py-12 text-foreground/60"
                 >
                   {t("empty")}
@@ -99,6 +101,11 @@ export function LoginLogTable({ logs }: LoginLogTableProps) {
                     >
                       {log.statusLabel}
                     </Badge>
+                  </TableCell>
+                  <TableCell>
+                    <span className="text-[10px] font-semibold uppercase tracking-wider text-foreground/50 bg-foreground/5 px-2 py-0.5 rounded-full border border-border/40">
+                      {log.loginMethod}
+                    </span>
                   </TableCell>
                   <TableCell>
                     <code className="text-[10px] bg-foreground/5 px-1.5 py-0.5 rounded text-foreground/70">
