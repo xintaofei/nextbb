@@ -57,6 +57,12 @@
     "Time": {
       "minutesAgo": "{count} minutes ago"
     },
+    "ThemeSwitcher": {
+      "light": "Light",
+      "dark": "Dark",
+      "system": "System",
+      "ariaLabel": "Toggle theme"
+    },
     "Action": {
       "cancel": "Cancel",
       "save": "Save",

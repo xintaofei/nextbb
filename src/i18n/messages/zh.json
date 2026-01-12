@@ -57,6 +57,12 @@
     "Time": {
       "minutesAgo": "{count} 分钟前"
     },
+    "ThemeSwitcher": {
+      "light": "浅色",
+      "dark": "深色",
+      "system": "系统",
+      "ariaLabel": "切换主题"
+    },
     "Action": {
       "cancel": "取消",
       "save": "保存",

@@ -1,6 +1,7 @@
 "use client"
 
 import { useTheme } from "next-themes"
+import { useTranslations } from "next-intl"
 import { Button } from "@/components/ui/button"
 import {
   DropdownMenu,
@@ -14,6 +15,7 @@ import { cn } from "@/lib/utils"
 
 export function ThemeSwitcher({ className }: { className?: string }) {
   const { theme = "system", setTheme } = useTheme()
+  const t = useTranslations("Common.ThemeSwitcher")
 
   const Icon =
     theme === "dark" ? MoonIcon : theme === "light" ? SunIcon : LaptopIcon
@@ -25,11 +27,15 @@ export function ThemeSwitcher({ className }: { className?: string }) {
           variant="ghost"
           size="sm"
           className={cn("gap-2 h-8", className)}
-          aria-label="Theme"
+          aria-label={t("ariaLabel")}
         >
           <Icon className="size-4" />
           <span className="text-sm">
-            {theme === "dark" ? "深色" : theme === "light" ? "浅色" : "系统"}
+            {theme === "dark"
+              ? t("dark")
+              : theme === "light"
+                ? t("light")
+                : t("system")}
           </span>
         </Button>
       </DropdownMenuTrigger>
@@ -38,9 +44,15 @@ export function ThemeSwitcher({ className }: { className?: string }) {
           value={theme}
           onValueChange={(value) => setTheme(value)}
         >
-          <DropdownMenuRadioItem value="light">浅色</DropdownMenuRadioItem>
-          <DropdownMenuRadioItem value="dark">深色</DropdownMenuRadioItem>
-          <DropdownMenuRadioItem value="system">系统</DropdownMenuRadioItem>
+          <DropdownMenuRadioItem value="light">
+            {t("light")}
+          </DropdownMenuRadioItem>
+          <DropdownMenuRadioItem value="dark">
+            {t("dark")}
+          </DropdownMenuRadioItem>
+          <DropdownMenuRadioItem value="system">
+            {t("system")}
+          </DropdownMenuRadioItem>
         </DropdownMenuRadioGroup>
       </DropdownMenuContent>
     </DropdownMenu>
