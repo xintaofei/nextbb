@@ -152,6 +152,17 @@ function ActivityTaxonomySection() {
   )
 }
 
+const CHART_COLORS = [
+  "#f59e0b", // Amber
+  "#10b981", // Emerald
+  "#3b82f6", // Blue
+  "#ec4899", // Pink
+  "#8b5cf6", // Violet
+  "#f43f5e", // Rose
+  "#06b6d4", // Cyan
+  "#84cc16", // Lime
+]
+
 function TrendsSection() {
   const { data, error, isLoading } = useSWR<DashboardTrends>(
     "/api/admin/stats/trends",
@@ -160,9 +171,15 @@ function TrendsSection() {
 
   if (isLoading) {
     return (
-      <div className="grid gap-6 lg:grid-cols-2">
-        <ChartCardSkeleton />
-        <ChartCardSkeleton />
+      <div className="space-y-6">
+        <div className="grid gap-6 lg:grid-cols-2">
+          <ChartCardSkeleton />
+          <ChartCardSkeleton />
+        </div>
+        <div className="grid gap-6 lg:grid-cols-2">
+          <ChartCardSkeleton />
+          <ChartCardSkeleton />
+        </div>
       </div>
     )
   }
@@ -170,25 +187,59 @@ function TrendsSection() {
   if (error || !data) return null
 
   return (
-    <div className="grid gap-6 lg:grid-cols-2">
-      <ChartCard
-        title="User Growth"
-        description="Last 30 days registrations"
-        data={data.userGrowth}
-        dataKey="value"
-        height={300}
-      />
-      <ChartCard
-        title="Content Activity"
-        description="Topics & Posts (Last 30 days)"
-        data={data.contentGrowth}
-        lines={[
-          { dataKey: "value", label: "Total", color: "var(--primary)" },
-          { dataKey: "topics", label: "Topics", color: "#10b981" },
-          { dataKey: "posts", label: "Posts", color: "#3b82f6" },
-        ]}
-        height={300}
-      />
+    <div className="space-y-6">
+      <div className="grid gap-6 lg:grid-cols-2">
+        <ChartCard
+          title="User Growth"
+          description="Last 30 days registrations"
+          data={data.userGrowth}
+          dataKey="value"
+          height={300}
+        />
+        <ChartCard
+          title="Content Activity"
+          description="Topics & Posts (Last 30 days)"
+          data={data.contentGrowth}
+          lines={[
+            { dataKey: "value", label: "Total", color: "var(--primary)" },
+            {
+              dataKey: "topics",
+              label: "Topics",
+              color: "#10b981",
+            },
+            {
+              dataKey: "posts",
+              label: "Posts",
+              color: "#3b82f6",
+            },
+          ]}
+          height={300}
+        />
+      </div>
+      <div className="grid gap-6 lg:grid-cols-2">
+        <ChartCard
+          title="Category Trends"
+          description="New topics per category (Last 30 days)"
+          data={data.categoryTrends}
+          lines={data.meta.categories.map((cat, idx) => ({
+            dataKey: cat,
+            label: cat,
+            color: CHART_COLORS[idx % CHART_COLORS.length],
+          }))}
+          height={300}
+        />
+        <ChartCard
+          title="Tag Trends"
+          description="Tag usage frequency (Last 30 days)"
+          data={data.tagTrends}
+          lines={data.meta.tags.map((tag, idx) => ({
+            dataKey: tag,
+            label: tag,
+            color: CHART_COLORS[idx % CHART_COLORS.length],
+          }))}
+          height={300}
+        />
+      </div>
     </div>
   )
 }

@@ -14,6 +14,12 @@ export interface DashboardTrends {
     topics: number
     posts: number
   }[]
+  categoryTrends: Record<string, unknown>[]
+  tagTrends: Record<string, unknown>[]
+  meta: {
+    categories: string[]
+    tags: string[]
+  }
 }
 
 export interface DashboardTaxonomy {
