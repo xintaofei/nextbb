@@ -1,40 +1,33 @@
+"use client"
+
 import { motion, Variants, stagger } from "framer-motion"
-import { Users, Zap, Percent, DollarSign } from "lucide-react"
+import {
+  Users,
+  FileText,
+  MessageSquare,
+  Heart,
+  Activity,
+  Layers,
+  Tag,
+  Award,
+} from "lucide-react"
+import useSWR from "swr"
 import { ChartCard } from "@/components/admin/cards/chat-card"
 import { DetailedCard } from "@/components/admin/cards/detailed-card"
 import { MetricCard } from "@/components/admin/stats/metric-card"
+import {
+  MetricCardSkeleton,
+  ChartCardSkeleton,
+  DetailedCardSkeleton,
+} from "./dashboard-skeletons"
+import type {
+  DashboardOverview,
+  DashboardTrends,
+  DashboardTaxonomy,
+  DashboardActivity,
+} from "@/services/admin"
 
-const USER_GROWTH_DATA = [
-  { name: "Week 1", value: 2400 },
-  { name: "Week 2", value: 3210 },
-  { name: "Week 3", value: 2290 },
-  { name: "Week 4", value: 2000 },
-  { name: "Week 5", value: 2181 },
-  { name: "Week 6", value: 2500 },
-  { name: "Week 7", value: 2100 },
-  { name: "Week 8", value: 2200 },
-  { name: "Week 9", value: 2290 },
-  { name: "Week 10", value: 2000 },
-  { name: "Week 11", value: 2181 },
-  { name: "Week 12", value: 2500 },
-  { name: "Week 13", value: 2100 },
-]
-
-const REVENUE_TREND_DATA = [
-  { name: "Week 1", value: 4000 },
-  { name: "Week 2", value: 3000 },
-  { name: "Week 3", value: 2000 },
-  { name: "Week 4", value: 2780 },
-  { name: "Week 5", value: 1890 },
-  { name: "Week 6", value: 2390 },
-  { name: "Week 7", value: 3490 },
-  { name: "Week 8", value: 4000 },
-  { name: "Week 9", value: 3500 },
-  { name: "Week 10", value: 4200 },
-  { name: "Week 11", value: 3800 },
-  { name: "Week 12", value: 4500 },
-  { name: "Week 13", value: 4100 },
-]
+const fetcher = (url: string) => fetch(url).then((res) => res.json())
 
 const containerVariants: Variants = {
   hidden: { opacity: 0 },
@@ -55,6 +48,195 @@ const itemVariants: Variants = {
   },
 }
 
+function OverviewSection() {
+  const { data, error, isLoading } = useSWR<DashboardOverview>(
+    "/api/admin/stats/overview",
+    fetcher
+  )
+
+  if (isLoading) {
+    return (
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        {[1, 2, 3, 4].map((i) => (
+          <MetricCardSkeleton key={i} />
+        ))}
+      </div>
+    )
+  }
+
+  if (error || !data) return null
+
+  return (
+    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <MetricCard
+        label="Total Users"
+        value={data.users.toLocaleString()}
+        change="+2.5%"
+        trend="up"
+        icon={<Users className="h-6 w-6 text-primary" />}
+      />
+      <MetricCard
+        label="Total Topics"
+        value={data.topics.toLocaleString()}
+        change="+1.2%"
+        trend="up"
+        icon={<FileText className="h-6 w-6 text-primary" />}
+      />
+      <MetricCard
+        label="Total Replies"
+        value={data.posts.toLocaleString()}
+        change="+3.8%"
+        trend="up"
+        icon={<MessageSquare className="h-6 w-6 text-primary" />}
+      />
+      <MetricCard
+        label="Interactions"
+        value={data.interactions.toLocaleString()}
+        change="+5.4%"
+        trend="up"
+        icon={<Heart className="h-6 w-6 text-primary" />}
+      />
+    </div>
+  )
+}
+
+function ActivityTaxonomySection() {
+  const { data: activity, isLoading: activityLoading } =
+    useSWR<DashboardActivity>("/api/admin/stats/activity", fetcher)
+  const { data: taxonomy, isLoading: taxonomyLoading } =
+    useSWR<DashboardTaxonomy>("/api/admin/stats/taxonomy", fetcher)
+
+  if (activityLoading || taxonomyLoading) {
+    return (
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        {[1, 2, 3, 4].map((i) => (
+          <MetricCardSkeleton key={i} />
+        ))}
+      </div>
+    )
+  }
+
+  if (!activity || !taxonomy) return null
+
+  return (
+    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <MetricCard
+        label="Active Users (7d)"
+        value={activity.activeUsers7d.toLocaleString()}
+        change=""
+        trend="up"
+        icon={<Activity className="h-6 w-6 text-primary" />}
+      />
+      <MetricCard
+        label="Categories"
+        value={taxonomy.categories.length.toString()}
+        change=""
+        trend="up"
+        icon={<Layers className="h-6 w-6 text-primary" />}
+      />
+      <MetricCard
+        label="Tags"
+        value={taxonomy.tags.length.toString()}
+        change=""
+        trend="up"
+        icon={<Tag className="h-6 w-6 text-primary" />}
+      />
+      <MetricCard
+        label="Badges"
+        value={`${taxonomy.badges.total} / ${taxonomy.badges.awarded}`}
+        change=""
+        trend="up"
+        icon={<Award className="h-6 w-6 text-primary" />}
+      />
+    </div>
+  )
+}
+
+function TrendsSection() {
+  const { data, error, isLoading } = useSWR<DashboardTrends>(
+    "/api/admin/stats/trends",
+    fetcher
+  )
+
+  if (isLoading) {
+    return (
+      <div className="grid gap-6 lg:grid-cols-2">
+        <ChartCardSkeleton />
+        <ChartCardSkeleton />
+      </div>
+    )
+  }
+
+  if (error || !data) return null
+
+  return (
+    <div className="grid gap-6 lg:grid-cols-2">
+      <ChartCard
+        title="User Growth"
+        description="Last 30 days registrations"
+        data={data.userGrowth}
+        dataKey="value"
+        height={300}
+      />
+      <ChartCard
+        title="Content Activity"
+        description="Topics & Posts (Last 30 days)"
+        data={data.contentGrowth}
+        dataKey="value"
+        height={300}
+      />
+    </div>
+  )
+}
+
+function DetailedSection() {
+  const { data: taxonomy, isLoading: taxonomyLoading } =
+    useSWR<DashboardTaxonomy>("/api/admin/stats/taxonomy", fetcher)
+  const { data: activity, isLoading: activityLoading } =
+    useSWR<DashboardActivity>("/api/admin/stats/activity", fetcher)
+
+  if (taxonomyLoading || activityLoading) {
+    return (
+      <div className="grid gap-6 lg:grid-cols-3">
+        <DetailedCardSkeleton />
+        <DetailedCardSkeleton />
+        <DetailedCardSkeleton />
+      </div>
+    )
+  }
+
+  if (!taxonomy || !activity) return null
+
+  return (
+    <div className="grid gap-6 lg:grid-cols-3">
+      <DetailedCard
+        title="Top Tags"
+        items={taxonomy.tags.map((tag) => ({
+          label: tag.name,
+          value: tag.count.toString(),
+          subtitle: "uses",
+        }))}
+      />
+      <DetailedCard
+        title="Category Distribution"
+        items={taxonomy.categories.map((cat) => ({
+          label: cat.name,
+          value: cat.count.toString(),
+          subtitle: "topics",
+        }))}
+      />
+      <DetailedCard
+        title="Top Active Users (7d)"
+        items={activity.topActiveUsers.map((user) => ({
+          label: user.name,
+          value: user.postCount.toString(),
+          subtitle: "posts",
+        }))}
+      />
+    </div>
+  )
+}
+
 export function DashboardGrid() {
   return (
     <motion.div
@@ -62,99 +244,21 @@ export function DashboardGrid() {
       initial="hidden"
       animate="visible"
       className="space-y-6"
-      role="region"
-      aria-label="Dashboard metrics and charts"
     >
-      {/* Top KPI Row - Replaced emoji icons with lucide icons */}
-      <motion.div
-        variants={itemVariants}
-        className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4"
-        role="presentation"
-      >
-        <MetricCard
-          label="Total Users"
-          value="24,582"
-          change="+12.5%"
-          trend="up"
-          icon={<Users className="h-6 w-6 text-primary" aria-hidden="true" />}
-        />
-        <MetricCard
-          label="Active Sessions"
-          value="8,924"
-          change="+8.2%"
-          trend="up"
-          icon={<Zap className="h-6 w-6 text-primary" aria-hidden="true" />}
-        />
-        <MetricCard
-          label="Conversion Rate"
-          value="3.47%"
-          change="-1.3%"
-          trend="down"
-          icon={<Percent className="h-6 w-6 text-primary" aria-hidden="true" />}
-        />
-        <MetricCard
-          label="Revenue"
-          value="$47,320"
-          change="+24.8%"
-          trend="up"
-          icon={
-            <DollarSign className="h-6 w-6 text-primary" aria-hidden="true" />
-          }
-        />
+      <motion.div variants={itemVariants}>
+        <OverviewSection />
       </motion.div>
 
-      {/* Charts Row */}
-      <motion.div
-        variants={itemVariants}
-        className="grid gap-6 lg:grid-cols-2"
-        role="presentation"
-      >
-        <ChartCard
-          title="User Growth"
-          description="Last 13 weeks activity"
-          data={USER_GROWTH_DATA}
-          dataKey="value"
-          height={300}
-        />
-        <ChartCard
-          title="Revenue Trend"
-          description="Weekly revenue breakdown"
-          data={REVENUE_TREND_DATA}
-          dataKey="value"
-          height={300}
-        />
+      <motion.div variants={itemVariants}>
+        <ActivityTaxonomySection />
       </motion.div>
 
-      {/* Detailed Cards Row */}
-      <motion.div
-        variants={itemVariants}
-        className="grid gap-6 lg:grid-cols-3"
-        role="presentation"
-      >
-        <DetailedCard
-          title="Top Pages"
-          items={[
-            { label: "Home", value: "12,543", subtitle: "visits" },
-            { label: "Dashboard", value: "8,324", subtitle: "visits" },
-            { label: "Settings", value: "4,128", subtitle: "visits" },
-          ]}
-        />
-        <DetailedCard
-          title="Browser Usage"
-          items={[
-            { label: "Chrome", value: "68.5%", subtitle: "market share" },
-            { label: "Safari", value: "18.2%", subtitle: "market share" },
-            { label: "Firefox", value: "9.3%", subtitle: "market share" },
-          ]}
-        />
-        <DetailedCard
-          title="Recent Activity"
-          items={[
-            { label: "Login Spike", value: "Now", subtitle: "2.5k users" },
-            { label: "Feature Update", value: "2h ago", subtitle: "deployed" },
-            { label: "Bug Fix", value: "5h ago", subtitle: "resolved" },
-          ]}
-        />
+      <motion.div variants={itemVariants}>
+        <TrendsSection />
+      </motion.div>
+
+      <motion.div variants={itemVariants}>
+        <DetailedSection />
       </motion.div>
     </motion.div>
   )
