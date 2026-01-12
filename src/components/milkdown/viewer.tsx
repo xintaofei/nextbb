@@ -11,6 +11,7 @@ import {
 import { commonmark } from "@milkdown/preset-commonmark"
 import { gfm } from "@milkdown/preset-gfm"
 import { nord } from "@milkdown/theme-nord"
+import { cn } from "@/lib/utils"
 
 type MilkdownViewerProps = {
   content: string
@@ -40,7 +41,7 @@ const MilkdownViewerContent: React.FC<MilkdownViewerProps> = ({
   )
 
   return (
-    <div className={className}>
+    <div className={cn("milkdown-wrapper", className)}>
       <Milkdown />
     </div>
   )

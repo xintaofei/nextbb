@@ -8,6 +8,7 @@ import { gfm } from "@milkdown/preset-gfm"
 import { nord } from "@milkdown/theme-nord"
 import { listener, listenerCtx } from "@milkdown/plugin-listener"
 import { history } from "@milkdown/plugin-history"
+import { cn } from "@/lib/utils"
 
 type MilkdownEditorProps = {
   value?: string
@@ -39,7 +40,7 @@ const MilkdownEditorContent: React.FC<MilkdownEditorProps> = ({
   }, [])
 
   return (
-    <div className={className}>
+    <div className={cn("milkdown-wrapper", className)}>
       <Milkdown />
     </div>
   )
