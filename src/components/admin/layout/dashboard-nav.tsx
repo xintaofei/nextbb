@@ -13,13 +13,12 @@ import {
   Workflow,
 } from "lucide-react"
 import { useState } from "react"
-import { useRouter } from "next/navigation"
+import Link from "next/link"
 import { useTranslations } from "next-intl"
-import { Button } from "@/components/ui/button"
+import { cn } from "@/lib/utils"
 
 export function DashboardNav() {
   const [isOpen, setIsOpen] = useState(false)
-  const router = useRouter()
   const t = useTranslations("Admin.nav")
 
   const navItems = [
@@ -64,27 +63,26 @@ export function DashboardNav() {
 
           {/* Desktop nav */}
           <div
-            className="hidden md:flex gap-1"
+            className="hidden md:flex gap-4"
             role="menubar"
             aria-label="Navigation tabs"
           >
             {navItems.map((item) => {
               const Icon = item.icon
               return (
-                <Button
+                <Link
                   key={item.label}
-                  variant="ghost"
-                  size="sm"
-                  className="gap-2 text-foreground/70 hover:text-foreground hover:bg-background/50 rounded-lg"
+                  href={item.path}
+                  className={cn(
+                    "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-lg text-xs font-medium transition-all h-8 uppercase tracking-widest",
+                    "text-foreground/70 hover:text-foreground hover:bg-background/50"
+                  )}
                   role="menuitem"
                   aria-current={item.path === "/admin" ? "page" : undefined}
-                  onClick={() => router.push(item.path)}
                 >
                   <Icon className="h-4 w-4" aria-hidden="true" />
-                  <span className="text-xs uppercase tracking-widest">
-                    {item.label}
-                  </span>
-                </Button>
+                  <span>{item.label}</span>
+                </Link>
               )
             })}
           </div>
@@ -103,19 +101,18 @@ export function DashboardNav() {
             {navItems.map((item) => {
               const Icon = item.icon
               return (
-                <Button
+                <Link
                   key={item.label}
-                  variant="ghost"
-                  size="sm"
-                  className="justify-start gap-2 text-foreground/70 hover:text-foreground hover:bg-background/50"
+                  href={item.path}
+                  className={cn(
+                    "inline-flex items-center justify-start gap-2 whitespace-nowrap rounded-md text-xs font-medium transition-all h-8 px-3 uppercase tracking-widest",
+                    "text-foreground/70 hover:text-foreground hover:bg-background/50"
+                  )}
                   role="menuitem"
-                  onClick={() => router.push(item.path)}
                 >
                   <Icon className="h-4 w-4" aria-hidden="true" />
-                  <span className="text-xs uppercase tracking-widest">
-                    {item.label}
-                  </span>
-                </Button>
+                  <span>{item.label}</span>
+                </Link>
               )
             })}
           </motion.div>
