@@ -414,7 +414,9 @@ function MapSection() {
         <h3 className="text-lg font-semibold uppercase tracking-[0.25em] text-foreground/70">
           {t("title")}
         </h3>
-        <p className="text-sm text-muted-foreground">{t("description")}</p>
+        <p className="text-xs text-muted-foreground mt-1 whitespace-pre-line leading-relaxed">
+          {t("description")}
+        </p>
       </div>
       <div className="relative w-full flex-1 p-4">
         <DottedMap markers={markers} dotRadius={0.1} />
