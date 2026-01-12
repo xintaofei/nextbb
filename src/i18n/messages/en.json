@@ -553,6 +553,15 @@
   "AdminOverview": {
     "title": "Admin Overview",
     "description": "Real-time data and community trend monitoring",
+    "header": {
+      "status": "Live Dashboard",
+      "title": "Operation Insights",
+      "description": "Monitor core community metrics, user activity, and system health with real-time data and historical trends for deeper community insights.",
+      "actions": {
+        "download": "Download Report",
+        "settings": "Dashboard Settings"
+      }
+    },
     "stats": {
       "users": "Total Users",
       "topics": "Total Topics",

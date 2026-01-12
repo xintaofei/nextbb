@@ -4,8 +4,11 @@ import { motion } from "framer-motion"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Download, Settings } from "lucide-react"
+import { useTranslations } from "next-intl"
 
 export function DashboardHeader() {
+  const t = useTranslations("AdminOverview.header")
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -18,22 +21,19 @@ export function DashboardHeader() {
           <Badge
             variant="outline"
             className="inline-flex items-center gap-2 rounded-full border-border/50 bg-background/55 px-4 py-1.5 text-xs uppercase tracking-[0.2em] text-foreground/70 backdrop-blur"
-            aria-label="Dashboard status: Live"
+            aria-label={`Dashboard status: ${t("status")}`}
           >
             <span
               className="h-2 w-2 rounded-full bg-emerald-500"
               aria-hidden="true"
             />
-            Live Dashboard
+            {t("status")}
           </Badge>
 
           <h1 className="text-balance text-3xl font-semibold tracking-tight text-foreground md:text-4xl">
-            Performance Overview
+            {t("title")}
           </h1>
-          <p className="max-w-2xl text-foreground/70">
-            Monitor your application metrics, user activity, and system health
-            in real-time with detailed insights and historical data trends.
-          </p>
+          <p className="max-w-2xl text-foreground/70">{t("description")}</p>
         </div>
 
         <div
@@ -45,7 +45,7 @@ export function DashboardHeader() {
             variant="outline"
             size="icon"
             className="rounded-full border-border/40 bg-background/60 backdrop-blur hover:border-border/60 hover:bg-background/70"
-            aria-label="Download report"
+            aria-label={t("actions.download")}
           >
             <Download className="h-4 w-4" />
           </Button>
@@ -53,7 +53,7 @@ export function DashboardHeader() {
             variant="outline"
             size="icon"
             className="rounded-full border-border/40 bg-background/60 backdrop-blur hover:border-border/60 hover:bg-background/70"
-            aria-label="Dashboard settings"
+            aria-label={t("actions.settings")}
           >
             <Settings className="h-4 w-4" />
           </Button>

@@ -553,6 +553,15 @@
   "AdminOverview": {
     "title": "管理概览",
     "description": "实时数据与社区趋势监控",
+    "header": {
+      "status": "实时看板",
+      "title": "运营数据概览",
+      "description": "监控社区核心指标、用户活动和系统运行状况，通过详细的实时数据和历史趋势洞察社区动态。",
+      "actions": {
+        "download": "下载报表",
+        "settings": "看板设置"
+      }
+    },
     "stats": {
       "users": "总用户",
       "topics": "总话题",
