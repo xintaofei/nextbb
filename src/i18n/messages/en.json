@@ -628,6 +628,27 @@
         "title": "Recent Registrations",
         "description": "New members recently joined the community"
       },
+      "logins": {
+        "title": "Recent Logins",
+        "description": "Monitor user login activities in real-time",
+        "success": "Success",
+        "failed": "Failed",
+        "table": {
+          "user": "User",
+          "status": "Status",
+          "ip": "IP Address",
+          "userAgent": "User Agent",
+          "location": "Location",
+          "time": "Login Time"
+        },
+        "pagination": {
+          "total": "Total {count} records",
+          "page": "Page {page}",
+          "prev": "Prev",
+          "next": "Next"
+        },
+        "empty": "No login records"
+      },
       "loading": "Loading...",
       "noMore": "All records shown",
       "empty": "No records found"

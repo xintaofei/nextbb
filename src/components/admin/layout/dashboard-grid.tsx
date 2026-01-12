@@ -14,6 +14,8 @@ import {
 } from "lucide-react"
 import { useTranslations } from "next-intl"
 import useSWR from "swr"
+import { Button } from "@/components/ui/button"
+import { LoginLogTable } from "@/components/admin/tables/login-log-table"
 import { ChartCard } from "@/components/admin/cards/chat-card"
 import { DetailedCard } from "@/components/admin/cards/detailed-card"
 import { InfiniteDetailedCard } from "@/components/admin/cards/infinite-detailed-card"
@@ -335,6 +337,51 @@ function DetailedSection() {
   )
 }
 
+function LoginLogsSection() {
+  const t = useTranslations("AdminOverview.logs.logins")
+  const [page, setPage] = useState(1)
+  const pageSize = 10
+
+  const { data, isLoading } = useSWR(
+    `/api/admin/stats/logs/login?limit=${pageSize}&offset=${(page - 1) * pageSize}`,
+    fetcher
+  )
+
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <h3 className="text-sm font-semibold uppercase tracking-[0.25em] text-foreground">
+          {t("title")}
+        </h3>
+        <div className="flex items-center gap-2">
+          <Button
+            variant="ghost"
+            size="sm"
+            disabled={page <= 1 || isLoading}
+            onClick={() => setPage((p) => Math.max(1, p - 1))}
+            className="h-8 text-xs"
+          >
+            {t("pagination.prev")}
+          </Button>
+          <span className="text-[10px] font-medium text-foreground/40 min-w-[60px] text-center uppercase tracking-widest">
+            {t("pagination.page", { page })}
+          </span>
+          <Button
+            variant="ghost"
+            size="sm"
+            disabled={!data?.nextOffset || isLoading}
+            onClick={() => setPage((p) => p + 1)}
+            className="h-8 text-xs"
+          >
+            {t("pagination.next")}
+          </Button>
+        </div>
+      </div>
+      <LoginLogTable logs={data?.items || []} />
+    </div>
+  )
+}
+
 export function DashboardGrid() {
   return (
     <motion.div
@@ -357,6 +404,10 @@ export function DashboardGrid() {
 
       <motion.div variants={itemVariants}>
         <DetailedSection />
+      </motion.div>
+
+      <motion.div variants={itemVariants}>
+        <LoginLogsSection />
       </motion.div>
     </motion.div>
   )

@@ -628,6 +628,27 @@
         "title": "最新注册记录",
         "description": "最近加入社区的新成员"
       },
+      "logins": {
+        "title": "最新登录记录",
+        "description": "实时监控用户登录动态",
+        "success": "成功",
+        "failed": "失败",
+        "table": {
+          "user": "用户",
+          "status": "状态",
+          "ip": "IP 地址",
+          "userAgent": "浏览器标识",
+          "location": "地理位置",
+          "time": "登录时间"
+        },
+        "pagination": {
+          "total": "共 {count} 条记录",
+          "page": "第 {page} 页",
+          "prev": "上一页",
+          "next": "下一页"
+        },
+        "empty": "暂无登录记录"
+      },
       "loading": "加载中...",
       "noMore": "已显示全部记录",
       "empty": "暂无记录"
