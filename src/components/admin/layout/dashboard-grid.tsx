@@ -12,6 +12,7 @@ import {
   Tag,
   Award,
 } from "lucide-react"
+import { useTranslations } from "next-intl"
 import useSWR from "swr"
 import { ChartCard } from "@/components/admin/cards/chat-card"
 import { DetailedCard } from "@/components/admin/cards/detailed-card"
@@ -58,6 +59,7 @@ const itemVariants: Variants = {
 }
 
 function OverviewSection() {
+  const t = useTranslations("AdminOverview")
   const { data, error, isLoading } = useSWR<DashboardOverview>(
     "/api/admin/stats/overview",
     fetcher
@@ -78,28 +80,28 @@ function OverviewSection() {
   return (
     <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
       <MetricCard
-        label="Total Users"
+        label={t("stats.users")}
         value={data.users.toLocaleString()}
         change="+2.5%"
         trend="up"
         icon={<Users className="h-6 w-6 text-primary" />}
       />
       <MetricCard
-        label="Total Topics"
+        label={t("stats.topics")}
         value={data.topics.toLocaleString()}
         change="+1.2%"
         trend="up"
         icon={<FileText className="h-6 w-6 text-primary" />}
       />
       <MetricCard
-        label="Total Replies"
+        label={t("stats.posts")}
         value={data.posts.toLocaleString()}
         change="+3.8%"
         trend="up"
         icon={<MessageSquare className="h-6 w-6 text-primary" />}
       />
       <MetricCard
-        label="Interactions"
+        label={t("stats.interactions")}
         value={data.interactions.toLocaleString()}
         change="+5.4%"
         trend="up"
@@ -110,6 +112,7 @@ function OverviewSection() {
 }
 
 function ActivityTaxonomySection() {
+  const t = useTranslations("AdminOverview")
   const { data: activity, isLoading: activityLoading } =
     useSWR<DashboardActivity>("/api/admin/stats/activity", fetcher)
   const { data: taxonomy, isLoading: taxonomyLoading } =
@@ -130,28 +133,28 @@ function ActivityTaxonomySection() {
   return (
     <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
       <MetricCard
-        label="Active Users (7d)"
+        label={t("stats.activeUsers7d")}
         value={activity.activeUsers7d.toLocaleString()}
         change=""
         trend="up"
         icon={<Activity className="h-6 w-6 text-primary" />}
       />
       <MetricCard
-        label="Categories"
+        label={t("stats.categories")}
         value={taxonomy.categories.length.toString()}
         change=""
         trend="up"
         icon={<Layers className="h-6 w-6 text-primary" />}
       />
       <MetricCard
-        label="Tags"
+        label={t("stats.tags")}
         value={taxonomy.tags.length.toString()}
         change=""
         trend="up"
         icon={<Tag className="h-6 w-6 text-primary" />}
       />
       <MetricCard
-        label="Badges"
+        label={t("stats.badges")}
         value={`${taxonomy.badges.total} / ${taxonomy.badges.awarded}`}
         change=""
         trend="up"
@@ -178,21 +181,25 @@ const TopNSelect = ({
 }: {
   value: string
   onValueChange: (v: string) => void
-}) => (
-  <Select value={value} onValueChange={onValueChange}>
-    <SelectTrigger className="w-[100px] h-8 text-xs bg-background/50 border-border/40">
-      <SelectValue placeholder="Top 5" />
-    </SelectTrigger>
-    <SelectContent>
-      <SelectItem value="5">Top 5</SelectItem>
-      <SelectItem value="10">Top 10</SelectItem>
-      <SelectItem value="20">Top 20</SelectItem>
-      <SelectItem value="all">All</SelectItem>
-    </SelectContent>
-  </Select>
-)
+}) => {
+  const t = useTranslations("AdminOverview.charts.topN")
+  return (
+    <Select value={value} onValueChange={onValueChange}>
+      <SelectTrigger className="h-8 w-[100px] border-border/40 bg-background/50 text-xs">
+        <SelectValue placeholder={`${t("label")} 5`} />
+      </SelectTrigger>
+      <SelectContent>
+        <SelectItem value="5">{t("label")} 5</SelectItem>
+        <SelectItem value="10">{t("label")} 10</SelectItem>
+        <SelectItem value="20">{t("label")} 20</SelectItem>
+        <SelectItem value="all">{t("all")}</SelectItem>
+      </SelectContent>
+    </Select>
+  )
+}
 
 function TrendsSection() {
+  const t = useTranslations("AdminOverview.charts")
   const [categoryLimit, setCategoryLimit] = useState("5")
   const [tagLimit, setTagLimit] = useState("5")
 
@@ -222,26 +229,30 @@ function TrendsSection() {
     <div className="space-y-6">
       <div className="grid gap-6 lg:grid-cols-2">
         <ChartCard
-          title="User Growth"
-          description="Last 30 days registrations"
+          title={t("userGrowth.title")}
+          description={t("userGrowth.description")}
           data={data.userGrowth}
           dataKey="value"
           height={300}
         />
         <ChartCard
-          title="Content Activity"
-          description="Topics & Posts (Last 30 days)"
+          title={t("contentActivity.title")}
+          description={t("contentActivity.description")}
           data={data.contentGrowth}
           lines={[
-            { dataKey: "value", label: "Total", color: "var(--primary)" },
+            {
+              dataKey: "value",
+              label: t("contentActivity.total"),
+              color: "var(--primary)",
+            },
             {
               dataKey: "topics",
-              label: "Topics",
+              label: t("contentActivity.topics"),
               color: "#10b981",
             },
             {
               dataKey: "posts",
-              label: "Posts",
+              label: t("contentActivity.posts"),
               color: "#3b82f6",
             },
           ]}
@@ -250,8 +261,8 @@ function TrendsSection() {
       </div>
       <div className="grid gap-6 lg:grid-cols-2">
         <ChartCard
-          title="Category Trends"
-          description="New topics per category (Last 30 days)"
+          title={t("categoryTrends.title")}
+          description={t("categoryTrends.description")}
           data={data.categoryTrends}
           headerAction={
             <TopNSelect
@@ -267,8 +278,8 @@ function TrendsSection() {
           height={300}
         />
         <ChartCard
-          title="Tag Trends"
-          description="Tag usage frequency (Last 30 days)"
+          title={t("tagTrends.title")}
+          description={t("tagTrends.description")}
           data={data.tagTrends}
           headerAction={
             <TopNSelect value={tagLimit} onValueChange={setTagLimit} />
@@ -286,6 +297,7 @@ function TrendsSection() {
 }
 
 function DetailedSection() {
+  const t = useTranslations("AdminOverview")
   const { data: activity, isLoading: activityLoading } =
     useSWR<DashboardActivity>("/api/admin/stats/activity", fetcher)
 
@@ -304,19 +316,19 @@ function DetailedSection() {
   return (
     <div className="grid gap-6 lg:grid-cols-3">
       <DetailedCard
-        title="Top Active Users (7d)"
+        title={t("stats.activeUsers7d")}
         items={activity.topActiveUsers.map((user) => ({
           label: user.name,
           value: user.postCount.toString(),
-          subtitle: "posts",
+          subtitle: t("charts.contentActivity.posts"),
         }))}
       />
       <InfiniteDetailedCard
-        title="Badge Award Records"
+        title={t("logs.badges.title")}
         apiUrl="/api/admin/stats/logs/badges"
       />
       <InfiniteDetailedCard
-        title="New User Registrations"
+        title={t("logs.registrations.title")}
         apiUrl="/api/admin/stats/logs/users"
       />
     </div>

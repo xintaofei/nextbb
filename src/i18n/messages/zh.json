@@ -550,6 +550,62 @@
       "more": "更多"
     }
   },
+  "AdminOverview": {
+    "title": "管理概览",
+    "description": "实时数据与社区趋势监控",
+    "stats": {
+      "users": "总用户",
+      "topics": "总话题",
+      "posts": "总回复",
+      "interactions": "总互动",
+      "activeUsers7d": "活跃用户 (7d)",
+      "checkins7d": "总签到 (7d)",
+      "categories": "总分类",
+      "tags": "总标签",
+      "badges": "总徽章"
+    },
+    "charts": {
+      "userGrowth": {
+        "title": "用户增长趋势 (30d)",
+        "description": "每日新增注册用户数",
+        "label": "新用户"
+      },
+      "contentActivity": {
+        "title": "内容活跃趋势 (30d)",
+        "description": "每日话题与回复总量",
+        "total": "总活跃",
+        "topics": "话题",
+        "posts": "回复"
+      },
+      "categoryTrends": {
+        "title": "分类话题分布 (30d)",
+        "description": "热门分类下每日新增话题数"
+      },
+      "tagTrends": {
+        "title": "标签使用趋势 (30d)",
+        "description": "热门标签下每日新增话题数"
+      },
+      "topN": {
+        "label": "显示 Top",
+        "all": "全部"
+      }
+    },
+    "logs": {
+      "badges": {
+        "title": "徽章授予记录",
+        "description": "社区成就与荣誉发放动态",
+        "awardedTo": "授予给",
+        "system": "系统自动"
+      },
+      "registrations": {
+        "title": "最新注册记录",
+        "description": "最近加入社区的新成员"
+      },
+      "loading": "加载中...",
+      "noMore": "已显示全部记录",
+      "empty": "暂无记录"
+    }
+  },
   "Admin": {
     "entry": "管理后台",
     "title": "NextBB 管理后台",

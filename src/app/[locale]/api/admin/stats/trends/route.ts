@@ -1,8 +1,12 @@
 import { NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
 
-export async function GET(request: Request) {
+export async function GET(
+  request: Request,
+  { params }: { params: Promise<{ locale: string }> }
+) {
   try {
+    const { locale } = await params
     const { searchParams } = new URL(request.url)
     const categoryLimit = searchParams.get("categoryLimit")
     const tagLimit = searchParams.get("tagLimit")
@@ -90,11 +94,11 @@ export async function GET(request: Request) {
     // 4. 获取名称翻译
     const [categoryTranslations, tagTranslations] = await Promise.all([
       prisma.category_translations.findMany({
-        where: { category_id: { in: topCategoryIds }, locale: "zh" },
+        where: { category_id: { in: topCategoryIds }, locale },
         select: { category_id: true, name: true },
       }),
       prisma.tag_translations.findMany({
-        where: { tag_id: { in: topTagIds }, locale: "zh" },
+        where: { tag_id: { in: topTagIds }, locale },
         select: { tag_id: true, name: true },
       }),
     ])

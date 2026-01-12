@@ -550,6 +550,62 @@
       "more": "More"
     }
   },
+  "AdminOverview": {
+    "title": "Admin Overview",
+    "description": "Real-time data and community trend monitoring",
+    "stats": {
+      "users": "Total Users",
+      "topics": "Total Topics",
+      "posts": "Total Replies",
+      "interactions": "Total Interactions",
+      "activeUsers7d": "Active Users (7d)",
+      "checkins7d": "Total Check-ins (7d)",
+      "categories": "Total Categories",
+      "tags": "Total Tags",
+      "badges": "Total Badges"
+    },
+    "charts": {
+      "userGrowth": {
+        "title": "User Growth Trend (30d)",
+        "description": "Daily new registered users",
+        "label": "New Users"
+      },
+      "contentActivity": {
+        "title": "Content Activity Trend (30d)",
+        "description": "Daily topics and replies volume",
+        "total": "Total Activity",
+        "topics": "Topics",
+        "posts": "Replies"
+      },
+      "categoryTrends": {
+        "title": "Category Topic Distribution (30d)",
+        "description": "Daily new topics in popular categories"
+      },
+      "tagTrends": {
+        "title": "Tag Usage Trend (30d)",
+        "description": "Daily new topics with popular tags"
+      },
+      "topN": {
+        "label": "Show Top",
+        "all": "All"
+      }
+    },
+    "logs": {
+      "badges": {
+        "title": "Badge Award Records",
+        "description": "Community achievement and honor distribution activity",
+        "awardedTo": "awarded to",
+        "system": "System Auto"
+      },
+      "registrations": {
+        "title": "Recent Registrations",
+        "description": "New members recently joined the community"
+      },
+      "loading": "Loading...",
+      "noMore": "All records shown",
+      "empty": "No records found"
+    }
+  },
   "Admin": {
     "entry": "Admin",
     "title": "NextBB Admin",
