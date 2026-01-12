@@ -1,5 +1,6 @@
 "use client"
 
+import { useState } from "react"
 import { motion, Variants, stagger } from "framer-motion"
 import {
   Users,
@@ -15,6 +16,13 @@ import useSWR from "swr"
 import { ChartCard } from "@/components/admin/cards/chat-card"
 import { DetailedCard } from "@/components/admin/cards/detailed-card"
 import { MetricCard } from "@/components/admin/stats/metric-card"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 import {
   MetricCardSkeleton,
   ChartCardSkeleton,
@@ -163,9 +171,32 @@ const CHART_COLORS = [
   "#84cc16", // Lime
 ]
 
+const TopNSelect = ({
+  value,
+  onValueChange,
+}: {
+  value: string
+  onValueChange: (v: string) => void
+}) => (
+  <Select value={value} onValueChange={onValueChange}>
+    <SelectTrigger className="w-[100px] h-8 text-xs bg-background/50 border-border/40">
+      <SelectValue placeholder="Top 5" />
+    </SelectTrigger>
+    <SelectContent>
+      <SelectItem value="5">Top 5</SelectItem>
+      <SelectItem value="10">Top 10</SelectItem>
+      <SelectItem value="20">Top 20</SelectItem>
+      <SelectItem value="all">All</SelectItem>
+    </SelectContent>
+  </Select>
+)
+
 function TrendsSection() {
+  const [categoryLimit, setCategoryLimit] = useState("5")
+  const [tagLimit, setTagLimit] = useState("5")
+
   const { data, error, isLoading } = useSWR<DashboardTrends>(
-    "/api/admin/stats/trends",
+    `/api/admin/stats/trends?categoryLimit=${categoryLimit}&tagLimit=${tagLimit}`,
     fetcher
   )
 
@@ -221,6 +252,12 @@ function TrendsSection() {
           title="Category Trends"
           description="New topics per category (Last 30 days)"
           data={data.categoryTrends}
+          headerAction={
+            <TopNSelect
+              value={categoryLimit}
+              onValueChange={setCategoryLimit}
+            />
+          }
           lines={data.meta.categories.map((cat, idx) => ({
             dataKey: cat,
             label: cat,
@@ -232,6 +269,9 @@ function TrendsSection() {
           title="Tag Trends"
           description="Tag usage frequency (Last 30 days)"
           data={data.tagTrends}
+          headerAction={
+            <TopNSelect value={tagLimit} onValueChange={setTagLimit} />
+          }
           lines={data.meta.tags.map((tag, idx) => ({
             dataKey: tag,
             label: tag,

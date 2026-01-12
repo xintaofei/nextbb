@@ -25,6 +25,7 @@ export interface ChartCardProps {
   lines?: ChartLineConfig[]
   dataKey?: string
   height?: number
+  headerAction?: React.ReactNode
 }
 
 export function ChartCard({
@@ -34,6 +35,7 @@ export function ChartCard({
   lines,
   dataKey,
   height = 300,
+  headerAction,
 }: ChartCardProps) {
   const chartLines =
     lines ||
@@ -57,12 +59,15 @@ export function ChartCard({
             </h3>
             <p className="text-xs text-foreground/60">{description}</p>
           </div>
-          <button
-            className="text-foreground/40 hover:text-foreground/70 transition-colors p-2 hover:bg-background/50 rounded-lg"
-            aria-label={`View details for ${title}`}
-          >
-            <TrendingUp className="h-4 w-4" aria-hidden="true" />
-          </button>
+          <div className="flex items-center gap-2">
+            {headerAction}
+            <button
+              className="text-foreground/40 hover:text-foreground/70 transition-colors p-2 hover:bg-background/50 rounded-lg"
+              aria-label={`View details for ${title}`}
+            >
+              <TrendingUp className="h-4 w-4" aria-hidden="true" />
+            </button>
+          </div>
         </div>
 
         {/* Chart Container with proper sizing */}

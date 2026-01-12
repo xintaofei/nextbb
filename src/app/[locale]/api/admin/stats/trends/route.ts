@@ -1,8 +1,21 @@
 import { NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
 
-export async function GET() {
+export async function GET(request: Request) {
   try {
+    const { searchParams } = new URL(request.url)
+    const categoryLimit = searchParams.get("categoryLimit")
+    const tagLimit = searchParams.get("tagLimit")
+
+    const parseLimit = (limit: string | null) => {
+      if (!limit || limit === "all") return undefined
+      const n = parseInt(limit)
+      return isNaN(n) ? 5 : n
+    }
+
+    const cLimit = parseLimit(categoryLimit)
+    const tLimit = parseLimit(tagLimit)
+
     const thirtyDaysAgo = new Date()
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30)
 
@@ -31,13 +44,13 @@ export async function GET() {
       `,
     ])
 
-    // 2. 获取分类详细趋势 (Top 5)
+    // 2. 获取分类详细趋势 (Top N)
     const topCategoriesRaw = await prisma.topics.groupBy({
       by: ["category_id"],
       _count: { id: true },
       where: { created_at: { gte: thirtyDaysAgo }, is_deleted: false },
       orderBy: { _count: { id: "desc" } },
-      take: 5,
+      take: cLimit,
     })
     const topCategoryIds = topCategoriesRaw.map((c) => c.category_id)
 
@@ -51,13 +64,13 @@ export async function GET() {
       ORDER BY date ASC
     `
 
-    // 3. 获取标签详细趋势 (Top 5)
+    // 3. 获取标签详细趋势 (Top N)
     const topTagsRaw = await prisma.topic_tags.groupBy({
       by: ["tag_id"],
       _count: { topic_id: true },
       where: { created_at: { gte: thirtyDaysAgo } },
       orderBy: { _count: { topic_id: "desc" } },
-      take: 5,
+      take: tLimit,
     })
     const topTagIds = topTagsRaw.map((t) => t.tag_id)
 
