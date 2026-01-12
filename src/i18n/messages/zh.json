@@ -571,6 +571,10 @@
   "AdminOverview": {
     "title": "管理概览",
     "description": "实时数据与社区趋势监控",
+    "map": {
+      "title": "全球活动",
+      "description": "全球范围内的实时用户分布"
+    },
     "header": {
       "status": "实时看板",
       "title": "运营数据概览",

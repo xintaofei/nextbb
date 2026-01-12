@@ -15,6 +15,7 @@ import {
 import { useTranslations } from "next-intl"
 import useSWR from "swr"
 import { Button } from "@/components/ui/button"
+import { DottedMap } from "@/components/ui/dotted-map"
 import { LoginLogTable } from "@/components/admin/tables/login-log-table"
 import { ChartCard } from "@/components/admin/cards/chat-card"
 import { DetailedCard } from "@/components/admin/cards/detailed-card"
@@ -382,6 +383,46 @@ function LoginLogsSection() {
   )
 }
 
+function MapSection() {
+  const t = useTranslations("AdminOverview.map")
+  const markers = [
+    {
+      lat: 40.7128,
+      lng: -74.006,
+      size: 0.3,
+    }, // New York
+    {
+      lat: 34.0522,
+      lng: -118.2437,
+      size: 0.6,
+    }, // Los Angeles
+    {
+      lat: 29.5822,
+      lng: 113.6437,
+      size: 0.9,
+    }, // WuHan
+    {
+      lat: 39.5822,
+      lng: 116.2437,
+      size: 0.7,
+    }, // BeiJing
+  ]
+
+  return (
+    <div className="flex max-md:flex-col gap-4 w-full overflow-hidden rounded-xl border border-border/40 bg-background/50 p-4">
+      <div className="flex flex-col justify-between w-60 h-full gap-2">
+        <h3 className="text-lg font-semibold uppercase tracking-[0.25em] text-foreground/70">
+          {t("title")}
+        </h3>
+        <p className="text-sm text-muted-foreground">{t("description")}</p>
+      </div>
+      <div className="relative w-full flex-1 p-4">
+        <DottedMap markers={markers} dotRadius={0.1} />
+      </div>
+    </div>
+  )
+}
+
 export function DashboardGrid() {
   return (
     <motion.div
@@ -390,6 +431,10 @@ export function DashboardGrid() {
       animate="visible"
       className="space-y-6"
     >
+      <motion.div variants={itemVariants}>
+        <MapSection />
+      </motion.div>
+
       <motion.div variants={itemVariants}>
         <OverviewSection />
       </motion.div>
