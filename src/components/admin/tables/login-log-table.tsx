@@ -52,7 +52,7 @@ export function LoginLogTable({ logs }: LoginLogTableProps) {
               <TableHead className="w-32">{t("table.status")}</TableHead>
               <TableHead className="w-32">{t("table.method")}</TableHead>
               <TableHead className="w-40">{t("table.ip")}</TableHead>
-              <TableHead>{t("table.userAgent")}</TableHead>
+              <TableHead className="max-w-xl">{t("table.userAgent")}</TableHead>
               <TableHead className="w-40">{t("table.location")}</TableHead>
               <TableHead className="w-40 text-right">
                 {t("table.time")}
@@ -83,7 +83,7 @@ export function LoginLogTable({ logs }: LoginLogTableProps) {
                           {log.user.name[0]}
                         </AvatarFallback>
                       </Avatar>
-                      <span className="text-sm font-medium text-foreground truncate max-w-[120px]">
+                      <span className="text-sm font-medium text-foreground truncate max-w-[120px] block">
                         {log.user.name}
                       </span>
                     </div>
@@ -112,11 +112,11 @@ export function LoginLogTable({ logs }: LoginLogTableProps) {
                       {log.ip}
                     </code>
                   </TableCell>
-                  <TableCell>
+                  <TableCell className="max-w-xl overflow-hidden">
                     <TooltipProvider>
                       <Tooltip>
                         <TooltipTrigger asChild>
-                          <span className="text-xs text-foreground/60 line-clamp-1 cursor-help italic">
+                          <span className="text-xs text-foreground/60 truncate cursor-help italic block">
                             {log.userAgent || "-"}
                           </span>
                         </TooltipTrigger>
@@ -127,7 +127,7 @@ export function LoginLogTable({ logs }: LoginLogTableProps) {
                     </TooltipProvider>
                   </TableCell>
                   <TableCell>
-                    <span className="text-xs text-foreground/60 truncate">
+                    <span className="text-xs text-foreground/60 truncate block max-w-[150px]">
                       {log.location || "-"}
                     </span>
                   </TableCell>
