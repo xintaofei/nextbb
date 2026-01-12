@@ -6,7 +6,7 @@ import {
   DrawerHeader,
   DrawerTitle,
 } from "@/components/ui/drawer"
-import { MilkdownEditor } from "@/components/milkdown"
+import { MilkdownEditor } from "@/components/milkdown/editor"
 import { Button } from "@/components/ui/button"
 import { useState } from "react"
 

@@ -38,7 +38,7 @@ import { BountyConfig } from "./bounty-config"
 import { PollConfig } from "./poll-config"
 import { LotteryConfig } from "./lottery-config"
 import { AdminOptions } from "./admin-options"
-import { MilkdownEditor } from "../milkdown/editor"
+import { MilkdownEditor } from "@/components/milkdown/editor"
 
 type MeResponse = {
   user: {

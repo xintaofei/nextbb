@@ -1,7 +1,7 @@
 "use client"
 
 import React from "react"
-import { Milkdown, useEditor } from "@milkdown/react"
+import { Milkdown, useEditor, MilkdownProvider } from "@milkdown/react"
 import { Editor, rootCtx, defaultValueCtx } from "@milkdown/core"
 import { commonmark } from "@milkdown/preset-commonmark"
 import { gfm } from "@milkdown/preset-gfm"
@@ -15,7 +15,7 @@ type MilkdownEditorProps = {
   className?: string
 }
 
-export const MilkdownEditor: React.FC<MilkdownEditorProps> = ({
+const MilkdownEditorContent: React.FC<MilkdownEditorProps> = ({
   value = "",
   onChange,
   className,
@@ -42,5 +42,13 @@ export const MilkdownEditor: React.FC<MilkdownEditorProps> = ({
     <div className={className}>
       <Milkdown />
     </div>
+  )
+}
+
+export const MilkdownEditor: React.FC<MilkdownEditorProps> = (props) => {
+  return (
+    <MilkdownProvider>
+      <MilkdownEditorContent {...props} />
+    </MilkdownProvider>
   )
 }
