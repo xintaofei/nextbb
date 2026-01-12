@@ -616,7 +616,7 @@
     }
   },
   "Admin": {
-    "entry": "Admin",
+    "entry": "Admin Panel",
     "title": "NextBB Admin",
     "description": "NextBB Admin Page.",
     "nav": {
