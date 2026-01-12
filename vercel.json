@@ -4,20 +4,5 @@
       "path": "/api/cron/settle-polls",
       "schedule": "0 0 * * *"
     }
-  ],
-  "headers": [
-    {
-      "source": "/(.*)",
-      "headers": [
-        {
-          "key": "x-vercel-ip-latitude",
-          "value": "true"
-        },
-        {
-          "key": "x-vercel-ip-longitude",
-          "value": "true"
-        }
-      ]
-    }
   ]
 }
