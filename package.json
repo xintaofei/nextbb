@@ -80,6 +80,7 @@
     "recharts": "2.15.4",
     "rough-notation": "^0.5.1",
     "sonner": "^2.0.7",
+    "svg-dotted-map": "^2.0.1",
     "swr": "^2.3.7",
     "tailwind-merge": "^3.4.0",
     "use-immer": "^0.11.0",
