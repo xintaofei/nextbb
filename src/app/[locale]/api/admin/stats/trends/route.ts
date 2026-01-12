@@ -44,45 +44,48 @@ export async function GET(request: Request) {
       `,
     ])
 
-    // 2. 获取分类详细趋势 (Top N)
-    const topCategoriesRaw = await prisma.topics.groupBy({
-      by: ["category_id"],
-      _count: { id: true },
-      where: { created_at: { gte: thirtyDaysAgo }, is_deleted: false },
-      orderBy: { _count: { id: "desc" } },
-      take: cLimit,
+    // 2. 获取分类和标签的每日统计（全量获取，内存排序）
+    const [categoryGrowthRaw, tagGrowthRaw] = await Promise.all([
+      prisma.$queryRaw<{ date: Date; category_id: bigint; count: bigint }[]>`
+        SELECT DATE(created_at) as date, category_id, COUNT(*)::int as count
+        FROM topics
+        WHERE created_at >= ${thirtyDaysAgo} AND is_deleted = false
+        GROUP BY DATE(created_at), category_id
+        ORDER BY date ASC
+      `,
+      prisma.$queryRaw<{ date: Date; tag_id: bigint; count: bigint }[]>`
+        SELECT DATE(created_at) as date, tag_id, COUNT(*)::int as count
+        FROM topic_tags
+        WHERE created_at >= ${thirtyDaysAgo}
+        GROUP BY DATE(created_at), tag_id
+        ORDER BY date ASC
+      `,
+    ])
+
+    // 处理分类数据：计算 Top N
+    const categoryTotalMap = new Map<string, number>()
+    categoryGrowthRaw.forEach((row) => {
+      const id = row.category_id.toString()
+      categoryTotalMap.set(
+        id,
+        (categoryTotalMap.get(id) || 0) + Number(row.count)
+      )
     })
-    const topCategoryIds = topCategoriesRaw.map((c) => c.category_id)
+    const topCategoryIds = Array.from(categoryTotalMap.entries())
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, cLimit)
+      .map(([id]) => BigInt(id))
 
-    const categoryGrowthRaw = await prisma.$queryRaw<
-      { date: Date; category_id: bigint; count: bigint }[]
-    >`
-      SELECT DATE(created_at) as date, category_id, COUNT(*)::int as count
-      FROM topics
-      WHERE created_at >= ${thirtyDaysAgo} AND is_deleted = false AND category_id = ANY(${topCategoryIds.length ? topCategoryIds : [0]}::bigint[])
-      GROUP BY DATE(created_at), category_id
-      ORDER BY date ASC
-    `
-
-    // 3. 获取标签详细趋势 (Top N)
-    const topTagsRaw = await prisma.topic_tags.groupBy({
-      by: ["tag_id"],
-      _count: { topic_id: true },
-      where: { created_at: { gte: thirtyDaysAgo } },
-      orderBy: { _count: { topic_id: "desc" } },
-      take: tLimit,
+    // 处理标签数据：计算 Top N
+    const tagTotalMap = new Map<string, number>()
+    tagGrowthRaw.forEach((row) => {
+      const id = row.tag_id.toString()
+      tagTotalMap.set(id, (tagTotalMap.get(id) || 0) + Number(row.count))
     })
-    const topTagIds = topTagsRaw.map((t) => t.tag_id)
-
-    const tagGrowthRaw = await prisma.$queryRaw<
-      { date: Date; tag_id: bigint; count: bigint }[]
-    >`
-      SELECT DATE(created_at) as date, tag_id, COUNT(*)::int as count
-      FROM topic_tags
-      WHERE created_at >= ${thirtyDaysAgo} AND tag_id = ANY(${topTagIds.length ? topTagIds : [0]}::bigint[])
-      GROUP BY DATE(created_at), tag_id
-      ORDER BY date ASC
-    `
+    const topTagIds = Array.from(tagTotalMap.entries())
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, tLimit)
+      .map(([id]) => BigInt(id))
 
     // 4. 获取名称翻译
     const [categoryTranslations, tagTranslations] = await Promise.all([
