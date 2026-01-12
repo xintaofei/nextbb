@@ -152,6 +152,26 @@ export function ChartCard({
             </LineChart>
           </ResponsiveContainer>
         </div>
+
+        {/* Legend/Category List */}
+        {chartLines.length > 0 && (
+          <div className="mt-4 flex flex-wrap gap-x-4 gap-y-2 border-t border-border/20 pt-4">
+            {chartLines.map((line) => (
+              <div
+                key={line.dataKey}
+                className="group/legend flex items-center gap-2"
+              >
+                <div
+                  className="h-2 w-2 rounded-full transition-transform group-hover/legend:scale-125"
+                  style={{ backgroundColor: line.color }}
+                />
+                <span className="text-[11px] font-medium text-foreground/60 transition-colors group-hover/legend:text-foreground">
+                  {line.label}
+                </span>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
     </motion.div>
   )
