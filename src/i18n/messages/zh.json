@@ -548,6 +548,14 @@
       "leaderboard": "排行榜",
       "sharedResources": "共享资源",
       "more": "更多"
+    },
+    "user": {
+      "notLoggedIn": "未登录",
+      "profile": "我的主页",
+      "activity": "我的活动",
+      "notifications": "我的通知",
+      "settings": "个人设置",
+      "logout": "退出登录"
     }
   },
   "AdminOverview": {

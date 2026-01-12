@@ -548,6 +548,14 @@
       "leaderboard": "Leaderboard",
       "sharedResources": "Shared Resources",
       "more": "More"
+    },
+    "user": {
+      "notLoggedIn": "Not Logged In",
+      "profile": "My Profile",
+      "activity": "My Activity",
+      "notifications": "My Notifications",
+      "settings": "Settings",
+      "logout": "Log out"
     }
   },
   "AdminOverview": {

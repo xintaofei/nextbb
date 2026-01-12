@@ -62,6 +62,9 @@ const fetcher = async (url: string): Promise<MeResponse | null> => {
 export function NavUser() {
   const { isMobile } = useSidebar()
   const tAdmin = useTranslations("Admin")
+  const tNav = useTranslations("Nav.user")
+  const tCommon = useTranslations("Common")
+  const tAuth = useTranslations("Auth")
   const router = useRouter()
 
   const { data, isLoading, mutate } = useSWR<MeResponse | null>(
@@ -70,9 +73,9 @@ export function NavUser() {
   )
 
   const displayName = useMemo(() => {
-    if (!data) return "未登录"
-    return data.profile?.username || data.user.email || "未登录"
-  }, [data])
+    if (!data) return tNav("notLoggedIn")
+    return data.profile?.username || data.user.email || tNav("notLoggedIn")
+  }, [data, tNav])
 
   const displayEmail = useMemo(() => {
     if (!data) return ""
@@ -127,7 +130,7 @@ export function NavUser() {
               </Avatar>
               <div className="grid flex-1 text-left text-sm leading-tight">
                 <span className="truncate font-medium">
-                  {isLoading ? "加载中..." : displayName}
+                  {isLoading ? tCommon("Loading.loading") : displayName}
                 </span>
                 <span className="truncate text-xs">{displayEmail}</span>
               </div>
@@ -168,7 +171,7 @@ export function NavUser() {
                       }
                     >
                       <User />
-                      我的主页
+                      {tNav("profile")}
                     </Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild>
@@ -180,7 +183,7 @@ export function NavUser() {
                       }
                     >
                       <Activity />
-                      我的活动
+                      {tNav("activity")}
                     </Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild>
@@ -192,7 +195,7 @@ export function NavUser() {
                       }
                     >
                       <Bell />
-                      我的通知
+                      {tNav("notifications")}
                     </Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild>
@@ -204,7 +207,7 @@ export function NavUser() {
                       }
                     >
                       <Settings />
-                      个人设置
+                      {tNav("settings")}
                     </Link>
                   </DropdownMenuItem>
                   {data?.user?.isAdmin ? (
@@ -225,15 +228,17 @@ export function NavUser() {
             <DropdownMenuGroup>
               {!data ? (
                 <>
-                  <DropdownMenuItem onSelect={goLogin}>登录</DropdownMenuItem>
+                  <DropdownMenuItem onSelect={goLogin}>
+                    {tAuth("Login.title")}
+                  </DropdownMenuItem>
                   <DropdownMenuItem onSelect={goRegister}>
-                    注册
+                    {tAuth("Register.title")}
                   </DropdownMenuItem>
                 </>
               ) : (
                 <DropdownMenuItem onSelect={onLogout}>
                   <LogOut />
-                  Log out
+                  {tNav("logout")}
                 </DropdownMenuItem>
               )}
             </DropdownMenuGroup>
