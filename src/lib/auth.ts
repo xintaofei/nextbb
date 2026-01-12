@@ -105,7 +105,8 @@ export async function getSessionUser(): Promise<SessionUser | null> {
  */
 export async function recordLogin(
   userId: bigint | null,
-  status: "SUCCESS" | "FAILED" = "SUCCESS"
+  status: "SUCCESS" | "FAILED" = "SUCCESS",
+  loginMethod: string = "UNKNOWN"
 ) {
   try {
     const headersList = await headers()
@@ -180,6 +181,7 @@ export async function recordLogin(
         location_lat: geo.latitude,
         location_long: geo.longitude,
         status: status,
+        login_method: loginMethod,
         login_at: now,
       },
     })

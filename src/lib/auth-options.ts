@@ -105,65 +105,73 @@ export const authOptions: NextAuthOptions = {
       const existing = await prisma.users.findUnique({
         where: { email },
       })
+
+      if (existing && (existing.is_deleted || existing.status !== 1)) {
+        await recordLogin(existing.id, "FAILED", provider.toUpperCase())
+        return false
+      }
+
       const avatarSrc =
         user.image ??
         (typeof (profile as { picture?: string }).picture === "string"
           ? (profile as { picture?: string }).picture
           : null) ??
         null
-      if (existing) {
-        // 用户已存在，直接返回，不修改任何信息
-        return true
-      }
-      const id = generateId()
-      let name =
-        user.name ??
-        (typeof profile?.name === "string" && profile.name.length > 0
-          ? profile.name
-          : null)
-      if (!name && provider === "linuxdo") {
-        const p = profile as { username?: string; login?: string }
-        name =
-          (typeof p.username === "string" && p.username.length > 0
-            ? p.username
-            : null) ??
-          (typeof p.login === "string" && p.login.length > 0 ? p.login : null)
-      }
-      if (!name) {
-        name = email.split("@")[0]
-      }
 
-      // 确保用户名唯一
-      const uniqueName = await ensureUniqueName(name)
+      let targetUser = existing
 
-      let avatar = ""
-      if (avatarSrc && avatarSrc.length > 0) {
-        try {
-          avatar = await uploadAvatarFromUrl(id, avatarSrc)
-        } catch {
-          avatar = avatarSrc
+      if (!targetUser) {
+        const id = generateId()
+        let name =
+          user.name ??
+          (typeof profile?.name === "string" && profile.name.length > 0
+            ? profile.name
+            : null)
+        if (!name && provider === "linuxdo") {
+          const p = profile as { username?: string; login?: string }
+          name =
+            (typeof p.username === "string" && p.username.length > 0
+              ? p.username
+              : null) ??
+            (typeof p.login === "string" && p.login.length > 0 ? p.login : null)
         }
+        if (!name) {
+          name = email.split("@")[0]
+        }
+
+        // 确保用户名唯一
+        const uniqueName = await ensureUniqueName(name)
+
+        let avatar = ""
+        if (avatarSrc && avatarSrc.length > 0) {
+          try {
+            avatar = await uploadAvatarFromUrl(id, avatarSrc)
+          } catch {
+            avatar = avatarSrc
+          }
+        }
+        targetUser = await prisma.users.create({
+          data: {
+            id,
+            email,
+            name: uniqueName,
+            avatar,
+            password: "oauth",
+            status: 1,
+            is_deleted: false,
+          },
+        })
+
+        // 触发用户注册事件
+        await emitUserRegisterEvent({
+          userId: targetUser.id,
+          email: targetUser.email,
+          oauthProvider: provider,
+        })
       }
-      const newUser = await prisma.users.create({
-        data: {
-          id,
-          email,
-          name: uniqueName,
-          avatar,
-          password: "oauth",
-          status: 1,
-          is_deleted: false,
-        },
-      })
 
-      // 触发用户注册事件
-      await emitUserRegisterEvent({
-        userId: newUser.id,
-        email: newUser.email,
-        oauthProvider: provider,
-      })
-
-      await recordLogin(newUser.id)
+      // 记录登录信息（包括新用户和老用户）
+      await recordLogin(targetUser.id, "SUCCESS", provider.toUpperCase())
 
       return true
     },

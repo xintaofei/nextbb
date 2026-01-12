@@ -87,7 +87,7 @@ export async function POST(request: Request) {
   })
 
   await setAuthCookie(token)
-  await recordLogin(user.id, "SUCCESS")
+  await recordLogin(user.id, "SUCCESS", "FORM")
 
   return NextResponse.json(
     {

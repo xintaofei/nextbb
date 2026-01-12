@@ -24,14 +24,14 @@ export async function POST(request: Request) {
   })
 
   if (!user || user.is_deleted || user.status !== 1) {
-    await recordLogin(user?.id || null, "FAILED")
+    await recordLogin(user?.id || null, "FAILED", "FORM")
     return NextResponse.json({ error: "邮箱或密码错误" }, { status: 401 })
   }
 
   const ok = await bcrypt.compare(password, user.password)
 
   if (!ok) {
-    await recordLogin(user.id, "FAILED")
+    await recordLogin(user.id, "FAILED", "FORM")
     return NextResponse.json({ error: "邮箱或密码错误" }, { status: 401 })
   }
 
@@ -42,7 +42,7 @@ export async function POST(request: Request) {
   })
 
   await setAuthCookie(token)
-  await recordLogin(user.id, "SUCCESS")
+  await recordLogin(user.id, "SUCCESS", "FORM")
 
   return NextResponse.json(
     {

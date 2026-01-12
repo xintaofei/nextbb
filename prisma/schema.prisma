@@ -555,6 +555,7 @@ model user_login_logs {
   location_lat  String?  @db.VarChar(32)
   location_long String?  @db.VarChar(32)
   status        String   @db.VarChar(16) // SUCCESS, FAILED
+  login_method  String   @default("UNKNOWN") @db.VarChar(32) // FORM, GITHUB, GOOGLE, LINUXDO, etc.
   login_at      DateTime @default(now())
 
   user users @relation(fields: [user_id], references: [id], onDelete: Cascade)
