@@ -8,6 +8,7 @@ import { ThemeProvider } from "next-themes"
 import { getTranslations } from "next-intl/server"
 import { Toaster } from "@/components/ui/sonner"
 import { SWRProvider } from "@/components/providers/swr-provider"
+import NextTopLoader from "nextjs-toploader"
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("Index")
@@ -27,6 +28,16 @@ export default async function RootLayout({
   return (
     <html lang={locale} suppressHydrationWarning>
       <body className={`antialiased`}>
+        <NextTopLoader
+          color="var(--color-muted-foreground)" // 进度条颜色
+          initialPosition={0.08} // 初始位置
+          crawlSpeed={200} // 爬行速度
+          height={3} // 进度条高度 (px)
+          showSpinner={false} // 是否显示右侧的加载小圆圈
+          easing="ease" // 动画效果
+          speed={200} // 动画速度
+          shadow="0 0 10px var(--color-muted-foreground),0 0 5px var(--color-muted-foreground)" // 进度条阴影
+        />
         <NextIntlClientProvider messages={messages}>
           <ThemeProvider
             attribute="class"
