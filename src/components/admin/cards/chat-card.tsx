@@ -75,7 +75,7 @@ export function ChartCard({
           <ResponsiveContainer width="100%" height="100%">
             <LineChart
               data={data}
-              margin={{ top: 5, right: 10, left: -25, bottom: 5 }}
+              margin={{ top: 5, right: 10, left: 0, bottom: 5 }}
             >
               <defs>
                 {chartLines.map((line) => (
@@ -111,12 +111,16 @@ export function ChartCard({
                 stroke="var(--foreground)"
                 opacity={0.6}
                 style={{ fontSize: "11px" }}
+                tickLine={false}
+                axisLine={false}
               />
               <YAxis
                 stroke="var(--foreground)"
                 opacity={0.6}
                 style={{ fontSize: "11px" }}
-                width={35}
+                width={40}
+                tickLine={false}
+                axisLine={false}
               />
               <Tooltip
                 contentStyle={{
@@ -133,7 +137,7 @@ export function ChartCard({
               {chartLines.map((line) => (
                 <Line
                   key={line.dataKey}
-                  type="natural"
+                  type="monotone"
                   dataKey={line.dataKey}
                   name={line.label}
                   stroke={line.color}
