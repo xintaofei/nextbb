@@ -25,7 +25,7 @@ import type {
   DashboardTrends,
   DashboardTaxonomy,
   DashboardActivity,
-} from "@/services/admin"
+} from "@/types/admin"
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json())
 
