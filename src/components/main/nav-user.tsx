@@ -92,22 +92,10 @@ export function NavUser() {
     return encodeUsername(data.profile.username)
   }, [data])
 
-  const goAdmin = () => {
-    router.push(`/admin`)
-  }
-
   const onLogout = async () => {
     await fetch("/api/auth/logout", { method: "POST" })
     await mutate()
     router.replace(`/`)
-  }
-
-  const goLogin = () => {
-    router.push(`/login`)
-  }
-
-  const goRegister = () => {
-    router.push(`/register`)
   }
 
   return (
@@ -211,9 +199,11 @@ export function NavUser() {
                     </Link>
                   </DropdownMenuItem>
                   {data?.user?.isAdmin ? (
-                    <DropdownMenuItem onSelect={goAdmin}>
-                      <LayoutDashboard />
-                      {tAdmin("entry")}
+                    <DropdownMenuItem asChild>
+                      <Link href="/admin" target="_blank">
+                        <LayoutDashboard />
+                        {tAdmin("entry")}
+                      </Link>
                     </DropdownMenuItem>
                   ) : null}
                 </DropdownMenuGroup>
@@ -228,11 +218,11 @@ export function NavUser() {
             <DropdownMenuGroup>
               {!data ? (
                 <>
-                  <DropdownMenuItem onSelect={goLogin}>
-                    {tAuth("Login.title")}
+                  <DropdownMenuItem asChild>
+                    <Link href="/login">{tAuth("Login.title")}</Link>
                   </DropdownMenuItem>
-                  <DropdownMenuItem onSelect={goRegister}>
-                    {tAuth("Register.title")}
+                  <DropdownMenuItem asChild>
+                    <Link href="/register">{tAuth("Register.title")}</Link>
                   </DropdownMenuItem>
                 </>
               ) : (
