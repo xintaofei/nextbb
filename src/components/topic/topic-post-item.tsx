@@ -27,7 +27,7 @@ import { UserInfoCard } from "@/components/common/user-info-card"
 import { Separator } from "@/components/ui/separator"
 import { Badge } from "@/components/ui/badge"
 import { ReactNode } from "react"
-import { MilkdownViewer } from "@/components/milkdown/viewer"
+import { MilkdownViewer } from "../milkdown/viewer"
 
 export function TopicPostItem({
   post,

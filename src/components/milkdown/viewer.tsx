@@ -1,7 +1,7 @@
 "use client"
 
 import React from "react"
-import { Milkdown, useEditor, MilkdownProvider } from "@milkdown/react"
+import { Milkdown, useEditor } from "@milkdown/react"
 import {
   Editor,
   rootCtx,
@@ -17,7 +17,7 @@ type MilkdownViewerProps = {
   className?: string
 }
 
-const MilkdownViewerContent: React.FC<MilkdownViewerProps> = ({
+export const MilkdownViewer: React.FC<MilkdownViewerProps> = ({
   content,
   className,
 }) => {
@@ -43,13 +43,5 @@ const MilkdownViewerContent: React.FC<MilkdownViewerProps> = ({
     <div className={className}>
       <Milkdown />
     </div>
-  )
-}
-
-export const MilkdownViewer: React.FC<MilkdownViewerProps> = (props) => {
-  return (
-    <MilkdownProvider>
-      <MilkdownViewerContent {...props} />
-    </MilkdownProvider>
   )
 }
