@@ -25,6 +25,7 @@ export function UserNavigation({
   const pathname = usePathname()
   const encodedUsername = encodeUsername(username)
   const t = useTranslations("User.profile")
+  const tNotifications = useTranslations("User.notifications")
 
   const navItems: NavItem[] = [
     {
@@ -52,7 +53,7 @@ export function UserNavigation({
       requiresAuth: false,
     },
     {
-      label: t("notifications"),
+      label: tNotifications("title"),
       href: `/u/${encodedUsername}/notifications`,
       icon: Bell,
       requiresAuth: true,

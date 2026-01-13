@@ -1393,7 +1393,6 @@
       "title": "用户主页",
       "badges": "徽章",
       "preferences": "设置",
-      "notifications": "通知",
       "joinedAt": "加入于",
       "statistics": {
         "topics": "话题",
@@ -1527,6 +1526,38 @@
         "permission": {
           "denied": "仅本人或管理员可查看此内容"
         }
+      }
+    },
+    "notifications": {
+      "title": "通知",
+      "nav": {
+        "all": "全部",
+        "mentions": "提及",
+        "replies": "回复",
+        "likes": "赞",
+        "awards": "奖励",
+        "system": "系统",
+        "prevPage": "上一页",
+        "nextPage": "下一页",
+        "pageCounter": "第 {page} 页"
+      },
+      "empty": {
+        "all": "暂无通知",
+        "mentions": "暂无被提及的记录",
+        "replies": "暂无回复通知",
+        "likes": "暂无点赞通知",
+        "awards": "暂无奖励通知",
+        "system": "暂无系统通知"
+      },
+      "item": {
+        "TOPIC_REPLY": "在话题 {topic} 中回复了你",
+        "POST_REPLY": "回复了你在 {topic} 中的帖子",
+        "MENTION": "在 {topic} 中提到了你",
+        "LIKE": "点赞了你在 {topic} 中的帖子",
+        "BADGE_AWARD": "恭喜！你获得了勋章 {badge}",
+        "BOUNTY_REWARD": "你在 {topic} 中的回答获得了悬赏奖励",
+        "LOTTERY_WIN": "恭喜！你在 {topic} 的抽奖中中奖了",
+        "SYSTEM": "系统通知: {message}"
       }
     },
     "activity": {

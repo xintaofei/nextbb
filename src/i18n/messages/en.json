@@ -1381,7 +1381,6 @@
       "title": "User Profile",
       "badges": "Badges",
       "preferences": "Settings",
-      "notifications": "Notifications",
       "joinedAt": "Joined",
       "statistics": {
         "topics": "Topics",
@@ -1515,6 +1514,38 @@
         "permission": {
           "denied": "Only the owner or administrators can view this content"
         }
+      }
+    },
+    "notifications": {
+      "title": "Notifications",
+      "nav": {
+        "all": "All",
+        "mentions": "Mentions",
+        "replies": "Replies",
+        "likes": "Likes",
+        "awards": "Awards",
+        "system": "System",
+        "prevPage": "Previous",
+        "nextPage": "Next",
+        "pageCounter": "Page {page}"
+      },
+      "empty": {
+        "all": "No notifications",
+        "mentions": "No mentions yet",
+        "replies": "No reply notifications",
+        "likes": "No like notifications",
+        "awards": "No award notifications",
+        "system": "No system notifications"
+      },
+      "item": {
+        "TOPIC_REPLY": "replied to you in {topic}",
+        "POST_REPLY": "replied to your post in {topic}",
+        "MENTION": "mentioned you in {topic}",
+        "LIKE": "liked your post in {topic}",
+        "BADGE_AWARD": "Congratulations! You earned the {badge} badge",
+        "BOUNTY_REWARD": "Your answer in {topic} received a bounty reward",
+        "LOTTERY_WIN": "Congratulations! You won the lottery in {topic}",
+        "SYSTEM": "System notification: {message}"
       }
     },
     "activity": {

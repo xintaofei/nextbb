@@ -1,30 +1,23 @@
-import { Metadata } from "next"
+import { ReactNode } from "react"
 import { redirect } from "next/navigation"
 import { getSessionUser } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import { decodeUsername, encodeUsername } from "@/lib/utils"
+import { NotificationsNavigation } from "@/components/user/notifications-navigation"
 
-type NotificationsPageProps = {
+type NotificationsLayoutProps = {
+  children: ReactNode
   params: Promise<{ username: string }>
 }
 
-export async function generateMetadata({
+export default async function NotificationsLayout({
+  children,
   params,
-}: NotificationsPageProps): Promise<Metadata> {
-  const { username } = await params
-  const decodedUsername = decodeUsername(username)
-  return {
-    title: `${decodedUsername} - 通知中心`,
-  }
-}
-
-export default async function NotificationsPage({
-  params,
-}: NotificationsPageProps) {
+}: NotificationsLayoutProps) {
   const { username } = await params
   const decodedUsername = decodeUsername(username)
 
-  // 权限验证：仅本人可访问
+  // 权限验证：仅本人可访问通知
   const session = await getSessionUser()
   if (!session) {
     redirect("/login")
@@ -40,11 +33,9 @@ export default async function NotificationsPage({
   }
 
   return (
-    <div className="space-y-6">
-      <h1 className="text-2xl font-bold">通知中心</h1>
-      <div className="text-sm text-muted-foreground">
-        用户 {decodedUsername} 的通知列表 - 待实现
-      </div>
+    <div className="flex flex-col w-full">
+      <NotificationsNavigation username={decodedUsername} />
+      <div className="max-w-5xl mx-auto w-full py-6">{children}</div>
     </div>
   )
 }
