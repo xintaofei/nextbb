@@ -6,7 +6,8 @@ import { generateId } from "@/lib/id"
 import { TopicType } from "@/types/topic-type"
 
 const ReplyCreateSchema = z.object({
-  content: z.string().min(1),
+  content: z.any(),
+  contentHtml: z.string().min(1),
   parentId: z.string().regex(/^\d+$/).optional(),
 })
 
@@ -150,7 +151,8 @@ export async function POST(
         parent_id: parentId,
         reply_to_user_id: replyToUserId,
         floor_number: nextFloor,
-        content: body.content,
+        content: JSON.stringify(body.content),
+        content_html: body.contentHtml,
         is_deleted: false,
       },
       select: { id: true, floor_number: true },

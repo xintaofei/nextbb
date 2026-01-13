@@ -38,6 +38,7 @@ import { QuestionAcceptanceDisplay } from "@/components/topic/question-acceptanc
 import { LotteryDisplay } from "@/components/topic/lottery-display"
 import { type TopicTypeValue, TopicType, BountyType } from "@/types/topic-type"
 import { ReactNode } from "react"
+import { type Value } from "platejs"
 
 export default function TopicPage() {
   const { id } = useParams<{ id: string }>()
@@ -76,14 +77,14 @@ export default function TopicPage() {
     username: string
     avatar: string
   } | null>(null)
-  const [replyContent, setReplyContent] = useState<string>("")
+  const [replyContent, setReplyContent] = useState<Value | undefined>(undefined)
   const [replyToPostId, setReplyToPostId] = useState<string | null>(null)
   const [submitting, setSubmitting] = useState<boolean>(false)
   const [replyOpen, setReplyOpen] = useState<boolean>(false)
   const [editOpen, setEditOpen] = useState<boolean>(false)
   const [editSubmitting, setEditSubmitting] = useState<boolean>(false)
   const [editPostId, setEditPostId] = useState<string | null>(null)
-  const [editInitial, setEditInitial] = useState<string>("")
+  const [editInitial, setEditInitial] = useState<Value | undefined>(undefined)
   const [mutatingPostId, setMutatingPostId] = useState<string | null>(null)
   const [previousPostsLength, setPreviousPostsLength] = useState<number>(0)
   const [highlightIndex, setHighlightIndex] = useState<number | null>(null)
@@ -282,7 +283,7 @@ export default function TopicPage() {
         return (await res.json()) as BookmarkResult
       }
     )
-  type EditArg = { postId: string; content: string }
+  type EditArg = { postId: string; content: Value; contentHtml: string }
   const { trigger: triggerEdit, isMutating: editMutating } = useSWRMutation<
     { ok: boolean },
     Error,
@@ -292,7 +293,7 @@ export default function TopicPage() {
     const res = await fetch(`/api/post/${arg.postId}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ content: arg.content }),
+      body: JSON.stringify({ content: arg.content, contentHtml: arg.contentHtml }),
     })
     if (!res.ok) throw new Error(String(res.status))
     return { ok: true }
@@ -308,7 +309,7 @@ export default function TopicPage() {
     if (!res.ok) throw new Error(String(res.status))
     return { ok: true }
   })
-  type ReplyArg = { content: string; parentId?: string }
+  type ReplyArg = { content: Value; contentHtml: string; parentId?: string }
   type ReplyResult = { postId: string; floorNumber: number }
   const { trigger: triggerReply } = useSWRMutation<
     ReplyResult,
@@ -428,13 +429,17 @@ export default function TopicPage() {
 
   const onClickReply = (postId: string, authorName: string) => {
     setReplyToPostId(postId)
-    setReplyContent(`@${authorName} `)
+    setReplyContent([
+      {
+        type: "p",
+        children: [{ text: `@${authorName} ` }],
+      },
+    ] as Value)
     setReplyOpen(true)
   }
 
-  const submitReply = async (overrideContent?: string) => {
-    const content = (overrideContent ?? replyContent).trim()
-    if (!content) {
+  const submitReply = async (content: Value, html: string) => {
+    if (!content || content.length === 0) {
       toast.error(tc("Form.required"))
       return
     }
@@ -453,7 +458,8 @@ export default function TopicPage() {
           name: currentUserProfile?.username ?? "",
           avatar: currentUserProfile?.avatar ?? "",
         },
-        content,
+        content: JSON.stringify(content),
+        contentHtml: html,
         createdAt: new Date().toISOString(),
         minutesAgo: 0,
         isDeleted: false,
@@ -463,7 +469,7 @@ export default function TopicPage() {
         bookmarked: false,
       }
       setReplyOpen(false)
-      setReplyContent("")
+      setReplyContent(undefined)
       setReplyToPostId(null)
       await mutatePosts((pages) => {
         if (!pages || pages.length === 0) {
@@ -486,6 +492,7 @@ export default function TopicPage() {
       }, false)
       await triggerReply({
         content,
+        contentHtml: html,
         parentId: replyToPostId ?? undefined,
       })
       await mutatePosts((pages) => pages, true)
@@ -506,12 +513,21 @@ export default function TopicPage() {
 
   const onClickEdit = (postId: string, initialContent: string) => {
     setEditPostId(postId)
-    setEditInitial(initialContent)
+    try {
+      setEditInitial(JSON.parse(initialContent) as Value)
+    } catch (e) {
+      // 如果不是有效的 JSON，包装成段落（处理可能的脏数据）
+      setEditInitial([
+        {
+          type: "p",
+          children: [{ text: initialContent }],
+        },
+      ])
+    }
     setEditOpen(true)
   }
-  const submitEdit = async (content: string) => {
-    const value = content.trim()
-    if (!value) {
+  const submitEdit = async (content: Value, html: string) => {
+    if (!content || content.length === 0) {
       toast.error(tc("Form.required"))
       return
     }
@@ -524,12 +540,22 @@ export default function TopicPage() {
           pages?.map((pg) => ({
             ...pg,
             items: pg.items.map((p) =>
-              p.id === editPostId ? { ...p, content: value } : p
+              p.id === editPostId
+                ? {
+                    ...p,
+                    content: JSON.stringify(content),
+                    contentHtml: html,
+                  }
+                : p
             ),
           })) ?? pages,
         false
       )
-      await triggerEdit({ postId: editPostId, content: value })
+      await triggerEdit({
+        postId: editPostId,
+        content,
+        contentHtml: html,
+      })
       setEditOpen(false)
       await mutatePosts((pages) => pages, true)
       const nextFlat = postsPages ? postsPages.flatMap((p) => p.items) : []
@@ -908,7 +934,7 @@ export default function TopicPage() {
         />
       </div>
       <DrawerEditor
-        key={`reply-${replyToPostId ?? "topic"}-${replyOpen ? replyContent : ""}`}
+        key={`reply-${replyToPostId ?? "topic"}-${replyOpen ? JSON.stringify(replyContent) : ""}`}
         title={t("reply")}
         description={
           replyToPostId
@@ -919,14 +945,12 @@ export default function TopicPage() {
         onOpenChange={setReplyOpen}
         initialValue={replyContent}
         submitting={submitting}
-        onSubmit={(content: string) => {
-          submitReply(content)
-        }}
+        onSubmit={submitReply}
         submitText={t("reply")}
         cancelText={tc("Action.cancel")}
       />
       <DrawerEditor
-        key={`edit-${editPostId ?? "none"}-${editOpen ? editInitial : ""}`}
+        key={`edit-${editPostId ?? "none"}-${editOpen ? JSON.stringify(editInitial) : ""}`}
         title={t("edit")}
         open={editOpen}
         onOpenChange={setEditOpen}

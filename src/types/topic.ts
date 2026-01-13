@@ -18,6 +18,7 @@ export type PostItem = {
   id: string
   author: Author
   content: string
+  contentHtml: string
   createdAt: string
   minutesAgo: number
   isDeleted: boolean

@@ -15,7 +15,7 @@ import {
   FormMessage,
 } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
-import { Textarea } from "@/components/ui/textarea"
+import { ContentEditor } from "@/components/editor/content-editor"
 import { CategorySelect } from "@/components/filters/category-select"
 import { TagsMultiSelect } from "./tags-multi-select"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
@@ -94,7 +94,8 @@ export function TopicForm({
       type: TopicType.GENERAL,
       title: "",
       categoryId: "",
-      content: "",
+      content: undefined,
+      contentHtml: "",
       tags: [],
       isPinned: false,
       isCommunity: false,
@@ -102,7 +103,7 @@ export function TopicForm({
   })
 
   const titleValue = useWatch({ control: form.control, name: "title" })
-  const contentValue = useWatch({ control: form.control, name: "content" })
+  const contentValue = useWatch({ control: form.control, name: "contentHtml" })
   const titleCount = titleValue?.length || 0
   const contentCount = contentValue?.length || 0
 
@@ -118,7 +119,8 @@ export function TopicForm({
       type: typeValue,
       title: currentValues.title || "",
       categoryId: currentValues.categoryId || "",
-      content: currentValues.content || "",
+      content: currentValues.content,
+      contentHtml: currentValues.contentHtml || "",
       tags: currentValues.tags || [],
       isPinned: currentValues.isPinned || false,
       isCommunity: currentValues.isCommunity || false,
@@ -313,10 +315,13 @@ export function TopicForm({
             <FormItem>
               <FormLabel>{t("form.content.label")}</FormLabel>
               <FormControl>
-                <Textarea
+                <ContentEditor
                   placeholder={t("form.content.placeholder")}
-                  className="min-h-50 resize-y"
-                  {...field}
+                  value={field.value}
+                  onChange={(val, html) => {
+                    field.onChange(val)
+                    form.setValue("contentHtml", html)
+                  }}
                 />
               </FormControl>
               <FormDescription>

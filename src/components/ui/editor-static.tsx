@@ -3,9 +3,19 @@ import * as React from "react"
 import type { VariantProps } from "class-variance-authority"
 
 import { cva } from "class-variance-authority"
-import { type PlateStaticProps, PlateStatic } from "platejs/static"
+import {
+  type PlateStaticProps,
+  PlateStatic,
+  createStaticEditor,
+} from "platejs/static"
 
 import { cn } from "@/lib/utils"
+import { BaseBasicBlocksKit } from "@/components/editor/plugins/basic-blocks-base-kit"
+import { BaseBasicMarksKit } from "@/components/editor/plugins/basic-marks-base-kit"
+
+const defaultEditor = createStaticEditor({
+  plugins: [...BaseBasicBlocksKit, ...BaseBasicMarksKit],
+})
 
 export const editorVariants = cva(
   cn(
@@ -44,11 +54,15 @@ export const editorVariants = cva(
 export function EditorStatic({
   className,
   variant,
+  editor = defaultEditor,
   ...props
-}: PlateStaticProps & VariantProps<typeof editorVariants>) {
+}: Omit<PlateStaticProps, "editor"> & {
+  editor?: PlateStaticProps["editor"]
+} & VariantProps<typeof editorVariants>) {
   return (
     <PlateStatic
       className={cn(editorVariants({ variant }), className)}
+      editor={editor}
       {...props}
     />
   )
