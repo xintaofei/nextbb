@@ -46,6 +46,9 @@ model users {
   donations donations[] @relation("donations_user")
   confirmed_donations donations[] @relation("donations_confirmer")
 
+  notifications      notifications[] @relation("notifications_user")
+  sent_notifications notifications[] @relation("notifications_sender")
+
   login_stats user_login_stats?
   login_logs  user_login_logs[]
 
@@ -151,6 +154,7 @@ model topics {
   bounty_config bounty_configs?
   bounty_rewards bounty_rewards[]
   question_acceptance question_acceptances?
+  notifications notifications[]
 
   @@index([user_id], map: "topics_user_index")
   @@index([category_id], map: "topics_category_index")
@@ -181,6 +185,7 @@ model posts {
   bounty_rewards bounty_rewards[]
   lottery_winners lottery_winners[]
   question_acceptance question_acceptances?
+  notifications notifications[]
 
   @@index([topic_id], map: "posts_topic_index")
   @@index([user_id], map: "posts_user_index")
@@ -879,4 +884,50 @@ model translation_tasks {
   @@index([entity_type, entity_id, target_locale], map: "translation_tasks_entity_locale_index")
 
   @@map("translation_tasks")
+}
+
+enum NotificationType {
+  SYSTEM          // System announcement
+  TOPIC_REPLY     // Someone replied to your topic
+  POST_REPLY      // Someone replied to your post
+  MENTION         // Someone @mentioned you
+  LIKE            // Someone liked your post
+  BADGE_AWARD     // You received a badge
+  BOUNTY_REWARD   // You received a bounty reward
+  LOTTERY_WIN     // You won a lottery
+}
+
+model notifications {
+  id          BigInt           @id @db.BigInt
+  user_id     BigInt           @db.BigInt        // Recipient
+  sender_id   BigInt           @db.BigInt        // Triggered by (e.g., the person who replied)
+  type        NotificationType
+  read        Boolean          @default(false)
+  is_deleted  Boolean          @default(false)
+
+  // Context References
+  topic_id    BigInt?          @db.BigInt
+  post_id     BigInt?          @db.BigInt
+
+  // Flexible data for other types (e.g., badge_id, system message content)
+  data        Json?
+
+  created_at  DateTime         @default(now())
+
+  // Relations
+  user      users   @relation("notifications_user", fields: [user_id], references: [id])
+  sender    users?  @relation("notifications_sender", fields: [sender_id], references: [id])
+  topic     topics? @relation(fields: [topic_id], references: [id])
+  post      posts?  @relation(fields: [post_id], references: [id])
+
+  // Indexes for performance
+  @@index([user_id], map: "notifications_user_index")
+  @@index([read], map: "notifications_read_index")
+  @@index([type], map: "notifications_type_index")
+  @@index([created_at], map: "notifications_created_index")
+
+  // Composite index for fetching unread notifications efficiently
+  @@index([user_id, read, created_at], map: "notifications_user_read_created_index")
+
+  @@map("notifications")
 }
