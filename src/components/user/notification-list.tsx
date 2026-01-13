@@ -64,7 +64,7 @@ export function NotificationList({ filter }: NotificationListProps) {
 
   if (items.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center py-20 text-center border rounded-xl bg-muted/10">
+      <div className="flex flex-col items-center justify-center py-20 text-center">
         <div className="text-6xl mb-4">🔔</div>
         <h3 className="text-lg font-semibold text-muted-foreground">
           {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
