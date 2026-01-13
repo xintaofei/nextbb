@@ -6,7 +6,7 @@ import {
   DrawerHeader,
   DrawerTitle,
 } from "@/components/ui/drawer"
-import { MilkdownEditor } from "@/components/milkdown"
+import { Textarea } from "@/components/ui/textarea"
 import { Button } from "@/components/ui/button"
 import { useState } from "react"
 
@@ -53,13 +53,11 @@ export function DrawerEditor({
           ) : null}
         </DrawerHeader>
         <div className="px-4">
-          <div className="min-h-[200px] border rounded-md overflow-hidden">
-            <MilkdownEditor
-              value={value}
-              onChange={(val) => setValue(val)}
-              className="min-h-[200px]"
-            />
-          </div>
+          <Textarea
+            value={value}
+            onChange={(e) => setValue(e.target.value)}
+            rows={5}
+          />
         </div>
         <DrawerFooter>
           <div className="flex justify-end gap-2">

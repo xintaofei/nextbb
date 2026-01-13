@@ -27,7 +27,6 @@ import { UserInfoCard } from "@/components/common/user-info-card"
 import { Separator } from "@/components/ui/separator"
 import { Badge } from "@/components/ui/badge"
 import { ReactNode } from "react"
-import { MilkdownViewer } from "../milkdown/viewer"
 
 export function TopicPostItem({
   post,
@@ -168,7 +167,7 @@ export function TopicPostItem({
           {post.isDeleted ? (
             <span className="text-muted-foreground">{deletedText}</span>
           ) : (
-            <MilkdownViewer content={post.content} />
+            post.content
           )}
         </TimelineStepsDescription>
         {topicTypeSlot}
