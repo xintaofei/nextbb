@@ -8,9 +8,15 @@ import { PlateElement } from "platejs/react"
 
 import { cn } from "@/lib/utils"
 
-export function ParagraphElement(props: PlateElementProps) {
+export function ParagraphElement({
+  className,
+  ...props
+}: PlateElementProps & { className?: string }) {
   return (
-    <PlateElement {...props} className={cn("m-0 px-0 py-1")}>
+    <PlateElement
+      className={cn("m-0 px-0 py-1", className)}
+      {...props}
+    >
       {props.children}
     </PlateElement>
   )

@@ -15,11 +15,13 @@ import { createStaticEditor, serializeHtml } from "platejs/static"
 
 import { BaseBasicBlocksKit } from "./plugins/basic-blocks-base-kit"
 import { BaseBasicMarksKit } from "./plugins/basic-marks-base-kit"
+import { mentionPlugins } from "./plugins/mention-kit"
 import { BlockquoteElement } from "@/components/ui/blockquote-node"
 import { Editor, EditorContainer } from "@/components/ui/editor"
 import { FixedToolbar } from "@/components/ui/fixed-toolbar"
 import { H1Element, H2Element, H3Element } from "@/components/ui/heading-node"
 import { MarkToolbarButton } from "@/components/ui/mark-toolbar-button"
+import { MentionCombobox } from "@/components/ui/mention-combobox"
 import { ToolbarButton } from "@/components/ui/toolbar"
 
 const initialValue: Value = [
@@ -27,6 +29,14 @@ const initialValue: Value = [
     children: [{ text: "" }],
     type: "p",
   },
+]
+
+const MENTION_ITEMS = [
+  { key: "0", text: "Alice" },
+  { key: "1", text: "Bob" },
+  { key: "2", text: "Charlie" },
+  { key: "3", text: "David" },
+  { key: "4", text: "Eve" },
 ]
 
 interface ContentEditorProps {
@@ -49,6 +59,7 @@ export function ContentEditor({
       H2Plugin.withComponent(H2Element),
       H3Plugin.withComponent(H3Element),
       BlockquotePlugin.withComponent(BlockquoteElement),
+      ...mentionPlugins,
     ],
     value: value ?? initialValue,
   })
@@ -98,6 +109,7 @@ export function ContentEditor({
         <EditorContainer className="max-h-80 overflow-y-auto">
           <Editor variant="select" placeholder={placeholder} />
         </EditorContainer>
+        <MentionCombobox items={MENTION_ITEMS} />
       </div>
     </Plate>
   )
