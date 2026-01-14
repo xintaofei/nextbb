@@ -68,37 +68,29 @@ export function ContentEditor({
         }
       }}
     >
-      <div className="border rounded-lg">
-        <FixedToolbar className="flex justify-start gap-1">
-          <ToolbarButton onClick={() => editor.tf.h1.toggle()}>
-            H1
-          </ToolbarButton>
-          <ToolbarButton onClick={() => editor.tf.h2.toggle()}>
-            H2
-          </ToolbarButton>
-          <ToolbarButton onClick={() => editor.tf.h3.toggle()}>
-            H3
-          </ToolbarButton>
+      <FixedToolbar className="flex justify-start gap-1 rounded-t-lg">
+        <ToolbarButton onClick={() => editor.tf.h1.toggle()}>H1</ToolbarButton>
+        <ToolbarButton onClick={() => editor.tf.h2.toggle()}>H2</ToolbarButton>
+        <ToolbarButton onClick={() => editor.tf.h3.toggle()}>H3</ToolbarButton>
 
-          <ToolbarButton onClick={() => editor.tf.blockquote.toggle()}>
-            Quote
-          </ToolbarButton>
+        <ToolbarButton onClick={() => editor.tf.blockquote.toggle()}>
+          Quote
+        </ToolbarButton>
 
-          <MarkToolbarButton nodeType="bold" tooltip="Bold (⌘+B)">
-            B
-          </MarkToolbarButton>
-          <MarkToolbarButton nodeType="italic" tooltip="Italic (⌘+I)">
-            I
-          </MarkToolbarButton>
-          <MarkToolbarButton nodeType="underline" tooltip="Underline (⌘+U)">
-            U
-          </MarkToolbarButton>
-        </FixedToolbar>
+        <MarkToolbarButton nodeType="bold" tooltip="Bold (⌘+B)">
+          B
+        </MarkToolbarButton>
+        <MarkToolbarButton nodeType="italic" tooltip="Italic (⌘+I)">
+          I
+        </MarkToolbarButton>
+        <MarkToolbarButton nodeType="underline" tooltip="Underline (⌘+U)">
+          U
+        </MarkToolbarButton>
+      </FixedToolbar>
 
-        <EditorContainer className="max-h-80 overflow-y-auto">
-          <Editor variant="select" placeholder={placeholder} />
-        </EditorContainer>
-      </div>
+      <EditorContainer>
+        <Editor placeholder={placeholder} />
+      </EditorContainer>
     </Plate>
   )
 }
