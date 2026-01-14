@@ -155,8 +155,19 @@
   min-height: 10rem;
   max-height: 20rem;
   overflow-y: auto;
+  position: relative;
+  word-wrap: break-word;
+  white-space: pre-wrap;
+  white-space: break-spaces;
+  -webkit-font-variant-ligatures: none;
+  font-variant-ligatures: none;
+  font-feature-settings: "liga" 0;
 }
 
 .milkdown .ProseMirror:focus {
   outline: none;
+}
+
+.milkdown .ProseMirror-selectednode {
+  outline: 2px solid var(--ring);
 }
