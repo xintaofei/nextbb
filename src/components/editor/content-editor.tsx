@@ -266,7 +266,10 @@ const MilkdownEditor: React.FC<MilkdownEditorProps> = ({ value, onChange }) => {
               }}
               onSelect={(user) => {
                 const editor = get()
-                if (!editor) return
+                if (!editor) {
+                  console.error("MentionList: editor not found")
+                  return
+                }
 
                 editor.action((ctx) => {
                   const view = ctx.get(editorViewCtx)
@@ -287,7 +290,11 @@ const MilkdownEditor: React.FC<MilkdownEditorProps> = ({ value, onChange }) => {
                   })
 
                   const tr2 = tr.replaceWith(range.from, range.to, node)
-                  dispatch(tr2)
+
+                  // Add a space after the mention
+                  const tr3 = tr2.insertText(" ")
+
+                  dispatch(tr3)
 
                   setMentionState((prev) => ({ ...prev, open: false }))
                 })
