@@ -318,7 +318,6 @@ export function TopicForm({
                 <ContentEditor
                   placeholder={t("form.content.placeholder")}
                   value={field.value}
-                  mentionContext={{ type: "new-topic" }}
                   onChange={(val, html) => {
                     field.onChange(val)
                     form.setValue("contentHtml", html)

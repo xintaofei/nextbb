@@ -12,8 +12,6 @@ import {
 } from "@platejs/basic-nodes/react"
 import { Plate, usePlateEditor } from "platejs/react"
 import { createStaticEditor, serializeHtml } from "platejs/static"
-import { useState, useEffect } from "react"
-import useSWR from "swr"
 
 import { BaseBasicBlocksKit } from "./plugins/basic-blocks-base-kit"
 import { BaseBasicMarksKit } from "./plugins/basic-marks-base-kit"
@@ -24,7 +22,6 @@ import { FixedToolbar } from "@/components/ui/fixed-toolbar"
 import { H1Element, H2Element, H3Element } from "@/components/ui/heading-node"
 import { MarkToolbarButton } from "@/components/ui/mark-toolbar-button"
 import { MentionCombobox } from "@/components/ui/mention-combobox"
-import type { MentionItem } from "@/components/ui/mention-combobox"
 import { ToolbarButton } from "@/components/ui/toolbar"
 
 const initialValue: Value = [
@@ -34,43 +31,25 @@ const initialValue: Value = [
   },
 ]
 
+const MENTION_ITEMS = [
+  { key: "0", text: "Alice" },
+  { key: "1", text: "Bob" },
+  { key: "2", text: "Charlie" },
+  { key: "3", text: "David" },
+  { key: "4", text: "Eve" },
+]
+
 interface ContentEditorProps {
   value?: Value
   onChange?: (value: Value, html: string) => void
   placeholder?: string
-  mentionContext?: {
-    type: "reply" | "new-topic"
-    topicAuthorId?: string
-  }
 }
 
 export function ContentEditor({
   value,
   onChange,
   placeholder = "Type your amazing content here...",
-  mentionContext,
 }: ContentEditorProps) {
-  const [searchValue, setSearchValue] = useState("")
-  const [debouncedSearchValue, setDebouncedSearchValue] = useState("")
-
-  // Debounce search value
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setDebouncedSearchValue(searchValue)
-    }, 200)
-    return () => clearTimeout(timer)
-  }, [searchValue])
-
-  // Fetch users
-  const { data: users, isLoading } = useSWR<MentionItem[]>(
-    `/api/users/search?q=${encodeURIComponent(
-      debouncedSearchValue
-    )}&context=${mentionContext?.type || ""}&targetId=${
-      mentionContext?.topicAuthorId || ""
-    }`,
-    (url: string) => fetch(url).then((res) => res.json())
-  )
-
   const editor = usePlateEditor({
     plugins: [
       BoldPlugin,
@@ -91,11 +70,7 @@ export function ContentEditor({
       onChange={({ value }) => {
         if (onChange) {
           const staticEditor = createStaticEditor({
-            plugins: [
-              ...BaseBasicBlocksKit,
-              ...BaseBasicMarksKit,
-              ...mentionPlugins,
-            ],
+            plugins: [...BaseBasicBlocksKit, ...BaseBasicMarksKit],
             value: value,
           })
           serializeHtml(staticEditor).then((html) => {
@@ -134,11 +109,7 @@ export function ContentEditor({
         <EditorContainer className="max-h-80 overflow-y-auto">
           <Editor variant="select" placeholder={placeholder} />
         </EditorContainer>
-        <MentionCombobox
-          items={users || []}
-          loading={isLoading}
-          onSearch={setSearchValue}
-        />
+        <MentionCombobox items={MENTION_ITEMS} />
       </div>
     </Plate>
   )

@@ -21,10 +21,6 @@ type DrawerEditorProps = {
   onSubmit: (content: Value, html: string) => void | Promise<void>
   submitText: string
   cancelText: string
-  mentionContext?: {
-    type: "reply" | "new-topic"
-    topicAuthorId?: string
-  }
 }
 
 export function DrawerEditor({
@@ -37,7 +33,6 @@ export function DrawerEditor({
   onSubmit,
   submitText,
   cancelText,
-  mentionContext,
 }: DrawerEditorProps) {
   const [value, setValue] = useState<Value | undefined>(initialValue)
   const [html, setHtml] = useState<string>("")
@@ -67,7 +62,6 @@ export function DrawerEditor({
         <div className="px-4">
           <ContentEditor
             value={value}
-            mentionContext={mentionContext}
             onChange={(val, h) => {
               setValue(val)
               setHtml(h)

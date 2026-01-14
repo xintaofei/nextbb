@@ -293,10 +293,7 @@ export default function TopicPage() {
     const res = await fetch(`/api/post/${arg.postId}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        content: arg.content,
-        contentHtml: arg.contentHtml,
-      }),
+      body: JSON.stringify({ content: arg.content, contentHtml: arg.contentHtml }),
     })
     if (!res.ok) throw new Error(String(res.status))
     return { ok: true }
@@ -951,10 +948,6 @@ export default function TopicPage() {
         onSubmit={submitReply}
         submitText={t("reply")}
         cancelText={tc("Action.cancel")}
-        mentionContext={{
-          type: "reply",
-          topicAuthorId: posts[0]?.author.id,
-        }}
       />
       <DrawerEditor
         key={`edit-${editPostId ?? "none"}-${editOpen ? JSON.stringify(editInitial) : ""}`}
@@ -966,10 +959,6 @@ export default function TopicPage() {
         onSubmit={submitEdit}
         submitText={tc("Action.save")}
         cancelText={tc("Action.cancel")}
-        mentionContext={{
-          type: "reply",
-          topicAuthorId: posts[0]?.author.id,
-        }}
       />
       <div className="flex flex-col gap-4 mt-12">
         <Table className="w-full table-fixed max-sm:table-auto">

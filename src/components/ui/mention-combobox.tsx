@@ -11,24 +11,19 @@ import {
   CommandGroup,
   CommandItem,
   CommandList,
-  CommandEmpty,
 } from "@/components/ui/command"
 import { Popover, PopoverContent, PopoverAnchor } from "@/components/ui/popover"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 
 const MENTION_INPUT_PLUGIN_KEY = "mention_input"
 const MENTION_PLUGIN_KEY = "mention"
 
-export interface MentionItem {
+interface MentionItem {
   key: string
   text: string
-  avatar?: string
 }
 
 interface MentionComboboxProps {
   items: MentionItem[]
-  loading?: boolean
-  onSearch?: (search: string) => void
 }
 
 interface TMentionNode extends TElement {
@@ -36,14 +31,11 @@ interface TMentionNode extends TElement {
   value?: string
 }
 
-export function MentionCombobox({
-  items,
-  loading,
-  onSearch,
-}: MentionComboboxProps) {
+export function MentionCombobox({ items }: MentionComboboxProps) {
   const editor = useEditorRef()
 
   // Find the mention input node entry
+  // We use useEditorSelector to subscribe to changes
   const mentionInputEntry = useEditorSelector((editor) => {
     const nodes = Array.from(
       Editor.nodes(editor as unknown as Editor, {
@@ -56,15 +48,6 @@ export function MentionCombobox({
 
   const [targetRect, setTargetRect] = useState<DOMRect | null>(null)
 
-  // Get the search text from the mention input node and notify parent
-  useEffect(() => {
-    if (mentionInputEntry && onSearch) {
-      const [node] = mentionInputEntry as [TMentionNode, Path]
-      const text = Node.string(node as unknown as Node)
-      onSearch(text)
-    }
-  }, [mentionInputEntry, onSearch])
-
   useEffect(() => {
     if (mentionInputEntry) {
       const [node] = mentionInputEntry
@@ -74,6 +57,7 @@ export function MentionCombobox({
         ) as HTMLElement | null
         if (domNode) {
           const rect = domNode.getBoundingClientRect()
+          // Use requestAnimationFrame to avoid "cascading renders" warning
           const raf = requestAnimationFrame(() => {
             setTargetRect(rect)
           })
@@ -87,7 +71,14 @@ export function MentionCombobox({
 
   if (!mentionInputEntry) return null
 
-  const [, path] = mentionInputEntry as [TMentionNode, Path]
+  const [node, path] = mentionInputEntry as [TMentionNode, Path]
+  const text = Node.string(node as unknown as Node)
+
+  const filteredItems = items.filter((item) =>
+    item.text.toLowerCase().includes(text.toLowerCase())
+  )
+
+  if (filteredItems.length === 0) return null
 
   return (
     <Popover open={true}>
@@ -99,26 +90,15 @@ export function MentionCombobox({
         }}
       />
       <PopoverContent
-        className="p-0 w-[240px] overflow-hidden border-none shadow-lg"
+        className="p-0 w-[200px]"
         onOpenAutoFocus={(e) => e.preventDefault()}
         align="start"
         side="bottom"
-        sideOffset={5}
       >
-        <Command className="rounded-lg border shadow-md">
-          <CommandList className="max-h-[300px] h-auto overflow-y-auto overflow-x-hidden">
-            {loading && (
-              <div className="p-4 text-sm text-center text-muted-foreground animate-pulse">
-                Searching...
-              </div>
-            )}
-            {!loading && items.length === 0 && (
-              <CommandEmpty className="p-4 text-sm text-center text-muted-foreground">
-                No results found.
-              </CommandEmpty>
-            )}
+        <Command>
+          <CommandList>
             <CommandGroup>
-              {items.map((item) => (
+              {filteredItems.map((item) => (
                 <CommandItem
                   key={item.key}
                   value={item.text}
@@ -129,23 +109,14 @@ export function MentionCombobox({
                       plateEditor.tf.insertNodes({
                         type: MENTION_PLUGIN_KEY,
                         value: item.text,
-                        userId: item.key,
                         children: [{ text: "" }],
                       } as TMentionNode)
                     }
                   }}
-                  className="cursor-pointer flex items-center gap-2 px-3 py-2 hover:bg-accent transition-colors"
+                  className="cursor-pointer"
                   onMouseDown={(e) => e.preventDefault()}
                 >
-                  <Avatar className="h-7 w-7 border">
-                    <AvatarImage src={item.avatar} alt={item.text} />
-                    <AvatarFallback className="text-[10px] bg-muted">
-                      {item.text.slice(0, 2).toUpperCase()}
-                    </AvatarFallback>
-                  </Avatar>
-                  <span className="flex-1 truncate font-medium text-sm">
-                    {item.text}
-                  </span>
+                  {item.text}
                 </CommandItem>
               ))}
             </CommandGroup>
