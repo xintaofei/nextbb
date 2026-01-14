@@ -57,11 +57,13 @@ const MilkdownEditor: React.FC<MilkdownEditorProps> = ({ value, onChange }) => {
   const mentionListRef = useRef<MentionListRef>(null)
   const [mentionState, setMentionState] = useState<{
     open: boolean
-    element: HTMLElement | null
+    x: number
+    y: number
     query: string
   }>({
     open: false,
-    element: null,
+    x: 0,
+    y: 0,
     query: "",
   })
 
@@ -172,19 +174,16 @@ const MilkdownEditor: React.FC<MilkdownEditorProps> = ({ value, onChange }) => {
                     if (
                       prev.open === nextOpen &&
                       prev.query === nextQuery &&
-                      prev.element?.dataset.top === `${coords.bottom}` &&
-                      prev.element?.dataset.left === `${coords.left}`
+                      prev.x === coords.left &&
+                      prev.y === coords.bottom
                     ) {
                       return prev
                     }
 
-                    // Store coordinates on the element as data attributes so we can use them in popoverStyle
-                    content.dataset.top = `${coords.bottom}`
-                    content.dataset.left = `${coords.left}`
-
                     return {
                       open: nextOpen,
-                      element: content,
+                      x: coords.left,
+                      y: coords.bottom,
                       query: nextQuery,
                     }
                   })
@@ -239,19 +238,17 @@ const MilkdownEditor: React.FC<MilkdownEditorProps> = ({ value, onChange }) => {
 
   // Calculate position for MentionList
   const popoverStyle = useMemo<React.CSSProperties>(() => {
-    if (mentionState.open && mentionState.element) {
-      const top = mentionState.element.dataset.top
-      const left = mentionState.element.dataset.left
+    if (mentionState.open) {
       return {
         position: "fixed",
-        top: top ? `${parseFloat(top) + 5}px` : "-9999px",
-        left: left ? `${left}px` : "-9999px",
+        top: `${mentionState.y + 5}px`,
+        left: `${mentionState.x}px`,
         zIndex: 99999,
         pointerEvents: "auto",
       }
     }
     return {}
-  }, [mentionState.open, mentionState.element, mentionState.query]) // Add query to dependencies to refresh on move
+  }, [mentionState.open, mentionState.x, mentionState.y])
 
   return (
     <>
