@@ -55,7 +55,7 @@ export function DrawerEditor({
             <DrawerDescription>{description}</DrawerDescription>
           ) : null}
         </DrawerHeader>
-        <div className="px-4">
+        <div className="flex justify-center px-4">
           <MilkdownEditorWrapper
             value={value}
             onChange={(val, json, h) => {

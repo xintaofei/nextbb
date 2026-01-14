@@ -141,7 +141,7 @@ export const MilkdownEditorWrapper: React.FC<MilkdownEditorProps> = ({
 }) => {
   return (
     <MilkdownProvider>
-      <div className="prose dark:prose-invert border rounded-lg focus-within:ring-[3px] focus-within:ring-ring/50 focus-within:border-ring transition-all">
+      <div className="w-full prose dark:prose-invert border rounded-lg focus-within:ring-[3px] focus-within:ring-ring/50 focus-within:border-ring transition-all">
         <MilkdownEditor value={value} onChange={onChange} />
       </div>
     </MilkdownProvider>
