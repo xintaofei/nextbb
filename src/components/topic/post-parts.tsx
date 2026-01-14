@@ -30,6 +30,7 @@ import parse, {
   HTMLReactParserOptions,
 } from "html-react-parser"
 import { useTranslations } from "next-intl"
+import { cn } from "@/lib/utils"
 
 // --- Helper Components ---
 
@@ -120,7 +121,7 @@ const parseOptions: HTMLReactParserOptions = {
       return (
         <UserInfoCard userId={userId} side="top">
           <span
-            className={domNode.attribs.class}
+            className={cn("cursor-pointer", domNode.attribs.class)}
             style={
               domNode.attribs.style
                 ? (domNode.attribs.style as unknown as React.CSSProperties)
