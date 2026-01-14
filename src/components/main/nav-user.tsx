@@ -83,8 +83,8 @@ export function NavUser() {
   }, [data])
 
   const displayAvatar = useMemo(() => {
-    if (!data) return ""
-    return data.profile?.avatar || ""
+    if (!data) return undefined
+    return data.profile?.avatar || undefined
   }, [data])
 
   const encodedUsername = useMemo(() => {
@@ -108,10 +108,7 @@ export function NavUser() {
               className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
             >
               <Avatar className="h-8 w-8 rounded-lg">
-                <AvatarImage
-                  src={displayAvatar || undefined}
-                  alt={displayName}
-                />
+                <AvatarImage src={displayAvatar} alt={displayName} />
                 <AvatarFallback className="rounded-lg">
                   {displayName.slice(0, 1).toUpperCase()}
                 </AvatarFallback>
@@ -134,10 +131,7 @@ export function NavUser() {
             <DropdownMenuLabel className="p-0 font-normal">
               <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
                 <Avatar className="h-8 w-8 rounded-lg">
-                  <AvatarImage
-                    src={displayAvatar || undefined}
-                    alt={displayName}
-                  />
+                  <AvatarImage src={displayAvatar} alt={displayName} />
                   <AvatarFallback className="rounded-lg">
                     {displayName.slice(0, 1).toUpperCase()}
                   </AvatarFallback>

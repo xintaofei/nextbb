@@ -30,6 +30,8 @@ import {
 } from "lucide-react"
 
 type UserProfile = {
+  name?: string
+  avatar?: string
   bio: string | null
   website: string | null
   location: string | null
@@ -61,8 +63,8 @@ type UserStatistics = {
 
 type UserInfoCardProps = {
   userId: string
-  userName: string
-  userAvatar: string
+  userName?: string
+  userAvatar?: string
   children: ReactNode
   isAdmin?: boolean
   side?: "top" | "right" | "bottom" | "left"
@@ -226,6 +228,9 @@ export function UserInfoCard({
     return `${year}-${month}-${day}`
   }
 
+  const displayName = userName || profileData?.name || ""
+  const displayAvatar = userAvatar || profileData?.avatar
+
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>{children}</PopoverTrigger>
@@ -241,9 +246,12 @@ export function UserInfoCard({
             <div className="relative shrink-0">
               <div className="absolute inset-0 rounded-full bg-linear-to-br from-primary to-accent opacity-20 blur-sm" />
               <Avatar className="h-16 w-16 max-sm:h-14 max-sm:w-14 relative border-2 border-primary/30">
-                <AvatarImage src={userAvatar} alt={userName} />
+                <AvatarImage
+                  src={displayAvatar || undefined}
+                  alt={displayName}
+                />
                 <AvatarFallback className="text-xl max-sm:text-lg">
-                  {userName.slice(0, 1).toUpperCase()}
+                  {displayName.slice(0, 1).toUpperCase()}
                 </AvatarFallback>
               </Avatar>
             </div>
@@ -251,7 +259,7 @@ export function UserInfoCard({
               {/* 用户信息区域 */}
               <div className="flex items-center gap-2 flex-wrap">
                 <h3 className="text-xl max-sm:text-lg font-semibold truncate">
-                  {userName}
+                  {displayName}
                 </h3>
                 {isAdmin && (
                   <Badge
@@ -468,7 +476,7 @@ export function UserInfoCard({
             )}
             {/* 查看主页按钮 */}
             <Link
-              href={`/u/${encodeUsername(userName)}`}
+              href={`/u/${encodeUsername(displayName)}`}
               onClick={() => setOpen(false)}
             >
               <Button className="w-full" size="sm">

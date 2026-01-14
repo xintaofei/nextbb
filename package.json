@@ -63,6 +63,7 @@
     "date-fns": "^4.1.0",
     "embla-carousel-react": "^8.6.0",
     "framer-motion": "^12.23.26",
+    "html-react-parser": "^5.2.11",
     "input-otp": "^1.4.2",
     "ioredis": "^5.9.0",
     "jose": "^6.1.3",

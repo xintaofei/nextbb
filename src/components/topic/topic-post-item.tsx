@@ -27,6 +27,12 @@ import { UserInfoCard } from "@/components/common/user-info-card"
 import { Separator } from "@/components/ui/separator"
 import { Badge } from "@/components/ui/badge"
 import { ReactNode } from "react"
+import parse, {
+  DOMNode,
+  Element,
+  domToReact,
+  HTMLReactParserOptions,
+} from "html-react-parser"
 
 export function TopicPostItem({
   post,
@@ -87,6 +93,32 @@ export function TopicPostItem({
   onAccept?: (postId: string, isAccepted: boolean) => void | Promise<void>
   acceptMutating?: boolean
 }) {
+  const parseOptions: HTMLReactParserOptions = {
+    replace: (domNode) => {
+      if (
+        domNode instanceof Element &&
+        domNode.name === "span" &&
+        domNode.attribs["data-type"] === "mention"
+      ) {
+        const userId = domNode.attribs["data-id"]
+        return (
+          <UserInfoCard userId={userId} side="top">
+            <span
+              className={domNode.attribs.class}
+              style={
+                domNode.attribs.style
+                  ? (domNode.attribs.style as unknown as React.CSSProperties)
+                  : undefined
+              }
+            >
+              {domToReact(domNode.children as DOMNode[], parseOptions)}
+            </span>
+          </UserInfoCard>
+        )
+      }
+    },
+  }
+
   return (
     <TimelineStepsItem
       id={anchorId}
@@ -167,10 +199,9 @@ export function TopicPostItem({
           {post.isDeleted ? (
             <span className="text-muted-foreground">{deletedText}</span>
           ) : post.contentHtml ? (
-            <div
-              className="prose dark:prose-invert max-w-none whitespace-normal"
-              dangerouslySetInnerHTML={{ __html: post.contentHtml }}
-            />
+            <div className="prose dark:prose-invert max-w-none whitespace-normal">
+              {parse(post.contentHtml, parseOptions)}
+            </div>
           ) : (
             post.content
           )}

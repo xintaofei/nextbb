@@ -16,6 +16,8 @@ export async function GET(_req: Request, props: { params: Params }) {
       where: { id: userId },
       select: {
         id: true,
+        name: true,
+        avatar: true,
         is_deleted: true,
         bio: true,
         website: true,
@@ -29,6 +31,8 @@ export async function GET(_req: Request, props: { params: Params }) {
     }
 
     return NextResponse.json({
+      name: user.name,
+      avatar: user.avatar,
       bio: user.bio,
       website: user.website,
       location: user.location,
