@@ -42,11 +42,20 @@ export const mentionNode = $node("mention", () => ({
       node.type === "text" && /@\w+/.test((node.value as string) || ""),
     runner: (state, node: { type: string; value?: unknown }, type) => {
       const value = node.value as string
-      const match = /@(\w+)/.exec(value)
-      if (match) {
+      const regex = /@(\w+)/g
+      let lastIndex = 0
+      let match
+
+      while ((match = regex.exec(value)) !== null) {
+        if (match.index > lastIndex) {
+          state.addText(value.slice(lastIndex, match.index))
+        }
         state.addNode(type, { label: match[1], id: match[1] })
-      } else {
-        state.addText(value)
+        lastIndex = regex.lastIndex
+      }
+
+      if (lastIndex < value.length) {
+        state.addText(value.slice(lastIndex))
       }
     },
   },

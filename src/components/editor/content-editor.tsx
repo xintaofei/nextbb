@@ -148,8 +148,16 @@ const MilkdownEditor: React.FC<MilkdownEditorProps> = ({ value, onChange }) => {
                   )
 
                   const lastAtIndex = textBefore.lastIndexOf("@")
+
+                  // Check if @ is at the start or preceded by whitespace
+                  const isAtStart = lastAtIndex === 0
+                  const isPrecededBySpace =
+                    lastAtIndex > 0 &&
+                    /[\s\u00A0]/.test(textBefore[lastAtIndex - 1])
+
                   const isActive =
                     lastAtIndex !== -1 &&
+                    (isAtStart || isPrecededBySpace) &&
                     !textBefore.slice(lastAtIndex + 1).includes(" ")
 
                   const nextOpen = isActive && typeof query === "string"
