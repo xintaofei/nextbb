@@ -528,6 +528,7 @@ export async function POST(req: Request) {
           reply_to_user_id: BigInt(0),
           floor_number: 1,
           content: body.content,
+          content_html: body.content_html,
           is_deleted: false,
         },
         select: { id: true },

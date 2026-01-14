@@ -96,6 +96,7 @@ export function TopicForm({
       title: "",
       categoryId: "",
       content: "",
+      content_html: "",
       tags: [],
       isPinned: false,
       isCommunity: false,
@@ -120,6 +121,7 @@ export function TopicForm({
       title: currentValues.title || "",
       categoryId: currentValues.categoryId || "",
       content: currentValues.content || "",
+      content_html: currentValues.content_html || "",
       tags: currentValues.tags || [],
       isPinned: currentValues.isPinned || false,
       isCommunity: currentValues.isCommunity || false,
@@ -316,7 +318,12 @@ export function TopicForm({
               <FormControl>
                 <MilkdownEditorWrapper
                   value={field.value}
-                  onChange={field.onChange}
+                  onChange={(val, json, html) => {
+                    field.onChange(val)
+                    if (html) {
+                      form.setValue("content_html", html)
+                    }
+                  }}
                 />
               </FormControl>
               <FormDescription>

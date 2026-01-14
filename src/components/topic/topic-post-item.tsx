@@ -166,6 +166,11 @@ export function TopicPostItem({
         <TimelineStepsDescription>
           {post.isDeleted ? (
             <span className="text-muted-foreground">{deletedText}</span>
+          ) : post.contentHtml ? (
+            <div
+              className="prose dark:prose-invert max-w-none whitespace-normal"
+              dangerouslySetInnerHTML={{ __html: post.contentHtml }}
+            />
           ) : (
             post.content
           )}

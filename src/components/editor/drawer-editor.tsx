@@ -6,9 +6,9 @@ import {
   DrawerHeader,
   DrawerTitle,
 } from "@/components/ui/drawer"
-import { Textarea } from "@/components/ui/textarea"
 import { Button } from "@/components/ui/button"
 import { useState } from "react"
+import { MilkdownEditorWrapper } from "@/components/editor/content-editor"
 
 type DrawerEditorProps = {
   title: string
@@ -17,7 +17,7 @@ type DrawerEditorProps = {
   onOpenChange: (open: boolean) => void
   initialValue?: string
   submitting?: boolean
-  onSubmit: (content: string) => void | Promise<void>
+  onSubmit: (content: string, contentHtml?: string) => void | Promise<void>
   submitText: string
   cancelText: string
 }
@@ -34,14 +34,17 @@ export function DrawerEditor({
   cancelText,
 }: DrawerEditorProps) {
   const [value, setValue] = useState<string>(initialValue)
+  const [html, setHtml] = useState<string>("")
+
   const handleOpenChange = (o: boolean) => {
     if (o) {
       setValue(initialValue)
+      setHtml("")
     }
     onOpenChange(o)
   }
   const handleSubmit = () => {
-    onSubmit(value.trim())
+    onSubmit(value.trim(), html)
   }
   return (
     <Drawer open={open} onOpenChange={handleOpenChange}>
@@ -53,10 +56,12 @@ export function DrawerEditor({
           ) : null}
         </DrawerHeader>
         <div className="px-4">
-          <Textarea
+          <MilkdownEditorWrapper
             value={value}
-            onChange={(e) => setValue(e.target.value)}
-            rows={5}
+            onChange={(val, json, h) => {
+              setValue(val)
+              setHtml(h || "")
+            }}
           />
         </div>
         <DrawerFooter>

@@ -282,7 +282,7 @@ export default function TopicPage() {
         return (await res.json()) as BookmarkResult
       }
     )
-  type EditArg = { postId: string; content: string }
+  type EditArg = { postId: string; content: string; contentHtml?: string }
   const { trigger: triggerEdit, isMutating: editMutating } = useSWRMutation<
     { ok: boolean },
     Error,
@@ -292,7 +292,10 @@ export default function TopicPage() {
     const res = await fetch(`/api/post/${arg.postId}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ content: arg.content }),
+      body: JSON.stringify({
+        content: arg.content,
+        content_html: arg.contentHtml,
+      }),
     })
     if (!res.ok) throw new Error(String(res.status))
     return { ok: true }
@@ -308,7 +311,7 @@ export default function TopicPage() {
     if (!res.ok) throw new Error(String(res.status))
     return { ok: true }
   })
-  type ReplyArg = { content: string; parentId?: string }
+  type ReplyArg = { content: string; contentHtml?: string; parentId?: string }
   type ReplyResult = { postId: string; floorNumber: number }
   const { trigger: triggerReply } = useSWRMutation<
     ReplyResult,
@@ -319,7 +322,11 @@ export default function TopicPage() {
     const res = await fetch(`/api/topic/${id}/reply`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(arg),
+      body: JSON.stringify({
+        content: arg.content,
+        content_html: arg.contentHtml,
+        parentId: arg.parentId,
+      }),
     })
     if (!res.ok) throw new Error(String(res.status))
     return (await res.json()) as ReplyResult
@@ -432,7 +439,10 @@ export default function TopicPage() {
     setReplyOpen(true)
   }
 
-  const submitReply = async (overrideContent?: string) => {
+  const submitReply = async (
+    overrideContent?: string,
+    contentHtml?: string
+  ) => {
     const content = (overrideContent ?? replyContent).trim()
     if (!content) {
       toast.error(tc("Form.required"))
@@ -454,6 +464,7 @@ export default function TopicPage() {
           avatar: currentUserProfile?.avatar ?? "",
         },
         content,
+        contentHtml,
         createdAt: new Date().toISOString(),
         minutesAgo: 0,
         isDeleted: false,
@@ -486,6 +497,7 @@ export default function TopicPage() {
       }, false)
       await triggerReply({
         content,
+        contentHtml,
         parentId: replyToPostId ?? undefined,
       })
       await mutatePosts((pages) => pages, true)
@@ -509,7 +521,7 @@ export default function TopicPage() {
     setEditInitial(initialContent)
     setEditOpen(true)
   }
-  const submitEdit = async (content: string) => {
+  const submitEdit = async (content: string, contentHtml?: string) => {
     const value = content.trim()
     if (!value) {
       toast.error(tc("Form.required"))
@@ -524,12 +536,12 @@ export default function TopicPage() {
           pages?.map((pg) => ({
             ...pg,
             items: pg.items.map((p) =>
-              p.id === editPostId ? { ...p, content: value } : p
+              p.id === editPostId ? { ...p, content: value, contentHtml } : p
             ),
           })) ?? pages,
         false
       )
-      await triggerEdit({ postId: editPostId, content: value })
+      await triggerEdit({ postId: editPostId, content: value, contentHtml })
       setEditOpen(false)
       await mutatePosts((pages) => pages, true)
       const nextFlat = postsPages ? postsPages.flatMap((p) => p.items) : []
@@ -919,8 +931,8 @@ export default function TopicPage() {
         onOpenChange={setReplyOpen}
         initialValue={replyContent}
         submitting={submitting}
-        onSubmit={(content: string) => {
-          submitReply(content)
+        onSubmit={(content: string, contentHtml?: string) => {
+          submitReply(content, contentHtml)
         }}
         submitText={t("reply")}
         cancelText={tc("Action.cancel")}
@@ -932,7 +944,9 @@ export default function TopicPage() {
         onOpenChange={setEditOpen}
         initialValue={editInitial}
         submitting={editSubmitting}
-        onSubmit={submitEdit}
+        onSubmit={(content: string, contentHtml?: string) => {
+          submitEdit(content, contentHtml)
+        }}
         submitText={tc("Action.save")}
         cancelText={tc("Action.cancel")}
       />
