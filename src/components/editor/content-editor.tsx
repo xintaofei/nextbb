@@ -9,6 +9,9 @@ import { commonmark } from "@milkdown/kit/preset/commonmark"
 import { gfm } from "@milkdown/kit/preset/gfm"
 import { history } from "@milkdown/kit/plugin/history"
 import { listener, listenerCtx } from "@milkdown/kit/plugin/listener"
+import { clipboard } from "@milkdown/kit/plugin/clipboard"
+import { indent } from "@milkdown/kit/plugin/indent"
+import { cursor } from "@milkdown/kit/plugin/cursor"
 import { Milkdown, MilkdownProvider, useEditor } from "@milkdown/react"
 import { nord } from "@milkdown/theme-nord"
 import { replaceAll } from "@milkdown/kit/utils"
@@ -94,7 +97,10 @@ const MilkdownEditor: React.FC<MilkdownEditorProps> = ({ value, onChange }) => {
         .use(commonmark)
         .use(gfm)
         .use(history)
-        .use(listener),
+        .use(listener)
+        .use(clipboard)
+        .use(indent)
+        .use(cursor),
     []
   )
 
