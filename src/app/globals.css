@@ -1,5 +1,6 @@
 @import "tailwindcss";
 @import "tw-animate-css";
+@plugin "@tailwindcss/typography";
 
 @custom-variant dark (&:is(.dark *));
 
@@ -146,4 +147,14 @@
   body {
     @apply bg-background text-foreground;
   }
+}
+
+
+.milkdown .ProseMirror {
+  padding: 1rem; 
+  min-height: 10rem; 
+}
+
+.milkdown .ProseMirror:focus {
+  outline: none;
 }

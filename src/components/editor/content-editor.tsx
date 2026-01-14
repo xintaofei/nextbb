@@ -22,7 +22,9 @@ const MilkdownEditor: React.FC = () => {
 export const MilkdownEditorWrapper: React.FC = () => {
   return (
     <MilkdownProvider>
-      <MilkdownEditor />
+      <div className="border rounded-lg focus-within:ring-3 focus-within:ring-muted">
+        <MilkdownEditor />
+      </div>
     </MilkdownProvider>
   )
 }
