@@ -28,7 +28,6 @@ type PostItem = {
   id: string
   author: Author
   content: string
-  contentHtml: string
   createdAt: string
   minutesAgo: number
   isDeleted: boolean
@@ -90,7 +89,6 @@ export async function GET(
     select: {
       id: true,
       content: true,
-      content_html: true,
       created_at: true,
       is_deleted: true,
       user: { select: { id: true, name: true, avatar: true } },
@@ -103,7 +101,6 @@ export async function GET(
   type PostRow = {
     id: bigint
     content: string
-    content_html: string
     created_at: Date
     is_deleted: boolean
     user: { id: bigint; name: string; avatar: string }
@@ -289,7 +286,6 @@ export async function GET(
         avatar: p.user.avatar,
       },
       content: p.content,
-      contentHtml: p.content_html,
       createdAt: p.created_at.toISOString(),
       minutesAgo: Math.max(
         Math.round((Date.now() - p.created_at.getTime()) / 60000),

@@ -239,16 +239,14 @@ export async function GET(req: Request) {
       select: {
         id: true,
         topic_id: true,
-        content_html: true,
+        content: true,
         created_at: true,
       },
     })
     for (const post of firstPostsData) {
-      // 简单去除 HTML 标签以生成纯文本预览
-      const plainText = post.content_html.replace(/<[^>]+>/g, "")
       firstPosts[String(post.topic_id)] = {
         id: post.id,
-        content: plainText,
+        content: post.content,
         created_at: post.created_at,
       }
     }
@@ -529,8 +527,7 @@ export async function POST(req: Request) {
           parent_id: BigInt(0),
           reply_to_user_id: BigInt(0),
           floor_number: 1,
-          content: JSON.stringify(body.content),
-          content_html: body.contentHtml,
+          content: body.content,
           is_deleted: false,
         },
         select: { id: true },

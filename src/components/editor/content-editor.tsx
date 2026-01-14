@@ -1,6 +1,9 @@
 "use client"
 
+import * as React from "react"
+
 import type { Value } from "platejs"
+
 import {
   BlockquotePlugin,
   BoldPlugin,
@@ -11,10 +14,7 @@ import {
   UnderlinePlugin,
 } from "@platejs/basic-nodes/react"
 import { Plate, usePlateEditor } from "platejs/react"
-import { createStaticEditor, serializeHtml } from "platejs/static"
 
-import { BaseBasicBlocksKit } from "./plugins/basic-blocks-base-kit"
-import { BaseBasicMarksKit } from "./plugins/basic-marks-base-kit"
 import { BlockquoteElement } from "@/components/ui/blockquote-node"
 import { Editor, EditorContainer } from "@/components/ui/editor"
 import { FixedToolbar } from "@/components/ui/fixed-toolbar"
@@ -24,22 +24,24 @@ import { ToolbarButton } from "@/components/ui/toolbar"
 
 const initialValue: Value = [
   {
-    children: [{ text: "" }],
+    children: [{ text: "Title" }],
+    type: "h3",
+  },
+  {
+    children: [{ text: "This is a quote." }],
+    type: "blockquote",
+  },
+  {
+    children: [
+      { text: "With some " },
+      { bold: true, text: "bold" },
+      { text: " text for emphasis!" },
+    ],
     type: "p",
   },
 ]
 
-interface ContentEditorProps {
-  value?: Value
-  onChange?: (value: Value, html: string) => void
-  placeholder?: string
-}
-
-export function ContentEditor({
-  value,
-  onChange,
-  placeholder = "Type your amazing content here...",
-}: ContentEditorProps) {
+export function ContentEditor() {
   const editor = usePlateEditor({
     plugins: [
       BoldPlugin,
@@ -50,23 +52,24 @@ export function ContentEditor({
       H3Plugin.withComponent(H3Element),
       BlockquotePlugin.withComponent(BlockquoteElement),
     ],
-    value: value ?? initialValue,
+    value: () => {
+      const savedValue = localStorage.getItem(
+        `nextjs-plate-value-demo-${new Date().toISOString().split("T")[0]}`
+      )
+
+      return savedValue ? JSON.parse(savedValue) : initialValue
+    },
   })
 
   return (
     <Plate
-      editor={editor}
       onChange={({ value }) => {
-        if (onChange) {
-          const staticEditor = createStaticEditor({
-            plugins: [...BaseBasicBlocksKit, ...BaseBasicMarksKit],
-            value: value,
-          })
-          serializeHtml(staticEditor).then((html) => {
-            onChange(value, html)
-          })
-        }
+        localStorage.setItem(
+          `nextjs-plate-value-demo-${new Date().toISOString().split("T")[0]}`,
+          JSON.stringify(value)
+        )
       }}
+      editor={editor}
     >
       <FixedToolbar className="flex justify-start gap-1 rounded-t-lg">
         <ToolbarButton onClick={() => editor.tf.h1.toggle()}>H1</ToolbarButton>
@@ -86,10 +89,21 @@ export function ContentEditor({
         <MarkToolbarButton nodeType="underline" tooltip="Underline (⌘+U)">
           U
         </MarkToolbarButton>
+
+        <div className="flex-1" />
+
+        <ToolbarButton
+          className="px-2"
+          onClick={() => {
+            editor.tf.setValue(initialValue)
+          }}
+        >
+          Reset
+        </ToolbarButton>
       </FixedToolbar>
 
       <EditorContainer>
-        <Editor placeholder={placeholder} />
+        <Editor placeholder="Type your amazing content here..." />
       </EditorContainer>
     </Plate>
   )

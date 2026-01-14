@@ -4,8 +4,7 @@ import { z } from "zod"
 import { getSessionUser } from "@/lib/auth"
 
 const PostUpdateSchema = z.object({
-  content: z.any(),
-  contentHtml: z.string().min(1),
+  content: z.string().min(1),
 })
 
 type PostUpdateDTO = z.infer<typeof PostUpdateSchema>
@@ -48,10 +47,7 @@ export async function PATCH(
 
   await prisma.posts.update({
     where: { id: postId },
-    data: {
-      content: JSON.stringify(body.content),
-      content_html: body.contentHtml,
-    },
+    data: { content: body.content },
     select: { id: true },
   })
 

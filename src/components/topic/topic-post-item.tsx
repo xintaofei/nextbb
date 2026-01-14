@@ -26,8 +26,7 @@ import { UserBadgesDisplay } from "@/components/common/user-badges-display"
 import { UserInfoCard } from "@/components/common/user-info-card"
 import { Separator } from "@/components/ui/separator"
 import { Badge } from "@/components/ui/badge"
-import { useMemo, ReactNode } from "react"
-import { EditorStatic } from "@/components/ui/editor-static"
+import { ReactNode } from "react"
 
 export function TopicPostItem({
   post,
@@ -88,14 +87,6 @@ export function TopicPostItem({
   onAccept?: (postId: string, isAccepted: boolean) => void | Promise<void>
   acceptMutating?: boolean
 }) {
-  const contentValue = useMemo(() => {
-    try {
-      return JSON.parse(post.content)
-    } catch {
-      return [{ type: "p", children: [{ text: post.content }] }]
-    }
-  }, [post.content])
-
   return (
     <TimelineStepsItem
       id={anchorId}
@@ -176,7 +167,7 @@ export function TopicPostItem({
           {post.isDeleted ? (
             <span className="text-muted-foreground">{deletedText}</span>
           ) : (
-            <EditorStatic value={contentValue} variant="none" />
+            post.content
           )}
         </TimelineStepsDescription>
         {topicTypeSlot}

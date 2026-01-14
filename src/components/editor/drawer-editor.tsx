@@ -6,19 +6,18 @@ import {
   DrawerHeader,
   DrawerTitle,
 } from "@/components/ui/drawer"
+import { Textarea } from "@/components/ui/textarea"
 import { Button } from "@/components/ui/button"
 import { useState } from "react"
-import { ContentEditor } from "./content-editor"
-import type { Value } from "platejs"
 
 type DrawerEditorProps = {
   title: string
   description?: string
   open: boolean
   onOpenChange: (open: boolean) => void
-  initialValue?: Value
+  initialValue?: string
   submitting?: boolean
-  onSubmit: (content: Value, html: string) => void | Promise<void>
+  onSubmit: (content: string) => void | Promise<void>
   submitText: string
   cancelText: string
 }
@@ -28,28 +27,22 @@ export function DrawerEditor({
   description,
   open,
   onOpenChange,
-  initialValue,
+  initialValue = "",
   submitting = false,
   onSubmit,
   submitText,
   cancelText,
 }: DrawerEditorProps) {
-  const [value, setValue] = useState<Value | undefined>(initialValue)
-  const [html, setHtml] = useState<string>("")
-
+  const [value, setValue] = useState<string>(initialValue)
   const handleOpenChange = (o: boolean) => {
     if (o) {
       setValue(initialValue)
     }
     onOpenChange(o)
   }
-
   const handleSubmit = () => {
-    if (value) {
-      onSubmit(value, html)
-    }
+    onSubmit(value.trim())
   }
-
   return (
     <Drawer open={open} onOpenChange={handleOpenChange}>
       <DrawerContent>
@@ -60,12 +53,10 @@ export function DrawerEditor({
           ) : null}
         </DrawerHeader>
         <div className="px-4">
-          <ContentEditor
+          <Textarea
             value={value}
-            onChange={(val, h) => {
-              setValue(val)
-              setHtml(h)
-            }}
+            onChange={(e) => setValue(e.target.value)}
+            rows={5}
           />
         </div>
         <DrawerFooter>

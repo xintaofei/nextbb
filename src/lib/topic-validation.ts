@@ -20,8 +20,10 @@ export function createTopicFormSchema(t: TranslateFn) {
     categoryId: z
       .string()
       .regex(/^\d+$/, t("Topic.Validation.categoryId.invalid")),
-    content: z.any(),
-    contentHtml: z.string().min(20, t("Topic.Validation.content.min")),
+    content: z
+      .string()
+      .min(20, t("Topic.Validation.content.min"))
+      .max(5000, t("Topic.Validation.content.max")),
     tags: z
       .array(z.string().max(15, t("Topic.Validation.tag.maxLength")))
       .max(5, t("Topic.Validation.tags.maxCount")),
@@ -338,8 +340,10 @@ export function createTopicFormSchemaWithCredits(
     categoryId: z
       .string()
       .regex(/^\d+$/, t("Topic.Validation.categoryId.invalid")),
-    content: z.any(),
-    contentHtml: z.string().min(20, t("Topic.Validation.content.min")),
+    content: z
+      .string()
+      .min(20, t("Topic.Validation.content.min"))
+      .max(5000, t("Topic.Validation.content.max")),
     tags: z
       .array(z.string().max(15, t("Topic.Validation.tag.maxLength")))
       .max(5, t("Topic.Validation.tags.maxCount")),
