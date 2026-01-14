@@ -13,16 +13,13 @@ import {
 
 import { cn } from "@/lib/utils"
 
-export function HrElement({
-  className,
-  ...props
-}: PlateElementProps & { className?: string }) {
+export function HrElement(props: PlateElementProps) {
   const readOnly = useReadOnly()
   const selected = useSelected()
   const focused = useFocused()
 
   return (
-    <PlateElement className={className} {...props}>
+    <PlateElement {...props}>
       <div className="py-6" contentEditable={false}>
         <hr
           className={cn(

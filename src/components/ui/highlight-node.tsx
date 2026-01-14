@@ -2,21 +2,13 @@
 
 import * as React from "react"
 
-import { cn } from "@/lib/utils"
 import type { PlateLeafProps } from "platejs/react"
 
 import { PlateLeaf } from "platejs/react"
 
-export function HighlightLeaf({
-  className,
-  ...props
-}: PlateLeafProps & { className?: string }) {
+export function HighlightLeaf(props: PlateLeafProps) {
   return (
-    <PlateLeaf
-      as="mark"
-      className={cn("bg-highlight/30 text-inherit", className)}
-      {...props}
-    >
+    <PlateLeaf {...props} as="mark" className="bg-highlight/30 text-inherit">
       {props.children}
     </PlateLeaf>
   )

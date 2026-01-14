@@ -22,8 +22,6 @@
     "@emoji-mart/react": "^1.1.1",
     "@hookform/resolvers": "^5.2.2",
     "@platejs/basic-nodes": "^52.0.11",
-    "@platejs/combobox": "^52.0.15",
-    "@platejs/mention": "^52.0.15",
     "@prisma/adapter-pg": "^7.2.0",
     "@prisma/client": "^7.2.0",
     "@radix-ui/react-accordion": "^1.2.12",

@@ -7,8 +7,6 @@ import type { PlateElementProps } from "platejs/react"
 import { type VariantProps, cva } from "class-variance-authority"
 import { PlateElement } from "platejs/react"
 
-import { cn } from "@/lib/utils"
-
 const headingVariants = cva("relative mb-1", {
   variants: {
     variant: {
@@ -24,13 +22,12 @@ const headingVariants = cva("relative mb-1", {
 
 export function HeadingElement({
   variant = "h1",
-  className,
   ...props
-}: PlateElementProps & VariantProps<typeof headingVariants> & { className?: string }) {
+}: PlateElementProps & VariantProps<typeof headingVariants>) {
   return (
     <PlateElement
       as={variant!}
-      className={cn(headingVariants({ variant }), className)}
+      className={headingVariants({ variant })}
       {...props}
     >
       {props.children}
@@ -38,26 +35,26 @@ export function HeadingElement({
   )
 }
 
-export function H1Element(props: PlateElementProps & { className?: string }) {
+export function H1Element(props: PlateElementProps) {
   return <HeadingElement variant="h1" {...props} />
 }
 
-export function H2Element(props: PlateElementProps & { className?: string }) {
+export function H2Element(props: PlateElementProps) {
   return <HeadingElement variant="h2" {...props} />
 }
 
-export function H3Element(props: PlateElementProps & { className?: string }) {
+export function H3Element(props: PlateElementProps) {
   return <HeadingElement variant="h3" {...props} />
 }
 
-export function H4Element(props: PlateElementProps & { className?: string }) {
+export function H4Element(props: PlateElementProps) {
   return <HeadingElement variant="h4" {...props} />
 }
 
-export function H5Element(props: PlateElementProps & { className?: string }) {
+export function H5Element(props: PlateElementProps) {
   return <HeadingElement variant="h5" {...props} />
 }
 
-export function H6Element(props: PlateElementProps & { className?: string }) {
+export function H6Element(props: PlateElementProps) {
   return <HeadingElement variant="h6" {...props} />
 }
