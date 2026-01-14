@@ -1,6 +1,4 @@
 @import "tailwindcss";
-
-@plugin "tailwind-scrollbar-hide";
 @import "tw-animate-css";
 
 @custom-variant dark (&:is(.dark *));
@@ -61,10 +59,6 @@
   }
 
   --animate-background-position-spin: background-position-spin 3000ms infinite alternate;
-
-  --color-brand: var(--brand);
-
-  --color-highlight: var(--highlight);
   @keyframes background-position-spin {
     0% {
       background-position: top center;
@@ -109,8 +103,6 @@
   --sidebar-accent-foreground: oklch(0.205 0 0);
   --sidebar-border: oklch(0.922 0 0);
   --sidebar-ring: oklch(0.708 0 0);
-  --brand: oklch(0.623 0.214 259.815);
-  --highlight: oklch(0.852 0.199 91.936);
 }
 
 .dark {
@@ -145,8 +137,6 @@
   --sidebar-accent-foreground: oklch(0.985 0 0);
   --sidebar-border: oklch(1 0 0 / 10%);
   --sidebar-ring: oklch(0.556 0 0);
-  --brand: oklch(0.707 0.165 254.624);
-  --highlight: oklch(0.852 0.199 91.936);
 }
 
 @layer base {

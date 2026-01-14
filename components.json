@@ -21,7 +21,6 @@
   "registries": {
     "@abui": "https://abui.io/r/{name}.json",
     "@uitripled": "https://ui.tripled.work/r/{name}.json",
-    "@magicui": "https://magicui.design/r/{name}.json",
-    "@plate": "https://platejs.org/r/{name}.json"
+    "@magicui": "https://magicui.design/r/{name}.json"
   }
 }
