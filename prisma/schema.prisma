@@ -173,6 +173,7 @@ model posts {
   reply_to_user_id BigInt   @default(0) @db.BigInt
   floor_number     Int
   content          String   @db.Text
+  content_html     String   @db.Text
   is_deleted       Boolean
   created_at       DateTime @default(now())
   updated_at       DateTime @updatedAt
