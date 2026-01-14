@@ -1,0 +1,321 @@
+import {
+  TimelineStepsTitle,
+  TimelineStepsDescription,
+  TimelineStepsAction,
+} from "@/components/ui/timeline-steps"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { Button } from "@/components/ui/button"
+import {
+  Bookmark,
+  Heart,
+  Reply,
+  Pencil,
+  Trash,
+  Coins,
+  Check,
+  X,
+  Gift,
+} from "lucide-react"
+import { RelativeTime } from "@/components/common/relative-time"
+import { PostItem } from "@/types/topic"
+import { UserBadgesDisplay } from "@/components/common/user-badges-display"
+import { UserInfoCard } from "@/components/common/user-info-card"
+import { Separator } from "@/components/ui/separator"
+import { Badge } from "@/components/ui/badge"
+import { useMemo } from "react"
+import parse, {
+  DOMNode,
+  Element,
+  domToReact,
+  HTMLReactParserOptions,
+} from "html-react-parser"
+import { useTranslations } from "next-intl"
+
+// --- Helper Components ---
+
+export function PostBadges({ post }: { post: PostItem }) {
+  const tCommon = useTranslations("Common")
+  const tQuestion = useTranslations("Question")
+
+  return (
+    <>
+      {post.badges && post.badges.length > 0 && (
+        <UserBadgesDisplay badges={post.badges} maxDisplay={1} size="sm" />
+      )}
+      {post.bountyReward && (
+        <Badge
+          variant="secondary"
+          className="bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400 flex items-center gap-1"
+        >
+          <Coins className="h-3 w-3" />+{post.bountyReward.amount}
+        </Badge>
+      )}
+      {post.lotteryWin && (
+        <Badge
+          variant="secondary"
+          className="bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400 flex items-center gap-1"
+        >
+          <Gift className="h-3 w-3" />
+          {tCommon("won")}
+        </Badge>
+      )}
+      {post.questionAcceptance && (
+        <Badge
+          variant="secondary"
+          className="bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 flex items-center gap-1"
+        >
+          <Check className="h-3 w-3" />
+          {tQuestion("acceptance.status.bestAnswer")}
+        </Badge>
+      )}
+    </>
+  )
+}
+
+export function PostHeader({
+  post,
+  index,
+  floorOpText,
+}: {
+  post: PostItem
+  index: number
+  floorOpText: string
+}) {
+  const displayAvatar = useMemo(() => {
+    return post.author.avatar || undefined
+  }, [post.author.avatar])
+
+  return (
+    <div className="flex flex-row justify-between items-center w-full">
+      <div className="flex flex-row gap-4 max-sm:gap-2 items-center">
+        <UserInfoCard
+          userId={post.author.id}
+          userName={post.author.name}
+          userAvatar={post.author.avatar}
+          side="right"
+        >
+          <Avatar className="hidden max-sm:flex size-6 cursor-pointer">
+            <AvatarImage src={displayAvatar} alt="@avatar" />
+            <AvatarFallback>{post.author.name}</AvatarFallback>
+          </Avatar>
+        </UserInfoCard>
+        <TimelineStepsTitle>{post.author.name}</TimelineStepsTitle>
+        <PostBadges post={post} />
+      </div>
+      <span className="text-muted-foreground text-sm">
+        {index === 0 ? floorOpText : "#" + index}
+      </span>
+    </div>
+  )
+}
+
+const parseOptions: HTMLReactParserOptions = {
+  replace: (domNode) => {
+    if (
+      domNode instanceof Element &&
+      domNode.name === "span" &&
+      domNode.attribs["data-type"] === "mention"
+    ) {
+      const userId = domNode.attribs["data-id"]
+      return (
+        <UserInfoCard userId={userId} side="top">
+          <span
+            className={domNode.attribs.class}
+            style={
+              domNode.attribs.style
+                ? (domNode.attribs.style as unknown as React.CSSProperties)
+                : undefined
+            }
+          >
+            {domToReact(domNode.children as DOMNode[], parseOptions)}
+          </span>
+        </UserInfoCard>
+      )
+    }
+  },
+}
+
+export function PostContent({
+  post,
+  deletedText,
+}: {
+  post: PostItem
+  deletedText: string
+}) {
+  return (
+    <TimelineStepsDescription>
+      {post.isDeleted ? (
+        <span className="text-muted-foreground">{deletedText}</span>
+      ) : post.contentHtml ? (
+        <div className="prose dark:prose-invert max-w-none whitespace-normal">
+          {parse(post.contentHtml, parseOptions)}
+        </div>
+      ) : (
+        post.content
+      )}
+    </TimelineStepsDescription>
+  )
+}
+
+interface PostActionsProps {
+  post: PostItem
+  currentUserId: string | null
+  mutatingPostId: string | null
+  likeMutating: boolean
+  bookmarkMutating: boolean
+  editMutating: boolean
+  deleteMutating: boolean
+  onLike: (postId: string) => void | Promise<void>
+  onBookmark: (postId: string) => void | Promise<void>
+  onEdit: (postId: string, initialContent: string) => void
+  onDelete: (postId: string) => void | Promise<void>
+  onReply: (postId: string, authorName: string) => void
+  replyText: string
+  showBountyButton?: boolean
+  onReward?: (
+    postId: string,
+    receiverId: string,
+    amount: number
+  ) => void | Promise<void>
+  rewardMutating?: boolean
+  bountyAmount?: number
+  showAcceptButton?: boolean
+  onAccept?: (postId: string, isAccepted: boolean) => void | Promise<void>
+  acceptMutating?: boolean
+}
+
+export function PostActions({
+  post,
+  currentUserId,
+  mutatingPostId,
+  likeMutating,
+  bookmarkMutating,
+  editMutating,
+  deleteMutating,
+  onLike,
+  onBookmark,
+  onEdit,
+  onDelete,
+  onReply,
+  replyText,
+  showBountyButton,
+  onReward,
+  rewardMutating,
+  bountyAmount,
+  showAcceptButton,
+  onAccept,
+  acceptMutating,
+}: PostActionsProps) {
+  const tBounty = useTranslations("Bounty")
+  const tQuestion = useTranslations("Question")
+
+  if (post.isDeleted) return null
+
+  return (
+    <TimelineStepsAction>
+      {post.author.id !== currentUserId ? (
+        <>
+          <Button
+            variant="ghost"
+            disabled={mutatingPostId === post.id || likeMutating}
+            onClick={() => onLike(post.id)}
+            aria-label="Like"
+          >
+            <Heart
+              className={post.liked ? "text-red-500" : undefined}
+              fill={post.liked ? "currentColor" : "none"}
+            />
+            {post.likes > 0 && (
+              <span className="ml-1 text-sm">{post.likes}</span>
+            )}
+          </Button>
+          <Button
+            variant="ghost"
+            disabled={mutatingPostId === post.id || bookmarkMutating}
+            onClick={() => onBookmark(post.id)}
+            aria-label="Bookmark"
+          >
+            <Bookmark
+              className={post.bookmarked ? "text-primary" : undefined}
+              fill={post.bookmarked ? "currentColor" : "none"}
+            />
+            {post.bookmarks > 0 && (
+              <span className="ml-1 text-sm">{post.bookmarks}</span>
+            )}
+          </Button>
+        </>
+      ) : (
+        <>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => onEdit(post.id, post.content)}
+            disabled={mutatingPostId === post.id || editMutating}
+            aria-label="Edit"
+          >
+            <Pencil />
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => onDelete(post.id)}
+            disabled={mutatingPostId === post.id || deleteMutating}
+            aria-label="Delete"
+          >
+            <Trash />
+          </Button>
+        </>
+      )}
+      <Button
+        variant="ghost"
+        onClick={() => {
+          onReply(post.id, post.author.name)
+        }}
+      >
+        <Reply />
+        {replyText}
+      </Button>
+      {showBountyButton && onReward && bountyAmount && !post.bountyReward && (
+        <Button
+          variant="outline"
+          className="border-amber-200 hover:bg-amber-50 dark:border-amber-900/50 dark:hover:bg-amber-950/20 text-amber-700 dark:text-amber-400"
+          onClick={() => onReward(post.id, post.author.id, bountyAmount)}
+          disabled={mutatingPostId === post.id || rewardMutating}
+        >
+          <Coins className="h-4 w-4" />
+          {tBounty("action.reward")} ({bountyAmount})
+        </Button>
+      )}
+      {showAcceptButton && onAccept && (
+        <Button
+          variant={post.questionAcceptance ? "default" : "outline"}
+          className={
+            post.questionAcceptance
+              ? "bg-green-600 hover:bg-green-700 dark:bg-green-700 dark:hover:bg-green-800 text-white"
+              : "border-green-200 hover:bg-green-50 dark:border-green-900/50 dark:hover:bg-green-950/20 text-green-700 dark:text-green-400"
+          }
+          onClick={() => onAccept(post.id, !!post.questionAcceptance)}
+          disabled={mutatingPostId === post.id || acceptMutating}
+        >
+          {post.questionAcceptance ? (
+            <>
+              <X className="h-4 w-4" />
+              {tQuestion("actions.cancelAccept")}
+            </>
+          ) : (
+            <>
+              <Check className="h-4 w-4" />
+              {tQuestion("actions.accept")}
+            </>
+          )}
+        </Button>
+      )}
+      <div className="flex gap-5 h-5">
+        <Separator orientation="vertical" />
+        <div className="flex flex-row gap-1 items-center text-muted-foreground">
+          <RelativeTime date={post.createdAt} />
+        </div>
+      </div>
+    </TimelineStepsAction>
+  )
+}
