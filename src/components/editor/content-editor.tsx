@@ -26,7 +26,7 @@ interface MilkdownEditorProps {
 }
 
 const MilkdownEditor: React.FC<MilkdownEditorProps> = ({ value, onChange }) => {
-  const valueRef = useRef(value)
+  const valueRef = useRef<string | undefined>(undefined)
   const { get, loading } = useEditor(
     (root) =>
       Editor.make()
