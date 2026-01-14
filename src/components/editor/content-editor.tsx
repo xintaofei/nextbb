@@ -244,9 +244,10 @@ const MilkdownEditor: React.FC<MilkdownEditorProps> = ({ value, onChange }) => {
       const left = mentionState.element.dataset.left
       return {
         position: "fixed",
-        top: top ? `${parseFloat(top) + 5}px` : "0px",
-        left: left ? `${left}px` : "0px",
-        zIndex: 50,
+        top: top ? `${parseFloat(top) + 5}px` : "-9999px",
+        left: left ? `${left}px` : "-9999px",
+        zIndex: 99999,
+        pointerEvents: "auto",
       }
     }
     return {}
@@ -295,6 +296,7 @@ const MilkdownEditor: React.FC<MilkdownEditorProps> = ({ value, onChange }) => {
                   const tr3 = tr2.insertText(" ")
 
                   dispatch(tr3)
+                  view.focus()
 
                   setMentionState((prev) => ({ ...prev, open: false }))
                 })

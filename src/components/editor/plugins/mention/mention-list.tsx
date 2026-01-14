@@ -86,7 +86,12 @@ export const MentionList = forwardRef<MentionListRef, MentionListProps>(
                 ? "bg-accent text-accent-foreground"
                 : "hover:bg-accent/50"
             )}
-            onClick={() => onSelect(user)}
+            onMouseDown={(e) => {
+              e.preventDefault()
+            }}
+            onClick={() => {
+              onSelect(user)
+            }}
             onMouseEnter={() => setSelectedIndex(index)}
           >
             <div className="w-6 h-6 rounded-full bg-muted flex items-center justify-center overflow-hidden shrink-0 relative">
