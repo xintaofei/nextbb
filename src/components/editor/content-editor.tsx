@@ -43,7 +43,12 @@ const parseContent = (value: string | undefined) => {
   if (!value) return ""
   try {
     const parsed = JSON.parse(value)
-    if (parsed && parsed.type === "doc" && parsed.content) {
+    if (
+      parsed &&
+      typeof parsed === "object" &&
+      parsed.type === "doc" &&
+      Array.isArray(parsed.content)
+    ) {
       return parsed
     }
   } catch {
@@ -167,26 +172,36 @@ const MilkdownEditor: React.FC<MilkdownEditorProps> = ({ value, onChange }) => {
                     ? textBefore.slice(lastAtIndex + 1)
                     : ""
 
-                  // Get actual cursor coordinates for precise positioning
-                  const coords = updatedView.coordsAtPos(selection.from)
+                  if (nextOpen) {
+                    // Get actual cursor coordinates only when needed to avoid performance overhead
+                    const coords = updatedView.coordsAtPos(selection.from)
 
-                  setMentionState((prev) => {
-                    if (
-                      prev.open === nextOpen &&
-                      prev.query === nextQuery &&
-                      prev.x === coords.left &&
-                      prev.y === coords.bottom
-                    ) {
-                      return prev
-                    }
+                    setMentionState((prev) => {
+                      if (
+                        prev.open === nextOpen &&
+                        prev.query === nextQuery &&
+                        prev.x === coords.left &&
+                        prev.y === coords.bottom
+                      ) {
+                        return prev
+                      }
 
-                    return {
-                      open: nextOpen,
-                      x: coords.left,
-                      y: coords.bottom,
-                      query: nextQuery,
-                    }
-                  })
+                      return {
+                        open: nextOpen,
+                        x: coords.left,
+                        y: coords.bottom,
+                        query: nextQuery,
+                      }
+                    })
+                  } else {
+                    setMentionState((prev) => {
+                      if (!prev.open) return prev
+                      return {
+                        ...prev,
+                        open: false,
+                      }
+                    })
+                  }
                 },
                 destroy: () => {
                   provider.destroy()
@@ -254,6 +269,7 @@ const MilkdownEditor: React.FC<MilkdownEditorProps> = ({ value, onChange }) => {
     <>
       <Milkdown />
       {mentionState.open &&
+        typeof document !== "undefined" &&
         createPortal(
           <div style={popoverStyle}>
             <MentionList
@@ -264,10 +280,7 @@ const MilkdownEditor: React.FC<MilkdownEditorProps> = ({ value, onChange }) => {
               }}
               onSelect={(user) => {
                 const editor = get()
-                if (!editor) {
-                  console.error("MentionList: editor not found")
-                  return
-                }
+                if (!editor) return
 
                 editor.action((ctx) => {
                   const view = ctx.get(editorViewCtx)
@@ -282,6 +295,8 @@ const MilkdownEditor: React.FC<MilkdownEditorProps> = ({ value, onChange }) => {
                   }
 
                   const schema = ctx.get(schemaCtx)
+                  if (!schema.nodes.mention) return
+
                   const node = schema.nodes.mention.create({
                     id: user.id,
                     label: user.name,
