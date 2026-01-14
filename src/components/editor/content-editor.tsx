@@ -4,8 +4,6 @@ import { Milkdown, MilkdownProvider, useEditor } from "@milkdown/react"
 import { nord } from "@milkdown/theme-nord"
 import React from "react"
 
-import "@milkdown/kit/prose/view/style/prosemirror.css"
-
 const MilkdownEditor: React.FC = () => {
   useEditor((root) =>
     Editor.make()
@@ -22,7 +20,7 @@ const MilkdownEditor: React.FC = () => {
 export const MilkdownEditorWrapper: React.FC = () => {
   return (
     <MilkdownProvider>
-      <div className="border rounded-lg focus-within:ring-3 focus-within:ring-muted">
+      <div className="prose dark:prose-invert border rounded-lg focus-within:ring-3 focus-within:ring-muted">
         <MilkdownEditor />
       </div>
     </MilkdownProvider>
