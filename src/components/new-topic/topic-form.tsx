@@ -38,6 +38,7 @@ import { BountyConfig } from "./bounty-config"
 import { PollConfig } from "./poll-config"
 import { LotteryConfig } from "./lottery-config"
 import { AdminOptions } from "./admin-options"
+import { MilkdownEditorWrapper } from "@/components/editor/content-editor"
 
 type MeResponse = {
   user: {
@@ -313,11 +314,7 @@ export function TopicForm({
             <FormItem>
               <FormLabel>{t("form.content.label")}</FormLabel>
               <FormControl>
-                <Textarea
-                  placeholder={t("form.content.placeholder")}
-                  className="min-h-50 resize-y"
-                  {...field}
-                />
+                <MilkdownEditorWrapper />
               </FormControl>
               <FormDescription>
                 {t("form.content.counter", { count: contentCount })}
