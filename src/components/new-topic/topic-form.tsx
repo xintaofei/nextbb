@@ -314,7 +314,10 @@ export function TopicForm({
             <FormItem>
               <FormLabel>{t("form.content.label")}</FormLabel>
               <FormControl>
-                <MilkdownEditorWrapper />
+                <MilkdownEditorWrapper
+                  value={field.value}
+                  onChange={field.onChange}
+                />
               </FormControl>
               <FormDescription>
                 {t("form.content.counter", { count: contentCount })}
