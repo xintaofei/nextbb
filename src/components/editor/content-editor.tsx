@@ -16,8 +16,15 @@ import { Milkdown, MilkdownProvider, useEditor } from "@milkdown/react"
 import { nord } from "@milkdown/theme-nord"
 import { replaceAll } from "@milkdown/kit/utils"
 import { DOMSerializer, Node } from "@milkdown/kit/prose/model"
-import React, { useEffect, useRef, useCallback } from "react"
+import { EditorView } from "@milkdown/kit/prose/view"
+import { EditorState } from "@milkdown/kit/prose/state"
+import React, { useEffect, useRef, useCallback, useState, useMemo } from "react"
+import { createPortal } from "react-dom"
 import { useDebouncedCallback } from "@/hooks/use-debounce"
+import { mentionSlash } from "./plugins/mention/plugin"
+import { mentionNode } from "./plugins/mention/node"
+import { MentionList, MentionListRef } from "./plugins/mention/mention-list"
+import { SlashProvider } from "@milkdown/plugin-slash"
 
 type EditorType = ReturnType<typeof Editor.make>
 type ConfigFn = Parameters<EditorType["config"]>[0]
@@ -47,6 +54,16 @@ const parseContent = (value: string | undefined) => {
 
 const MilkdownEditor: React.FC<MilkdownEditorProps> = ({ value, onChange }) => {
   const valueRef = useRef<string | undefined>(undefined)
+  const mentionListRef = useRef<MentionListRef>(null)
+  const [mentionState, setMentionState] = useState<{
+    open: boolean
+    element: HTMLElement | null
+    query: string
+  }>({
+    open: false,
+    element: null,
+    query: "",
+  })
 
   const handleUpdate = useCallback(
     (ctx: Ctx, doc: Node) => {
@@ -93,6 +110,85 @@ const MilkdownEditor: React.FC<MilkdownEditorProps> = ({ value, onChange }) => {
           ctx.get(listenerCtx).updated((ctx, doc) => {
             onUpdateRef.current?.(ctx, doc)
           })
+
+          // Configure Mention Slash Plugin
+          ctx.set(mentionSlash.key, {
+            props: {
+              handleKeyDown: (_view: EditorView, event: KeyboardEvent) => {
+                if (!mentionListRef.current) return false
+                return mentionListRef.current.onKeyDown(event)
+              },
+            },
+            view: () => {
+              const content = document.createElement("div")
+              // Add to body for SlashProvider to use, but we'll use coords for positioning
+              content.style.position = "fixed"
+              content.style.visibility = "hidden"
+              document.body.appendChild(content)
+
+              const provider = new SlashProvider({
+                content,
+                trigger: ["@"],
+              })
+
+              return {
+                update: (updatedView: EditorView, prevState?: EditorState) => {
+                  provider.update(updatedView, prevState)
+                  const query = provider.getContent(updatedView)
+
+                  const { selection } = updatedView.state
+                  const { $from } = selection
+
+                  // Check if the current line has an @ before the cursor
+                  const textBefore = $from.parent.textBetween(
+                    Math.max(0, $from.parentOffset - 50),
+                    $from.parentOffset,
+                    undefined,
+                    "\uFFFC"
+                  )
+
+                  const lastAtIndex = textBefore.lastIndexOf("@")
+                  const isActive =
+                    lastAtIndex !== -1 &&
+                    !textBefore.slice(lastAtIndex + 1).includes(" ")
+
+                  const nextOpen = isActive && typeof query === "string"
+                  const nextQuery = isActive
+                    ? textBefore.slice(lastAtIndex + 1)
+                    : ""
+
+                  // Get actual cursor coordinates for precise positioning
+                  const coords = updatedView.coordsAtPos(selection.from)
+
+                  setMentionState((prev) => {
+                    if (
+                      prev.open === nextOpen &&
+                      prev.query === nextQuery &&
+                      prev.element?.dataset.top === `${coords.bottom}` &&
+                      prev.element?.dataset.left === `${coords.left}`
+                    ) {
+                      return prev
+                    }
+
+                    // Store coordinates on the element as data attributes so we can use them in popoverStyle
+                    content.dataset.top = `${coords.bottom}`
+                    content.dataset.left = `${coords.left}`
+
+                    return {
+                      open: nextOpen,
+                      element: content,
+                      query: nextQuery,
+                    }
+                  })
+                },
+                destroy: () => {
+                  provider.destroy()
+                  content.remove()
+                  setMentionState((prev) => ({ ...prev, open: false }))
+                },
+              }
+            },
+          })
         })
         .use(commonmark)
         .use(gfm)
@@ -100,7 +196,9 @@ const MilkdownEditor: React.FC<MilkdownEditorProps> = ({ value, onChange }) => {
         .use(listener)
         .use(clipboard)
         .use(indent)
-        .use(cursor),
+        .use(cursor)
+        .use(mentionNode)
+        .use(mentionSlash),
     []
   )
 
@@ -131,7 +229,67 @@ const MilkdownEditor: React.FC<MilkdownEditorProps> = ({ value, onChange }) => {
     valueRef.current = value
   }, [value, get, loading])
 
-  return <Milkdown />
+  // Calculate position for MentionList
+  const popoverStyle = useMemo<React.CSSProperties>(() => {
+    if (mentionState.open && mentionState.element) {
+      const top = mentionState.element.dataset.top
+      const left = mentionState.element.dataset.left
+      return {
+        position: "fixed",
+        top: top ? `${parseFloat(top) + 5}px` : "0px",
+        left: left ? `${left}px` : "0px",
+        zIndex: 50,
+      }
+    }
+    return {}
+  }, [mentionState.open, mentionState.element, mentionState.query]) // Add query to dependencies to refresh on move
+
+  return (
+    <>
+      <Milkdown />
+      {mentionState.open &&
+        createPortal(
+          <div style={popoverStyle}>
+            <MentionList
+              ref={mentionListRef}
+              query={mentionState.query}
+              onClose={() => {
+                setMentionState((prev) => ({ ...prev, open: false }))
+              }}
+              onSelect={(user) => {
+                const editor = get()
+                if (!editor) return
+
+                editor.action((ctx) => {
+                  const view = ctx.get(editorViewCtx)
+                  const { dispatch, state } = view
+                  const { tr, selection } = state
+                  const { from } = selection
+
+                  // Calculate range to replace
+                  const range = {
+                    from: from - mentionState.query.length - 1,
+                    to: from,
+                  }
+
+                  const schema = ctx.get(schemaCtx)
+                  const node = schema.nodes.mention.create({
+                    id: user.id,
+                    label: user.name,
+                  })
+
+                  const tr2 = tr.replaceWith(range.from, range.to, node)
+                  dispatch(tr2)
+
+                  setMentionState((prev) => ({ ...prev, open: false }))
+                })
+              }}
+            />
+          </div>,
+          document.body
+        )}
+    </>
+  )
 }
 
 export const MilkdownEditorWrapper: React.FC<MilkdownEditorProps> = (props) => {
