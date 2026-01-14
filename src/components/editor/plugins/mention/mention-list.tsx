@@ -1,5 +1,6 @@
 import { useState, forwardRef, useImperativeHandle } from "react"
 import useSWR from "swr"
+import { useTranslations } from "next-intl"
 import { cn } from "@/lib/utils"
 import Image from "next/image"
 
@@ -23,6 +24,7 @@ const EMPTY_USERS: User[] = []
 
 export const MentionList = forwardRef<MentionListRef, MentionListProps>(
   ({ query, onSelect, onClose }, ref) => {
+    const t = useTranslations("Common")
     const { data: users = EMPTY_USERS, isLoading } = useSWR<User[]>(
       query ? `/api/users/search?q=${encodeURIComponent(query)}` : null,
       (url: string) => fetch(url).then((res) => res.json()),
@@ -65,7 +67,11 @@ export const MentionList = forwardRef<MentionListRef, MentionListProps>(
     if (!query && !isLoading) return null
     if (users.length === 0 && !isLoading) {
       return (
-        <div className="p-2 text-sm text-muted-foreground">No users found</div>
+        <div className="w-64 bg-popover text-popover-foreground rounded-md border shadow-md overflow-hidden p-1">
+          <div className="p-2 text-sm text-muted-foreground">
+            {t("Mention.noUsersFound")}
+          </div>
+        </div>
       )
     }
 
@@ -104,7 +110,7 @@ export const MentionList = forwardRef<MentionListRef, MentionListProps>(
         ))}
         {isLoading && users.length === 0 && (
           <div className="p-2 text-sm text-muted-foreground animate-pulse">
-            Loading...
+            {t("Loading.loading")}
           </div>
         )}
       </div>

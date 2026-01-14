@@ -42,6 +42,9 @@
       "loading": "Loading...",
       "noMore": "No more"
     },
+    "Mention": {
+      "noUsersFound": "No users found"
+    },
     "Badge": {
       "secondary": "Secondary",
       "verified": "Verified",

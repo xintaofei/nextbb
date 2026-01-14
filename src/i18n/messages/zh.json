@@ -42,6 +42,9 @@
       "loading": "加载中...",
       "noMore": "没有更多了"
     },
+    "Mention": {
+      "noUsersFound": "未找到用户"
+    },
     "Badge": {
       "secondary": "次要",
       "verified": "已验证",
