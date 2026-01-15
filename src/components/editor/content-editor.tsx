@@ -1,5 +1,3 @@
-"use client"
-
 import { Crepe } from "@milkdown/crepe"
 import { listener, listenerCtx } from "@milkdown/kit/plugin/listener"
 import { SlashProvider } from "@milkdown/kit/plugin/slash"
@@ -20,8 +18,6 @@ import { Ctx } from "@milkdown/kit/ctx"
 
 interface MilkdownEditorProps {
   value?: string
-  placeholder?: string
-  onImageUpload?: (file: File) => Promise<string>
   onChange?: (
     value: string,
     json?: Record<string, unknown>,
@@ -29,12 +25,7 @@ interface MilkdownEditorProps {
   ) => void
 }
 
-const MilkdownEditor: React.FC<MilkdownEditorProps> = ({
-  value,
-  placeholder = "Write something...",
-  onImageUpload,
-  onChange,
-}) => {
+const MilkdownEditor: React.FC<MilkdownEditorProps> = ({ value, onChange }) => {
   const editorRef = useRef<HTMLDivElement>(null)
   const crepeRef = useRef<Crepe | null>(null)
   const [loading, setLoading] = useState(true)
@@ -95,22 +86,20 @@ const MilkdownEditor: React.FC<MilkdownEditorProps> = ({
           ? (parseContent(value) as string)
           : "",
       featureConfigs: {
-        [Crepe.Feature.Placeholder]: {
-          text: placeholder,
-        },
         [Crepe.Feature.ImageBlock]: {
-          onUpload:
-            onImageUpload ||
-            (async (file: File) => {
-              console.warn("Image upload not implemented")
-              return URL.createObjectURL(file)
-            }),
+          onUpload: async (file: File) => {
+            // TODO: Implement actual file upload
+            return new Promise((resolve) => {
+              setTimeout(() => {
+                resolve(URL.createObjectURL(file))
+              }, 1000)
+            })
+          },
         },
       },
     })
 
     // Register Mention Plugin
-    // Note: Crepe has its own slash command, but we use a custom one for mentions triggered by '@'
     crepe.editor
       .use(mentionNode)
       .use(mentionSlash)
@@ -154,26 +143,22 @@ const MilkdownEditor: React.FC<MilkdownEditorProps> = ({
 
     const content = parseContent(value)
 
-    try {
-      if (typeof content === "string") {
-        editor.action(replaceAll(content))
-      } else {
-        editor.action((ctx) => {
-          const view = ctx.get(editorViewCtx)
-          const schema = ctx.get(schemaCtx)
-          const node = Node.fromJSON(schema, content)
-          const tr = view.state.tr.replaceWith(
-            0,
-            view.state.doc.content.size,
-            node
-          )
-          view.dispatch(tr)
-        })
-      }
-      valueRef.current = value
-    } catch (error) {
-      console.error("Failed to update editor content:", error)
+    if (typeof content === "string") {
+      editor.action(replaceAll(content))
+    } else {
+      editor.action((ctx) => {
+        const view = ctx.get(editorViewCtx)
+        const schema = ctx.get(schemaCtx)
+        const node = Node.fromJSON(schema, content)
+        const tr = view.state.tr.replaceWith(
+          0,
+          view.state.doc.content.size,
+          node
+        )
+        view.dispatch(tr)
+      })
     }
+    valueRef.current = value
   }, [value, loading])
 
   // Calculate position for MentionList
@@ -185,10 +170,7 @@ const MilkdownEditor: React.FC<MilkdownEditorProps> = ({
 
   return (
     <>
-      <div
-        className="h-full min-h-[300px] milkdown-theme-wrapper"
-        ref={editorRef}
-      />
+      <div className="h-full min-h-[300px]" ref={editorRef} />
 
       {mentionState.open &&
         typeof document !== "undefined" &&
@@ -245,7 +227,7 @@ const MilkdownEditor: React.FC<MilkdownEditorProps> = ({
 
 export const MilkdownEditorWrapper: React.FC<MilkdownEditorProps> = (props) => {
   return (
-    <div className="w-full prose dark:prose-invert border rounded-lg focus-within:ring-[3px] focus-within:ring-ring/50 focus-within:border-ring transition-all [&_.milkdown-menu]:!static [&_.milkdown]:!shadow-none [&_.milkdown]:!border-none max-w-none">
+    <div className="w-full prose dark:prose-invert border rounded-lg focus-within:ring-[3px] focus-within:ring-ring/50 focus-within:border-ring transition-all [&_.milkdown-menu]:!static [&_.milkdown]:!shadow-none [&_.milkdown]:!border-none">
       <MilkdownEditor {...props} />
     </div>
   )

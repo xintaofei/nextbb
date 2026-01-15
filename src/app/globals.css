@@ -148,3 +148,94 @@
     @apply bg-background text-foreground;
   }
 }
+
+
+.milkdown .ProseMirror {
+  padding: 1rem;
+  min-height: 10rem;
+  max-height: 20rem;
+  overflow-y: auto;
+  position: relative;
+  word-wrap: break-word;
+  white-space: pre-wrap;
+  white-space: break-spaces;
+  -webkit-font-variant-ligatures: none;
+  font-variant-ligatures: none;
+  font-feature-settings: "liga" 0;
+}
+
+.milkdown .ProseMirror:focus {
+  outline: none;
+}
+
+.milkdown .ProseMirror-selectednode {
+  outline: 2px solid var(--ring);
+}
+
+/* Table Wrapper to handle overflow and positioning */
+.milkdown .tableWrapper {
+  margin: 1rem 0;
+  overflow-x: auto;
+  position: relative;
+}
+
+.milkdown .ProseMirror table {
+  border-collapse: collapse;
+  border: 1px solid var(--border);
+  width: 100%;
+  table-layout: fixed;
+  /* margin: 1rem 0; Moved to wrapper to avoid handle misalignment */
+  border-radius: var(--radius-sm);
+  /* overflow: hidden; Removed to allow table handles to be visible */
+  position: relative;
+}
+
+.milkdown .ProseMirror table th,
+.milkdown .ProseMirror table td {
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--border);
+  vertical-align: top;
+  position: relative;
+  min-width: 100px;
+}
+
+.milkdown .ProseMirror table th {
+  background-color: var(--muted);
+  font-weight: 600;
+  text-align: left;
+}
+
+.milkdown .ProseMirror table .selectedCell:after {
+  z-index: 2;
+  position: absolute;
+  content: "";
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  background: var(--accent);
+  opacity: 0.3;
+  pointer-events: none;
+}
+
+.milkdown .ProseMirror .column-resize-handle {
+  position: absolute;
+  right: -2px;
+  top: 0;
+  bottom: -2px;
+  width: 4px;
+  background-color: var(--ring);
+  pointer-events: none;
+  z-index: 20;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.milkdown .ProseMirror table th:hover .column-resize-handle,
+.milkdown .ProseMirror .column-resize-handle:hover {
+  opacity: 1;
+}
+
+.milkdown .ProseMirror.resize-cursor {
+  cursor: col-resize;
+}
