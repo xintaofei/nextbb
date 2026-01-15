@@ -318,7 +318,6 @@ export function TopicForm({
               <FormControl>
                 <MilkdownEditorWrapper
                   value={field.value}
-                  placeholder={t("form.content.placeholder")}
                   onImageUpload={uploadImage}
                   onChange={(val, json, html) => {
                     field.onChange(val)

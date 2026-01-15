@@ -21,7 +21,6 @@ type DrawerEditorProps = {
   onSubmit: (content: string, contentHtml?: string) => void | Promise<void>
   submitText: string
   cancelText: string
-  placeholder?: string
 }
 
 export function DrawerEditor({
@@ -34,7 +33,6 @@ export function DrawerEditor({
   onSubmit,
   submitText,
   cancelText,
-  placeholder,
 }: DrawerEditorProps) {
   const [value, setValue] = useState<string>(initialValue)
   const [html, setHtml] = useState<string>("")
@@ -61,7 +59,6 @@ export function DrawerEditor({
         <div className="flex justify-center px-4">
           <MilkdownEditorWrapper
             value={value}
-            placeholder={placeholder}
             onImageUpload={uploadImage}
             onChange={(val, json, h) => {
               setValue(val)

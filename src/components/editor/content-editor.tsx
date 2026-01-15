@@ -17,10 +17,7 @@ import { createSlashProviderConfig, PluginState } from "./slash-provider-config"
 import { parseContent, calculatePopoverStyle, insertMention } from "./utils"
 import { schemaCtx, editorViewCtx } from "@milkdown/kit/core"
 import { DOMSerializer, Node } from "@milkdown/kit/prose/model"
-import { Decoration } from "@milkdown/kit/prose/view"
 import { Ctx } from "@milkdown/kit/ctx"
-
-import { useTranslations } from "next-intl"
 
 interface MilkdownEditorProps {
   value?: string
@@ -35,11 +32,10 @@ interface MilkdownEditorProps {
 
 const MilkdownEditor: React.FC<MilkdownEditorProps> = ({
   value,
-  placeholder,
+  placeholder = "Write something...",
   onImageUpload,
   onChange,
 }) => {
-  const t = useTranslations("Common")
   const editorRef = useRef<HTMLDivElement>(null)
   const crepeRef = useRef<Crepe | null>(null)
   const [loading, setLoading] = useState(true)
@@ -106,7 +102,7 @@ const MilkdownEditor: React.FC<MilkdownEditorProps> = ({
           : "",
       featureConfigs: {
         [Crepe.Feature.Placeholder]: {
-          text: placeholder || t("Editor.placeholder"),
+          text: placeholder,
         },
         [Crepe.Feature.ImageBlock]: {
           onUpload: async (file: File) => {
@@ -131,13 +127,6 @@ const MilkdownEditor: React.FC<MilkdownEditorProps> = ({
         // Configure Upload Plugin
         ctx.update(uploadConfig.key, (prev) => ({
           ...prev,
-          uploadWidgetFactory: (pos, spec) => {
-            const dom = document.createElement("div")
-            dom.textContent = t("Editor.uploading")
-            dom.className =
-              "bg-background text-foreground border rounded-md px-2 py-1 text-sm inline-block shadow-sm z-10 relative mr-2"
-            return Decoration.widget(pos, dom, spec)
-          },
           uploader: async (files, schema) => {
             const images: Node[] = []
             for (const file of files) {

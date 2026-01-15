@@ -11,10 +11,6 @@
     "Search": {
       "placeholder": "Search..."
     },
-    "Editor": {
-      "placeholder": "Write something...",
-      "uploading": "Uploading..."
-    },
     "Filters": {
       "category": "Category",
       "tag": "Tag",
