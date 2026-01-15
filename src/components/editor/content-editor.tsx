@@ -24,7 +24,7 @@ import { useDebouncedCallback } from "@/hooks/use-debounce"
 import { mentionSlash } from "./plugins/mention/plugin"
 import { mentionNode } from "./plugins/mention/node"
 import { MentionList, MentionListRef } from "./plugins/mention/mention-list"
-import { SlashProvider } from "@milkdown/plugin-slash"
+import { SlashProvider } from "@milkdown/kit/plugin/slash"
 
 type EditorType = ReturnType<typeof Editor.make>
 type ConfigFn = Parameters<EditorType["config"]>[0]
