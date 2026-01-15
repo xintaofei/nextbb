@@ -5,8 +5,6 @@ import { listener, listenerCtx } from "@milkdown/kit/plugin/listener"
 import { SlashProvider } from "@milkdown/kit/plugin/slash"
 import { replaceAll } from "@milkdown/kit/utils"
 import { upload, uploadConfig } from "@milkdown/kit/plugin/upload"
-import "@milkdown/crepe/theme/common/style.css"
-import "@milkdown/crepe/theme/frame.css"
 import React, { useEffect, useRef, useState, useMemo } from "react"
 import { createPortal } from "react-dom"
 import { useDebouncedCallback } from "@/hooks/use-debounce"
@@ -21,6 +19,9 @@ import { Decoration } from "@milkdown/kit/prose/view"
 import { Ctx } from "@milkdown/kit/ctx"
 
 import { useTranslations } from "next-intl"
+
+import "@milkdown/crepe/theme/common/style.css"
+import "@milkdown/crepe/theme/frame.css"
 
 interface MilkdownEditorProps {
   value?: string
@@ -269,7 +270,7 @@ const MilkdownEditor: React.FC<MilkdownEditorProps> = ({
 
 export const MilkdownEditorWrapper: React.FC<MilkdownEditorProps> = (props) => {
   return (
-    <div className="w-full prose dark:prose-invert border rounded-lg focus-within:ring-[3px] focus-within:ring-ring/50 focus-within:border-ring transition-all [&_.milkdown-menu]:!static [&_.milkdown]:!shadow-none [&_.milkdown]:!border-none max-w-none">
+    <div className="w-full prose dark:prose-invert border rounded-lg overflow-hidden focus-within:ring-[3px] focus-within:ring-ring/50 focus-within:border-ring transition-all">
       <MilkdownEditor {...props} />
     </div>
   )
