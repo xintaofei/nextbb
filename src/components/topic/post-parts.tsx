@@ -207,8 +207,8 @@ export function PostActions({
   onAccept,
   acceptMutating,
 }: PostActionsProps) {
-  const tBounty = useTranslations("Bounty")
-  const tQuestion = useTranslations("Question")
+  const tBounty = useTranslations("Topic.Bounty")
+  const tQuestion = useTranslations("Topic.Question")
 
   if (post.isDeleted) return null
 
