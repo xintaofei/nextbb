@@ -9,6 +9,7 @@ import {
 import { Button } from "@/components/ui/button"
 import { useState } from "react"
 import { MilkdownEditorWrapper } from "@/components/editor/content-editor"
+import { uploadImage } from "@/lib/upload"
 
 type DrawerEditorProps = {
   title: string
@@ -58,6 +59,7 @@ export function DrawerEditor({
         <div className="flex justify-center px-4">
           <MilkdownEditorWrapper
             value={value}
+            onImageUpload={uploadImage}
             onChange={(val, json, h) => {
               setValue(val)
               setHtml(h || "")
