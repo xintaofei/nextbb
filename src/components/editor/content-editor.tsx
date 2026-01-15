@@ -236,10 +236,7 @@ const MilkdownEditor: React.FC<MilkdownEditorProps> = ({
 
   return (
     <>
-      <div
-        className="h-full min-h-[300px] milkdown-theme-wrapper"
-        ref={editorRef}
-      />
+      <div className="h-full milkdown-theme-wrapper" ref={editorRef} />
 
       {mentionState.open &&
         typeof document !== "undefined" &&
