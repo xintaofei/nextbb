@@ -11,6 +11,10 @@
     "Search": {
       "placeholder": "搜索..."
     },
+    "Editor": {
+      "placeholder": "写点什么...",
+      "uploading": "上传中..."
+    },
     "Filters": {
       "category": "分类",
       "tag": "标签",
