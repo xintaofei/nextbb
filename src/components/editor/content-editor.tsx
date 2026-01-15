@@ -4,7 +4,6 @@ import { Crepe } from "@milkdown/crepe"
 import { listener, listenerCtx } from "@milkdown/kit/plugin/listener"
 import { SlashProvider } from "@milkdown/kit/plugin/slash"
 import { replaceAll } from "@milkdown/kit/utils"
-import { upload, uploadConfig } from "@milkdown/kit/plugin/upload"
 import "@milkdown/crepe/theme/common/style.css"
 import "@milkdown/crepe/theme/frame.css"
 import React, { useEffect, useRef, useState, useMemo } from "react"
@@ -122,38 +121,7 @@ const MilkdownEditor: React.FC<MilkdownEditorProps> = ({
       .use(mentionNode)
       .use(mentionSlash)
       .use(listener)
-      .use(upload)
       .config((ctx) => {
-        // Configure Upload Plugin
-        ctx.update(uploadConfig.key, (prev) => ({
-          ...prev,
-          uploader: async (files, schema) => {
-            const images: Node[] = []
-            for (const file of files) {
-              if (onImageUploadRef.current) {
-                try {
-                  const url = await onImageUploadRef.current(file)
-                  const image = schema.nodes.image.createAndFill({
-                    src: url,
-                    alt: file.name,
-                  })
-                  if (image) images.push(image)
-                } catch (error) {
-                  console.error("Failed to upload image:", error)
-                }
-              } else {
-                const url = URL.createObjectURL(file)
-                const image = schema.nodes.image.createAndFill({
-                  src: url,
-                  alt: file.name,
-                })
-                if (image) images.push(image)
-              }
-            }
-            return images
-          },
-        }))
-
         // Configure Mention Provider
         ctx.set(
           mentionSlash.key,
