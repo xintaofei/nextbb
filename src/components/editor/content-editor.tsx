@@ -197,7 +197,7 @@ const MilkdownEditor: React.FC<MilkdownEditorProps> = ({ value, onChange }) => {
     (x: number, y: number, isOpen: boolean) => {
       if (!isOpen || typeof window === "undefined") return {}
 
-      const height = 320 // estimated max height
+      const height = 400 // estimated max height
       const gap = 10
       const windowHeight = window.innerHeight
       const bottomSpace = windowHeight - y
