@@ -25,6 +25,9 @@ import { mentionSlash } from "./plugins/mention/plugin"
 import { mentionNode } from "./plugins/mention/node"
 import { MentionList, MentionListRef } from "./plugins/mention/mention-list"
 import { SlashProvider } from "@milkdown/kit/plugin/slash"
+import { slashCommandKey } from "./plugins/slash-command/plugin"
+import { SlashMenu, SlashMenuRef } from "./plugins/slash-command/slash-menu"
+import { setBlockType, wrapIn } from "@milkdown/kit/prose/commands"
 
 type EditorType = ReturnType<typeof Editor.make>
 type ConfigFn = Parameters<EditorType["config"]>[0]
@@ -57,15 +60,129 @@ const parseContent = (value: string | undefined) => {
   return value
 }
 
+interface PluginState {
+  open: boolean
+  x: number
+  y: number
+  query: string
+}
+
+const createSlashProviderConfig = ({
+  trigger,
+  providerFactory: ProviderClass,
+  onStateChange,
+  ref,
+}: {
+  trigger: string
+  providerFactory: typeof SlashProvider
+  onStateChange: (state: (prev: PluginState) => PluginState) => void
+  ref: React.MutableRefObject<{
+    onKeyDown: (e: KeyboardEvent) => boolean
+  } | null>
+}) => {
+  return {
+    props: {
+      handleKeyDown: (_view: EditorView, event: KeyboardEvent) => {
+        if (!ref.current) return false
+        return ref.current.onKeyDown(event)
+      },
+    },
+    view: () => {
+      const content = document.createElement("div")
+      // Add to body for SlashProvider to use, but we'll use coords for positioning
+      content.style.position = "fixed"
+      content.style.visibility = "hidden"
+      document.body.appendChild(content)
+
+      const provider = new ProviderClass({
+        content,
+        trigger: [trigger],
+      })
+
+      return {
+        update: (updatedView: EditorView, prevState?: EditorState) => {
+          provider.update(updatedView, prevState)
+          const query = provider.getContent(updatedView)
+
+          const { selection } = updatedView.state
+          const { $from } = selection
+
+          // Check if the current line has the trigger before the cursor
+          const textBefore = $from.parent.textBetween(
+            Math.max(0, $from.parentOffset - 50),
+            $from.parentOffset,
+            undefined,
+            "\uFFFC"
+          )
+
+          const lastAtIndex = textBefore.lastIndexOf(trigger)
+
+          // Check if trigger is at the start or preceded by whitespace
+          const isAtStart = lastAtIndex === 0
+          const isPrecededBySpace =
+            lastAtIndex > 0 && /[\s\u00A0]/.test(textBefore[lastAtIndex - 1])
+
+          const isActive =
+            lastAtIndex !== -1 &&
+            (isAtStart || isPrecededBySpace) &&
+            !textBefore.slice(lastAtIndex + 1).includes(" ")
+
+          const nextOpen = isActive && typeof query === "string"
+          const nextQuery = isActive ? textBefore.slice(lastAtIndex + 1) : ""
+
+          if (nextOpen) {
+            // Get actual cursor coordinates only when needed to avoid performance overhead
+            const coords = updatedView.coordsAtPos(selection.from)
+
+            onStateChange((prev: PluginState) => {
+              if (
+                prev.open === nextOpen &&
+                prev.query === nextQuery &&
+                prev.x === coords.left &&
+                prev.y === coords.bottom
+              ) {
+                return prev
+              }
+
+              return {
+                open: nextOpen,
+                x: coords.left,
+                y: coords.bottom,
+                query: nextQuery,
+              }
+            })
+          } else {
+            onStateChange((prev: PluginState) => {
+              if (!prev.open) return prev
+              return {
+                ...prev,
+                open: false,
+              }
+            })
+          }
+        },
+        destroy: () => {
+          provider.destroy()
+          content.remove()
+          onStateChange((prev: PluginState) => ({ ...prev, open: false }))
+        },
+      }
+    },
+  }
+}
+
 const MilkdownEditor: React.FC<MilkdownEditorProps> = ({ value, onChange }) => {
   const valueRef = useRef<string | undefined>(undefined)
   const mentionListRef = useRef<MentionListRef>(null)
-  const [mentionState, setMentionState] = useState<{
-    open: boolean
-    x: number
-    y: number
-    query: string
-  }>({
+  const [mentionState, setMentionState] = useState<PluginState>({
+    open: false,
+    x: 0,
+    y: 0,
+    query: "",
+  })
+
+  const slashMenuRef = useRef<SlashMenuRef>(null)
+  const [slashState, setSlashState] = useState<PluginState>({
     open: false,
     x: 0,
     y: 0,
@@ -119,98 +236,26 @@ const MilkdownEditor: React.FC<MilkdownEditorProps> = ({ value, onChange }) => {
           })
 
           // Configure Mention Slash Plugin
-          ctx.set(mentionSlash.key, {
-            props: {
-              handleKeyDown: (_view: EditorView, event: KeyboardEvent) => {
-                if (!mentionListRef.current) return false
-                return mentionListRef.current.onKeyDown(event)
-              },
-            },
-            view: () => {
-              const content = document.createElement("div")
-              // Add to body for SlashProvider to use, but we'll use coords for positioning
-              content.style.position = "fixed"
-              content.style.visibility = "hidden"
-              document.body.appendChild(content)
+          ctx.set(
+            mentionSlash.key,
+            createSlashProviderConfig({
+              trigger: "@",
+              providerFactory: SlashProvider,
+              onStateChange: setMentionState,
+              ref: mentionListRef,
+            })
+          )
 
-              const provider = new SlashProvider({
-                content,
-                trigger: ["@"],
-              })
-
-              return {
-                update: (updatedView: EditorView, prevState?: EditorState) => {
-                  provider.update(updatedView, prevState)
-                  const query = provider.getContent(updatedView)
-
-                  const { selection } = updatedView.state
-                  const { $from } = selection
-
-                  // Check if the current line has an @ before the cursor
-                  const textBefore = $from.parent.textBetween(
-                    Math.max(0, $from.parentOffset - 50),
-                    $from.parentOffset,
-                    undefined,
-                    "\uFFFC"
-                  )
-
-                  const lastAtIndex = textBefore.lastIndexOf("@")
-
-                  // Check if @ is at the start or preceded by whitespace
-                  const isAtStart = lastAtIndex === 0
-                  const isPrecededBySpace =
-                    lastAtIndex > 0 &&
-                    /[\s\u00A0]/.test(textBefore[lastAtIndex - 1])
-
-                  const isActive =
-                    lastAtIndex !== -1 &&
-                    (isAtStart || isPrecededBySpace) &&
-                    !textBefore.slice(lastAtIndex + 1).includes(" ")
-
-                  const nextOpen = isActive && typeof query === "string"
-                  const nextQuery = isActive
-                    ? textBefore.slice(lastAtIndex + 1)
-                    : ""
-
-                  if (nextOpen) {
-                    // Get actual cursor coordinates only when needed to avoid performance overhead
-                    const coords = updatedView.coordsAtPos(selection.from)
-
-                    setMentionState((prev) => {
-                      if (
-                        prev.open === nextOpen &&
-                        prev.query === nextQuery &&
-                        prev.x === coords.left &&
-                        prev.y === coords.bottom
-                      ) {
-                        return prev
-                      }
-
-                      return {
-                        open: nextOpen,
-                        x: coords.left,
-                        y: coords.bottom,
-                        query: nextQuery,
-                      }
-                    })
-                  } else {
-                    setMentionState((prev) => {
-                      if (!prev.open) return prev
-                      return {
-                        ...prev,
-                        open: false,
-                      }
-                    })
-                  }
-                },
-                destroy: () => {
-                  provider.destroy()
-                  content.remove()
-                  setMentionState((prev) => ({ ...prev, open: false }))
-                },
-              }
-            },
-          })
+          // Configure Slash Command Plugin
+          ctx.set(
+            slashCommandKey.key,
+            createSlashProviderConfig({
+              trigger: "/",
+              providerFactory: SlashProvider,
+              onStateChange: setSlashState,
+              ref: slashMenuRef,
+            })
+          )
         })
         .use(commonmark)
         .use(gfm)
@@ -220,7 +265,8 @@ const MilkdownEditor: React.FC<MilkdownEditorProps> = ({ value, onChange }) => {
         .use(indent)
         .use(cursor)
         .use(mentionNode)
-        .use(mentionSlash),
+        .use(mentionSlash)
+        .use(slashCommandKey),
     []
   )
 
@@ -264,6 +310,19 @@ const MilkdownEditor: React.FC<MilkdownEditorProps> = ({ value, onChange }) => {
     }
     return {}
   }, [mentionState.open, mentionState.x, mentionState.y])
+
+  const slashPopoverStyle = useMemo<React.CSSProperties>(() => {
+    if (slashState.open) {
+      return {
+        position: "fixed",
+        top: `${slashState.y + 5}px`,
+        left: `${slashState.x}px`,
+        zIndex: 99999,
+        pointerEvents: "auto",
+      }
+    }
+    return {}
+  }, [slashState.open, slashState.x, slashState.y])
 
   return (
     <>
@@ -311,6 +370,86 @@ const MilkdownEditor: React.FC<MilkdownEditorProps> = ({ value, onChange }) => {
                   view.focus()
 
                   setMentionState((prev) => ({ ...prev, open: false }))
+                })
+              }}
+            />
+          </div>,
+          document.body
+        )}
+      {slashState.open &&
+        typeof document !== "undefined" &&
+        createPortal(
+          <div style={slashPopoverStyle}>
+            <SlashMenu
+              ref={slashMenuRef}
+              query={slashState.query}
+              onClose={() => {
+                setSlashState((prev) => ({ ...prev, open: false }))
+              }}
+              onSelect={(command) => {
+                const editor = get()
+                if (!editor) return
+
+                editor.action((ctx) => {
+                  const view = ctx.get(editorViewCtx)
+                  const schema = ctx.get(schemaCtx)
+
+                  // Delete the trigger and query
+                  const { selection } = view.state
+                  const { from } = selection
+                  const tr = view.state.tr.delete(
+                    from - slashState.query.length - 1,
+                    from
+                  )
+                  view.dispatch(tr)
+
+                  // Execute command
+                  const { state, dispatch } = view
+
+                  switch (command.actionId) {
+                    case "h1":
+                      setBlockType(schema.nodes.heading, { level: 1 })(
+                        state,
+                        dispatch
+                      )
+                      break
+                    case "h2":
+                      setBlockType(schema.nodes.heading, { level: 2 })(
+                        state,
+                        dispatch
+                      )
+                      break
+                    case "h3":
+                      setBlockType(schema.nodes.heading, { level: 3 })(
+                        state,
+                        dispatch
+                      )
+                      break
+                    case "bulletList":
+                      wrapIn(schema.nodes.bullet_list)(state, dispatch)
+                      break
+                    case "orderedList":
+                      wrapIn(schema.nodes.ordered_list)(state, dispatch)
+                      break
+                    case "codeBlock":
+                      setBlockType(schema.nodes.code_block)(state, dispatch)
+                      break
+                    case "blockquote":
+                      wrapIn(schema.nodes.blockquote)(state, dispatch)
+                      break
+                    case "hr":
+                      const trHr = state.tr.replaceSelectionWith(
+                        schema.nodes.hr.create()
+                      )
+                      dispatch(trHr)
+                      break
+                    case "table":
+                      // Table support requires more effort, skipping for now
+                      break
+                  }
+
+                  view.focus()
+                  setSlashState((prev) => ({ ...prev, open: false }))
                 })
               }}
             />
