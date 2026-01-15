@@ -10,7 +10,6 @@ import {
   Code,
   Quote,
   Minus,
-  Table,
 } from "lucide-react"
 
 export interface SlashCommand {
@@ -74,12 +73,6 @@ const COMMANDS: SlashCommand[] = [
     label: "Divider",
     icon: <Minus className="w-4 h-4" />,
     actionId: "hr",
-  },
-  {
-    id: "table",
-    label: "Table",
-    icon: <Table className="w-4 h-4" />,
-    actionId: "table",
   },
 ]
 
