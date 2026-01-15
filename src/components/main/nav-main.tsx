@@ -24,6 +24,7 @@ import {
   SidebarMenuSub,
   SidebarMenuSubButton,
   SidebarMenuSubItem,
+  useSidebar,
 } from "@/components/ui/sidebar"
 import {
   Collapsible,
@@ -58,6 +59,7 @@ export function NavMain() {
   const { data } = useSWR<MeResponse | null>("/api/auth/me", fetcher)
   const t = useTranslations("Nav.main")
   const pathname = usePathname()
+  const { isMobile, setOpenMobile } = useSidebar()
 
   const username = useMemo(() => {
     if (!data) return null
@@ -68,12 +70,14 @@ export function NavMain() {
 
   const items = [
     {
+      id: "topics",
       title: t("topics"),
       url: "/",
       icon: Layers,
       isActive: pathname === "/",
     },
     {
+      id: "myPosts",
       title: t("myPosts"),
       url: encodedUsername ? `/u/${encodedUsername}/activity/posts` : "/login",
       icon: BookUser,
@@ -82,6 +86,7 @@ export function NavMain() {
       ),
     },
     {
+      id: "myMessages",
       title: t("myMessages"),
       url: encodedUsername ? `/u/${encodedUsername}/notifications` : "/login",
       icon: Inbox,
@@ -90,18 +95,21 @@ export function NavMain() {
       ),
     },
     {
+      id: "checkin",
       title: t("checkin"),
       url: "/checkin",
       icon: CalendarCheck,
       isActive: pathname === "/checkin",
     },
     {
+      id: "donation",
       title: t("donation"),
       url: "/donation/month",
       icon: Heart,
       isActive: pathname.startsWith("/donation"),
     },
     {
+      id: "leaderboard",
       title: t("leaderboard"),
       url: "/leaderboard",
       icon: ChartColumn,
@@ -113,7 +121,13 @@ export function NavMain() {
     <SidebarGroup>
       <SidebarMenu>
         {items.map((item) => (
-          <Link key={item.url} href={item.url}>
+          <Link
+            key={item.id}
+            href={item.url}
+            onClick={() => {
+              if (isMobile) setOpenMobile(false)
+            }}
+          >
             <SidebarMenuButton isActive={item.isActive}>
               <item.icon />
               <span>{item.title}</span>

@@ -60,7 +60,7 @@ const fetcher = async (url: string): Promise<MeResponse | null> => {
 }
 
 export function NavUser() {
-  const { isMobile } = useSidebar()
+  const { isMobile, setOpenMobile } = useSidebar()
   const tAdmin = useTranslations("Admin")
   const tNav = useTranslations("Nav.user")
   const tCommon = useTranslations("Common")
@@ -151,6 +151,9 @@ export function NavUser() {
                       href={
                         encodedUsername ? `/u/${encodedUsername}` : "/login"
                       }
+                      onClick={() => {
+                        if (isMobile) setOpenMobile(false)
+                      }}
                     >
                       <User />
                       {tNav("profile")}
@@ -163,6 +166,9 @@ export function NavUser() {
                           ? `/u/${encodedUsername}/activity`
                           : "/login"
                       }
+                      onClick={() => {
+                        if (isMobile) setOpenMobile(false)
+                      }}
                     >
                       <Activity />
                       {tNav("activity")}
@@ -175,6 +181,9 @@ export function NavUser() {
                           ? `/u/${encodedUsername}/notifications`
                           : "/login"
                       }
+                      onClick={() => {
+                        if (isMobile) setOpenMobile(false)
+                      }}
                     >
                       <Bell />
                       {tNav("notifications")}
@@ -187,6 +196,9 @@ export function NavUser() {
                           ? `/u/${encodedUsername}/preferences`
                           : "/login"
                       }
+                      onClick={() => {
+                        if (isMobile) setOpenMobile(false)
+                      }}
                     >
                       <Settings />
                       {tNav("settings")}
@@ -194,7 +206,13 @@ export function NavUser() {
                   </DropdownMenuItem>
                   {data?.user?.isAdmin ? (
                     <DropdownMenuItem asChild>
-                      <Link href="/admin" target="_blank">
+                      <Link
+                        href="/admin"
+                        target="_blank"
+                        onClick={() => {
+                          if (isMobile) setOpenMobile(false)
+                        }}
+                      >
                         <LayoutDashboard />
                         {tAdmin("entry")}
                       </Link>
@@ -213,10 +231,24 @@ export function NavUser() {
               {!data ? (
                 <>
                   <DropdownMenuItem asChild>
-                    <Link href="/login">{tAuth("Login.title")}</Link>
+                    <Link
+                      href="/login"
+                      onClick={() => {
+                        if (isMobile) setOpenMobile(false)
+                      }}
+                    >
+                      {tAuth("Login.title")}
+                    </Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild>
-                    <Link href="/register">{tAuth("Register.title")}</Link>
+                    <Link
+                      href="/register"
+                      onClick={() => {
+                        if (isMobile) setOpenMobile(false)
+                      }}
+                    >
+                      {tAuth("Register.title")}
+                    </Link>
                   </DropdownMenuItem>
                 </>
               ) : (

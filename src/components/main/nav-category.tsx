@@ -6,6 +6,7 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  useSidebar,
 } from "@/components/ui/sidebar"
 import Link from "next/link"
 import { useTranslations } from "next-intl"
@@ -20,6 +21,7 @@ type CategoryItem = {
 
 export function NavCategory({ categories }: { categories: CategoryItem[] }) {
   const tCommon = useTranslations("Common")
+  const { isMobile, setOpenMobile } = useSidebar()
 
   return (
     <SidebarGroup className="group-data-[collapsible=icon]:hidden">
@@ -28,7 +30,12 @@ export function NavCategory({ categories }: { categories: CategoryItem[] }) {
         {categories.map((category) => (
           <SidebarMenuItem key={category.id}>
             <SidebarMenuButton asChild>
-              <Link href={`/c/${category.id}`}>
+              <Link
+                href={`/c/${category.id}`}
+                onClick={() => {
+                  if (isMobile) setOpenMobile(false)
+                }}
+              >
                 <span>{category.icon ?? "📁"}</span>
                 <span>{category.name}</span>
                 <Badge

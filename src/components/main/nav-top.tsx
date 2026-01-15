@@ -1,5 +1,8 @@
+"use client"
+
 import Image from "next/image"
 import Link from "next/link"
+import { useSidebar } from "@/components/ui/sidebar"
 
 export function NavTop({
   width = 120,
@@ -8,8 +11,15 @@ export function NavTop({
   width?: number
   height?: number
 }) {
+  const { isMobile, setOpenMobile } = useSidebar()
+
   return (
-    <Link href="/">
+    <Link
+      href="/"
+      onClick={() => {
+        if (isMobile) setOpenMobile(false)
+      }}
+    >
       <Image
         className="dark:invert"
         src="/nextbb-logo.png"
