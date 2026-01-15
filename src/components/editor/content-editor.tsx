@@ -27,6 +27,7 @@ import { slashCommandKey } from "./plugins/slash-command/plugin"
 import { SlashMenu, SlashMenuRef } from "./plugins/slash-command/slash-menu"
 import { setBlockType, wrapIn } from "@milkdown/kit/prose/commands"
 import { createSlashProviderConfig, PluginState } from "./slash-provider-config"
+import { paragraphPlaceholder } from "./plugins/paragraph-placeholder"
 
 type EditorType = ReturnType<typeof Editor.make>
 type ConfigFn = Parameters<EditorType["config"]>[0]
@@ -34,6 +35,8 @@ type Ctx = Parameters<ConfigFn>[0]
 
 interface MilkdownEditorProps {
   value?: string
+  placeholder?: string
+  slashPlaceholder?: string
   onChange?: (
     value: string,
     json?: Record<string, unknown>,
@@ -59,7 +62,19 @@ const parseContent = (value: string | undefined) => {
   return value
 }
 
-const MilkdownEditor: React.FC<MilkdownEditorProps> = ({ value, onChange }) => {
+const MilkdownEditor: React.FC<MilkdownEditorProps> = ({
+  value,
+  onChange,
+  placeholder,
+  slashPlaceholder,
+}) => {
+  useEffect(() => {
+    console.log("[MilkdownEditor] Props updated:", {
+      placeholder,
+      slashPlaceholder,
+    })
+  }, [placeholder, slashPlaceholder])
+
   const valueRef = useRef<string | undefined>(undefined)
   const mentionListRef = useRef<MentionListRef>(null)
   const [mentionState, setMentionState] = useState<PluginState>({
@@ -160,8 +175,9 @@ const MilkdownEditor: React.FC<MilkdownEditorProps> = ({ value, onChange }) => {
         .use(cursor)
         .use(mentionNode)
         .use(mentionSlash)
-        .use(slashCommandKey),
-    []
+        .use(slashCommandKey)
+        .use(paragraphPlaceholder(placeholder || "", slashPlaceholder)),
+    [placeholder, slashPlaceholder]
   )
 
   useEffect(() => {

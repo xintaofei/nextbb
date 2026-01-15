@@ -318,6 +318,8 @@ export function TopicForm({
               <FormControl>
                 <MilkdownEditorWrapper
                   value={field.value}
+                  placeholder={t("form.content.placeholder")}
+                  slashPlaceholder={tv("Editor.SlashCommand.slashPlaceholder")}
                   onChange={(val, json, html) => {
                     field.onChange(val)
                     if (html) {

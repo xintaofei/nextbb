@@ -1986,7 +1986,8 @@
       "codeBlock": "代码块",
       "quote": "引用",
       "divider": "分割线",
-      "noCommands": "未找到命令"
+      "noCommands": "未找到命令",
+      "slashPlaceholder": "输入 '/' 查看命令"
     }
   }
 }

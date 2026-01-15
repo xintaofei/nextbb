@@ -1974,7 +1974,8 @@
       "codeBlock": "Code Block",
       "quote": "Quote",
       "divider": "Divider",
-      "noCommands": "No commands found"
+      "noCommands": "No commands found",
+      "slashPlaceholder": "Type '/' for commands"
     }
   }
 }
