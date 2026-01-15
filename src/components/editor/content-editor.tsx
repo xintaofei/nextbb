@@ -1,5 +1,3 @@
-"use client"
-
 import {
   Editor,
   rootCtx,
@@ -15,9 +13,9 @@ import { clipboard } from "@milkdown/kit/plugin/clipboard"
 import { indent } from "@milkdown/kit/plugin/indent"
 import { cursor } from "@milkdown/kit/plugin/cursor"
 import { Milkdown, MilkdownProvider, useEditor } from "@milkdown/react"
+import { nord } from "@milkdown/theme-nord"
 import { replaceAll } from "@milkdown/kit/utils"
 import { DOMSerializer, Node } from "@milkdown/kit/prose/model"
-
 import React, { useEffect, useRef, useCallback, useState, useMemo } from "react"
 import { createPortal } from "react-dom"
 import { useDebouncedCallback } from "@/hooks/use-debounce"
@@ -29,19 +27,6 @@ import { slashCommandKey } from "./plugins/slash-command/plugin"
 import { SlashMenu, SlashMenuRef } from "./plugins/slash-command/slash-menu"
 import { setBlockType, wrapIn } from "@milkdown/kit/prose/commands"
 import { createSlashProviderConfig, PluginState } from "./slash-provider-config"
-import { tableBlock } from "@milkdown/kit/component/table-block"
-import { configureTable } from "./plugins/table/configure-table"
-import { insertTable } from "./plugins/table/utils"
-import { codeBlockComponent } from "@milkdown/kit/component/code-block"
-import {
-  imageBlockComponent,
-  imageBlockConfig,
-  defaultImageBlockConfig,
-} from "@milkdown/kit/component/image-block"
-import { imageInlineComponent } from "@milkdown/kit/component/image-inline"
-import { linkTooltipPlugin } from "@milkdown/kit/component/link-tooltip"
-import { listItemBlockComponent } from "@milkdown/kit/component/list-item-block"
-import { parseContent, calculatePopoverStyle } from "./utils"
 
 type EditorType = ReturnType<typeof Editor.make>
 type ConfigFn = Parameters<EditorType["config"]>[0]
@@ -54,6 +39,24 @@ interface MilkdownEditorProps {
     json?: Record<string, unknown>,
     html?: string
   ) => void
+}
+
+const parseContent = (value: string | undefined) => {
+  if (!value) return ""
+  try {
+    const parsed = JSON.parse(value)
+    if (
+      parsed &&
+      typeof parsed === "object" &&
+      parsed.type === "doc" &&
+      Array.isArray(parsed.content)
+    ) {
+      return parsed
+    }
+  } catch {
+    // Not JSON, treat as markdown
+  }
+  return value
 }
 
 const MilkdownEditor: React.FC<MilkdownEditorProps> = ({ value, onChange }) => {
@@ -83,6 +86,7 @@ const MilkdownEditor: React.FC<MilkdownEditorProps> = ({ value, onChange }) => {
       const jsonString = JSON.stringify(json)
 
       // Optimize: Check if content actually changed before proceeding
+      // This prevents unnecessary HTML serialization and updates
       if (valueRef.current && valueRef.current === jsonString) {
         return
       }
@@ -112,6 +116,7 @@ const MilkdownEditor: React.FC<MilkdownEditorProps> = ({ value, onChange }) => {
   const { get, loading } = useEditor(
     (root) =>
       Editor.make()
+        .config(nord)
         .config((ctx) => {
           ctx.set(rootCtx, root)
 
@@ -124,9 +129,7 @@ const MilkdownEditor: React.FC<MilkdownEditorProps> = ({ value, onChange }) => {
             onUpdateRef.current?.(ctx, doc)
           })
 
-          // Configure Plugins
-          configureTable(ctx)
-
+          // Configure Mention Slash Plugin
           ctx.set(
             mentionSlash.key,
             createSlashProviderConfig({
@@ -137,6 +140,7 @@ const MilkdownEditor: React.FC<MilkdownEditorProps> = ({ value, onChange }) => {
             })
           )
 
+          // Configure Slash Command Plugin
           ctx.set(
             slashCommandKey.key,
             createSlashProviderConfig({
@@ -146,18 +150,6 @@ const MilkdownEditor: React.FC<MilkdownEditorProps> = ({ value, onChange }) => {
               ref: slashMenuRef,
             })
           )
-
-          ctx.set(imageBlockConfig.key, {
-            ...defaultImageBlockConfig,
-            onUpload: async (file: File) => {
-              // TODO: Implement actual file upload
-              return new Promise((resolve) => {
-                setTimeout(() => {
-                  resolve(URL.createObjectURL(file))
-                }, 1000)
-              })
-            },
-          })
         })
         .use(commonmark)
         .use(gfm)
@@ -168,13 +160,7 @@ const MilkdownEditor: React.FC<MilkdownEditorProps> = ({ value, onChange }) => {
         .use(cursor)
         .use(mentionNode)
         .use(mentionSlash)
-        .use(slashCommandKey)
-        .use(tableBlock)
-        .use(codeBlockComponent)
-        .use(imageBlockComponent)
-        .use(imageInlineComponent)
-        .use(linkTooltipPlugin)
-        .use(listItemBlockComponent),
+        .use(slashCommandKey),
     []
   )
 
@@ -205,16 +191,40 @@ const MilkdownEditor: React.FC<MilkdownEditorProps> = ({ value, onChange }) => {
     valueRef.current = value
   }, [value, get, loading])
 
+  const calculatePopoverStyle = useCallback(
+    (x: number, y: number, isOpen: boolean) => {
+      if (!isOpen || typeof window === "undefined") return {}
+
+      const height = 400 // estimated max height
+      const gap = 10
+      const windowHeight = window.innerHeight
+      const bottomSpace = windowHeight - y
+
+      const shouldFlip = bottomSpace < height && y > height
+
+      return {
+        position: "fixed" as const,
+        left: `${x}px`,
+        zIndex: 99999,
+        pointerEvents: "auto" as const,
+        ...(shouldFlip
+          ? { bottom: `${windowHeight - y + gap}px`, top: "auto" }
+          : { top: `${y + gap}px`, bottom: "auto" }),
+      }
+    },
+    []
+  )
+
   // Calculate position for MentionList
   const popoverStyle = useMemo<React.CSSProperties>(
     () =>
       calculatePopoverStyle(mentionState.x, mentionState.y, mentionState.open),
-    [mentionState.x, mentionState.y, mentionState.open]
+    [mentionState.x, mentionState.y, mentionState.open, calculatePopoverStyle]
   )
 
   const slashPopoverStyle = useMemo<React.CSSProperties>(
     () => calculatePopoverStyle(slashState.x, slashState.y, slashState.open),
-    [slashState.x, slashState.y, slashState.open]
+    [slashState.x, slashState.y, slashState.open, calculatePopoverStyle]
   )
 
   return (
@@ -343,7 +353,34 @@ const MilkdownEditor: React.FC<MilkdownEditorProps> = ({ value, onChange }) => {
                       dispatch(trHr)
                       break
                     case "table":
-                      insertTable(schema, state, dispatch)
+                      const { table, table_row, table_cell, table_header } =
+                        schema.nodes
+                      if (
+                        !table ||
+                        !table_row ||
+                        !table_cell ||
+                        !table_header
+                      ) {
+                        break
+                      }
+
+                      const createRow = (isHeader: boolean) => {
+                        const cellType = isHeader ? table_header : table_cell
+                        const cells = Array(3)
+                          .fill(0)
+                          .map(() => cellType.createAndFill())
+                          .filter((n): n is Node => !!n)
+                        return table_row.create(null, cells)
+                      }
+
+                      const tableNode = table.create(null, [
+                        createRow(true),
+                        createRow(false),
+                        createRow(false),
+                      ])
+
+                      const trTable = state.tr.replaceSelectionWith(tableNode)
+                      dispatch(trTable)
                       break
                   }
 
