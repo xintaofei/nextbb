@@ -143,7 +143,10 @@ export const SlashMenu = forwardRef<SlashMenuRef, SlashMenuProps>(
     }
 
     return (
-      <div className="w-56 bg-popover text-popover-foreground rounded-md border shadow-md overflow-hidden p-1">
+      <div
+        className="w-56 max-h-96 overflow-y-auto bg-popover text-popover-foreground rounded-md border shadow-md p-1"
+        onWheel={(e) => e.stopPropagation()}
+      >
         {filteredCommands.map((cmd, index) => (
           <div
             key={cmd.id}

@@ -76,7 +76,10 @@ export const MentionList = forwardRef<MentionListRef, MentionListProps>(
     }
 
     return (
-      <div className="w-64 bg-popover text-popover-foreground rounded-md border shadow-md overflow-hidden p-1">
+      <div
+        className="w-56 max-h-96 overflow-y-auto bg-popover text-popover-foreground rounded-md border shadow-md p-1"
+        onWheel={(e) => e.stopPropagation()}
+      >
         {users.map((user, index) => (
           <div
             key={user.id}

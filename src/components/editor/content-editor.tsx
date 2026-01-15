@@ -193,32 +193,41 @@ const MilkdownEditor: React.FC<MilkdownEditorProps> = ({ value, onChange }) => {
     valueRef.current = value
   }, [value, get, loading])
 
-  // Calculate position for MentionList
-  const popoverStyle = useMemo<React.CSSProperties>(() => {
-    if (mentionState.open) {
-      return {
-        position: "fixed",
-        top: `${mentionState.y + 5}px`,
-        left: `${mentionState.x}px`,
-        zIndex: 99999,
-        pointerEvents: "auto",
-      }
-    }
-    return {}
-  }, [mentionState.open, mentionState.x, mentionState.y])
+  const calculatePopoverStyle = useCallback(
+    (x: number, y: number, isOpen: boolean) => {
+      if (!isOpen || typeof window === "undefined") return {}
 
-  const slashPopoverStyle = useMemo<React.CSSProperties>(() => {
-    if (slashState.open) {
+      const height = 320 // estimated max height
+      const gap = 10
+      const windowHeight = window.innerHeight
+      const bottomSpace = windowHeight - y
+
+      const shouldFlip = bottomSpace < height && y > height
+
       return {
-        position: "fixed",
-        top: `${slashState.y + 5}px`,
-        left: `${slashState.x}px`,
+        position: "fixed" as const,
+        left: `${x}px`,
         zIndex: 99999,
-        pointerEvents: "auto",
+        pointerEvents: "auto" as const,
+        ...(shouldFlip
+          ? { bottom: `${windowHeight - y + gap}px`, top: "auto" }
+          : { top: `${y + gap}px`, bottom: "auto" }),
       }
-    }
-    return {}
-  }, [slashState.open, slashState.x, slashState.y])
+    },
+    []
+  )
+
+  // Calculate position for MentionList
+  const popoverStyle = useMemo<React.CSSProperties>(
+    () =>
+      calculatePopoverStyle(mentionState.x, mentionState.y, mentionState.open),
+    [mentionState.x, mentionState.y, mentionState.open, calculatePopoverStyle]
+  )
+
+  const slashPopoverStyle = useMemo<React.CSSProperties>(
+    () => calculatePopoverStyle(slashState.x, slashState.y, slashState.open),
+    [slashState.x, slashState.y, slashState.open, calculatePopoverStyle]
+  )
 
   return (
     <>
