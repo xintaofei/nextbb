@@ -9,6 +9,8 @@ import { CreditService } from "@/lib/credit-service"
 import { CreditLogType } from "@prisma/client"
 import { getLocale } from "next-intl/server"
 import { getTranslationsQuery, getTranslationFields } from "@/lib/locale"
+import { notifyMentions } from "@/lib/notification-service"
+import { emitPostCreateEvent } from "@/lib/automation/events"
 
 interface TopicsDelegate {
   create(args: unknown): Promise<{ id: bigint }>
@@ -519,7 +521,7 @@ export async function POST(req: Request) {
         select: { id: true },
       })
 
-      await client.posts.create({
+      const post = await client.posts.create({
         data: {
           id: generateId(),
           topic_id: topic.id,
@@ -635,8 +637,34 @@ export async function POST(req: Request) {
         })
       }
 
-      return { topicId: String(topic.id) }
+      return { topicId: String(topic.id), postId: String(post.id) }
     })
+
+    // Process side effects (Notifications & Events)
+    try {
+      const topicId = BigInt(result.topicId)
+      const postId = BigInt(result.postId)
+
+      // 1. Notify mentioned users
+      await notifyMentions({
+        topicId,
+        postId,
+        senderId: auth.userId,
+        contentHtml: body.content_html,
+      })
+
+      // 2. Emit automation event
+      await emitPostCreateEvent({
+        postId,
+        topicId,
+        userId: auth.userId,
+        categoryId,
+        content: body.content,
+        isFirstPost: true,
+      })
+    } catch (error) {
+      console.error("Failed to process topic creation side effects:", error)
+    }
 
     const response: TopicCreateResult = { topicId: result.topicId }
     return NextResponse.json(response, { status: 201 })

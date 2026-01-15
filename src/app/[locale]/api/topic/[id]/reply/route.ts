@@ -4,6 +4,9 @@ import { z } from "zod"
 import { getSessionUser } from "@/lib/auth"
 import { generateId } from "@/lib/id"
 import { TopicType } from "@/types/topic-type"
+import { notifyMentions, notifyReply } from "@/lib/notification-service"
+import { emitPostReplyEvent } from "@/lib/automation/events"
+import { Prisma } from "@prisma/client"
 
 const ReplyCreateSchema = z.object({
   content: z.string().min(1),
@@ -12,13 +15,6 @@ const ReplyCreateSchema = z.object({
 })
 
 type ReplyCreateDTO = z.infer<typeof ReplyCreateSchema>
-
-type ReplyCreateResult = {
-  postId: string
-  floorNumber: number
-  isWinner?: boolean
-  message?: string
-}
 
 export async function POST(
   req: Request,
@@ -47,7 +43,7 @@ export async function POST(
 
   const topic = await prisma.topics.findFirst({
     where: { id: topicId, is_deleted: false },
-    select: { id: true, type: true },
+    select: { id: true, type: true, user_id: true, category_id: true },
   })
   if (!topic) {
     return NextResponse.json({ error: "Topic not found" }, { status: 404 })
@@ -252,12 +248,58 @@ export async function POST(
     }
   })
 
+  // Process side effects (Notifications & Events)
+  try {
+    const postId = BigInt(result.postId)
+
+    // 1. Notify mentioned users
+    await notifyMentions({
+      topicId,
+      postId,
+      senderId: auth.userId,
+      contentHtml: body.content_html,
+    })
+
+    // 2. Notify reply targets (Topic Author & Parent Post Author)
+    await notifyReply({
+      topicId,
+      postId,
+      senderId: auth.userId,
+      topicUserId: topic.user_id,
+      replyToUserId,
+    })
+
+    // 3. Emit automation event
+    // Check if this is the user's first reply to this topic
+    const previousReply = await prisma.posts.findFirst({
+      where: {
+        topic_id: topicId,
+        user_id: auth.userId,
+        id: { not: postId },
+      },
+      select: { id: true },
+    })
+
+    await emitPostReplyEvent({
+      postId,
+      topicId,
+      userId: auth.userId,
+      categoryId: topic.category_id,
+      content: body.content,
+      parentId: parentId > 0 ? parentId : undefined,
+      topicType: topic.type,
+      isFirstReply: !previousReply,
+    })
+  } catch (error) {
+    console.error("Failed to process reply creation side effects:", error)
+  }
+
   return NextResponse.json(result, { status: 201 })
 }
 
 // Helper function to calculate instant lottery win
 async function calculateInstantWin(
-  tx: unknown,
+  tx: Prisma.TransactionClient,
   topicId: bigint,
   floorNumber: number,
   algorithmType: string,
@@ -265,8 +307,6 @@ async function calculateInstantWin(
   fixedFloorsJson: string | null,
   winnerCount: number | null
 ): Promise<boolean> {
-  // Type assertion for transaction client
-  const client = tx as typeof prisma
   // INTERVAL algorithm: check if floor number matches interval
   if (algorithmType === "INTERVAL" && floorInterval) {
     return floorNumber % floorInterval === 0
@@ -285,7 +325,7 @@ async function calculateInstantWin(
   // RANDOM algorithm: random chance based on winner count
   if (algorithmType === "RANDOM" && winnerCount) {
     // Check how many winners already exist
-    const existingWinners = await client.lottery_winners.count({
+    const existingWinners = await tx.lottery_winners.count({
       where: { topic_id: topicId },
     })
 
@@ -306,17 +346,15 @@ async function calculateInstantWin(
 
 // Helper function to execute threshold draw
 async function executeThresholdDraw(
-  tx: unknown,
+  tx: Prisma.TransactionClient,
   topicId: bigint,
   algorithmType: string,
   floorInterval: number | null,
   fixedFloorsJson: string | null,
   winnerCount: number | null
 ): Promise<void> {
-  const client = tx as typeof prisma
-
   // Get all eligible posts (exclude floor 1)
-  const posts = await client.posts.findMany({
+  const posts = await tx.posts.findMany({
     where: {
       topic_id: topicId,
       is_deleted: false,
@@ -366,7 +404,7 @@ async function executeThresholdDraw(
 
   // Create winner records
   if (uniqueWinners.length > 0) {
-    await client.lottery_winners.createMany({
+    await tx.lottery_winners.createMany({
       data: uniqueWinners.map((post) => ({
         id: generateId(),
         topic_id: topicId,
