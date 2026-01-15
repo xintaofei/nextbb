@@ -1,6 +1,5 @@
 "use client"
 
-import "@/lib/vue-polyfill" // Must be imported before @milkdown/crepe
 import { Crepe } from "@milkdown/crepe"
 import { listener, listenerCtx } from "@milkdown/kit/plugin/listener"
 import { SlashProvider } from "@milkdown/kit/plugin/slash"
