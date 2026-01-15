@@ -9,6 +9,7 @@ export const paragraphPlaceholder = (text: string, secondaryText?: string) =>
       props: {
         decorations(state) {
           const doc = state.doc
+          const { selection } = state
           const decorations: Decoration[] = []
 
           doc.descendants((node, pos) => {
@@ -16,15 +17,9 @@ export const paragraphPlaceholder = (text: string, secondaryText?: string) =>
               const isFirst = pos === 0
               const displayText = isFirst ? text : secondaryText
 
-              console.log("[ParagraphPlaceholder] Processing node:", {
-                pos,
-                isFirst,
-                displayText,
-                contentSize: node.content.size,
-                nodeType: node.type.name,
-              })
+              const isFocused = selection.from === pos + 1
 
-              if (displayText) {
+              if (displayText && isFocused) {
                 decorations.push(
                   Decoration.node(pos, pos + node.nodeSize, {
                     class: "paragraph-placeholder",

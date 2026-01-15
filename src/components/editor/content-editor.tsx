@@ -68,13 +68,6 @@ const MilkdownEditor: React.FC<MilkdownEditorProps> = ({
   placeholder,
   slashPlaceholder,
 }) => {
-  useEffect(() => {
-    console.log("[MilkdownEditor] Props updated:", {
-      placeholder,
-      slashPlaceholder,
-    })
-  }, [placeholder, slashPlaceholder])
-
   const valueRef = useRef<string | undefined>(undefined)
   const mentionListRef = useRef<MentionListRef>(null)
   const [mentionState, setMentionState] = useState<PluginState>({
