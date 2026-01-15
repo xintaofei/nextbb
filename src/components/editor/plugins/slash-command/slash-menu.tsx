@@ -4,6 +4,7 @@ import {
   Heading1,
   Heading2,
   Heading3,
+  Heading4,
   List,
   ListOrdered,
   Code,
@@ -37,6 +38,12 @@ const COMMANDS: SlashCommand[] = [
     label: "Heading 3",
     icon: <Heading3 className="w-4 h-4" />,
     actionId: "h3",
+  },
+  {
+    id: "h4",
+    label: "Heading 4",
+    icon: <Heading4 className="w-4 h-4" />,
+    actionId: "h4",
   },
   {
     id: "bullet-list",

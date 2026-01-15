@@ -328,6 +328,12 @@ const MilkdownEditor: React.FC<MilkdownEditorProps> = ({ value, onChange }) => {
                         dispatch
                       )
                       break
+                    case "h4":
+                      setBlockType(schema.nodes.heading, { level: 4 })(
+                        state,
+                        dispatch
+                      )
+                      break
                     case "bulletList":
                       wrapIn(schema.nodes.bullet_list)(state, dispatch)
                       break
@@ -347,7 +353,34 @@ const MilkdownEditor: React.FC<MilkdownEditorProps> = ({ value, onChange }) => {
                       dispatch(trHr)
                       break
                     case "table":
-                      // Table support requires more effort, skipping for now
+                      const { table, table_row, table_cell, table_header } =
+                        schema.nodes
+                      if (
+                        !table ||
+                        !table_row ||
+                        !table_cell ||
+                        !table_header
+                      ) {
+                        break
+                      }
+
+                      const createRow = (isHeader: boolean) => {
+                        const cellType = isHeader ? table_header : table_cell
+                        const cells = Array(3)
+                          .fill(0)
+                          .map(() => cellType.createAndFill())
+                          .filter((n): n is Node => !!n)
+                        return table_row.create(null, cells)
+                      }
+
+                      const tableNode = table.create(null, [
+                        createRow(true),
+                        createRow(false),
+                        createRow(false),
+                      ])
+
+                      const trTable = state.tr.replaceSelectionWith(tableNode)
+                      dispatch(trTable)
                       break
                   }
 
