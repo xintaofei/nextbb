@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma"
 import { getSessionUser } from "@/lib/auth"
 import { getLocale } from "next-intl/server"
 import { getTranslationsQuery, getTranslationField } from "@/lib/locale"
+import { stripHtmlAndTruncate } from "@/lib/utils"
 import type {
   ActivityType,
   ActivityItem,
@@ -11,15 +12,6 @@ import type {
 } from "@/types/activity"
 
 type Params = Promise<{ id: string }>
-
-// 辅助函数：移除HTML标签并截取文本
-function stripHtmlAndTruncate(html: string, maxLength: number): string {
-  const text = html.replace(/<[^>]*>/g, "").trim()
-  if (text.length <= maxLength) {
-    return text
-  }
-  return text.substring(0, maxLength) + "..."
-}
 
 // 辅助函数：格式化分类信息
 function formatCategoryInfo(
@@ -120,6 +112,7 @@ async function getPostsActivities(
       id: true,
       floor_number: true,
       content: true,
+      content_html: true,
       created_at: true,
       topic: {
         select: {
@@ -169,7 +162,10 @@ async function getPostsActivities(
     postData: {
       postId: String(post.id),
       floorNumber: post.floor_number,
-      contentPreview: stripHtmlAndTruncate(post.content, 150),
+      contentPreview: stripHtmlAndTruncate(
+        post.content_html || post.content,
+        150
+      ),
       topicId: String(post.topic.id),
       topicTitle: post.topic.title,
       category: formatCategoryInfo(post.topic.category, locale),
@@ -202,6 +198,7 @@ async function getLikesActivities(
           id: true,
           floor_number: true,
           content: true,
+          content_html: true,
           user_id: true,
           topic: {
             select: {
@@ -280,6 +277,7 @@ async function getBookmarksActivities(
           id: true,
           floor_number: true,
           content: true,
+          content_html: true,
           user_id: true,
           topic: {
             select: {

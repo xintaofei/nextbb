@@ -20,6 +20,7 @@ import { TagBadge } from "@/components/common/tag-badge"
 import { TopicStatusTags } from "@/components/common/topic-status-tags"
 import { UserInfoCard } from "@/components/common/user-info-card"
 import { type TopicTypeValue } from "@/types/topic-type"
+import { stripHtmlAndTruncate } from "@/lib/utils"
 
 export type TopicParticipant = {
   id: string
@@ -247,7 +248,7 @@ export function TopicList({
                     <div className="mt-2 text-base text-muted-foreground max-w-full">
                       <Link href={`/topic/${t.id}`}>
                         <span className="line-clamp-3 whitespace-normal wrap-break-word">
-                          {t.firstPost.content}
+                          {stripHtmlAndTruncate(t.firstPost.content)}
                         </span>
                       </Link>
                     </div>
