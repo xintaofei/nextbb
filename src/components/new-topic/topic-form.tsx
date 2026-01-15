@@ -15,6 +15,7 @@ import {
   FormMessage,
 } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
+import { Textarea } from "@/components/ui/textarea"
 import { CategorySelect } from "@/components/filters/category-select"
 import { TagsMultiSelect } from "./tags-multi-select"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
@@ -38,7 +39,6 @@ import { PollConfig } from "./poll-config"
 import { LotteryConfig } from "./lottery-config"
 import { AdminOptions } from "./admin-options"
 import { MilkdownEditorWrapper } from "@/components/editor/content-editor"
-import { uploadImage } from "@/lib/upload"
 
 type MeResponse = {
   user: {
@@ -318,7 +318,6 @@ export function TopicForm({
               <FormControl>
                 <MilkdownEditorWrapper
                   value={field.value}
-                  onImageUpload={uploadImage}
                   onChange={(val, json, html) => {
                     field.onChange(val)
                     if (html) {

@@ -80,15 +80,10 @@ const MilkdownEditor: React.FC<MilkdownEditorProps> = ({
 
   const debouncedUpdate = useDebouncedCallback(handleUpdate, 500)
   const onUpdateRef = useRef(debouncedUpdate)
-  const onImageUploadRef = useRef(onImageUpload)
 
   useEffect(() => {
     onUpdateRef.current = debouncedUpdate
   }, [debouncedUpdate])
-
-  useEffect(() => {
-    onImageUploadRef.current = onImageUpload
-  }, [onImageUpload])
 
   useEffect(() => {
     if (!editorRef.current) return
@@ -104,13 +99,12 @@ const MilkdownEditor: React.FC<MilkdownEditorProps> = ({
           text: placeholder,
         },
         [Crepe.Feature.ImageBlock]: {
-          onUpload: async (file: File) => {
-            if (onImageUploadRef.current) {
-              return onImageUploadRef.current(file)
-            }
-            console.warn("Image upload not implemented")
-            return URL.createObjectURL(file)
-          },
+          onUpload:
+            onImageUpload ||
+            (async (file: File) => {
+              console.warn("Image upload not implemented")
+              return URL.createObjectURL(file)
+            }),
         },
       },
     })
@@ -148,7 +142,6 @@ const MilkdownEditor: React.FC<MilkdownEditorProps> = ({
       crepe.destroy()
       crepeRef.current = null
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []) // Empty dependency array to run once
 
   // Handle external value changes
