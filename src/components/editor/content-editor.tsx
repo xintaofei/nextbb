@@ -1,20 +1,49 @@
-import { Crepe } from "@milkdown/crepe"
+import {
+  Editor,
+  rootCtx,
+  defaultValueCtx,
+  editorViewCtx,
+  schemaCtx,
+} from "@milkdown/kit/core"
+import { commonmark } from "@milkdown/kit/preset/commonmark"
+import { gfm } from "@milkdown/kit/preset/gfm"
+import { history } from "@milkdown/kit/plugin/history"
 import { listener, listenerCtx } from "@milkdown/kit/plugin/listener"
-import { SlashProvider } from "@milkdown/kit/plugin/slash"
+import { clipboard } from "@milkdown/kit/plugin/clipboard"
+import { indent } from "@milkdown/kit/plugin/indent"
+import { cursor } from "@milkdown/kit/plugin/cursor"
+import { Milkdown, MilkdownProvider, useEditor } from "@milkdown/react"
 import { replaceAll } from "@milkdown/kit/utils"
-import "@milkdown/crepe/theme/common/style.css"
-import "@milkdown/crepe/theme/frame.css"
-import React, { useEffect, useRef, useState, useMemo } from "react"
+import { DOMSerializer, Node } from "@milkdown/kit/prose/model"
+
+import React, { useEffect, useRef, useCallback, useState, useMemo } from "react"
 import { createPortal } from "react-dom"
 import { useDebouncedCallback } from "@/hooks/use-debounce"
 import { mentionSlash } from "./plugins/mention/plugin"
 import { mentionNode } from "./plugins/mention/node"
 import { MentionList, MentionListRef } from "./plugins/mention/mention-list"
+import { SlashProvider } from "@milkdown/kit/plugin/slash"
+import { slashCommandKey } from "./plugins/slash-command/plugin"
+import { SlashMenu, SlashMenuRef } from "./plugins/slash-command/slash-menu"
+import { setBlockType, wrapIn } from "@milkdown/kit/prose/commands"
 import { createSlashProviderConfig, PluginState } from "./slash-provider-config"
+import { tableBlock } from "@milkdown/kit/component/table-block"
+import { configureTable } from "./plugins/table/configure-table"
+import { insertTable } from "./plugins/table/utils"
+import { codeBlockComponent } from "@milkdown/kit/component/code-block"
+import {
+  imageBlockComponent,
+  imageBlockConfig,
+  defaultImageBlockConfig,
+} from "@milkdown/kit/component/image-block"
+import { imageInlineComponent } from "@milkdown/kit/component/image-inline"
+import { linkTooltipPlugin } from "@milkdown/kit/component/link-tooltip"
+import { listItemBlockComponent } from "@milkdown/kit/component/list-item-block"
 import { parseContent, calculatePopoverStyle } from "./utils"
-import { schemaCtx, editorViewCtx } from "@milkdown/kit/core"
-import { DOMSerializer, Node } from "@milkdown/kit/prose/model"
-import { Ctx } from "@milkdown/kit/ctx"
+
+type EditorType = ReturnType<typeof Editor.make>
+type ConfigFn = Parameters<EditorType["config"]>[0]
+type Ctx = Parameters<ConfigFn>[0]
 
 interface MilkdownEditorProps {
   value?: string
@@ -26,11 +55,7 @@ interface MilkdownEditorProps {
 }
 
 const MilkdownEditor: React.FC<MilkdownEditorProps> = ({ value, onChange }) => {
-  const editorRef = useRef<HTMLDivElement>(null)
-  const crepeRef = useRef<Crepe | null>(null)
-  const [loading, setLoading] = useState(true)
-
-  // Mention State
+  const valueRef = useRef<string | undefined>(undefined)
   const mentionListRef = useRef<MentionListRef>(null)
   const [mentionState, setMentionState] = useState<PluginState>({
     open: false,
@@ -39,10 +64,15 @@ const MilkdownEditor: React.FC<MilkdownEditorProps> = ({ value, onChange }) => {
     query: "",
   })
 
-  // Value Management
-  const valueRef = useRef<string | undefined>(undefined)
+  const slashMenuRef = useRef<SlashMenuRef>(null)
+  const [slashState, setSlashState] = useState<PluginState>({
+    open: false,
+    x: 0,
+    y: 0,
+    query: "",
+  })
 
-  const handleUpdate = React.useCallback(
+  const handleUpdate = useCallback(
     (ctx: Ctx, doc: Node) => {
       if (!onChange) return
 
@@ -69,6 +99,7 @@ const MilkdownEditor: React.FC<MilkdownEditorProps> = ({ value, onChange }) => {
     [onChange]
   )
 
+  // Debounce the update to avoid performance issues on every keystroke
   const debouncedUpdate = useDebouncedCallback(handleUpdate, 500)
   const onUpdateRef = useRef(debouncedUpdate)
 
@@ -76,69 +107,80 @@ const MilkdownEditor: React.FC<MilkdownEditorProps> = ({ value, onChange }) => {
     onUpdateRef.current = debouncedUpdate
   }, [debouncedUpdate])
 
-  useEffect(() => {
-    if (!editorRef.current) return
+  const { get, loading } = useEditor(
+    (root) =>
+      Editor.make()
+        .config((ctx) => {
+          ctx.set(rootCtx, root)
 
-    const crepe = new Crepe({
-      root: editorRef.current,
-      defaultValue:
-        typeof parseContent(value) === "string"
-          ? (parseContent(value) as string)
-          : "",
-      featureConfigs: {
-        [Crepe.Feature.ImageBlock]: {
-          onUpload: async (file: File) => {
-            // TODO: Implement actual file upload
-            return new Promise((resolve) => {
-              setTimeout(() => {
-                resolve(URL.createObjectURL(file))
-              }, 1000)
-            })
-          },
-        },
-      },
-    })
+          const initialContent = parseContent(value)
+          if (typeof initialContent === "string") {
+            ctx.set(defaultValueCtx, initialContent)
+          }
 
-    // Register Mention Plugin
-    crepe.editor
-      .use(mentionNode)
-      .use(mentionSlash)
-      .use(listener)
-      .config((ctx) => {
-        // Configure Mention Provider
-        ctx.set(
-          mentionSlash.key,
-          createSlashProviderConfig({
-            trigger: "@",
-            providerFactory: SlashProvider,
-            onStateChange: setMentionState,
-            ref: mentionListRef,
+          ctx.get(listenerCtx).updated((ctx, doc) => {
+            onUpdateRef.current?.(ctx, doc)
           })
-        )
 
-        // Configure Listener
-        ctx.get(listenerCtx).updated((ctx, doc) => {
-          onUpdateRef.current?.(ctx, doc)
+          // Configure Plugins
+          configureTable(ctx)
+
+          ctx.set(
+            mentionSlash.key,
+            createSlashProviderConfig({
+              trigger: "@",
+              providerFactory: SlashProvider,
+              onStateChange: setMentionState,
+              ref: mentionListRef,
+            })
+          )
+
+          ctx.set(
+            slashCommandKey.key,
+            createSlashProviderConfig({
+              trigger: "/",
+              providerFactory: SlashProvider,
+              onStateChange: setSlashState,
+              ref: slashMenuRef,
+            })
+          )
+
+          ctx.set(imageBlockConfig.key, {
+            ...defaultImageBlockConfig,
+            onUpload: async (file: File) => {
+              // TODO: Implement actual file upload
+              return new Promise((resolve) => {
+                setTimeout(() => {
+                  resolve(URL.createObjectURL(file))
+                }, 1000)
+              })
+            },
+          })
         })
-      })
+        .use(commonmark)
+        .use(gfm)
+        .use(history)
+        .use(listener)
+        .use(clipboard)
+        .use(indent)
+        .use(cursor)
+        .use(mentionNode)
+        .use(mentionSlash)
+        .use(slashCommandKey)
+        .use(tableBlock)
+        .use(codeBlockComponent)
+        .use(imageBlockComponent)
+        .use(imageInlineComponent)
+        .use(linkTooltipPlugin)
+        .use(listItemBlockComponent),
+    []
+  )
 
-    crepe.create().then(() => {
-      crepeRef.current = crepe
-      setLoading(false)
-    })
-
-    return () => {
-      crepe.destroy()
-      crepeRef.current = null
-    }
-  }, []) // Empty dependency array to run once
-
-  // Handle external value changes
   useEffect(() => {
     if (loading || value === undefined) return
     if (value === valueRef.current) return
 
-    const editor = crepeRef.current?.editor
+    const editor = get()
     if (!editor) return
 
     const content = parseContent(value)
@@ -159,7 +201,7 @@ const MilkdownEditor: React.FC<MilkdownEditorProps> = ({ value, onChange }) => {
       })
     }
     valueRef.current = value
-  }, [value, loading])
+  }, [value, get, loading])
 
   // Calculate position for MentionList
   const popoverStyle = useMemo<React.CSSProperties>(
@@ -168,10 +210,14 @@ const MilkdownEditor: React.FC<MilkdownEditorProps> = ({ value, onChange }) => {
     [mentionState.x, mentionState.y, mentionState.open]
   )
 
+  const slashPopoverStyle = useMemo<React.CSSProperties>(
+    () => calculatePopoverStyle(slashState.x, slashState.y, slashState.open),
+    [slashState.x, slashState.y, slashState.open]
+  )
+
   return (
     <>
-      <div className="h-full min-h-[300px]" ref={editorRef} />
-
+      <Milkdown />
       {mentionState.open &&
         typeof document !== "undefined" &&
         createPortal(
@@ -183,7 +229,7 @@ const MilkdownEditor: React.FC<MilkdownEditorProps> = ({ value, onChange }) => {
                 setMentionState((prev) => ({ ...prev, open: false }))
               }}
               onSelect={(user) => {
-                const editor = crepeRef.current?.editor
+                const editor = get()
                 if (!editor) return
 
                 editor.action((ctx) => {
@@ -221,14 +267,102 @@ const MilkdownEditor: React.FC<MilkdownEditorProps> = ({ value, onChange }) => {
           </div>,
           document.body
         )}
+      {slashState.open &&
+        typeof document !== "undefined" &&
+        createPortal(
+          <div style={slashPopoverStyle}>
+            <SlashMenu
+              ref={slashMenuRef}
+              query={slashState.query}
+              onClose={() => {
+                setSlashState((prev) => ({ ...prev, open: false }))
+              }}
+              onSelect={(command) => {
+                const editor = get()
+                if (!editor) return
+
+                editor.action((ctx) => {
+                  const view = ctx.get(editorViewCtx)
+                  const schema = ctx.get(schemaCtx)
+
+                  // Delete the trigger and query
+                  const { selection } = view.state
+                  const { from } = selection
+                  const tr = view.state.tr.delete(
+                    from - slashState.query.length - 1,
+                    from
+                  )
+                  view.dispatch(tr)
+
+                  // Execute command
+                  const { state, dispatch } = view
+
+                  switch (command.actionId) {
+                    case "h1":
+                      setBlockType(schema.nodes.heading, { level: 1 })(
+                        state,
+                        dispatch
+                      )
+                      break
+                    case "h2":
+                      setBlockType(schema.nodes.heading, { level: 2 })(
+                        state,
+                        dispatch
+                      )
+                      break
+                    case "h3":
+                      setBlockType(schema.nodes.heading, { level: 3 })(
+                        state,
+                        dispatch
+                      )
+                      break
+                    case "h4":
+                      setBlockType(schema.nodes.heading, { level: 4 })(
+                        state,
+                        dispatch
+                      )
+                      break
+                    case "bulletList":
+                      wrapIn(schema.nodes.bullet_list)(state, dispatch)
+                      break
+                    case "orderedList":
+                      wrapIn(schema.nodes.ordered_list)(state, dispatch)
+                      break
+                    case "codeBlock":
+                      setBlockType(schema.nodes.code_block)(state, dispatch)
+                      break
+                    case "blockquote":
+                      wrapIn(schema.nodes.blockquote)(state, dispatch)
+                      break
+                    case "hr":
+                      const trHr = state.tr.replaceSelectionWith(
+                        schema.nodes.hr.create()
+                      )
+                      dispatch(trHr)
+                      break
+                    case "table":
+                      insertTable(schema, state, dispatch)
+                      break
+                  }
+
+                  view.focus()
+                  setSlashState((prev) => ({ ...prev, open: false }))
+                })
+              }}
+            />
+          </div>,
+          document.body
+        )}
     </>
   )
 }
 
 export const MilkdownEditorWrapper: React.FC<MilkdownEditorProps> = (props) => {
   return (
-    <div className="w-full prose dark:prose-invert border rounded-lg focus-within:ring-[3px] focus-within:ring-ring/50 focus-within:border-ring transition-all [&_.milkdown-menu]:!static [&_.milkdown]:!shadow-none [&_.milkdown]:!border-none">
-      <MilkdownEditor {...props} />
-    </div>
+    <MilkdownProvider>
+      <div className="w-full prose dark:prose-invert border rounded-lg focus-within:ring-[3px] focus-within:ring-ring/50 focus-within:border-ring transition-all">
+        <MilkdownEditor {...props} />
+      </div>
+    </MilkdownProvider>
   )
 }
