@@ -13,7 +13,7 @@ import { mentionSlash } from "./plugins/mention/plugin"
 import { mentionNode } from "./plugins/mention/node"
 import { MentionList, MentionListRef } from "./plugins/mention/mention-list"
 import { createSlashProviderConfig, PluginState } from "./slash-provider-config"
-import { parseContent, calculatePopoverStyle, insertMention } from "./utils"
+import { parseContent, calculatePopoverStyle } from "./utils"
 import { schemaCtx, editorViewCtx } from "@milkdown/kit/core"
 import { DOMSerializer, Node } from "@milkdown/kit/prose/model"
 import { Ctx } from "@milkdown/kit/ctx"
@@ -205,7 +205,33 @@ const MilkdownEditor: React.FC<MilkdownEditorProps> = ({
                 if (!editor) return
 
                 editor.action((ctx) => {
-                  insertMention(ctx, user, mentionState.query.length)
+                  const view = ctx.get(editorViewCtx)
+                  const { dispatch, state } = view
+                  const { tr, selection } = state
+                  const { from } = selection
+
+                  // Calculate range to replace
+                  const range = {
+                    from: from - mentionState.query.length - 1,
+                    to: from,
+                  }
+
+                  const schema = ctx.get(schemaCtx)
+                  if (!schema.nodes.mention) return
+
+                  const node = schema.nodes.mention.create({
+                    id: user.id,
+                    label: user.name,
+                  })
+
+                  const tr2 = tr.replaceWith(range.from, range.to, node)
+
+                  // Add a space after the mention
+                  const tr3 = tr2.insertText(" ")
+
+                  dispatch(tr3)
+                  view.focus()
+
                   setMentionState((prev) => ({ ...prev, open: false }))
                 })
               }}
