@@ -1974,5 +1974,19 @@
       "unexpectedError": "意外错误: {error}",
       "unknownError": "未知错误: {message}"
     }
+  },
+  "Editor": {
+    "SlashCommand": {
+      "heading1": "标题 1",
+      "heading2": "标题 2",
+      "heading3": "标题 3",
+      "heading4": "标题 4",
+      "bulletList": "无序列表",
+      "orderedList": "有序列表",
+      "codeBlock": "代码块",
+      "quote": "引用",
+      "divider": "分割线",
+      "noCommands": "未找到命令"
+    }
   }
 }

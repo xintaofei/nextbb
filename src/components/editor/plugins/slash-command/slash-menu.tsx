@@ -1,4 +1,5 @@
-import { useState, forwardRef, useImperativeHandle } from "react"
+import { useState, forwardRef, useImperativeHandle, useMemo } from "react"
+import { useTranslations } from "next-intl"
 import { cn } from "@/lib/utils"
 import {
   Heading1,
@@ -22,55 +23,55 @@ export interface SlashCommand {
 const COMMANDS: SlashCommand[] = [
   {
     id: "h1",
-    label: "Heading 1",
+    label: "heading1",
     icon: <Heading1 className="w-4 h-4" />,
     actionId: "h1",
   },
   {
     id: "h2",
-    label: "Heading 2",
+    label: "heading2",
     icon: <Heading2 className="w-4 h-4" />,
     actionId: "h2",
   },
   {
     id: "h3",
-    label: "Heading 3",
+    label: "heading3",
     icon: <Heading3 className="w-4 h-4" />,
     actionId: "h3",
   },
   {
     id: "h4",
-    label: "Heading 4",
+    label: "heading4",
     icon: <Heading4 className="w-4 h-4" />,
     actionId: "h4",
   },
   {
     id: "bullet-list",
-    label: "Bullet List",
+    label: "bulletList",
     icon: <List className="w-4 h-4" />,
     actionId: "bulletList",
   },
   {
     id: "ordered-list",
-    label: "Ordered List",
+    label: "orderedList",
     icon: <ListOrdered className="w-4 h-4" />,
     actionId: "orderedList",
   },
   {
     id: "code-block",
-    label: "Code Block",
+    label: "codeBlock",
     icon: <Code className="w-4 h-4" />,
     actionId: "codeBlock",
   },
   {
     id: "quote",
-    label: "Quote",
+    label: "quote",
     icon: <Quote className="w-4 h-4" />,
     actionId: "blockquote",
   },
   {
     id: "divider",
-    label: "Divider",
+    label: "divider",
     icon: <Minus className="w-4 h-4" />,
     actionId: "hr",
   },
@@ -88,7 +89,18 @@ export interface SlashMenuRef {
 
 export const SlashMenu = forwardRef<SlashMenuRef, SlashMenuProps>(
   ({ query, onSelect, onClose }, ref) => {
-    const filteredCommands = COMMANDS.filter((cmd) =>
+    const t = useTranslations("Editor.SlashCommand")
+
+    const translatedCommands = useMemo(
+      () =>
+        COMMANDS.map((cmd) => ({
+          ...cmd,
+          label: t(cmd.label),
+        })),
+      [t]
+    )
+
+    const filteredCommands = translatedCommands.filter((cmd) =>
       cmd.label.toLowerCase().includes(query.toLowerCase())
     )
 
@@ -134,9 +146,9 @@ export const SlashMenu = forwardRef<SlashMenuRef, SlashMenuProps>(
 
     if (filteredCommands.length === 0) {
       return (
-        <div className="w-56 bg-popover text-popover-foreground rounded-md border shadow-md overflow-hidden p-1">
+        <div className="w-48 bg-popover text-popover-foreground rounded-md border shadow-md overflow-hidden p-1">
           <div className="p-2 text-sm text-muted-foreground">
-            No commands found
+            {t("noCommands")}
           </div>
         </div>
       )
@@ -144,7 +156,7 @@ export const SlashMenu = forwardRef<SlashMenuRef, SlashMenuProps>(
 
     return (
       <div
-        className="w-56 max-h-96 overflow-y-auto bg-popover text-popover-foreground rounded-md border shadow-md p-1"
+        className="w-48 max-h-96 overflow-y-auto bg-popover text-popover-foreground rounded-md border shadow-md p-1"
         onWheel={(e) => e.stopPropagation()}
       >
         {filteredCommands.map((cmd, index) => (

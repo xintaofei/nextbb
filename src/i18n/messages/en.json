@@ -1962,5 +1962,19 @@
       "unexpectedError": "Unexpected error: {error}",
       "unknownError": "Unknown error: {message}"
     }
+  },
+  "Editor": {
+    "SlashCommand": {
+      "heading1": "Heading 1",
+      "heading2": "Heading 2",
+      "heading3": "Heading 3",
+      "heading4": "Heading 4",
+      "bulletList": "Bullet List",
+      "orderedList": "Ordered List",
+      "codeBlock": "Code Block",
+      "quote": "Quote",
+      "divider": "Divider",
+      "noCommands": "No commands found"
+    }
   }
 }
