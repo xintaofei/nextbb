@@ -3,6 +3,7 @@
 import { useMemo } from "react"
 import useSWR from "swr"
 import { useTranslations } from "next-intl"
+import { usePathname } from "next/navigation"
 import {
   BookUser,
   CalendarCheck,
@@ -56,6 +57,7 @@ const fetcher = async (url: string): Promise<MeResponse | null> => {
 export function NavMain() {
   const { data } = useSWR<MeResponse | null>("/api/auth/me", fetcher)
   const t = useTranslations("Nav.main")
+  const pathname = usePathname()
 
   const username = useMemo(() => {
     if (!data) return null
@@ -64,53 +66,60 @@ export function NavMain() {
 
   const encodedUsername = username ? encodeUsername(username) : null
 
+  const items = [
+    {
+      title: t("topics"),
+      url: "/",
+      icon: Layers,
+      isActive: pathname === "/",
+    },
+    {
+      title: t("myPosts"),
+      url: encodedUsername ? `/u/${encodedUsername}/activity/posts` : "/login",
+      icon: BookUser,
+      isActive: pathname.startsWith(
+        encodedUsername ? `/u/${encodedUsername}/activity/posts` : "/login"
+      ),
+    },
+    {
+      title: t("myMessages"),
+      url: encodedUsername ? `/u/${encodedUsername}/notifications` : "/login",
+      icon: Inbox,
+      isActive: pathname.startsWith(
+        encodedUsername ? `/u/${encodedUsername}/notifications` : "/login"
+      ),
+    },
+    {
+      title: t("checkin"),
+      url: "/checkin",
+      icon: CalendarCheck,
+      isActive: pathname === "/checkin",
+    },
+    {
+      title: t("donation"),
+      url: "/donation/month",
+      icon: Heart,
+      isActive: pathname.startsWith("/donation"),
+    },
+    {
+      title: t("leaderboard"),
+      url: "/leaderboard",
+      icon: ChartColumn,
+      isActive: pathname === "/leaderboard",
+    },
+  ]
+
   return (
     <SidebarGroup>
       <SidebarMenu>
-        <Link href="/">
-          <SidebarMenuButton>
-            <Layers />
-            <span>{t("topics")}</span>
-          </SidebarMenuButton>
-        </Link>
-        <Link
-          href={
-            encodedUsername ? `/u/${encodedUsername}/activity/posts` : "/login"
-          }
-        >
-          <SidebarMenuButton>
-            <BookUser />
-            <span>{t("myPosts")}</span>
-          </SidebarMenuButton>
-        </Link>
-        <Link
-          href={
-            encodedUsername ? `/u/${encodedUsername}/notifications` : "/login"
-          }
-        >
-          <SidebarMenuButton>
-            <Inbox />
-            <span>{t("myMessages")}</span>
-          </SidebarMenuButton>
-        </Link>
-        <Link href="/checkin">
-          <SidebarMenuButton>
-            <CalendarCheck />
-            <span>{t("checkin")}</span>
-          </SidebarMenuButton>
-        </Link>
-        <Link href="/donation/month">
-          <SidebarMenuButton>
-            <Heart />
-            <span>{t("donation")}</span>
-          </SidebarMenuButton>
-        </Link>
-        <Link href="/leaderboard">
-          <SidebarMenuButton>
-            <ChartColumn />
-            <span>{t("leaderboard")}</span>
-          </SidebarMenuButton>
-        </Link>
+        {items.map((item) => (
+          <Link key={item.url} href={item.url}>
+            <SidebarMenuButton isActive={item.isActive}>
+              <item.icon />
+              <span>{item.title}</span>
+            </SidebarMenuButton>
+          </Link>
+        ))}
         <Collapsible asChild defaultOpen={false} className="group/collapsible">
           <SidebarMenuItem>
             <CollapsibleTrigger asChild>
