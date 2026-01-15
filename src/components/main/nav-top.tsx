@@ -13,9 +13,11 @@ export function NavTop({
       <Image
         className="dark:invert"
         src="/nextbb-logo.png"
-        alt="Vercel logomark"
-        width={width}
-        height={height}
+        alt="NextBB Logo"
+        width={1024}
+        height={326}
+        style={{ width: width, height: "auto" }}
+        priority
       />
     </Link>
   )
