@@ -149,7 +149,6 @@
   }
 }
 
-
 .milkdown .ProseMirror {
   padding: 1rem;
   min-height: 10rem;
@@ -172,22 +171,12 @@
   outline: 2px solid var(--ring);
 }
 
-.milkdown .ProseMirror table {
-  border-collapse: collapse;
-  border: 1px solid var(--border);
-}
-
-.milkdown .ProseMirror table th,
-.milkdown .ProseMirror table td {
-  padding: 0.5rem 1rem;
-  border: 1px solid var(--border);
-}
 /* Milkdown Paragraph Placeholder */
-.paragraph-placeholder {
+.milkdown .paragraph-placeholder {
   position: relative;
 }
 
-.paragraph-placeholder::before {
+.milkdown .paragraph-placeholder::before {
   content: attr(data-placeholder);
   position: absolute;
   left: 0;
