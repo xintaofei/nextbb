@@ -14,7 +14,14 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { useTranslations } from "next-intl"
-import { useEffect, useMemo, useRef, useState } from "react"
+import {
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  ReactNode,
+  useCallback,
+} from "react"
 import { toast } from "sonner"
 import { RelativeTime } from "@/components/common/relative-time"
 import { Skeleton } from "@/components/ui/skeleton"
@@ -37,10 +44,27 @@ import { BountyDisplay } from "@/components/topic/bounty-display"
 import { QuestionAcceptanceDisplay } from "@/components/topic/question-acceptance-display"
 import { LotteryDisplay } from "@/components/topic/lottery-display"
 import { type TopicTypeValue, TopicType, BountyType } from "@/types/topic-type"
-import { ReactNode } from "react"
+
+const fetcherInfo = async (url: string): Promise<TopicInfoResult> => {
+  const res = await fetch(url, { cache: "no-store" })
+  if (!res.ok) throw new Error("Failed to load")
+  return (await res.json()) as TopicInfoResult
+}
+
+const fetcherPosts = async (url: string): Promise<PostPage> => {
+  const res = await fetch(url, { cache: "no-store" })
+  if (!res.ok) throw new Error("Failed to load")
+  return (await res.json()) as PostPage
+}
+
+const fetcherRelated = async (url: string): Promise<RelatedResult> => {
+  const res = await fetch(url, { cache: "no-store" })
+  if (!res.ok) throw new Error("Failed to load")
+  return (await res.json()) as RelatedResult
+}
 
 export default function TopicPage() {
-  const { id } = useParams<{ id: string }>()
+  const { id } = useParams() as { id: string }
   const tc = useTranslations("Common")
   const t = useTranslations("Topic")
   const tb = useTranslations("Topic.Bounty")
@@ -48,11 +72,6 @@ export default function TopicPage() {
   const te = useTranslations("Error")
   const tEditor = useTranslations("Editor")
 
-  const fetcherInfo = async (url: string): Promise<TopicInfoResult> => {
-    const res = await fetch(url, { cache: "no-store" })
-    if (!res.ok) throw new Error("Failed to load")
-    return (await res.json()) as TopicInfoResult
-  }
   const { data: infoData, isLoading: loadingInfo } = useSWR<TopicInfoResult>(
     `/api/topic/${id}/info`,
     fetcherInfo,
@@ -70,7 +89,7 @@ export default function TopicPage() {
   )
   const topicInfo = infoData?.topic
 
-  const [pageSize] = useState<number>(15)
+  const pageSize = 15
   const [currentUserId, setCurrentUserId] = useState<string | null>(null)
   const [currentUserProfile, setCurrentUserProfile] = useState<{
     id: string
@@ -95,18 +114,13 @@ export default function TopicPage() {
     singleAmount: number | null
   } | null>(null)
 
-  const fetcherPosts = async (url: string): Promise<PostPage> => {
-    const res = await fetch(url, { cache: "no-store" })
-    if (!res.ok) throw new Error("Failed to load")
-    return (await res.json()) as PostPage
-  }
-  const getKey = (
-    index: number,
-    previousPageData: PostPage | null
-  ): string | null => {
-    if (previousPageData && !previousPageData.hasMore) return null
-    return `/api/topic/${id}/posts?page=${index + 1}&pageSize=${pageSize}`
-  }
+  const getKey = useCallback(
+    (index: number, previousPageData: PostPage | null): string | null => {
+      if (previousPageData && !previousPageData.hasMore) return null
+      return `/api/topic/${id}/posts?page=${index + 1}&pageSize=${pageSize}`
+    },
+    [id, pageSize]
+  )
   const {
     data: postsPages,
     mutate: mutatePosts,
@@ -140,11 +154,6 @@ export default function TopicPage() {
   const totalPosts = lastPage?.total ?? posts.length
   const hasMore = lastPage?.hasMore ?? false
 
-  const fetcherRelated = async (url: string): Promise<RelatedResult> => {
-    const res = await fetch(url, { cache: "no-store" })
-    if (!res.ok) throw new Error("Failed to load")
-    return (await res.json()) as RelatedResult
-  }
   const { data: relatedData, isLoading: loadingRelated } =
     useSWR<RelatedResult>(`/api/topic/${id}/related`, fetcherRelated, {
       revalidateOnFocus: false,
@@ -152,59 +161,13 @@ export default function TopicPage() {
 
   const relatedTopics = relatedData?.relatedTopics ?? []
 
-  useEffect(() => {}, [id])
+  const postsRef = useRef<PostItem[]>([])
+  useEffect(() => {
+    postsRef.current = posts
+  }, [posts])
 
   const postListLoading = loadingPosts && posts.length === 0
   const sentinelRef = useRef<HTMLDivElement | null>(null)
-
-  const likeAction = async (postId: string) => {
-    const target = posts.find((p) => p.id === postId)
-    if (!target) return
-    setMutatingPostId(postId)
-    const optimisticLiked = !target.liked
-    const optimisticCount = target.likes + (optimisticLiked ? 1 : -1)
-    await mutatePosts(
-      (pages) =>
-        pages?.map((pg) => ({
-          ...pg,
-          items: pg.items.map((p) =>
-            p.id === postId
-              ? {
-                  ...p,
-                  liked: optimisticLiked,
-                  likes: Math.max(optimisticCount, 0),
-                }
-              : p
-          ),
-        })) ?? pages,
-      false
-    )
-    try {
-      const result = await triggerLike({ postId })
-      await mutatePosts(
-        (pages) =>
-          pages?.map((pg) => ({
-            ...pg,
-            items: pg.items.map((p) =>
-              p.id === postId
-                ? { ...p, liked: result.liked, likes: result.count }
-                : p
-            ),
-          })) ?? pages,
-        false
-      )
-    } catch (e) {
-      const status = Number((e as Error).message)
-      if (status === 401) {
-        toast.error(tc("Error.unauthorized"))
-      } else {
-        toast.error(tc("Error.requestFailed"))
-      }
-      await mutatePosts(undefined, false)
-    } finally {
-      setMutatingPostId(null)
-    }
-  }
 
   type LikeResult = { liked: boolean; count: number }
   type LikeArg = { postId: string }
@@ -218,58 +181,7 @@ export default function TopicPage() {
     if (!res.ok) throw new Error(String(res.status))
     return (await res.json()) as LikeResult
   })
-  const bookmarkAction = async (postId: string) => {
-    const target = posts.find((p) => p.id === postId)
-    if (!target) return
-    setMutatingPostId(postId)
-    const optimisticBookmarked = !target.bookmarked
-    const optimisticCount = target.bookmarks + (optimisticBookmarked ? 1 : -1)
-    await mutatePosts(
-      (pages) =>
-        pages?.map((pg) => ({
-          ...pg,
-          items: pg.items.map((p) =>
-            p.id === postId
-              ? {
-                  ...p,
-                  bookmarked: optimisticBookmarked,
-                  bookmarks: Math.max(optimisticCount, 0),
-                }
-              : p
-          ),
-        })) ?? pages,
-      false
-    )
-    try {
-      const result = await triggerBookmark({ postId })
-      await mutatePosts(
-        (pages) =>
-          pages?.map((pg) => ({
-            ...pg,
-            items: pg.items.map((p) =>
-              p.id === postId
-                ? {
-                    ...p,
-                    bookmarked: result.bookmarked,
-                    bookmarks: result.count,
-                  }
-                : p
-            ),
-          })) ?? pages,
-        false
-      )
-    } catch (e) {
-      const status = Number((e as Error).message)
-      if (status === 401) {
-        toast.error(tc("Error.unauthorized"))
-      } else {
-        toast.error(tc("Error.requestFailed"))
-      }
-      await mutatePosts(undefined, false)
-    } finally {
-      setMutatingPostId(null)
-    }
-  }
+
   type BookmarkResult = { bookmarked: boolean; count: number }
   type BookmarkArg = { postId: string }
   const { trigger: triggerBookmark, isMutating: bookmarkMutating } =
@@ -283,6 +195,7 @@ export default function TopicPage() {
         return (await res.json()) as BookmarkResult
       }
     )
+
   type EditArg = { postId: string; content: string; contentHtml?: string }
   const { trigger: triggerEdit, isMutating: editMutating } = useSWRMutation<
     { ok: boolean },
@@ -301,6 +214,7 @@ export default function TopicPage() {
     if (!res.ok) throw new Error(String(res.status))
     return { ok: true }
   })
+
   type DeleteArg = { postId: string }
   const { trigger: triggerDelete, isMutating: deleteMutating } = useSWRMutation<
     { ok: boolean },
@@ -312,6 +226,7 @@ export default function TopicPage() {
     if (!res.ok) throw new Error(String(res.status))
     return { ok: true }
   })
+
   type ReplyArg = { content: string; contentHtml?: string; parentId?: string }
   type ReplyResult = { postId: string; floorNumber: number }
   const { trigger: triggerReply } = useSWRMutation<
@@ -376,6 +291,114 @@ export default function TopicPage() {
     return (await res.json()) as AcceptResult
   })
 
+  const likeAction = useCallback(
+    async (postId: string) => {
+      const target = postsRef.current.find((p) => p.id === postId)
+      if (!target) return
+      setMutatingPostId(postId)
+      const optimisticLiked = !target.liked
+      const optimisticCount = target.likes + (optimisticLiked ? 1 : -1)
+      await mutatePosts(
+        (pages) =>
+          pages?.map((pg) => ({
+            ...pg,
+            items: pg.items.map((p) =>
+              p.id === postId
+                ? {
+                    ...p,
+                    liked: optimisticLiked,
+                    likes: Math.max(optimisticCount, 0),
+                  }
+                : p
+            ),
+          })) ?? pages,
+        false
+      )
+      try {
+        const result = await triggerLike({ postId })
+        await mutatePosts(
+          (pages) =>
+            pages?.map((pg) => ({
+              ...pg,
+              items: pg.items.map((p) =>
+                p.id === postId
+                  ? { ...p, liked: result.liked, likes: result.count }
+                  : p
+              ),
+            })) ?? pages,
+          false
+        )
+      } catch (e) {
+        const status = Number((e as Error).message)
+        if (status === 401) {
+          toast.error(tc("Error.unauthorized"))
+        } else {
+          toast.error(tc("Error.requestFailed"))
+        }
+        await mutatePosts(undefined, false)
+      } finally {
+        setMutatingPostId(null)
+      }
+    },
+    [mutatePosts, tc, triggerLike]
+  )
+
+  const bookmarkAction = useCallback(
+    async (postId: string) => {
+      const target = postsRef.current.find((p) => p.id === postId)
+      if (!target) return
+      setMutatingPostId(postId)
+      const optimisticBookmarked = !target.bookmarked
+      const optimisticCount = target.bookmarks + (optimisticBookmarked ? 1 : -1)
+      await mutatePosts(
+        (pages) =>
+          pages?.map((pg) => ({
+            ...pg,
+            items: pg.items.map((p) =>
+              p.id === postId
+                ? {
+                    ...p,
+                    bookmarked: optimisticBookmarked,
+                    bookmarks: Math.max(optimisticCount, 0),
+                  }
+                : p
+            ),
+          })) ?? pages,
+        false
+      )
+      try {
+        const result = await triggerBookmark({ postId })
+        await mutatePosts(
+          (pages) =>
+            pages?.map((pg) => ({
+              ...pg,
+              items: pg.items.map((p) =>
+                p.id === postId
+                  ? {
+                      ...p,
+                      bookmarked: result.bookmarked,
+                      bookmarks: result.count,
+                    }
+                  : p
+              ),
+            })) ?? pages,
+          false
+        )
+      } catch (e) {
+        const status = Number((e as Error).message)
+        if (status === 401) {
+          toast.error(tc("Error.unauthorized"))
+        } else {
+          toast.error(tc("Error.requestFailed"))
+        }
+        await mutatePosts(undefined, false)
+      } finally {
+        setMutatingPostId(null)
+      }
+    },
+    [mutatePosts, tc, triggerBookmark]
+  )
+
   useEffect(() => {
     let mounted = true
     const run = async () => {
@@ -413,8 +436,9 @@ export default function TopicPage() {
   }, [])
 
   // 获取悬赏配置
+  const topicType = topicInfo?.type
   useEffect(() => {
-    if (!topicInfo || topicInfo.type !== TopicType.BOUNTY) return
+    if (topicType !== TopicType.BOUNTY) return
     const fetchBountyConfig = async () => {
       try {
         const res = await fetch(`/api/topic/${id}/bounty`, {
@@ -432,278 +456,299 @@ export default function TopicPage() {
       } catch {}
     }
     fetchBountyConfig()
-  }, [id, topicInfo])
+  }, [id, topicType])
 
-  const onClickReply = (postId: string, authorName: string) => {
+  const onClickReply = useCallback((postId: string, authorName: string) => {
     setReplyToPostId(postId)
     setReplyContent(`@${authorName} `)
     setReplyOpen(true)
-  }
+  }, [])
 
-  const submitReply = async (
-    overrideContent?: string,
-    contentHtml?: string
-  ) => {
-    const content = (overrideContent ?? replyContent).trim()
-    if (!content) {
-      toast.error(tc("Form.required"))
-      return
-    }
-    setSubmitting(true)
-    try {
-      const prevPages = postsPages
-      if (!prevPages) {
-        toast.error(tc("Error.requestFailed"))
+  const submitReply = useCallback(
+    async (overrideContent?: string, contentHtml?: string) => {
+      const content = (overrideContent ?? replyContent).trim()
+      if (!content) {
+        toast.error(tc("Form.required"))
         return
       }
-      const tempId = `temp-${Date.now()}`
-      const optimistic: PostItem = {
-        id: tempId,
-        author: {
-          id: currentUserId ?? "0",
-          name: currentUserProfile?.username ?? "",
-          avatar: currentUserProfile?.avatar ?? "",
-        },
-        content,
-        contentHtml,
-        createdAt: new Date().toISOString(),
-        minutesAgo: 0,
-        isDeleted: false,
-        likes: 0,
-        liked: false,
-        bookmarks: 0,
-        bookmarked: false,
-        replyCount: 0,
-        parentId: replyToPostId,
-      }
-      setReplyOpen(false)
-      setReplyContent("")
-      setReplyToPostId(null)
-      await mutatePosts((pages) => {
-        if (!pages || pages.length === 0) {
-          return [
-            {
-              items: [optimistic],
-              page: 1,
-              pageSize,
-              total: 1,
-              hasMore: false,
-            },
-          ]
+      setSubmitting(true)
+      try {
+        const prevPages = postsPages
+        if (!prevPages) {
+          toast.error(tc("Error.requestFailed"))
+          return
         }
-        const next = [...pages]
-        const last = { ...next[next.length - 1] }
-        last.items = [...last.items, optimistic]
-        last.total = (last.total ?? posts.length) + 1
-        next[next.length - 1] = last
-        return next
-      }, false)
-      await triggerReply({
-        content,
-        contentHtml,
-        parentId: replyToPostId ?? undefined,
-      })
-      await mutatePosts((pages) => pages, true)
-      const nextPosts = postsPages ? postsPages.flatMap((p) => p.items) : []
-      toast.success(tc("Action.success"))
-      const newIndex = nextPosts.length
-      const el = document.getElementById(`post-${newIndex}`)
-      if (el) el.scrollIntoView({ behavior: "smooth", block: "center" })
-    } catch (e) {
-      const status = Number((e as Error).message)
-      if (status === 401) toast.error(tc("Error.unauthorized"))
-      else toast.error(tc("Error.requestFailed"))
-      await mutatePosts((pages) => pages, true)
-    } finally {
-      setSubmitting(false)
-    }
-  }
+        const tempId = `temp-${Date.now()}`
+        const optimistic: PostItem = {
+          id: tempId,
+          author: {
+            id: currentUserId ?? "0",
+            name: currentUserProfile?.username ?? "",
+            avatar: currentUserProfile?.avatar ?? "",
+          },
+          content,
+          contentHtml,
+          createdAt: new Date().toISOString(),
+          minutesAgo: 0,
+          isDeleted: false,
+          likes: 0,
+          liked: false,
+          bookmarks: 0,
+          bookmarked: false,
+          replyCount: 0,
+          parentId: replyToPostId,
+        }
+        setReplyOpen(false)
+        setReplyContent("")
+        setReplyToPostId(null)
+        await mutatePosts((pages) => {
+          if (!pages || pages.length === 0) {
+            return [
+              {
+                items: [optimistic],
+                page: 1,
+                pageSize,
+                total: 1,
+                hasMore: false,
+              },
+            ]
+          }
+          const next = [...pages]
+          const last = { ...next[next.length - 1] }
+          last.items = [...last.items, optimistic]
+          last.total = (last.total ?? postsRef.current.length) + 1
+          next[next.length - 1] = last
+          return next
+        }, false)
+        await triggerReply({
+          content,
+          contentHtml,
+          parentId: replyToPostId ?? undefined,
+        })
+        await mutatePosts((pages) => pages, true)
+        const nextPosts = postsPages ? postsPages.flatMap((p) => p.items) : []
+        toast.success(tc("Action.success"))
+        const newIndex = nextPosts.length
+        const el = document.getElementById(`post-${newIndex}`)
+        if (el) el.scrollIntoView({ behavior: "smooth", block: "center" })
+      } catch (e) {
+        const status = Number((e as Error).message)
+        if (status === 401) toast.error(tc("Error.unauthorized"))
+        else toast.error(tc("Error.requestFailed"))
+        await mutatePosts((pages) => pages, true)
+      } finally {
+        setSubmitting(false)
+      }
+    },
+    [
+      replyContent,
+      tc,
+      postsPages,
+      currentUserId,
+      currentUserProfile,
+      replyToPostId,
+      mutatePosts,
+      pageSize,
+      triggerReply,
+    ]
+  )
 
-  const onClickEdit = (postId: string, initialContent: string) => {
+  const onClickEdit = useCallback((postId: string, initialContent: string) => {
     setEditPostId(postId)
     setEditInitial(initialContent)
     setEditOpen(true)
-  }
-  const submitEdit = async (content: string, contentHtml?: string) => {
-    const value = content.trim()
-    if (!value) {
-      toast.error(tc("Form.required"))
-      return
-    }
-    setEditSubmitting(true)
-    try {
-      if (!editPostId) return
-      setMutatingPostId(editPostId)
-      await mutatePosts(
-        (pages) =>
-          pages?.map((pg) => ({
-            ...pg,
-            items: pg.items.map((p) =>
-              p.id === editPostId ? { ...p, content: value, contentHtml } : p
-            ),
-          })) ?? pages,
-        false
-      )
-      await triggerEdit({ postId: editPostId, content: value, contentHtml })
-      setEditOpen(false)
-      await mutatePosts((pages) => pages, true)
-      const nextFlat = postsPages ? postsPages.flatMap((p) => p.items) : []
-      toast.success(tc("Action.success"))
-      const idx = nextFlat.findIndex((p) => p.id === editPostId)
-      const el = document.getElementById(`post-${idx + 1}`)
-      if (el) el.scrollIntoView({ behavior: "smooth", block: "center" })
-    } catch (e) {
-      const status = Number((e as Error).message)
-      if (status === 401) toast.error(tc("Error.unauthorized"))
-      else if (status === 403) toast.error(tc("Error.forbidden"))
-      else toast.error(tc("Error.requestFailed"))
-      await mutatePosts((pages) => pages, true)
-    } finally {
-      setEditSubmitting(false)
-      setMutatingPostId(null)
-    }
-  }
-  const onClickDelete = async (postId: string) => {
-    if (!window.confirm(t("deleteConfirm"))) return
-    try {
-      setMutatingPostId(postId)
-      await mutatePosts(
-        (pages) =>
-          pages?.map((pg) => ({
-            ...pg,
-            items: pg.items.map((p) =>
-              p.id === postId ? { ...p, isDeleted: true } : p
-            ),
-          })) ?? pages,
-        false
-      )
-      await triggerDelete({ postId })
-      await mutatePosts((pages) => pages, true)
-      toast.success(tc("Action.success"))
-    } catch (e) {
-      const status = Number((e as Error).message)
-      if (status === 401) toast.error(tc("Error.unauthorized"))
-      else if (status === 403) toast.error(tc("Error.forbidden"))
-      else toast.error(tc("Error.requestFailed"))
-      await mutatePosts((pages) => pages, true)
-    } finally {
-      setMutatingPostId(null)
-    }
-  }
-
-  const onReward = async (
-    postId: string,
-    receiverId: string,
-    amount: number
-  ) => {
-    if (
-      !window.confirm(
-        tb("action.confirmMessage", {
-          user: posts.find((p) => p.id === postId)?.author.name ?? "",
-          amount,
-        })
-      )
-    )
-      return
-    try {
-      setMutatingPostId(postId)
-      const result = await triggerReward({ postId, receiverId })
-      await mutatePosts((pages) => pages, true)
-      toast.success(
-        tb("success.rewarded", { remaining: result.remainingSlots })
-      )
-      // 更新悬赏配置
-      if (bountyConfig) {
-        setBountyConfig({
-          ...bountyConfig,
-          remainingSlots: result.remainingSlots,
-        })
+  }, [])
+  const submitEdit = useCallback(
+    async (content: string, contentHtml?: string) => {
+      const value = content.trim()
+      if (!value) {
+        toast.error(tc("Form.required"))
+        return
       }
-    } catch (e) {
-      const status = Number((e as Error).message)
-      if (status === 401) toast.error(te("unauthorized"))
-      else if (status === 403) toast.error(tb("error.onlyOwnerCanReward"))
-      else if (status === 400) toast.error(tb("error.alreadyRewarded"))
-      else if (status === 409) toast.error(tb("error.noRemainingSlots"))
-      else if (status === 410) toast.error(tb("error.alreadySettled"))
-      else toast.error(te("requestFailed"))
-    } finally {
-      setMutatingPostId(null)
-    }
-  }
+      setEditSubmitting(true)
+      try {
+        if (!editPostId) return
+        setMutatingPostId(editPostId)
+        await mutatePosts(
+          (pages) =>
+            pages?.map((pg) => ({
+              ...pg,
+              items: pg.items.map((p) =>
+                p.id === editPostId ? { ...p, content: value, contentHtml } : p
+              ),
+            })) ?? pages,
+          false
+        )
+        await triggerEdit({ postId: editPostId, content: value, contentHtml })
+        setEditOpen(false)
+        await mutatePosts((pages) => pages, true)
+        const nextFlat = postsPages ? postsPages.flatMap((p) => p.items) : []
+        toast.success(tc("Action.success"))
+        const idx = nextFlat.findIndex((p) => p.id === editPostId)
+        const el = document.getElementById(`post-${idx + 1}`)
+        if (el) el.scrollIntoView({ behavior: "smooth", block: "center" })
+      } catch (e) {
+        const status = Number((e as Error).message)
+        if (status === 401) toast.error(tc("Error.unauthorized"))
+        else if (status === 403) toast.error(tc("Error.forbidden"))
+        else toast.error(tc("Error.requestFailed"))
+        await mutatePosts((pages) => pages, true)
+      } finally {
+        setEditSubmitting(false)
+        setMutatingPostId(null)
+      }
+    },
+    [editPostId, tc, mutatePosts, triggerEdit, postsPages]
+  )
+  const onClickDelete = useCallback(
+    async (postId: string) => {
+      if (!window.confirm(t("deleteConfirm"))) return
+      try {
+        setMutatingPostId(postId)
+        await mutatePosts(
+          (pages) =>
+            pages?.map((pg) => ({
+              ...pg,
+              items: pg.items.map((p) =>
+                p.id === postId ? { ...p, isDeleted: true } : p
+              ),
+            })) ?? pages,
+          false
+        )
+        await triggerDelete({ postId })
+        await mutatePosts((pages) => pages, true)
+        toast.success(tc("Action.success"))
+      } catch (e) {
+        const status = Number((e as Error).message)
+        if (status === 401) toast.error(tc("Error.unauthorized"))
+        else if (status === 403) toast.error(tc("Error.forbidden"))
+        else toast.error(tc("Error.requestFailed"))
+        await mutatePosts((pages) => pages, true)
+      } finally {
+        setMutatingPostId(null)
+      }
+    },
+    [t, mutatePosts, triggerDelete, tc]
+  )
 
-  const onAccept = async (postId: string, isAccepted: boolean) => {
-    const target = posts.find((p) => p.id === postId)
-    if (!target) return
-    try {
-      setMutatingPostId(postId)
-      const currentUserId_ = currentUserId
-      const currentUserProfile_ = currentUserProfile
+  const onReward = useCallback(
+    async (postId: string, receiverId: string, amount: number) => {
+      if (
+        !window.confirm(
+          tb("action.confirmMessage", {
+            user:
+              postsRef.current.find((p) => p.id === postId)?.author.name ?? "",
+            amount,
+          })
+        )
+      )
+        return
+      try {
+        setMutatingPostId(postId)
+        const result = await triggerReward({ postId, receiverId })
+        await mutatePosts((pages) => pages, true)
+        toast.success(
+          tb("success.rewarded", { remaining: result.remainingSlots })
+        )
+        // 更新悬赏配置
+        if (bountyConfig) {
+          setBountyConfig({
+            ...bountyConfig,
+            remainingSlots: result.remainingSlots,
+          })
+        }
+      } catch (e) {
+        const status = Number((e as Error).message)
+        if (status === 401) toast.error(te("unauthorized"))
+        else if (status === 403) toast.error(tb("error.onlyOwnerCanReward"))
+        else if (status === 400) toast.error(tb("error.alreadyRewarded"))
+        else if (status === 409) toast.error(tb("error.noRemainingSlots"))
+        else if (status === 410) toast.error(tb("error.alreadySettled"))
+        else toast.error(te("requestFailed"))
+      } finally {
+        setMutatingPostId(null)
+      }
+    },
+    [tb, bountyConfig, triggerReward, mutatePosts, te]
+  )
 
-      // 乐观更新：立即更新 UI
-      await mutatePosts(
-        (pages) =>
-          pages?.map((pg) => ({
-            ...pg,
-            items: pg.items.map((p) => {
-              // 如果是取消采纳，清除所有帖子的采纳状态
-              if (isAccepted) {
+  const onAccept = useCallback(
+    async (postId: string, isAccepted: boolean) => {
+      const target = postsRef.current.find((p) => p.id === postId)
+      if (!target) return
+      try {
+        setMutatingPostId(postId)
+        const currentUserId_ = currentUserId
+        const currentUserProfile_ = currentUserProfile
+
+        // 乐观更新：立即更新 UI
+        await mutatePosts(
+          (pages) =>
+            pages?.map((pg) => ({
+              ...pg,
+              items: pg.items.map((p) => {
+                // 如果是取消采纳，清除所有帖子的采纳状态
+                if (isAccepted) {
+                  return {
+                    ...p,
+                    questionAcceptance: null,
+                  }
+                }
+                // 如果是新采纳，只给当前帖子设置采纳状态，其他帖子清除
+                if (p.id === postId) {
+                  return {
+                    ...p,
+                    questionAcceptance:
+                      currentUserId_ && currentUserProfile_
+                        ? {
+                            acceptedBy: {
+                              id: currentUserId_,
+                              name: currentUserProfile_.username,
+                              avatar: currentUserProfile_.avatar,
+                            },
+                            acceptedAt: new Date().toISOString(),
+                          }
+                        : null,
+                  }
+                }
+                // 其他帖子清除采纳状态（因为同一时刻只能有一个被采纳的答案）
                 return {
                   ...p,
                   questionAcceptance: null,
                 }
-              }
-              // 如果是新采纳，只给当前帖子设置采纳状态，其他帖子清除
-              if (p.id === postId) {
-                return {
-                  ...p,
-                  questionAcceptance:
-                    currentUserId_ && currentUserProfile_
-                      ? {
-                          acceptedBy: {
-                            id: currentUserId_,
-                            name: currentUserProfile_.username,
-                            avatar: currentUserProfile_.avatar,
-                          },
-                          acceptedAt: new Date().toISOString(),
-                        }
-                      : null,
-                }
-              }
-              // 其他帖子清除采纳状态（因为同一时刻只能有一个被采纳的答案）
-              return {
-                ...p,
-                questionAcceptance: null,
-              }
-            }),
-          })) ?? pages,
-        false
-      )
-
-      const result = await triggerAccept({
-        postId: isAccepted ? null : postId,
-      })
-
-      // 重新验证数据，确保与服务器一致
-      await mutatePosts((pages) => pages, true)
-
-      toast.success(
-        isAccepted ? tq("messages.cancelSuccess") : tq("messages.acceptSuccess")
-      )
-    } catch (e) {
-      const status = Number((e as Error).message)
-      if (status === 401) toast.error(tc("Error.unauthorized"))
-      else if (status === 403) toast.error(tc("Error.forbidden"))
-      else
-        toast.error(
-          isAccepted ? tq("messages.cancelError") : tq("messages.acceptError")
+              }),
+            })) ?? pages,
+          false
         )
-      // 错误时恢复数据
-      await mutatePosts((pages) => pages, true)
-    } finally {
-      setMutatingPostId(null)
-    }
-  }
+
+        await triggerAccept({
+          postId: isAccepted ? null : postId,
+        })
+
+        // 重新验证数据，确保与服务器一致
+        await mutatePosts((pages) => pages, true)
+
+        toast.success(
+          isAccepted
+            ? tq("messages.cancelSuccess")
+            : tq("messages.acceptSuccess")
+        )
+      } catch (e) {
+        const status = Number((e as Error).message)
+        if (status === 401) toast.error(tc("Error.unauthorized"))
+        else if (status === 403) toast.error(tc("Error.forbidden"))
+        else
+          toast.error(
+            isAccepted ? tq("messages.cancelError") : tq("messages.acceptError")
+          )
+        // 错误时恢复数据
+        await mutatePosts((pages) => pages, true)
+      } finally {
+        setMutatingPostId(null)
+      }
+    },
+    [currentUserId, currentUserProfile, mutatePosts, triggerAccept, tq, tc]
+  )
 
   useEffect(() => {
     const sentinel = sentinelRef.current

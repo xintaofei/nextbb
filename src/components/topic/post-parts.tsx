@@ -22,7 +22,7 @@ import { UserBadgesDisplay } from "@/components/common/user-badges-display"
 import { UserInfoCard } from "@/components/common/user-info-card"
 import { Separator } from "@/components/ui/separator"
 import { Badge } from "@/components/ui/badge"
-import { useMemo, memo } from "react"
+import { memo } from "react"
 import parse, {
   DOMNode,
   Element,
@@ -86,9 +86,7 @@ export const PostHeader = memo(function PostHeader({
   index: number
   floorOpText: string
 }) {
-  const displayAvatar = useMemo(() => {
-    return post.author.avatar || undefined
-  }, [post.author.avatar])
+  const displayAvatar = post.author.avatar || undefined
 
   return (
     <div className="flex flex-row justify-between items-center w-full">

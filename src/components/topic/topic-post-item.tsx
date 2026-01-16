@@ -19,6 +19,50 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { RelativeTime } from "@/components/common/relative-time"
 import parse from "html-react-parser"
 
+const repliesFetcher = async (url: string) => {
+  const res = await fetch(url)
+  if (!res.ok) throw new Error("Failed to load")
+  return (await res.json()) as { items: PostItem[] }
+}
+
+const SubReplyItem = memo(function SubReplyItem({ sub }: { sub: PostItem }) {
+  return (
+    <div className="flex flex-col gap-1">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <UserInfoCard
+            userId={sub.author.id}
+            userName={sub.author.name}
+            userAvatar={sub.author.avatar}
+            side="right"
+          >
+            <Avatar className="size-6 cursor-pointer">
+              <AvatarImage
+                src={sub.author.avatar || undefined}
+                alt={sub.author.name}
+              />
+              <AvatarFallback>{sub.author.name}</AvatarFallback>
+            </Avatar>
+          </UserInfoCard>
+          <span className="text-sm font-medium">{sub.author.name}</span>
+        </div>
+        <span className="text-xs text-muted-foreground">
+          <RelativeTime date={sub.createdAt} />
+        </span>
+      </div>
+      <div className="text-sm text-muted-foreground pl-8">
+        {sub.contentHtml ? (
+          <div className="prose prose-sm dark:prose-invert max-w-none whitespace-normal">
+            {parse(sub.contentHtml, parseOptions)}
+          </div>
+        ) : (
+          sub.content
+        )}
+      </div>
+    </div>
+  )
+})
+
 interface TopicPostItemProps {
   post: PostItem
   index: number
@@ -94,11 +138,7 @@ export const TopicPostItem = memo(function TopicPostItem({
 
   const { data: subRepliesData, isLoading: loadingSubReplies } = useSWR(
     expanded ? `/api/post/${post.id}/replies` : null,
-    async (url) => {
-      const res = await fetch(url)
-      if (!res.ok) throw new Error("Failed to load")
-      return (await res.json()) as { items: PostItem[] }
-    }
+    repliesFetcher
   )
 
   const subReplies = subRepliesData?.items || []
@@ -171,43 +211,7 @@ export const TopicPostItem = memo(function TopicPostItem({
                 </div>
               ))
             ) : subReplies.length > 0 ? (
-              subReplies.map((sub) => (
-                <div key={sub.id} className="flex flex-col gap-1">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <UserInfoCard
-                        userId={sub.author.id}
-                        userName={sub.author.name}
-                        userAvatar={sub.author.avatar}
-                        side="right"
-                      >
-                        <Avatar className="size-6 cursor-pointer">
-                          <AvatarImage
-                            src={sub.author.avatar || undefined}
-                            alt={sub.author.name}
-                          />
-                          <AvatarFallback>{sub.author.name}</AvatarFallback>
-                        </Avatar>
-                      </UserInfoCard>
-                      <span className="text-sm font-medium">
-                        {sub.author.name}
-                      </span>
-                    </div>
-                    <span className="text-xs text-muted-foreground">
-                      <RelativeTime date={sub.createdAt} />
-                    </span>
-                  </div>
-                  <div className="text-sm text-muted-foreground pl-8">
-                    {sub.contentHtml ? (
-                      <div className="prose prose-sm dark:prose-invert max-w-none whitespace-normal">
-                        {parse(sub.contentHtml, parseOptions)}
-                      </div>
-                    ) : (
-                      sub.content
-                    )}
-                  </div>
-                </div>
-              ))
+              subReplies.map((sub) => <SubReplyItem key={sub.id} sub={sub} />)
             ) : (
               <div className="text-sm text-muted-foreground py-2">
                 No replies yet.
