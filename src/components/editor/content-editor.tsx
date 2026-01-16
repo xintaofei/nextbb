@@ -187,7 +187,17 @@ const MilkdownEditor: React.FC<MilkdownEditorProps> = ({
         .use(imageBlockNode)
         .use(
           $view(imageBlockNode, () =>
-            nodeViewFactory({ component: ImageBlockView })
+            nodeViewFactory({
+              component: ImageBlockView,
+              stopEvent: (event) => {
+                const target = event.target as HTMLElement
+                if (target.tagName === "INPUT" || target.tagName === "BUTTON") {
+                  return true
+                }
+                return false
+              },
+              ignoreMutation: () => true,
+            })
           )
         )
         .use(mentionNode)

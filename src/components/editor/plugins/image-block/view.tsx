@@ -66,10 +66,10 @@ export const ImageBlockView: React.FC = () => {
 
   return (
     <div
-      className="my-4 rounded-lg border bg-card text-card-foreground shadow-sm max-w-2xl mx-auto p-4 select-none"
+      className="my-4 rounded-lg border bg-card text-card-foreground shadow-sm max-w-2xl mx-auto p-4"
       contentEditable={false}
     >
-      <div className="flex items-center gap-2 mb-4 text-muted-foreground">
+      <div className="flex items-center gap-2 mb-4 text-muted-foreground select-none">
         <ImageIcon className="w-5 h-5" />
         <span className="font-medium">{t("title")}</span>
       </div>
