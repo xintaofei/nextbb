@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
 import { TopicType } from "@/types/topic-type"
+import { getTopicTitle } from "@/lib/topic-translation"
 
 export async function POST(req: Request) {
   try {
@@ -28,7 +29,8 @@ export async function POST(req: Request) {
       },
       select: {
         id: true,
-        title: true,
+        source_locale: true,
+        translations: true,
         end_time: true,
       },
       orderBy: {
@@ -54,7 +56,8 @@ export async function POST(req: Request) {
           },
         })
 
-        console.log(`[Cron] Settled poll: ${poll.id} - "${poll.title}"`)
+        const title = getTopicTitle(poll.translations, poll.source_locale)
+        console.log(`[Cron] Settled poll: ${poll.id} - "${title}"`)
         settledCount++
       } catch (error) {
         const errorMsg =

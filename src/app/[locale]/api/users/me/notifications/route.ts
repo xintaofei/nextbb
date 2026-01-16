@@ -2,12 +2,15 @@ import { NextRequest, NextResponse } from "next/server"
 import { getSessionUser } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import { NotificationType, Prisma } from "@prisma/client"
+import { getTranslationsQuery } from "@/lib/locale"
+import { getTopicTitle } from "@/lib/topic-translation"
 
 export async function GET(
   req: NextRequest,
   { params }: { params: Promise<{ locale: string }> }
 ) {
   const session = await getSessionUser()
+  const { locale } = await params
   if (!session) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
   }
@@ -57,7 +60,7 @@ export async function GET(
         topic: {
           select: {
             id: true,
-            title: true,
+            translations: getTranslationsQuery(locale, { title: true }),
           },
         },
         post: {
@@ -84,7 +87,12 @@ export async function GET(
     sender_id: item.sender_id?.toString(),
     topic_id: item.topic_id?.toString(),
     post_id: item.post_id?.toString(),
-    topic: item.topic ? { ...item.topic, id: item.topic.id.toString() } : null,
+    topic: item.topic
+      ? {
+          id: item.topic.id.toString(),
+          title: getTopicTitle(item.topic.translations, locale),
+        }
+      : null,
     post: item.post ? { ...item.post, id: item.post.id.toString() } : null,
   }))
 

@@ -4,6 +4,7 @@ import { Prisma } from "@prisma/client"
 import { getSessionUser } from "@/lib/auth"
 import { getLocale } from "next-intl/server"
 import { getTranslationsQuery, getTranslationField } from "@/lib/locale"
+import { getTopicTitle, getPostHtml } from "@/lib/topic-translation"
 
 type Author = {
   id: string
@@ -15,6 +16,7 @@ type PostItem = {
   id: string
   author: Author
   content: string
+  contentHtml?: string
   createdAt: string
   minutesAgo: number
   isDeleted: boolean
@@ -63,7 +65,7 @@ export async function GET(
     where: { id: topicId, is_deleted: false },
     select: {
       id: true,
-      title: true,
+      translations: true,
       type: true,
       category: {
         select: {
@@ -98,6 +100,7 @@ export async function GET(
     select: {
       id: true,
       content: true,
+      translations: true,
       created_at: true,
       is_deleted: true,
       user: { select: { id: true, name: true, avatar: true } },
@@ -107,6 +110,7 @@ export async function GET(
   type PostRow = {
     id: bigint
     content: string
+    translations: { locale: string; content_html: string; is_source: boolean }[]
     created_at: Date
     is_deleted: boolean
     user: { id: bigint; name: string; avatar: string }
@@ -141,6 +145,7 @@ export async function GET(
         avatar: p.user.avatar,
       },
       content: p.content,
+      contentHtml: getPostHtml(p.translations, locale),
       createdAt: p.created_at.toISOString(),
       minutesAgo: Math.max(
         Math.round((Date.now() - p.created_at.getTime()) / 60000),
@@ -160,7 +165,7 @@ export async function GET(
     },
     select: {
       id: true,
-      title: true,
+      translations: true,
       type: true,
       category: {
         select: {
@@ -187,7 +192,7 @@ export async function GET(
   const relatedIds = relatedDb.map(
     (t: {
       id: bigint
-      title: string
+      translations: { locale: string; title: string; is_source: boolean }[]
       type: string
       category: {
         id: bigint
@@ -231,7 +236,7 @@ export async function GET(
     relatedTopics = relatedDb.map(
       (t: {
         id: bigint
-        title: string
+        translations: { locale: string; title: string; is_source: boolean }[]
         type: string
         category: {
           id: bigint
@@ -256,7 +261,7 @@ export async function GET(
         )
         return {
           id: String(t.id),
-          title: t.title,
+          title: getTopicTitle(t.translations, locale),
           type: t.type || "GENERAL",
           category: {
             id: String(t.category.id),
@@ -291,7 +296,7 @@ export async function GET(
   const result: TopicDetailResult = {
     topic: {
       id: String(topic.id),
-      title: topic.title,
+      title: getTopicTitle(topic.translations, locale),
       type: topic.type || "GENERAL",
       category: {
         id: String(topic.category.id),

@@ -7,6 +7,7 @@ import {
   getTranslationFields,
   BadgeTranslation,
 } from "@/lib/locale"
+import { getPostHtml } from "@/lib/topic-translation"
 
 type Author = {
   id: string
@@ -90,7 +91,7 @@ export async function GET(
     select: {
       id: true,
       content: true,
-      content_html: true,
+      translations: true,
       created_at: true,
       is_deleted: true,
       user: { select: { id: true, name: true, avatar: true } },
@@ -103,7 +104,11 @@ export async function GET(
   type PostRow = {
     id: bigint
     content: string
-    content_html: string | null
+    translations: {
+      locale: string
+      content_html: string
+      is_source: boolean
+    }[]
     created_at: Date
     is_deleted: boolean
     user: { id: bigint; name: string; avatar: string }
@@ -289,7 +294,7 @@ export async function GET(
         avatar: p.user.avatar,
       },
       content: p.content,
-      contentHtml: p.content_html ?? undefined,
+      contentHtml: getPostHtml(p.translations, locale) || undefined,
       createdAt: p.created_at.toISOString(),
       minutesAgo: Math.max(
         Math.round((Date.now() - p.created_at.getTime()) / 60000),

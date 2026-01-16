@@ -4,6 +4,7 @@ import { Prisma } from "@prisma/client"
 import { getSessionUser } from "@/lib/auth"
 import { getLocale } from "next-intl/server"
 import { getTranslationsQuery, getTranslationFields } from "@/lib/locale"
+import { getTopicTitle } from "@/lib/topic-translation"
 
 type TopicInfo = {
   id: string
@@ -49,7 +50,7 @@ export async function GET(
     where: { id: topicId, is_deleted: false },
     select: {
       id: true,
-      title: true,
+      translations: true,
       type: true,
       status: true,
       is_pinned: true,
@@ -101,7 +102,7 @@ export async function GET(
 
   const result: TopicInfo = {
     id: String(topic.id),
-    title: topic.title,
+    title: getTopicTitle(topic.translations, locale),
     type: topic.type || "GENERAL",
     isPinned: topic.is_pinned,
     status: topic.status ?? undefined,

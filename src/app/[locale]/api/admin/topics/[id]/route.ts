@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
 import { getSessionUser } from "@/lib/auth"
+import { getLocale } from "next-intl/server"
+import { getTopicTitle } from "@/lib/topic-translation"
 
 type TopicDetail = {
   id: string
@@ -46,6 +48,7 @@ export async function GET(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
+    const locale = await getLocale()
     const { id: idStr } = await context.params
     let topicId: bigint
     try {
@@ -59,7 +62,7 @@ export async function GET(
       where: { id: topicId },
       select: {
         id: true,
-        title: true,
+        translations: true,
         type: true,
         views: true,
         is_pinned: true,
@@ -141,7 +144,7 @@ export async function GET(
 
     const result: TopicDetail = {
       id: String(topic.id),
-      title: topic.title,
+      title: getTopicTitle(topic.translations, locale),
       type: topic.type || "GENERAL",
       author: {
         id: String(topic.user.id),
@@ -207,7 +210,7 @@ export async function PATCH(
     // 查询主题是否存在
     const topic = await prisma.topics.findUnique({
       where: { id: topicId },
-      select: { id: true },
+      select: { id: true, source_locale: true },
     })
 
     if (!topic) {
@@ -270,16 +273,12 @@ export async function PATCH(
 
     // 构建更新数据
     const updateData: {
-      title?: string
       category_id?: bigint
       is_pinned?: boolean
       is_community?: boolean
       is_deleted?: boolean
     } = {}
 
-    if (title !== undefined) {
-      updateData.title = title
-    }
     if (newCategoryId !== undefined) {
       updateData.category_id = newCategoryId
     }
@@ -295,6 +294,25 @@ export async function PATCH(
 
     // 使用事务更新
     await prisma.$transaction(async (tx) => {
+      // 更新主题标题
+      if (title !== undefined) {
+        await tx.topic_translations.upsert({
+          where: {
+            topic_id_locale: {
+              topic_id: topicId,
+              locale: topic.source_locale || "zh",
+            },
+          },
+          update: { title },
+          create: {
+            topic_id: topicId,
+            locale: topic.source_locale || "zh",
+            title,
+            is_source: true,
+          },
+        })
+      }
+
       // 更新主题基本信息
       if (Object.keys(updateData).length > 0) {
         await tx.topics.update({

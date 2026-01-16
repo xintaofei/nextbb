@@ -37,7 +37,7 @@ export async function PATCH(
 
   const post = await prisma.posts.findUnique({
     where: { id: postId },
-    select: { id: true, user_id: true, is_deleted: true },
+    select: { id: true, user_id: true, is_deleted: true, source_locale: true },
   })
   if (!post || post.is_deleted) {
     return NextResponse.json({ error: "Not found" }, { status: 404 })
@@ -46,11 +46,31 @@ export async function PATCH(
     return NextResponse.json({ error: "Forbidden" }, { status: 403 })
   }
 
+  const sourceLocale = post.source_locale || "zh"
+
   await prisma.posts.update({
     where: { id: postId },
     data: {
       content: body.content,
-      content_html: body.content_html,
+      translations: {
+        upsert: {
+          where: {
+            post_id_locale: {
+              post_id: postId,
+              locale: sourceLocale,
+            },
+          },
+          update: {
+            content_html: body.content_html,
+          },
+          create: {
+            locale: sourceLocale,
+            content_html: body.content_html,
+            is_source: true,
+            version: 1,
+          },
+        },
+      },
     },
     select: { id: true },
   })

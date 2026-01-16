@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma"
 import { getSessionUser } from "@/lib/auth"
 import { getLocale } from "next-intl/server"
 import { getTranslationsQuery, getTranslationField } from "@/lib/locale"
+import { getTopicTitle } from "@/lib/topic-translation"
 
 type TopicListItem = {
   id: string
@@ -70,7 +71,9 @@ export async function GET(request: NextRequest) {
 
     // 构建查询条件
     const where: {
-      title?: { contains: string; mode: "insensitive" }
+      translations?: {
+        some: { title: { contains: string; mode: "insensitive" } }
+      }
       category_id?: bigint
       is_pinned?: boolean
       is_community?: boolean
@@ -79,7 +82,9 @@ export async function GET(request: NextRequest) {
     } = {}
 
     if (q.trim().length > 0) {
-      where.title = { contains: q.trim(), mode: "insensitive" }
+      where.translations = {
+        some: { title: { contains: q.trim(), mode: "insensitive" } },
+      }
     }
 
     if (categoryId) {
@@ -143,7 +148,7 @@ export async function GET(request: NextRequest) {
       where,
       select: {
         id: true,
-        title: true,
+        translations: true,
         type: true,
         views: true,
         is_pinned: true,
@@ -225,7 +230,7 @@ export async function GET(request: NextRequest) {
 
       return {
         id: String(topic.id),
-        title: topic.title,
+        title: getTopicTitle(topic.translations, locale),
         type: topic.type || "GENERAL",
         author: {
           id: String(topic.user.id),

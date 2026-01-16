@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma"
 import { getSessionUser } from "@/lib/auth"
 import { getLocale } from "next-intl/server"
 import { getTranslationsQuery, getTranslationField } from "@/lib/locale"
+import { getTopicTitle, getPostHtml } from "@/lib/topic-translation"
 import { stripHtmlAndTruncate } from "@/lib/utils"
 import type {
   ActivityType,
@@ -51,7 +52,7 @@ async function getTopicsActivities(
     },
     select: {
       id: true,
-      title: true,
+      translations: true,
       type: true,
       views: true,
       created_at: true,
@@ -84,7 +85,7 @@ async function getTopicsActivities(
     activityTime: topic.created_at.toISOString(),
     topicData: {
       topicId: String(topic.id),
-      title: topic.title,
+      title: getTopicTitle(topic.translations, locale),
       category: formatCategoryInfo(topic.category, locale),
       type: topic.type,
       views: topic.views,
@@ -112,12 +113,12 @@ async function getPostsActivities(
       id: true,
       floor_number: true,
       content: true,
-      content_html: true,
+      translations: true,
       created_at: true,
       topic: {
         select: {
           id: true,
-          title: true,
+          translations: true,
           category: {
             select: {
               id: true,
@@ -163,11 +164,11 @@ async function getPostsActivities(
       postId: String(post.id),
       floorNumber: post.floor_number,
       contentPreview: stripHtmlAndTruncate(
-        post.content_html || post.content,
+        getPostHtml(post.translations, locale) || post.content,
         150
       ),
       topicId: String(post.topic.id),
-      topicTitle: post.topic.title,
+      topicTitle: getTopicTitle(post.topic.translations, locale),
       category: formatCategoryInfo(post.topic.category, locale),
       likesCount: likeCountMap.get(String(post.id)) || 0,
     },
@@ -198,12 +199,12 @@ async function getLikesActivities(
           id: true,
           floor_number: true,
           content: true,
-          content_html: true,
+          translations: true,
           user_id: true,
           topic: {
             select: {
               id: true,
-              title: true,
+              translations: true,
               category: {
                 select: {
                   id: true,
@@ -240,9 +241,12 @@ async function getLikesActivities(
     likeData: {
       postId: String(like.post.id),
       floorNumber: like.post.floor_number,
-      contentPreview: stripHtmlAndTruncate(like.post.content, 150),
+      contentPreview: stripHtmlAndTruncate(
+        getPostHtml(like.post.translations, locale) || like.post.content,
+        150
+      ),
       topicId: String(like.post.topic.id),
-      topicTitle: like.post.topic.title,
+      topicTitle: getTopicTitle(like.post.topic.translations, locale),
       category: formatCategoryInfo(like.post.topic.category, locale),
       author: {
         id: String(like.post.user.id),
@@ -277,12 +281,12 @@ async function getBookmarksActivities(
           id: true,
           floor_number: true,
           content: true,
-          content_html: true,
+          translations: true,
           user_id: true,
           topic: {
             select: {
               id: true,
-              title: true,
+              translations: true,
               category: {
                 select: {
                   id: true,
@@ -319,9 +323,13 @@ async function getBookmarksActivities(
     bookmarkData: {
       postId: String(bookmark.post.id),
       floorNumber: bookmark.post.floor_number,
-      contentPreview: stripHtmlAndTruncate(bookmark.post.content, 150),
+      contentPreview: stripHtmlAndTruncate(
+        getPostHtml(bookmark.post.translations, locale) ||
+          bookmark.post.content,
+        150
+      ),
       topicId: String(bookmark.post.topic.id),
-      topicTitle: bookmark.post.topic.title,
+      topicTitle: getTopicTitle(bookmark.post.topic.translations, locale),
       category: formatCategoryInfo(bookmark.post.topic.category, locale),
       author: {
         id: String(bookmark.post.user.id),

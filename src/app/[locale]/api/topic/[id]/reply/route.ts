@@ -2,6 +2,7 @@ import { NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
 import { z } from "zod"
 import { getSessionUser } from "@/lib/auth"
+import { getLocale } from "next-intl/server"
 import { generateId } from "@/lib/id"
 import { TopicType } from "@/types/topic-type"
 import { notifyMentions, notifyReply } from "@/lib/notification-service"
@@ -26,6 +27,7 @@ export async function POST(
   }
 
   const { id: idStr } = await ctx.params
+  const locale = await getLocale()
   let topicId: bigint
   try {
     topicId = BigInt(idStr)
@@ -148,7 +150,15 @@ export async function POST(
         reply_to_user_id: replyToUserId,
         floor_number: nextFloor,
         content: body.content,
-        content_html: body.content_html,
+        source_locale: locale,
+        translations: {
+          create: {
+            locale: locale,
+            content_html: body.content_html,
+            is_source: true,
+            version: 1,
+          },
+        },
         is_deleted: false,
       },
       select: { id: true, floor_number: true },

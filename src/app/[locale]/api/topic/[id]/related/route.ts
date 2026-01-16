@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma"
 import { Prisma } from "@prisma/client"
 import { getLocale } from "next-intl/server"
 import { getTranslationsQuery, getTranslationField } from "@/lib/locale"
+import { getTopicTitle } from "@/lib/topic-translation"
 
 type RelatedTopicItem = {
   id: string
@@ -56,7 +57,9 @@ export async function GET(
     },
     select: {
       id: true,
-      title: true,
+      translations: getTranslationsQuery(locale, {
+        title: true,
+      }),
       type: true,
       category: {
         select: {
@@ -120,7 +123,7 @@ export async function GET(
       const a = agg[String(t.id)]
       return {
         id: String(t.id),
-        title: t.title,
+        title: getTopicTitle(t.translations, locale),
         type: t.type || "GENERAL",
         category: {
           id: String(t.category.id),

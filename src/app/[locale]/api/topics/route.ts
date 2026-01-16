@@ -9,6 +9,7 @@ import { CreditService } from "@/lib/credit-service"
 import { CreditLogType } from "@prisma/client"
 import { getLocale } from "next-intl/server"
 import { getTranslationsQuery, getTranslationFields } from "@/lib/locale"
+import { getTopicTitle } from "@/lib/topic-translation"
 import { notifyMentions } from "@/lib/notification-service"
 import { emitPostCreateEvent } from "@/lib/automation/events"
 
@@ -147,7 +148,7 @@ export async function GET(req: Request) {
     where,
     select: {
       id: true,
-      title: true,
+      translations: true,
       type: true,
       views: true,
       is_pinned: true,
@@ -190,7 +191,11 @@ export async function GET(req: Request) {
   })
   type TopicRow = {
     id: bigint
-    title: string
+    translations: {
+      locale: string
+      title: string
+      is_source: boolean
+    }[]
     type: string
     views: number
     is_pinned: boolean
@@ -336,7 +341,7 @@ export async function GET(req: Request) {
     const firstPost = firstPosts[String(t.id)]
     return {
       id: String(t.id),
-      title: t.title,
+      title: getTopicTitle(t.translations, locale),
       type: t.type || "GENERAL",
       category: {
         id: String(t.category.id),
@@ -388,6 +393,7 @@ type TopicCreateResult = {
 }
 
 export async function POST(req: Request) {
+  const locale = await getLocale()
   const auth = await getSessionUser()
   if (!auth) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
@@ -499,7 +505,16 @@ export async function POST(req: Request) {
           id: generateId(),
           category_id: categoryId,
           user_id: auth.userId,
-          title: body.title,
+          source_locale: locale,
+          translations: {
+            create: [
+              {
+                locale: locale,
+                title: body.title,
+                is_source: true,
+              },
+            ],
+          },
           type: body.type,
           status:
             body.type === TopicType.POLL || body.type === TopicType.LOTTERY
@@ -530,7 +545,16 @@ export async function POST(req: Request) {
           reply_to_user_id: BigInt(0),
           floor_number: 1,
           content: body.content,
-          content_html: body.content_html,
+          source_locale: locale,
+          translations: {
+            create: [
+              {
+                locale: locale,
+                content_html: body.content_html,
+                is_source: true,
+              },
+            ],
+          },
           is_deleted: false,
         },
         select: { id: true },

@@ -1,6 +1,9 @@
 import { NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
 import { stripHtmlAndTruncate } from "@/lib/utils"
+import { getLocale } from "next-intl/server"
+import { getTranslationsQuery } from "@/lib/locale"
+import { getTopicTitle } from "@/lib/topic-translation"
 
 type TopTopicItem = {
   id: string
@@ -29,6 +32,7 @@ export async function GET(
   req: Request,
   ctx: { params: Promise<{ id: string }> }
 ) {
+  const locale = await getLocale()
   try {
     const { id: idStr } = await ctx.params
     let userId: bigint
@@ -66,7 +70,9 @@ export async function GET(
         where: { user_id: userId, is_deleted: false },
         select: {
           id: true,
-          title: true,
+          translations: getTranslationsQuery(locale, {
+            title: true,
+          }),
           created_at: true,
           views: true,
           posts: {
@@ -94,7 +100,9 @@ export async function GET(
           topic: {
             select: {
               id: true,
-              title: true,
+              translations: getTranslationsQuery(locale, {
+                title: true,
+              }),
             },
           },
         },
@@ -136,7 +144,7 @@ export async function GET(
     // 构造热门主题响应
     const topTopics: TopTopicItem[] = topicsData.map((topic) => ({
       id: String(topic.id),
-      title: topic.title,
+      title: getTopicTitle(topic.translations, locale),
       createdAt: topic.created_at.toISOString(),
       views: topic.views,
       likesCount: topicLikesMap.get(String(topic.posts[0]?.id)) ?? 0,
@@ -148,7 +156,7 @@ export async function GET(
         id: String(reply.id),
         contentPreview: stripHtmlAndTruncate(reply.content, 100),
         topicId: String(reply.topic.id),
-        topicTitle: reply.topic.title,
+        topicTitle: getTopicTitle(reply.topic.translations, locale),
         createdAt: reply.created_at.toISOString(),
         likesCount: replyLikesMap.get(String(reply.id)) ?? 0,
         floorNumber: reply.floor_number,
