@@ -65,24 +65,23 @@ export const ImageBlockView: React.FC = () => {
 
   return (
     <div
-      className="my-4 rounded-lg border bg-card text-card-foreground shadow-sm max-w-2xl mx-auto p-4"
+      className="my-3 rounded-lg border bg-card text-card-foreground max-w-md mx-auto p-2"
       contentEditable={false}
     >
-      <div className="flex items-center gap-2 mb-4 text-muted-foreground select-none">
-        <ImageIcon className="w-5 h-5" />
-        <span className="font-medium">{t("title")}</span>
-      </div>
-
       {isMounted ? (
         <Tabs defaultValue="upload" className="w-full">
-          <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="upload">{t("upload")}</TabsTrigger>
-            <TabsTrigger value="link">{t("link")}</TabsTrigger>
+          <TabsList className="grid w-full grid-cols-2 h-8">
+            <TabsTrigger value="upload" className="text-xs h-6">
+              {t("upload")}
+            </TabsTrigger>
+            <TabsTrigger value="link" className="text-xs h-6">
+              {t("link")}
+            </TabsTrigger>
           </TabsList>
 
-          <TabsContent value="upload" className="mt-4">
+          <TabsContent value="upload" className="mt-2">
             <div
-              className="border-2 border-dashed rounded-lg p-8 flex flex-col items-center justify-center cursor-pointer hover:bg-muted/50 transition-colors"
+              className="border border-dashed rounded-md p-3 flex flex-row items-center justify-center gap-2 cursor-pointer hover:bg-muted/50 transition-colors"
               onClick={() => fileInputRef.current?.click()}
             >
               <input
@@ -93,30 +92,19 @@ export const ImageBlockView: React.FC = () => {
                 onChange={handleUpload}
               />
               {loading ? (
-                <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
+                <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />
               ) : (
                 <>
-                  <Upload className="w-8 h-8 text-muted-foreground mb-2" />
+                  <Upload className="w-4 h-4 text-muted-foreground" />
                   <p className="text-sm text-muted-foreground">
                     {t("uploadInstruction")}
                   </p>
-                  <Button
-                    variant="secondary"
-                    size="sm"
-                    className="mt-4"
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      fileInputRef.current?.click()
-                    }}
-                  >
-                    {t("chooseFile")}
-                  </Button>
                 </>
               )}
             </div>
           </TabsContent>
 
-          <TabsContent value="link" className="mt-4">
+          <TabsContent value="link" className="mt-2">
             <div className="flex gap-2">
               <Input
                 placeholder={t("placeholder")}
@@ -127,16 +115,22 @@ export const ImageBlockView: React.FC = () => {
                     handleEmbed()
                   }
                 }}
+                className="h-9 text-sm"
               />
-              <Button onClick={handleEmbed} disabled={!url}>
+              <Button
+                onClick={handleEmbed}
+                disabled={!url}
+                size="sm"
+                className="h-9"
+              >
                 {t("embed")}
               </Button>
             </div>
           </TabsContent>
         </Tabs>
       ) : (
-        <div className="h-[200px] w-full flex items-center justify-center text-muted-foreground">
-          <Loader2 className="w-6 h-6 animate-spin" />
+        <div className="h-[80px] w-full flex items-center justify-center text-muted-foreground">
+          <Loader2 className="w-5 h-5 animate-spin" />
         </div>
       )}
     </div>
