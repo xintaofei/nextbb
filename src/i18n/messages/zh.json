@@ -1988,6 +1988,13 @@
       "divider": "分割线",
       "noCommands": "未找到命令",
       "slashPlaceholder": "输入 '/' 查看命令"
+    },
+    "Upload": {
+      "uploading": "正在上传 {name}...",
+      "success": "已上传 {name}",
+      "error": "上传失败: {name}",
+      "genericError": "上传失败",
+      "widgetText": "正在上传图片..."
     }
   }
 }

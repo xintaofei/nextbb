@@ -12,6 +12,7 @@ import { listener, listenerCtx } from "@milkdown/kit/plugin/listener"
 import { clipboard } from "@milkdown/kit/plugin/clipboard"
 import { indent } from "@milkdown/kit/plugin/indent"
 import { cursor } from "@milkdown/kit/plugin/cursor"
+import { upload, uploadConfig } from "@milkdown/kit/plugin/upload"
 import { Milkdown, MilkdownProvider, useEditor } from "@milkdown/react"
 import { nord } from "@milkdown/theme-nord"
 import { replaceAll } from "@milkdown/kit/utils"
@@ -28,6 +29,7 @@ import { SlashMenu, SlashMenuRef } from "./plugins/slash-command/slash-menu"
 import { setBlockType, wrapIn } from "@milkdown/kit/prose/commands"
 import { createSlashProviderConfig, PluginState } from "./slash-provider-config"
 import { paragraphPlaceholder } from "./plugins/paragraph-placeholder"
+import { useEditorUpload } from "./use-editor-upload"
 
 type EditorType = ReturnType<typeof Editor.make>
 type ConfigFn = Parameters<EditorType["config"]>[0]
@@ -85,6 +87,8 @@ const MilkdownEditor: React.FC<MilkdownEditorProps> = ({
     query: "",
   })
 
+  const { uploader, uploadWidgetFactory } = useEditorUpload()
+
   const handleUpdate = useCallback(
     (ctx: Ctx, doc: Node) => {
       if (!onChange) return
@@ -137,6 +141,12 @@ const MilkdownEditor: React.FC<MilkdownEditorProps> = ({
             onUpdateRef.current?.(ctx, doc)
           })
 
+          ctx.set(uploadConfig.key, {
+            uploader,
+            uploadWidgetFactory,
+            enableHtmlFileUploader: false,
+          })
+
           // Configure Mention Slash Plugin
           ctx.set(
             mentionSlash.key,
@@ -166,11 +176,12 @@ const MilkdownEditor: React.FC<MilkdownEditorProps> = ({
         .use(clipboard)
         .use(indent)
         .use(cursor)
+        .use(upload)
         .use(mentionNode)
         .use(mentionSlash)
         .use(slashCommandKey)
         .use(paragraphPlaceholder(placeholder || "", slashPlaceholder)),
-    [placeholder, slashPlaceholder]
+    [placeholder, slashPlaceholder, uploader, uploadWidgetFactory]
   )
 
   useEffect(() => {

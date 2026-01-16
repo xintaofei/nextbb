@@ -1976,6 +1976,13 @@
       "divider": "Divider",
       "noCommands": "No commands found",
       "slashPlaceholder": "Type '/' for commands"
+    },
+    "Upload": {
+      "uploading": "Uploading {name}...",
+      "success": "Uploaded {name}",
+      "error": "Upload failed: {name}",
+      "genericError": "Upload failed",
+      "widgetText": "Uploading image..."
     }
   }
 }
