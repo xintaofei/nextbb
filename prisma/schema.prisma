@@ -131,7 +131,7 @@ model topics {
   id          BigInt   @id @db.BigInt
   category_id BigInt   @db.BigInt
   user_id     BigInt   @db.BigInt
-  title       String   @db.VarChar(256)
+  source_locale String   @default("zh") @db.VarChar(8)
   type        String   @default("GENERAL") @db.VarChar(32)
   status      String   @default("ACTIVE") @db.VarChar(32)
   end_time    DateTime?
@@ -156,6 +156,7 @@ model topics {
   bounty_rewards bounty_rewards[]
   question_acceptance question_acceptances?
   notifications notifications[]
+  translations topic_translations[]
 
   @@index([user_id], map: "topics_user_index")
   @@index([category_id], map: "topics_category_index")
@@ -166,6 +167,23 @@ model topics {
   @@map("topics")
 }
 
+model topic_translations {
+  topic_id    BigInt   @db.BigInt
+  locale      String   @db.VarChar(8)
+  title       String   @db.VarChar(256)
+  is_source   Boolean  @default(false)
+  version     Int      @default(0)
+  created_at  DateTime @default(now())
+  updated_at  DateTime @updatedAt
+
+  topic topics @relation(fields: [topic_id], references: [id], onDelete: Cascade)
+
+  @@id([topic_id, locale])
+  @@index([locale, is_source], map: "topic_translations_locale_source_index")
+  @@index([topic_id, is_source], map: "topic_translations_topic_source_index")
+  @@map("topic_translations")
+}
+
 model posts {
   id               BigInt   @id @db.BigInt
   topic_id         BigInt   @db.BigInt
@@ -174,7 +192,7 @@ model posts {
   reply_to_user_id BigInt   @default(0) @db.BigInt
   floor_number     Int
   content          String   @db.Text
-  content_html     String   @db.Text
+  source_locale    String   @default("zh") @db.VarChar(8)
   is_deleted       Boolean
   created_at       DateTime @default(now())
   updated_at       DateTime @updatedAt
@@ -187,10 +205,28 @@ model posts {
   lottery_winners lottery_winners[]
   question_acceptance question_acceptances?
   notifications notifications[]
+  translations post_translations[]
 
   @@index([topic_id], map: "posts_topic_index")
   @@index([user_id], map: "posts_user_index")
   @@map("posts")
+}
+
+model post_translations {
+  post_id      BigInt   @db.BigInt
+  locale       String   @db.VarChar(8)
+  content_html String   @db.Text
+  is_source    Boolean  @default(false)
+  version      Int      @default(0)
+  created_at   DateTime @default(now())
+  updated_at   DateTime @updatedAt
+
+  post posts @relation(fields: [post_id], references: [id], onDelete: Cascade)
+
+  @@id([post_id, locale])
+  @@index([locale, is_source], map: "post_translations_locale_source_index")
+  @@index([post_id, is_source], map: "post_translations_post_source_index")
+  @@map("post_translations")
 }
 
 model topic_tags {
