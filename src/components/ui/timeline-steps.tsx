@@ -104,9 +104,13 @@ function TimelineStepsItem({
 
 const timelineStepsConnectorVariants = cva("", {
   variants: {
+    size: {
+      sm: "left-[calc(var(--timeline-steps-icon-size,1.5rem)/2)] top-[calc(var(--timeline-steps-icon-size,1.25rem)+1rem)] h-[calc(100%-var(--timeline-steps-icon-size,1.25rem))]",
+      default:
+        "left-[calc(var(--timeline-steps-icon-size,3rem)/2)] top-[calc(var(--timeline-steps-icon-size,2.5rem)+1rem)] h-[calc(100%-var(--timeline-steps-icon-size,2.5rem))]",
+    },
     orientation: {
-      vertical:
-        "absolute left-[calc(var(--timeline-steps-icon-size,3rem)/2)] top-[calc(var(--timeline-steps-icon-size,2.5rem)+1rem)] h-[calc(100%-var(--timeline-steps-icon-size,2.5rem))] w-px -translate-x-1/2",
+      vertical: "absolute w-px -translate-x-1/2",
       horizontal:
         "absolute top-3 left-[calc(50%+0.75rem)] h-px w-[calc(100%-1.5rem)]",
     },
@@ -123,6 +127,7 @@ const timelineStepsConnectorVariants = cva("", {
     },
   },
   defaultVariants: {
+    size: "default",
     orientation: "vertical",
     variant: "default",
     status: "default",
@@ -136,6 +141,7 @@ interface TimelineStepsConnectorProps
 
 function TimelineStepsConnector({
   className,
+  size,
   orientation,
   variant,
   status,
@@ -146,7 +152,7 @@ function TimelineStepsConnector({
       data-slot="timeline-steps-connector"
       aria-hidden="true"
       className={cn(
-        timelineStepsConnectorVariants({ orientation, variant, status }),
+        timelineStepsConnectorVariants({ size, orientation, variant, status }),
         className
       )}
       {...props}

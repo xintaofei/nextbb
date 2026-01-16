@@ -1,4 +1,5 @@
 import {
+  TimelineSteps,
   TimelineStepsItem,
   TimelineStepsConnector,
   TimelineStepsIcon,
@@ -29,39 +30,42 @@ const repliesFetcher = async (url: string) => {
 
 const SubReplyItem = memo(function SubReplyItem({ sub }: { sub: PostItem }) {
   return (
-    <div className="flex flex-col gap-1">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <UserInfoCard
-            userId={sub.author.id}
-            userName={sub.author.name}
-            userAvatar={sub.author.avatar}
-            side="right"
-          >
-            <Avatar className="size-6 cursor-pointer">
-              <AvatarImage
-                src={sub.author.avatar || undefined}
-                alt={sub.author.name}
-              />
-              <AvatarFallback>{sub.author.name}</AvatarFallback>
-            </Avatar>
-          </UserInfoCard>
+    <TimelineStepsItem>
+      <TimelineStepsConnector size="sm" />
+      <TimelineStepsIcon size="sm" className="overflow-hidden p-0">
+        <UserInfoCard
+          userId={sub.author.id}
+          userName={sub.author.name}
+          userAvatar={sub.author.avatar}
+          side="right"
+        >
+          <Avatar className="size-full cursor-pointer">
+            <AvatarImage
+              src={sub.author.avatar || undefined}
+              alt={sub.author.name}
+            />
+            <AvatarFallback>{sub.author.name}</AvatarFallback>
+          </Avatar>
+        </UserInfoCard>
+      </TimelineStepsIcon>
+      <TimelineStepsContent>
+        <div className="flex items-center justify-between">
           <span className="text-sm font-medium">{sub.author.name}</span>
+          <span className="text-xs text-muted-foreground">
+            <RelativeTime date={sub.createdAt} />
+          </span>
         </div>
-        <span className="text-xs text-muted-foreground">
-          <RelativeTime date={sub.createdAt} />
-        </span>
-      </div>
-      <div className="text-sm text-muted-foreground pl-8">
-        {sub.contentHtml ? (
-          <div className="prose prose-sm dark:prose-invert max-w-none whitespace-normal">
-            {parse(sub.contentHtml, parseOptions)}
-          </div>
-        ) : (
-          sub.content
-        )}
-      </div>
-    </div>
+        <div className="text-sm text-muted-foreground">
+          {sub.contentHtml ? (
+            <div className="prose prose-sm dark:prose-invert max-w-none whitespace-normal">
+              {parse(sub.contentHtml, parseOptions)}
+            </div>
+          ) : (
+            sub.content
+          )}
+        </div>
+      </TimelineStepsContent>
+    </TimelineStepsItem>
   )
 })
 
@@ -208,25 +212,31 @@ export const TopicPostItem = memo(function TopicPostItem({
             </TimelineStepsAction>
           )}
           {expanded && (
-            <div className="my-4 pl-4 border-l-2 border-muted flex flex-col gap-4">
+            <TimelineSteps className="my-4">
               {loadingSubReplies ? (
                 Array.from({ length: 2 }).map((_, i) => (
-                  <div key={i} className="flex flex-col gap-2">
-                    <div className="flex items-center gap-2">
-                      <Skeleton className="size-6 rounded-full" />
-                      <Skeleton className="h-4 w-20" />
-                    </div>
-                    <Skeleton className="h-4 w-full" />
-                  </div>
+                  <TimelineStepsItem key={i}>
+                    <TimelineStepsConnector size="sm" />
+                    <TimelineStepsIcon
+                      size="sm"
+                      className="border-none bg-muted"
+                    />
+                    <TimelineStepsContent>
+                      <div className="flex flex-col gap-2">
+                        <Skeleton className="h-4 w-20" />
+                        <Skeleton className="h-4 w-full" />
+                      </div>
+                    </TimelineStepsContent>
+                  </TimelineStepsItem>
                 ))
               ) : subReplies.length > 0 ? (
                 subReplies.map((sub) => <SubReplyItem key={sub.id} sub={sub} />)
               ) : (
-                <div className="text-sm text-muted-foreground py-2">
+                <div className="text-sm text-muted-foreground py-2 pl-2">
                   No replies yet.
                 </div>
               )}
-            </div>
+            </TimelineSteps>
           )}
         </div>
       </TimelineStepsContent>
