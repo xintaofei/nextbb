@@ -88,7 +88,7 @@ export const ImageBlockView: React.FC = () => {
           ) : (
             <Upload className="w-4 h-4" />
           )}
-          上传
+          {t("upload")}
         </Button>
         <input
           type="file"
