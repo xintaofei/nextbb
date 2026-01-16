@@ -11,6 +11,7 @@ import {
   Code,
   Quote,
   Minus,
+  ImageIcon,
 } from "lucide-react"
 
 export interface SlashCommand {
@@ -68,6 +69,12 @@ const COMMANDS: SlashCommand[] = [
     label: "quote",
     icon: <Quote className="w-4 h-4" />,
     actionId: "blockquote",
+  },
+  {
+    id: "image",
+    label: "image",
+    icon: <ImageIcon className="w-4 h-4" />,
+    actionId: "image",
   },
   {
     id: "divider",

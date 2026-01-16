@@ -14,8 +14,12 @@ import { indent } from "@milkdown/kit/plugin/indent"
 import { cursor } from "@milkdown/kit/plugin/cursor"
 import { upload, uploadConfig } from "@milkdown/kit/plugin/upload"
 import { Milkdown, MilkdownProvider, useEditor } from "@milkdown/react"
+import {
+  ProsemirrorAdapterProvider,
+  useNodeViewFactory,
+} from "@prosemirror-adapter/react"
 import { nord } from "@milkdown/theme-nord"
-import { replaceAll } from "@milkdown/kit/utils"
+import { replaceAll, $view } from "@milkdown/kit/utils"
 import { DOMSerializer, Node } from "@milkdown/kit/prose/model"
 import React, { useEffect, useRef, useCallback, useState, useMemo } from "react"
 import { createPortal } from "react-dom"
@@ -30,6 +34,8 @@ import { setBlockType, wrapIn } from "@milkdown/kit/prose/commands"
 import { createSlashProviderConfig, PluginState } from "./slash-provider-config"
 import { paragraphPlaceholder } from "./plugins/paragraph-placeholder"
 import { useEditorUpload } from "./use-editor-upload"
+import { imageBlockNode } from "./plugins/image-block/node"
+import { ImageBlockView } from "./plugins/image-block/view"
 
 type EditorType = ReturnType<typeof Editor.make>
 type ConfigFn = Parameters<EditorType["config"]>[0]
@@ -88,6 +94,7 @@ const MilkdownEditor: React.FC<MilkdownEditorProps> = ({
   })
 
   const { uploader, uploadWidgetFactory } = useEditorUpload()
+  const nodeViewFactory = useNodeViewFactory()
 
   const handleUpdate = useCallback(
     (ctx: Ctx, doc: Node) => {
@@ -177,6 +184,12 @@ const MilkdownEditor: React.FC<MilkdownEditorProps> = ({
         .use(indent)
         .use(cursor)
         .use(upload)
+        .use(imageBlockNode)
+        .use(
+          $view(imageBlockNode, () =>
+            nodeViewFactory({ component: ImageBlockView })
+          )
+        )
         .use(mentionNode)
         .use(mentionSlash)
         .use(slashCommandKey)
@@ -372,6 +385,12 @@ const MilkdownEditor: React.FC<MilkdownEditorProps> = ({
                       )
                       dispatch(trHr)
                       break
+                    case "image":
+                      const trImage = state.tr.replaceSelectionWith(
+                        schema.nodes.image_block.create()
+                      )
+                      dispatch(trImage)
+                      break
                   }
 
                   view.focus()
@@ -389,9 +408,11 @@ const MilkdownEditor: React.FC<MilkdownEditorProps> = ({
 export const MilkdownEditorWrapper: React.FC<MilkdownEditorProps> = (props) => {
   return (
     <MilkdownProvider>
-      <div className="w-full prose dark:prose-invert border rounded-lg focus-within:ring-[3px] focus-within:ring-ring/50 focus-within:border-ring transition-all">
-        <MilkdownEditor {...props} />
-      </div>
+      <ProsemirrorAdapterProvider>
+        <div className="w-full prose dark:prose-invert border rounded-lg focus-within:ring-[3px] focus-within:ring-ring/50 focus-within:border-ring transition-all">
+          <MilkdownEditor {...props} />
+        </div>
+      </ProsemirrorAdapterProvider>
     </MilkdownProvider>
   )
 }

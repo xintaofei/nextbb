@@ -1974,9 +1974,19 @@
       "orderedList": "Ordered List",
       "codeBlock": "Code Block",
       "quote": "Quote",
+      "image": "Image",
       "divider": "Divider",
       "noCommands": "No commands found",
       "slashPlaceholder": "Type '/' for commands"
+    },
+    "ImageBlock": {
+      "title": "Add Image",
+      "upload": "Upload",
+      "link": "Embed Link",
+      "uploadInstruction": "Upload an image from your device",
+      "chooseFile": "Choose File",
+      "placeholder": "Paste image link...",
+      "embed": "Embed Image"
     },
     "Upload": {
       "uploading": "Uploading {name}...",

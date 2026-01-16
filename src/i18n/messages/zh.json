@@ -1986,9 +1986,19 @@
       "orderedList": "有序列表",
       "codeBlock": "代码块",
       "quote": "引用",
+      "image": "图片",
       "divider": "分割线",
       "noCommands": "未找到命令",
       "slashPlaceholder": "输入 '/' 查看命令"
+    },
+    "ImageBlock": {
+      "title": "添加图片",
+      "upload": "上传",
+      "link": "嵌入链接",
+      "uploadInstruction": "从您的设备上传图片",
+      "chooseFile": "选择文件",
+      "placeholder": "粘贴图片链接...",
+      "embed": "嵌入图片"
     },
     "Upload": {
       "uploading": "正在上传 {name}...",
