@@ -70,18 +70,18 @@ export function Highlighter({
     annotationRef.current = annotation
     annotationRef.current.show()
 
-    const resizeObserver = new ResizeObserver(() => {
-      annotation.hide()
-      annotation.show()
-    })
+    // const resizeObserver = new ResizeObserver(() => {
+    //   annotation.hide()
+    //   annotation.show()
+    // })
 
-    resizeObserver.observe(element)
+    // resizeObserver.observe(element)
     // resizeObserver.observe(document.body)
 
     return () => {
       if (element) {
         annotate(element, { type: action }).remove()
-        resizeObserver.disconnect()
+        // resizeObserver.disconnect()
       }
     }
   }, [
