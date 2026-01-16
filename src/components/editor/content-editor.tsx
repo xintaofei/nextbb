@@ -5,7 +5,7 @@ import {
   editorViewCtx,
   schemaCtx,
 } from "@milkdown/kit/core"
-import { commonmark } from "@milkdown/kit/preset/commonmark"
+import { commonmark, imageSchema } from "@milkdown/kit/preset/commonmark"
 import { gfm } from "@milkdown/kit/preset/gfm"
 import { history } from "@milkdown/kit/plugin/history"
 import { listener, listenerCtx } from "@milkdown/kit/plugin/listener"
@@ -36,6 +36,7 @@ import { paragraphPlaceholder } from "./plugins/paragraph-placeholder"
 import { useEditorUpload } from "./use-editor-upload"
 import { imageBlockNode } from "./plugins/image-block/node"
 import { ImageBlockView } from "./plugins/image-block/view"
+import { ImageView } from "./plugins/image/view"
 
 type EditorType = ReturnType<typeof Editor.make>
 type ConfigFn = Parameters<EditorType["config"]>[0]
@@ -187,6 +188,16 @@ const MilkdownEditor: React.FC<MilkdownEditorProps> = ({
           )
         })
         .use(commonmark)
+        .use(
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          $view(imageSchema as any, () =>
+            nodeViewFactory({
+              component: ImageView,
+              stopEvent: imageBlockStopEvent,
+              ignoreMutation: imageBlockIgnoreMutation,
+            })
+          )
+        )
         .use(gfm)
         .use(history)
         .use(listener)
