@@ -51,6 +51,7 @@ model users {
 
   login_stats user_login_stats?
   login_logs  user_login_logs[]
+  uploads     uploads[]
 
   @@map("users")
   @@unique([email], map: "users_email_key")
@@ -930,4 +931,20 @@ model notifications {
   @@index([user_id, read, created_at], map: "notifications_user_read_created_index")
 
   @@map("notifications")
+}
+
+model uploads {
+  id           BigInt   @id @db.BigInt
+  user_id      BigInt   @db.BigInt
+  url          String   @db.VarChar(255)
+  pathname     String   @db.VarChar(255)
+  content_type String   @db.VarChar(64)
+  size         Int
+  created_at   DateTime @default(now())
+
+  user users @relation(fields: [user_id], references: [id])
+
+  @@index([user_id], map: "uploads_user_index")
+  @@index([created_at], map: "uploads_created_index")
+  @@map("uploads")
 }
