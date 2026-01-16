@@ -119,6 +119,7 @@
     "deleted": "该楼层已被删除",
     "deleteConfirm": "确认删除当前楼层？",
     "reply": "回复",
+    "replyPlaceholder": "请输入您的回复...",
     "floor": {
       "op": "楼主"
     },

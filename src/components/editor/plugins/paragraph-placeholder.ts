@@ -12,20 +12,36 @@ export const paragraphPlaceholder = (text: string, secondaryText?: string) =>
           const { selection } = state
           const decorations: Decoration[] = []
 
+          // Check if the document is effectively empty (only one empty paragraph)
+          const isDocEmpty =
+            doc.childCount === 1 &&
+            doc.firstChild?.type.name === "paragraph" &&
+            doc.firstChild?.content.size === 0
+
           doc.descendants((node, pos) => {
             if (node.type.name === "paragraph" && node.content.size === 0) {
-              const isFirst = pos === 0
-              const displayText = isFirst ? text : secondaryText
-
               const isFocused = selection.from === pos + 1
 
-              if (displayText && isFocused) {
-                decorations.push(
-                  Decoration.node(pos, pos + node.nodeSize, {
-                    class: "paragraph-placeholder",
-                    "data-placeholder": displayText,
-                  })
-                )
+              if (isDocEmpty) {
+                // If doc is empty, show main placeholder on the first line
+                if (text) {
+                  decorations.push(
+                    Decoration.node(pos, pos + node.nodeSize, {
+                      class: "paragraph-placeholder",
+                      "data-placeholder": text,
+                    })
+                  )
+                }
+              } else {
+                // If doc is not empty, show slash placeholder on empty lines ONLY if focused
+                if (secondaryText && isFocused) {
+                  decorations.push(
+                    Decoration.node(pos, pos + node.nodeSize, {
+                      class: "paragraph-placeholder",
+                      "data-placeholder": secondaryText,
+                    })
+                  )
+                }
               }
             }
           })

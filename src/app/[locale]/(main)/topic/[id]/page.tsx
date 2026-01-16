@@ -46,6 +46,7 @@ export default function TopicPage() {
   const tb = useTranslations("Topic.Bounty")
   const tq = useTranslations("Topic.Question")
   const te = useTranslations("Error")
+  const tEditor = useTranslations("Editor")
 
   const fetcherInfo = async (url: string): Promise<TopicInfoResult> => {
     const res = await fetch(url, { cache: "no-store" })
@@ -936,6 +937,8 @@ export default function TopicPage() {
         }}
         submitText={t("reply")}
         cancelText={tc("Action.cancel")}
+        placeholder={t("replyPlaceholder")}
+        slashPlaceholder={tEditor("SlashCommand.slashPlaceholder")}
       />
       <DrawerEditor
         key={`edit-${editPostId ?? "none"}-${editOpen ? editInitial : ""}`}
@@ -949,6 +952,8 @@ export default function TopicPage() {
         }}
         submitText={tc("Action.save")}
         cancelText={tc("Action.cancel")}
+        placeholder={t("replyPlaceholder")}
+        slashPlaceholder={tEditor("SlashCommand.slashPlaceholder")}
       />
       <div className="flex flex-col gap-4 mt-12">
         <Table className="w-full table-fixed max-sm:table-auto">
