@@ -3,6 +3,7 @@ import {
   TimelineStepsConnector,
   TimelineStepsIcon,
   TimelineStepsContent,
+  TimelineStepsAction,
 } from "@/components/ui/timeline-steps"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { PostItem } from "@/types/topic"
@@ -13,6 +14,7 @@ import {
   PostHeader,
   PostContent,
   PostActions,
+  PostReplyExpandButton,
   parseOptions,
 } from "@/components/topic/post-parts"
 import { Skeleton } from "@/components/ui/skeleton"
@@ -173,30 +175,37 @@ export const TopicPostItem = memo(function TopicPostItem({
 
         {topicTypeSlot}
 
-        <PostActions
-          post={post}
-          currentUserId={currentUserId}
-          mutatingPostId={mutatingPostId}
-          likeMutating={likeMutating}
-          bookmarkMutating={bookmarkMutating}
-          editMutating={editMutating}
-          deleteMutating={deleteMutating}
-          onLike={onLike}
-          onBookmark={onBookmark}
-          onEdit={onEdit}
-          onDelete={onDelete}
-          onReply={onReply}
-          replyText={replyText}
-          onShowReplies={handleShowReplies}
-          repliesText={repliesText}
-          showBountyButton={showBountyButton}
-          onReward={onReward}
-          rewardMutating={rewardMutating}
-          bountyAmount={bountyAmount}
-          showAcceptButton={showAcceptButton}
-          onAccept={onAccept}
-          acceptMutating={acceptMutating}
-        />
+        {!post.isDeleted && (
+          <TimelineStepsAction>
+            <PostReplyExpandButton
+              post={post}
+              onShowReplies={handleShowReplies}
+              repliesText={repliesText}
+            />
+            <PostActions
+              post={post}
+              currentUserId={currentUserId}
+              mutatingPostId={mutatingPostId}
+              likeMutating={likeMutating}
+              bookmarkMutating={bookmarkMutating}
+              editMutating={editMutating}
+              deleteMutating={deleteMutating}
+              onLike={onLike}
+              onBookmark={onBookmark}
+              onEdit={onEdit}
+              onDelete={onDelete}
+              onReply={onReply}
+              replyText={replyText}
+              showBountyButton={showBountyButton}
+              onReward={onReward}
+              rewardMutating={rewardMutating}
+              bountyAmount={bountyAmount}
+              showAcceptButton={showAcceptButton}
+              onAccept={onAccept}
+              acceptMutating={acceptMutating}
+            />
+          </TimelineStepsAction>
+        )}
 
         {expanded && (
           <div className="mt-4 pl-4 border-l-2 border-muted flex flex-col gap-4">

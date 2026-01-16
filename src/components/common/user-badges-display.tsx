@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, memo } from "react"
 import { UserBadge } from "./user-badge"
 import {
   Popover,
@@ -25,7 +25,9 @@ export type UserBadgesDisplayProps = {
   size?: "sm" | "md" | "lg"
 }
 
-export function UserBadgesDisplay({
+export const UserBadgesDisplay = memo(UserBadgesDisplayBase)
+
+function UserBadgesDisplayBase({
   badges,
   maxDisplay = 3,
   size = "sm",

@@ -48,10 +48,13 @@ export function PostSkeletonList({
               <Skeleton className="h-4 w-8/12" />
             </div>
             <TimelineStepsAction>
-              <Skeleton className="h-8 w-8 rounded-md" />
-              <Skeleton className="h-8 w-8 rounded-md" />
-              <Skeleton className="h-8 w-8 rounded-md" />
               <Skeleton className="h-8 w-16 rounded-md" />
+              <div className="flex flex-row gap-2 items-center">
+                <Skeleton className="h-8 w-8 rounded-md" />
+                <Skeleton className="h-8 w-8 rounded-md" />
+                <Skeleton className="h-8 w-8 rounded-md" />
+                <Skeleton className="h-8 w-16 rounded-md" />
+              </div>
             </TimelineStepsAction>
             {lastIsSentinel && i === count - 1 ? (
               <div ref={sentinelRef} className="h-1 w-full" />

@@ -175,8 +175,6 @@ interface PostActionsProps {
   onDelete: (postId: string) => void | Promise<void>
   onReply: (postId: string, authorName: string) => void
   replyText: string
-  onShowReplies?: (postId: string) => void
-  repliesText?: string
   showBountyButton?: boolean
   onReward?: (
     postId: string,
@@ -189,6 +187,26 @@ interface PostActionsProps {
   onAccept?: (postId: string, isAccepted: boolean) => void | Promise<void>
   acceptMutating?: boolean
 }
+
+export const PostReplyExpandButton = memo(function PostReplyExpandButton({
+  post,
+  onShowReplies,
+  repliesText,
+}: {
+  post: PostItem
+  onShowReplies?: (postId: string) => void
+  repliesText?: string
+}) {
+  if (post.replyCount > 0 && onShowReplies) {
+    return (
+      <Button variant="ghost" size="sm" onClick={() => onShowReplies(post.id)}>
+        {post.replyCount} {repliesText}
+        <ChevronDown />
+      </Button>
+    )
+  }
+  return <span></span>
+})
 
 export const PostActions = memo(function PostActions({
   post,
@@ -204,8 +222,6 @@ export const PostActions = memo(function PostActions({
   onDelete,
   onReply,
   replyText,
-  onShowReplies,
-  repliesText,
   showBountyButton,
   onReward,
   rewardMutating,
@@ -220,129 +236,115 @@ export const PostActions = memo(function PostActions({
   if (post.isDeleted) return null
 
   return (
-    <TimelineStepsAction>
-      {post.replyCount > 0 && onShowReplies ? (
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => onShowReplies(post.id)}
-        >
-          {post.replyCount} {repliesText}
-          <ChevronDown />
-        </Button>
-      ) : (
-        <span></span>
-      )}
-      <div className="flex flex-row justify-between items-center gap-2">
-        {post.author.id !== currentUserId ? (
-          <>
-            <Button
-              variant="ghost"
-              size="sm"
-              disabled={mutatingPostId === post.id || likeMutating}
-              onClick={() => onLike(post.id)}
-              aria-label="Like"
-            >
-              <Heart
-                className={post.liked ? "text-red-500" : undefined}
-                fill={post.liked ? "currentColor" : "none"}
-              />
-              {post.likes > 0 && (
-                <span className="ml-1 text-sm">{post.likes}</span>
-              )}
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              disabled={mutatingPostId === post.id || bookmarkMutating}
-              onClick={() => onBookmark(post.id)}
-              aria-label="Bookmark"
-            >
-              <Bookmark
-                className={post.bookmarked ? "text-primary" : undefined}
-                fill={post.bookmarked ? "currentColor" : "none"}
-              />
-              {post.bookmarks > 0 && (
-                <span className="ml-1 text-sm">{post.bookmarks}</span>
-              )}
-            </Button>
-          </>
-        ) : (
-          <>
-            <Button
-              variant="ghost"
-              className="size-8"
-              onClick={() => onEdit(post.id, post.content)}
-              disabled={mutatingPostId === post.id || editMutating}
-              aria-label="Edit"
-            >
-              <Pencil />
-            </Button>
-            <Button
-              variant="ghost"
-              className="size-8"
-              onClick={() => onDelete(post.id)}
-              disabled={mutatingPostId === post.id || deleteMutating}
-              aria-label="Delete"
-            >
-              <Trash />
-            </Button>
-          </>
-        )}
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => {
-            onReply(post.id, post.author.name)
-          }}
-        >
-          <Reply />
-          {replyText}
-        </Button>
-        {showBountyButton && onReward && bountyAmount && !post.bountyReward && (
+    <div className="flex flex-row justify-between items-center gap-2">
+      {post.author.id !== currentUserId ? (
+        <>
           <Button
-            variant="outline"
+            variant="ghost"
             size="sm"
-            className="border-amber-200 hover:bg-amber-50 dark:border-amber-900/50 dark:hover:bg-amber-950/20 text-amber-700 dark:text-amber-400"
-            onClick={() => onReward(post.id, post.author.id, bountyAmount)}
-            disabled={mutatingPostId === post.id || rewardMutating}
+            disabled={mutatingPostId === post.id || likeMutating}
+            onClick={() => onLike(post.id)}
+            aria-label="Like"
           >
-            <Coins className="h-4 w-4" />
-            {tBounty("action.reward")} ({bountyAmount})
-          </Button>
-        )}
-        {showAcceptButton && onAccept && (
-          <Button
-            variant={post.questionAcceptance ? "default" : "outline"}
-            size="sm"
-            className={
-              post.questionAcceptance
-                ? "bg-green-600 hover:bg-green-700 dark:bg-green-700 dark:hover:bg-green-800 text-white"
-                : "border-green-200 hover:bg-green-50 dark:border-green-900/50 dark:hover:bg-green-950/20 text-green-700 dark:text-green-400"
-            }
-            onClick={() => onAccept(post.id, !!post.questionAcceptance)}
-            disabled={mutatingPostId === post.id || acceptMutating}
-          >
-            {post.questionAcceptance ? (
-              <>
-                <X className="h-4 w-4" />
-                {tQuestion("actions.cancelAccept")}
-              </>
-            ) : (
-              <>
-                <Check className="h-4 w-4" />
-                {tQuestion("actions.accept")}
-              </>
+            <Heart
+              className={post.liked ? "text-red-500" : undefined}
+              fill={post.liked ? "currentColor" : "none"}
+            />
+            {post.likes > 0 && (
+              <span className="ml-1 text-sm">{post.likes}</span>
             )}
           </Button>
-        )}
-        <div className="flex gap-5 h-5">
-          <Separator orientation="vertical" />
-          <div className="flex flex-row gap-1 items-center text-muted-foreground">
-            <RelativeTime date={post.createdAt} />
-          </div>
+          <Button
+            variant="ghost"
+            size="sm"
+            disabled={mutatingPostId === post.id || bookmarkMutating}
+            onClick={() => onBookmark(post.id)}
+            aria-label="Bookmark"
+          >
+            <Bookmark
+              className={post.bookmarked ? "text-primary" : undefined}
+              fill={post.bookmarked ? "currentColor" : "none"}
+            />
+            {post.bookmarks > 0 && (
+              <span className="ml-1 text-sm">{post.bookmarks}</span>
+            )}
+          </Button>
+        </>
+      ) : (
+        <>
+          <Button
+            variant="ghost"
+            className="size-8"
+            onClick={() => onEdit(post.id, post.content)}
+            disabled={mutatingPostId === post.id || editMutating}
+            aria-label="Edit"
+          >
+            <Pencil />
+          </Button>
+          <Button
+            variant="ghost"
+            className="size-8"
+            onClick={() => onDelete(post.id)}
+            disabled={mutatingPostId === post.id || deleteMutating}
+            aria-label="Delete"
+          >
+            <Trash />
+          </Button>
+        </>
+      )}
+      <Button
+        variant="ghost"
+        size="sm"
+        onClick={() => {
+          onReply(post.id, post.author.name)
+        }}
+      >
+        <Reply />
+        {replyText}
+      </Button>
+      {showBountyButton && onReward && bountyAmount && !post.bountyReward && (
+        <Button
+          variant="outline"
+          size="sm"
+          className="border-amber-200 hover:bg-amber-50 dark:border-amber-900/50 dark:hover:bg-amber-950/20 text-amber-700 dark:text-amber-400"
+          onClick={() => onReward(post.id, post.author.id, bountyAmount)}
+          disabled={mutatingPostId === post.id || rewardMutating}
+        >
+          <Coins className="h-4 w-4" />
+          {tBounty("action.reward")} ({bountyAmount})
+        </Button>
+      )}
+      {showAcceptButton && onAccept && (
+        <Button
+          variant={post.questionAcceptance ? "default" : "outline"}
+          size="sm"
+          className={
+            post.questionAcceptance
+              ? "bg-green-600 hover:bg-green-700 dark:bg-green-700 dark:hover:bg-green-800 text-white"
+              : "border-green-200 hover:bg-green-50 dark:border-green-900/50 dark:hover:bg-green-950/20 text-green-700 dark:text-green-400"
+          }
+          onClick={() => onAccept(post.id, !!post.questionAcceptance)}
+          disabled={mutatingPostId === post.id || acceptMutating}
+        >
+          {post.questionAcceptance ? (
+            <>
+              <X className="h-4 w-4" />
+              {tQuestion("actions.cancelAccept")}
+            </>
+          ) : (
+            <>
+              <Check className="h-4 w-4" />
+              {tQuestion("actions.accept")}
+            </>
+          )}
+        </Button>
+      )}
+      <div className="flex gap-5 h-5">
+        <Separator orientation="vertical" />
+        <div className="flex flex-row gap-1 items-center text-muted-foreground">
+          <RelativeTime date={post.createdAt} />
         </div>
       </div>
-    </TimelineStepsAction>
+    </div>
   )
 })
