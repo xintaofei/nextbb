@@ -91,7 +91,7 @@ export async function GET(
     select: {
       id: true,
       content: true,
-      translations: true,
+      translations: getTranslationsQuery(locale, { content_html: true }),
       created_at: true,
       is_deleted: true,
       user: { select: { id: true, name: true, avatar: true } },

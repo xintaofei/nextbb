@@ -148,7 +148,7 @@ export async function GET(req: Request) {
     where,
     select: {
       id: true,
-      translations: true,
+      translations: getTranslationsQuery(locale, { title: true }),
       type: true,
       views: true,
       is_pinned: true,
