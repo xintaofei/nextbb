@@ -42,6 +42,8 @@ export type PostItem = {
   lotteryWin?: {
     wonAt: string
   } | null
+  replyCount: number
+  parentId: string | null
 }
 
 export type RelatedTopicItem = {

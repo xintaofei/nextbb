@@ -473,6 +473,8 @@ export default function TopicPage() {
         liked: false,
         bookmarks: 0,
         bookmarked: false,
+        replyCount: 0,
+        parentId: replyToPostId,
       }
       setReplyOpen(false)
       setReplyContent("")
@@ -888,6 +890,7 @@ export default function TopicPage() {
                     onReply={onClickReply}
                     floorOpText={t("floor.op")}
                     replyText={t("reply")}
+                    repliesText={t("replies")}
                     deletedText={t("deleted")}
                     highlight={highlightIndex === index}
                     topicTypeSlot={renderTopicTypeSlot(index)}

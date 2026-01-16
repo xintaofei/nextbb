@@ -110,7 +110,7 @@ export function PostHeader({
   )
 }
 
-const parseOptions: HTMLReactParserOptions = {
+export const parseOptions: HTMLReactParserOptions = {
   replace: (domNode) => {
     if (
       domNode instanceof Element &&
@@ -172,6 +172,8 @@ interface PostActionsProps {
   onDelete: (postId: string) => void | Promise<void>
   onReply: (postId: string, authorName: string) => void
   replyText: string
+  onShowReplies?: (postId: string) => void
+  repliesText?: string
   showBountyButton?: boolean
   onReward?: (
     postId: string,
@@ -199,6 +201,8 @@ export function PostActions({
   onDelete,
   onReply,
   replyText,
+  onShowReplies,
+  repliesText,
   showBountyButton,
   onReward,
   rewardMutating,
@@ -214,6 +218,15 @@ export function PostActions({
 
   return (
     <TimelineStepsAction>
+      {post.replyCount > 0 && onShowReplies && (
+        <Button
+          variant="ghost"
+          className="text-primary hover:text-primary hover:bg-primary/10"
+          onClick={() => onShowReplies(post.id)}
+        >
+          {post.replyCount} {repliesText}
+        </Button>
+      )}
       {post.author.id !== currentUserId ? (
         <>
           <Button

@@ -7,12 +7,17 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { PostItem } from "@/types/topic"
 import { UserInfoCard } from "@/components/common/user-info-card"
-import { ReactNode, useMemo } from "react"
+import { ReactNode, useMemo, useState } from "react"
+import useSWR from "swr"
 import {
   PostHeader,
   PostContent,
   PostActions,
+  parseOptions,
 } from "@/components/topic/post-parts"
+import { Skeleton } from "@/components/ui/skeleton"
+import { RelativeTime } from "@/components/common/relative-time"
+import parse from "html-react-parser"
 
 interface TopicPostItemProps {
   post: PostItem
@@ -31,6 +36,7 @@ interface TopicPostItemProps {
   onReply: (postId: string, authorName: string) => void
   floorOpText: string
   replyText: string
+  repliesText: string
   deletedText: string
   highlight?: boolean
   topicTypeSlot?: ReactNode
@@ -64,6 +70,7 @@ export function TopicPostItem({
   onReply,
   floorOpText,
   replyText,
+  repliesText,
   deletedText,
   highlight = false,
   topicTypeSlot,
@@ -78,6 +85,19 @@ export function TopicPostItem({
   const displayAvatar = useMemo(() => {
     return post.author.avatar || undefined
   }, [post.author.avatar])
+
+  const [expanded, setExpanded] = useState(false)
+
+  const { data: subRepliesData, isLoading: loadingSubReplies } = useSWR(
+    expanded ? `/api/post/${post.id}/replies` : null,
+    async (url) => {
+      const res = await fetch(url)
+      if (!res.ok) throw new Error("Failed to load")
+      return (await res.json()) as { items: PostItem[] }
+    }
+  )
+
+  const subReplies = subRepliesData?.items || []
 
   return (
     <TimelineStepsItem
@@ -123,6 +143,8 @@ export function TopicPostItem({
           onDelete={onDelete}
           onReply={onReply}
           replyText={replyText}
+          onShowReplies={() => setExpanded(!expanded)}
+          repliesText={repliesText}
           showBountyButton={showBountyButton}
           onReward={onReward}
           rewardMutating={rewardMutating}
@@ -131,6 +153,64 @@ export function TopicPostItem({
           onAccept={onAccept}
           acceptMutating={acceptMutating}
         />
+
+        {expanded && (
+          <div className="mt-4 pl-4 border-l-2 border-muted flex flex-col gap-4">
+            {loadingSubReplies ? (
+              Array.from({ length: 2 }).map((_, i) => (
+                <div key={i} className="flex flex-col gap-2">
+                  <div className="flex items-center gap-2">
+                    <Skeleton className="size-6 rounded-full" />
+                    <Skeleton className="h-4 w-20" />
+                  </div>
+                  <Skeleton className="h-4 w-full" />
+                </div>
+              ))
+            ) : subReplies.length > 0 ? (
+              subReplies.map((sub) => (
+                <div key={sub.id} className="flex flex-col gap-1">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <UserInfoCard
+                        userId={sub.author.id}
+                        userName={sub.author.name}
+                        userAvatar={sub.author.avatar}
+                        side="right"
+                      >
+                        <Avatar className="size-6 cursor-pointer">
+                          <AvatarImage
+                            src={sub.author.avatar || undefined}
+                            alt={sub.author.name}
+                          />
+                          <AvatarFallback>{sub.author.name}</AvatarFallback>
+                        </Avatar>
+                      </UserInfoCard>
+                      <span className="text-sm font-medium">
+                        {sub.author.name}
+                      </span>
+                    </div>
+                    <span className="text-xs text-muted-foreground">
+                      <RelativeTime date={sub.createdAt} />
+                    </span>
+                  </div>
+                  <div className="text-sm text-muted-foreground pl-8">
+                    {sub.contentHtml ? (
+                      <div className="prose prose-sm dark:prose-invert max-w-none whitespace-normal">
+                        {parse(sub.contentHtml, parseOptions)}
+                      </div>
+                    ) : (
+                      sub.content
+                    )}
+                  </div>
+                </div>
+              ))
+            ) : (
+              <div className="text-sm text-muted-foreground py-2">
+                No replies yet.
+              </div>
+            )}
+          </div>
+        )}
       </TimelineStepsContent>
     </TimelineStepsItem>
   )

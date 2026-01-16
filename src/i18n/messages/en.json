@@ -119,6 +119,7 @@
     "deleted": "This floor has been deleted",
     "deleteConfirm": "Are you sure to delete this floor?",
     "reply": "Reply",
+    "replies": "replies",
     "replyPlaceholder": "Enter your reply...",
     "floor": {
       "op": "OP"
