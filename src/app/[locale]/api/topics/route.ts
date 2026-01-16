@@ -9,7 +9,7 @@ import { CreditService } from "@/lib/credit-service"
 import { CreditLogType } from "@prisma/client"
 import { getLocale } from "next-intl/server"
 import { getTranslationsQuery, getTranslationFields } from "@/lib/locale"
-import { getTopicTitle } from "@/lib/topic-translation"
+import { getTopicTitle, getPostHtml } from "@/lib/topic-translation"
 import { notifyMentions } from "@/lib/notification-service"
 import { emitPostCreateEvent } from "@/lib/automation/events"
 
@@ -248,12 +248,18 @@ export async function GET(req: Request) {
         topic_id: true,
         content: true,
         created_at: true,
+        translations: getTranslationsQuery(locale, { content_html: true }),
       },
     })
     for (const post of firstPostsData) {
+      // 优先使用当前语言的翻译，如果不存在则回退到 content (原内容)
+      const translatedContent = getPostHtml(
+        post.translations as unknown as Parameters<typeof getPostHtml>[0],
+        locale
+      )
       firstPosts[String(post.topic_id)] = {
         id: post.id,
-        content: post.content,
+        content: translatedContent || post.content,
         created_at: post.created_at,
       }
     }
