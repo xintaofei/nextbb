@@ -175,59 +175,60 @@ export const TopicPostItem = memo(function TopicPostItem({
 
         {topicTypeSlot}
 
-        {!post.isDeleted && (
-          <TimelineStepsAction>
-            <PostReplyExpandButton
-              post={post}
-              onShowReplies={handleShowReplies}
-              repliesText={repliesText}
-            />
-            <PostActions
-              post={post}
-              currentUserId={currentUserId}
-              mutatingPostId={mutatingPostId}
-              likeMutating={likeMutating}
-              bookmarkMutating={bookmarkMutating}
-              editMutating={editMutating}
-              deleteMutating={deleteMutating}
-              onLike={onLike}
-              onBookmark={onBookmark}
-              onEdit={onEdit}
-              onDelete={onDelete}
-              onReply={onReply}
-              replyText={replyText}
-              showBountyButton={showBountyButton}
-              onReward={onReward}
-              rewardMutating={rewardMutating}
-              bountyAmount={bountyAmount}
-              showAcceptButton={showAcceptButton}
-              onAccept={onAccept}
-              acceptMutating={acceptMutating}
-            />
-          </TimelineStepsAction>
-        )}
-
-        {expanded && (
-          <div className="mt-4 pl-4 border-l-2 border-muted flex flex-col gap-4">
-            {loadingSubReplies ? (
-              Array.from({ length: 2 }).map((_, i) => (
-                <div key={i} className="flex flex-col gap-2">
-                  <div className="flex items-center gap-2">
-                    <Skeleton className="size-6 rounded-full" />
-                    <Skeleton className="h-4 w-20" />
+        <div>
+          {!post.isDeleted && (
+            <TimelineStepsAction>
+              <PostReplyExpandButton
+                post={post}
+                onShowReplies={handleShowReplies}
+                repliesText={repliesText}
+              />
+              <PostActions
+                post={post}
+                currentUserId={currentUserId}
+                mutatingPostId={mutatingPostId}
+                likeMutating={likeMutating}
+                bookmarkMutating={bookmarkMutating}
+                editMutating={editMutating}
+                deleteMutating={deleteMutating}
+                onLike={onLike}
+                onBookmark={onBookmark}
+                onEdit={onEdit}
+                onDelete={onDelete}
+                onReply={onReply}
+                replyText={replyText}
+                showBountyButton={showBountyButton}
+                onReward={onReward}
+                rewardMutating={rewardMutating}
+                bountyAmount={bountyAmount}
+                showAcceptButton={showAcceptButton}
+                onAccept={onAccept}
+                acceptMutating={acceptMutating}
+              />
+            </TimelineStepsAction>
+          )}
+          {expanded && (
+            <div className="my-4 pl-4 border-l-2 border-muted flex flex-col gap-4">
+              {loadingSubReplies ? (
+                Array.from({ length: 2 }).map((_, i) => (
+                  <div key={i} className="flex flex-col gap-2">
+                    <div className="flex items-center gap-2">
+                      <Skeleton className="size-6 rounded-full" />
+                      <Skeleton className="h-4 w-20" />
+                    </div>
+                    <Skeleton className="h-4 w-full" />
                   </div>
-                  <Skeleton className="h-4 w-full" />
+                ))
+              ) : subReplies.length > 0 ? (
+                subReplies.map((sub) => <SubReplyItem key={sub.id} sub={sub} />)
+              ) : (
+                <div className="text-sm text-muted-foreground py-2">
+                  No replies yet.
                 </div>
-              ))
-            ) : subReplies.length > 0 ? (
-              subReplies.map((sub) => <SubReplyItem key={sub.id} sub={sub} />)
-            ) : (
-              <div className="text-sm text-muted-foreground py-2">
-                No replies yet.
-              </div>
-            )}
-          </div>
-        )}
+              )}
+            </div>
+          )}
+        </div>
       </TimelineStepsContent>
     </TimelineStepsItem>
   )
