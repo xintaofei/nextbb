@@ -95,7 +95,9 @@ function ReplyItemCard({ reply }: { reply: ReplyItem }) {
       href={`/topic/${reply.topicId}?floor=${reply.floorNumber}`}
       className="block rounded-lg border p-4 transition-colors hover:bg-accent"
     >
-      <p className="mb-2 line-clamp-3 text-sm">{reply.contentPreview}</p>
+      <p className="mb-2 line-clamp-3 text-sm text-muted-foreground break-words">
+        {reply.contentPreview}
+      </p>
       <div className="mb-2 text-sm text-muted-foreground">
         {t("inTopic")}: <span className="font-medium">{reply.topicTitle}</span>
       </div>

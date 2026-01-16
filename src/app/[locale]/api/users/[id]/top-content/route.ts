@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
+import { stripHtmlAndTruncate } from "@/lib/utils"
 
 type TopTopicItem = {
   id: string
@@ -168,14 +169,4 @@ export async function GET(
       { status: 500 }
     )
   }
-}
-
-// 辅助函数：移除HTML标签并截取文本
-function stripHtmlAndTruncate(html: string, maxLength: number): string {
-  // 简单移除HTML标签
-  const text = html.replace(/<[^>]*>/g, "").trim()
-  if (text.length <= maxLength) {
-    return text
-  }
-  return text.substring(0, maxLength) + "..."
 }
