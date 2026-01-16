@@ -39,7 +39,6 @@ export const useEditorUpload = (): EditorUploadConfig => {
 
       const nodes = await Promise.all(
         imgs.map(async (file) => {
-          const toastId = toast.loading(t("uploading", { name: file.name }))
           try {
             const formData = new FormData()
             formData.append("file", file)
@@ -55,7 +54,6 @@ export const useEditorUpload = (): EditorUploadConfig => {
             }
 
             const { url } = await res.json()
-            toast.success(t("success", { name: file.name }), { id: toastId })
 
             return schema.nodes.image.create({
               src: url,
@@ -64,7 +62,7 @@ export const useEditorUpload = (): EditorUploadConfig => {
             })
           } catch (error) {
             console.error("Upload error:", error)
-            toast.error(t("error", { name: file.name }), { id: toastId })
+            toast.error(t("error", { name: file.name }))
             throw error
           }
         })
