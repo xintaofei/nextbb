@@ -218,7 +218,7 @@ const MilkdownEditor: React.FC<MilkdownEditorProps> = ({
           view.state.doc.content.size,
           node
         )
-        view.dispatch(tr)
+        Promise.resolve().then(() => view.dispatch(tr))
       })
     }
     valueRef.current = value
