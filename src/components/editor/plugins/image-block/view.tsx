@@ -15,8 +15,7 @@ export const ImageBlockView: React.FC = () => {
   const [url, setUrl] = useState("")
   const fileInputRef = useRef<HTMLInputElement>(null)
 
-  // Solves "flushSync was called from inside a lifecycle method" error
-  // by deferring the rendering of Tabs component which likely causes the issue
+  // Solves hydration mismatch and "flushSync" issues with Radix UI components
   const [isMounted, setIsMounted] = useState(false)
   useEffect(() => {
     setIsMounted(true)

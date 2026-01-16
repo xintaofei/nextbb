@@ -70,6 +70,16 @@ const parseContent = (value: string | undefined) => {
   return value
 }
 
+const imageBlockStopEvent = (event: Event) => {
+  const target = event.target
+  if (!(target instanceof HTMLElement)) {
+    return false
+  }
+  return ["INPUT", "BUTTON", "TEXTAREA", "SELECT"].includes(target.tagName)
+}
+
+const imageBlockIgnoreMutation = () => true
+
 const MilkdownEditor: React.FC<MilkdownEditorProps> = ({
   value,
   onChange,
@@ -189,14 +199,8 @@ const MilkdownEditor: React.FC<MilkdownEditorProps> = ({
           $view(imageBlockNode, () =>
             nodeViewFactory({
               component: ImageBlockView,
-              stopEvent: (event) => {
-                const target = event.target as HTMLElement
-                if (target.tagName === "INPUT" || target.tagName === "BUTTON") {
-                  return true
-                }
-                return false
-              },
-              ignoreMutation: () => true,
+              stopEvent: imageBlockStopEvent,
+              ignoreMutation: imageBlockIgnoreMutation,
             })
           )
         )
