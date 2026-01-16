@@ -22,7 +22,7 @@ import { UserBadgesDisplay } from "@/components/common/user-badges-display"
 import { UserInfoCard } from "@/components/common/user-info-card"
 import { Separator } from "@/components/ui/separator"
 import { Badge } from "@/components/ui/badge"
-import { useMemo } from "react"
+import { useMemo, memo } from "react"
 import parse, {
   DOMNode,
   Element,
@@ -34,7 +34,11 @@ import { cn } from "@/lib/utils"
 
 // --- Helper Components ---
 
-export function PostBadges({ post }: { post: PostItem }) {
+export const PostBadges = memo(function PostBadges({
+  post,
+}: {
+  post: PostItem
+}) {
   const tCommon = useTranslations("Common")
   const tQuestion = useTranslations("Question")
 
@@ -71,9 +75,9 @@ export function PostBadges({ post }: { post: PostItem }) {
       )}
     </>
   )
-}
+})
 
-export function PostHeader({
+export const PostHeader = memo(function PostHeader({
   post,
   index,
   floorOpText,
@@ -108,7 +112,7 @@ export function PostHeader({
       </span>
     </div>
   )
-}
+})
 
 export const parseOptions: HTMLReactParserOptions = {
   replace: (domNode) => {
@@ -136,7 +140,7 @@ export const parseOptions: HTMLReactParserOptions = {
   },
 }
 
-export function PostContent({
+export const PostContent = memo(function PostContent({
   post,
   deletedText,
 }: {
@@ -156,7 +160,7 @@ export function PostContent({
       )}
     </TimelineStepsDescription>
   )
-}
+})
 
 interface PostActionsProps {
   post: PostItem
@@ -187,7 +191,7 @@ interface PostActionsProps {
   acceptMutating?: boolean
 }
 
-export function PostActions({
+export const PostActions = memo(function PostActions({
   post,
   currentUserId,
   mutatingPostId,
@@ -332,4 +336,4 @@ export function PostActions({
       </div>
     </TimelineStepsAction>
   )
-}
+})

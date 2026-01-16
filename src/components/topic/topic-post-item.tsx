@@ -7,7 +7,7 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { PostItem } from "@/types/topic"
 import { UserInfoCard } from "@/components/common/user-info-card"
-import { ReactNode, useMemo, useState } from "react"
+import { ReactNode, useMemo, useState, memo, useCallback } from "react"
 import useSWR from "swr"
 import {
   PostHeader,
@@ -53,7 +53,7 @@ interface TopicPostItemProps {
   acceptMutating?: boolean
 }
 
-export function TopicPostItem({
+export const TopicPostItem = memo(function TopicPostItem({
   post,
   index,
   anchorId,
@@ -87,6 +87,10 @@ export function TopicPostItem({
   }, [post.author.avatar])
 
   const [expanded, setExpanded] = useState(false)
+
+  const handleShowReplies = useCallback(() => {
+    setExpanded((prev) => !prev)
+  }, [])
 
   const { data: subRepliesData, isLoading: loadingSubReplies } = useSWR(
     expanded ? `/api/post/${post.id}/replies` : null,
@@ -143,7 +147,7 @@ export function TopicPostItem({
           onDelete={onDelete}
           onReply={onReply}
           replyText={replyText}
-          onShowReplies={() => setExpanded(!expanded)}
+          onShowReplies={handleShowReplies}
           repliesText={repliesText}
           showBountyButton={showBountyButton}
           onReward={onReward}
@@ -214,4 +218,4 @@ export function TopicPostItem({
       </TimelineStepsContent>
     </TimelineStepsItem>
   )
-}
+})
