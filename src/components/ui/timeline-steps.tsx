@@ -56,9 +56,13 @@ function TimelineSteps({
 
 const timelineStepsItemVariants = cva("relative flex flex-row w-full gap-4", {
   variants: {
+    size: {
+      sm: "first:[&>div:first-child]:top-[var(--timeline-steps-icon-size,1.25rem)] first:[&>div:first-child]:h-[calc(100%-var(--timeline-steps-icon-size,1.25rem)+1rem)] last:[&>div:first-child]:h-[calc(100%-var(--timeline-steps-icon-size,1.25rem)-1rem)]",
+      default:
+        "first:[&>div:first-child]:top-[var(--timeline-steps-icon-size,2.5rem)] first:[&>div:first-child]:h-[calc(100%-var(--timeline-steps-icon-size,2.5rem)+1rem)] last:[&>div:first-child]:h-[calc(100%-var(--timeline-steps-icon-size,2.5rem)-1rem)]",
+    },
     orientation: {
-      vertical:
-        "pt-4 first:pt-0 first:[&>div:first-child]:top-[var(--timeline-steps-icon-size,2.5rem)] first:[&>div:first-child]:h-[calc(100%-var(--timeline-steps-icon-size,2.5rem)+1rem)] last:[&>div:first-child]:h-[calc(100%-var(--timeline-steps-icon-size,2.5rem)-1rem)]",
+      vertical: "pt-4 first:pt-0",
       horizontal: "flex-1 items-center",
     },
     status: {
@@ -69,6 +73,7 @@ const timelineStepsItemVariants = cva("relative flex flex-row w-full gap-4", {
     },
   },
   defaultVariants: {
+    size: "default",
     orientation: "vertical",
     status: "default",
   },
@@ -81,6 +86,7 @@ interface TimelineStepsItemProps
 
 function TimelineStepsItem({
   className,
+  size,
   orientation,
   status,
   ...props
@@ -90,7 +96,7 @@ function TimelineStepsItem({
       data-slot="timeline-steps-item"
       data-status={status}
       className={cn(
-        timelineStepsItemVariants({ orientation, status }),
+        timelineStepsItemVariants({ size, orientation, status }),
         className
       )}
       {...props}

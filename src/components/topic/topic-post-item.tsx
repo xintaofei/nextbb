@@ -30,7 +30,7 @@ const repliesFetcher = async (url: string) => {
 
 const SubReplyItem = memo(function SubReplyItem({ sub }: { sub: PostItem }) {
   return (
-    <TimelineStepsItem>
+    <TimelineStepsItem size="sm">
       <TimelineStepsConnector size="sm" />
       <TimelineStepsIcon size="sm" className="overflow-hidden p-0">
         <UserInfoCard
@@ -215,7 +215,7 @@ export const TopicPostItem = memo(function TopicPostItem({
             <TimelineSteps className="my-4">
               {loadingSubReplies ? (
                 Array.from({ length: 2 }).map((_, i) => (
-                  <TimelineStepsItem key={i}>
+                  <TimelineStepsItem key={i} size="sm">
                     <TimelineStepsConnector size="sm" />
                     <TimelineStepsIcon
                       size="sm"
