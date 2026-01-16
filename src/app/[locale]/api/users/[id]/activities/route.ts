@@ -52,7 +52,9 @@ async function getTopicsActivities(
     },
     select: {
       id: true,
-      translations: true,
+      translations: getTranslationsQuery(locale, {
+        title: true,
+      }),
       type: true,
       views: true,
       created_at: true,
@@ -113,12 +115,16 @@ async function getPostsActivities(
       id: true,
       floor_number: true,
       content: true,
-      translations: true,
+      translations: getTranslationsQuery(locale, {
+        content_html: true,
+      }),
       created_at: true,
       topic: {
         select: {
           id: true,
-          translations: true,
+          translations: getTranslationsQuery(locale, {
+            title: true,
+          }),
           category: {
             select: {
               id: true,
@@ -199,12 +205,16 @@ async function getLikesActivities(
           id: true,
           floor_number: true,
           content: true,
-          translations: true,
+          translations: getTranslationsQuery(locale, {
+            content_html: true,
+          }),
           user_id: true,
           topic: {
             select: {
               id: true,
-              translations: true,
+              translations: getTranslationsQuery(locale, {
+                title: true,
+              }),
               category: {
                 select: {
                   id: true,
@@ -281,12 +291,16 @@ async function getBookmarksActivities(
           id: true,
           floor_number: true,
           content: true,
-          translations: true,
+          translations: getTranslationsQuery(locale, {
+            content_html: true,
+          }),
           user_id: true,
           topic: {
             select: {
               id: true,
-              translations: true,
+              translations: getTranslationsQuery(locale, {
+                title: true,
+              }),
               category: {
                 select: {
                   id: true,

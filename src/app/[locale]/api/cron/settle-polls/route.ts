@@ -30,7 +30,10 @@ export async function POST(req: Request) {
       select: {
         id: true,
         source_locale: true,
-        translations: true,
+        translations: {
+          where: { is_source: true },
+          select: { title: true, locale: true, is_source: true },
+        },
         end_time: true,
       },
       orderBy: {

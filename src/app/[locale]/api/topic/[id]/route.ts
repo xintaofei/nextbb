@@ -65,7 +65,7 @@ export async function GET(
     where: { id: topicId, is_deleted: false },
     select: {
       id: true,
-      translations: true,
+      translations: getTranslationsQuery(locale, { title: true }),
       type: true,
       category: {
         select: {
@@ -165,7 +165,7 @@ export async function GET(
     },
     select: {
       id: true,
-      translations: true,
+      translations: getTranslationsQuery(locale, { title: true }),
       type: true,
       category: {
         select: {

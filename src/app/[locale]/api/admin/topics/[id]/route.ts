@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
 import { getSessionUser } from "@/lib/auth"
 import { getLocale } from "next-intl/server"
+import { getTranslationsQuery } from "@/lib/locale"
 import { getTopicTitle } from "@/lib/topic-translation"
 
 type TopicDetail = {
@@ -62,7 +63,7 @@ export async function GET(
       where: { id: topicId },
       select: {
         id: true,
-        translations: true,
+        translations: getTranslationsQuery(locale, { title: true }),
         type: true,
         views: true,
         is_pinned: true,

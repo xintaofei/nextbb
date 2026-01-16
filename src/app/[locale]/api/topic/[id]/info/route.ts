@@ -50,7 +50,7 @@ export async function GET(
     where: { id: topicId, is_deleted: false },
     select: {
       id: true,
-      translations: true,
+      translations: getTranslationsQuery(locale, { title: true }),
       type: true,
       status: true,
       is_pinned: true,
