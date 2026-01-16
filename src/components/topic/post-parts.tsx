@@ -15,6 +15,7 @@ import {
   Check,
   X,
   Gift,
+  ChevronDown,
 } from "lucide-react"
 import { RelativeTime } from "@/components/common/relative-time"
 import { PostItem } from "@/types/topic"
@@ -227,6 +228,7 @@ export const PostActions = memo(function PostActions({
           onClick={() => onShowReplies(post.id)}
         >
           {post.replyCount} {repliesText}
+          <ChevronDown />
         </Button>
       ) : (
         <span></span>
