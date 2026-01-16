@@ -1,11 +1,10 @@
 import React, { useCallback, useRef, useState, useEffect } from "react"
 import { useNodeViewContext } from "@prosemirror-adapter/react"
 import { useTranslations } from "next-intl"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { useEditorUpload } from "../../use-editor-upload"
-import { Upload, Loader2, ImageIcon } from "lucide-react"
+import { Upload, Loader2, ArrowRight } from "lucide-react"
 
 export const ImageBlockView: React.FC = () => {
   const { view, getPos } = useNodeViewContext()
@@ -15,7 +14,7 @@ export const ImageBlockView: React.FC = () => {
   const [url, setUrl] = useState("")
   const fileInputRef = useRef<HTMLInputElement>(null)
 
-  // Solves hydration mismatch and "flushSync" issues with Radix UI components
+  // Solves hydration mismatch
   const [isMounted, setIsMounted] = useState(false)
   useEffect(() => {
     setIsMounted(true)
@@ -63,76 +62,71 @@ export const ImageBlockView: React.FC = () => {
     }
   }, [getPos, url, view])
 
+  if (!isMounted) {
+    return (
+      <div className="my-3 w-full mx-auto h-10 flex items-center justify-center text-muted-foreground">
+        <Loader2 className="w-4 h-4 animate-spin" />
+      </div>
+    )
+  }
+
   return (
-    <div
-      className="my-3 rounded-lg border bg-card text-card-foreground max-w-md mx-auto p-2"
-      contentEditable={false}
-    >
-      {isMounted ? (
-        <Tabs defaultValue="upload" className="w-full">
-          <TabsList className="grid w-full grid-cols-2 h-8">
-            <TabsTrigger value="upload" className="text-xs h-6">
-              {t("upload")}
-            </TabsTrigger>
-            <TabsTrigger value="link" className="text-xs h-6">
-              {t("link")}
-            </TabsTrigger>
-          </TabsList>
+    <div className="my-3 w-full mx-auto" contentEditable={false}>
+      <div className="relative flex items-center w-full rounded-lg border bg-background ring-offset-background focus-within:bg-muted/50">
+        {/* Upload Button */}
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          className="mx-1 shrink-0 rounded-l-lg text-muted-foreground"
+          onClick={() => fileInputRef.current?.click()}
+          disabled={loading}
+          title={t("upload")}
+        >
+          {loading ? (
+            <Loader2 className="w-4 h-4 animate-spin" />
+          ) : (
+            <Upload className="w-4 h-4" />
+          )}
+          上传
+        </Button>
+        <input
+          type="file"
+          className="hidden"
+          accept="image/*"
+          ref={fileInputRef}
+          onChange={handleUpload}
+        />
 
-          <TabsContent value="upload" className="mt-2">
-            <div
-              className="border border-dashed rounded-md p-3 flex flex-row items-center justify-center gap-2 cursor-pointer hover:bg-muted/50 transition-colors"
-              onClick={() => fileInputRef.current?.click()}
-            >
-              <input
-                type="file"
-                className="hidden"
-                accept="image/*"
-                ref={fileInputRef}
-                onChange={handleUpload}
-              />
-              {loading ? (
-                <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />
-              ) : (
-                <>
-                  <Upload className="w-4 h-4 text-muted-foreground" />
-                  <p className="text-sm text-muted-foreground">
-                    {t("uploadInstruction")}
-                  </p>
-                </>
-              )}
-            </div>
-          </TabsContent>
+        {/* Divider */}
+        <div className="h-4 w-px bg-border shrink-0" />
 
-          <TabsContent value="link" className="mt-2">
-            <div className="flex gap-2">
-              <Input
-                placeholder={t("placeholder")}
-                value={url}
-                onChange={(e) => setUrl(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") {
-                    handleEmbed()
-                  }
-                }}
-                className="h-9 text-sm"
-              />
-              <Button
-                onClick={handleEmbed}
-                disabled={!url}
-                size="sm"
-                className="h-9"
-              >
-                {t("embed")}
-              </Button>
-            </div>
-          </TabsContent>
-        </Tabs>
-      ) : (
-        <div className="h-[80px] w-full flex items-center justify-center text-muted-foreground">
-          <Loader2 className="w-5 h-5 animate-spin" />
-        </div>
-      )}
+        {/* URL Input */}
+        <Input
+          className="flex-1 border-0 bg-transparent shadow-none focus-visible:ring-0 h-10 px-3"
+          placeholder={t("placeholder")}
+          value={url}
+          onChange={(e) => setUrl(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") {
+              handleEmbed()
+            }
+          }}
+          disabled={loading}
+        />
+
+        {/* Embed Button (Conditional) */}
+        {url && (
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-10 w-10 shrink-0 rounded-r-lg text-primary hover:text-primary/90 hover:bg-muted"
+            onClick={handleEmbed}
+          >
+            <ArrowRight className="w-4 h-4" />
+          </Button>
+        )}
+      </div>
     </div>
   )
 }
