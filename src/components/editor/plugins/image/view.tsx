@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from "react"
+import React, { useState } from "react"
 import { useNodeViewContext } from "@prosemirror-adapter/react"
 import { Loader2, RefreshCw, ImageOff } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import Image from "next/image"
 
 export const ImageView: React.FC = () => {
   const { node, selected } = useNodeViewContext()
@@ -13,13 +14,14 @@ export const ImageView: React.FC = () => {
     "loading"
   )
   const [retryKey, setRetryKey] = useState(0)
+  const [prevSrc, setPrevSrc] = useState(src)
 
-  useEffect(() => {
-    // Reset status when src changes
-    // eslint-disable-next-line
+  // Reset status when src changes
+  if (src !== prevSrc) {
+    setPrevSrc(src)
     setStatus("loading")
     setRetryKey(0)
-  }, [src])
+  }
 
   const handleRetry = (e: React.MouseEvent) => {
     e.preventDefault()
@@ -39,11 +41,14 @@ export const ImageView: React.FC = () => {
         selected ? "ring-2 ring-primary ring-offset-2" : ""
       }`}
     >
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img
+      <Image
         src={currentSrc}
-        alt={alt}
+        alt={alt || ""}
         title={title}
+        width={0}
+        height={0}
+        sizes="100vw"
+        unoptimized
         className={`max-w-full h-auto transition-opacity duration-300 ${
           status === "success" ? "opacity-100" : "opacity-0"
         }`}

@@ -5,7 +5,7 @@ import {
   editorViewCtx,
   schemaCtx,
 } from "@milkdown/kit/core"
-import { commonmark, imageSchema } from "@milkdown/kit/preset/commonmark"
+import { commonmark } from "@milkdown/kit/preset/commonmark"
 import { gfm } from "@milkdown/kit/preset/gfm"
 import { history } from "@milkdown/kit/plugin/history"
 import { listener, listenerCtx } from "@milkdown/kit/plugin/listener"
@@ -19,7 +19,7 @@ import {
   useNodeViewFactory,
 } from "@prosemirror-adapter/react"
 import { nord } from "@milkdown/theme-nord"
-import { replaceAll, $view } from "@milkdown/kit/utils"
+import { replaceAll, $view, $node } from "@milkdown/kit/utils"
 import { DOMSerializer, Node } from "@milkdown/kit/prose/model"
 import React, { useEffect, useRef, useCallback, useState, useMemo } from "react"
 import { createPortal } from "react-dom"
@@ -80,6 +80,38 @@ const imageBlockStopEvent = (event: Event) => {
 }
 
 const imageBlockIgnoreMutation = () => true
+
+// Define a node to match the commonmark image node ID for view binding
+const imageNode = $node("image", () => ({
+  group: "block",
+  attrs: {
+    src: { default: "" },
+    alt: { default: null },
+    title: { default: null },
+  },
+  parseDOM: [{ tag: "img[src]" }],
+  toDOM: (node) => ["img", node.attrs],
+  parseMarkdown: {
+    match: ({ type }) => type === "image",
+    runner: (state, node, type) => {
+      state.addNode(type, {
+        src: node.url,
+        alt: node.alt,
+        title: node.title,
+      })
+    },
+  },
+  toMarkdown: {
+    match: (node) => node.type.name === "image",
+    runner: (state, node) => {
+      state.addNode("image", undefined, undefined, {
+        url: node.attrs.src,
+        alt: node.attrs.alt,
+        title: node.attrs.title,
+      })
+    },
+  },
+}))
 
 const MilkdownEditor: React.FC<MilkdownEditorProps> = ({
   value,
@@ -189,8 +221,7 @@ const MilkdownEditor: React.FC<MilkdownEditorProps> = ({
         })
         .use(commonmark)
         .use(
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          $view(imageSchema as any, () =>
+          $view(imageNode, () =>
             nodeViewFactory({
               component: ImageView,
               stopEvent: imageBlockStopEvent,
