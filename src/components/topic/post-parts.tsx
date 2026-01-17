@@ -310,7 +310,7 @@ export const PostActions = memo(function PostActions({
         variant="ghost"
         size="sm"
         onClick={() => {
-          onReply(post.id, post.author.name)
+          onReply(post.id, "")
         }}
       >
         <Reply />

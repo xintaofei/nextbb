@@ -460,7 +460,7 @@ export default function TopicPage() {
 
   const onClickReply = useCallback((postId: string, authorName: string) => {
     setReplyToPostId(postId)
-    setReplyContent(`@${authorName} `)
+    setReplyContent(authorName)
     setReplyOpen(true)
   }, [])
 
