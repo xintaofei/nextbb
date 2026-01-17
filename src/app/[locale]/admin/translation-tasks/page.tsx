@@ -153,44 +153,47 @@ export default function AdminTranslationTasksPage() {
     [t, mutate]
   )
 
-  const handleBatchAction = async (action: "retry" | "cancel" | "delete") => {
-    if (selectedIds.length === 0) return
+  const handleBatchAction = useCallback(
+    async (action: "retry" | "cancel" | "delete") => {
+      if (selectedIds.length === 0) return
 
-    if (action === "delete" && !window.confirm(t("batchDeleteConfirm"))) {
-      return
-    }
-
-    try {
-      setIsBatchProcessing(true)
-      let res
-      if (action === "delete") {
-        res = await fetch("/api/admin/translation-tasks/batch", {
-          method: "DELETE",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ ids: selectedIds }),
-        })
-      } else {
-        res = await fetch("/api/admin/translation-tasks/batch", {
-          method: "PATCH",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ ids: selectedIds, action }),
-        })
+      if (action === "delete" && !window.confirm(t("batchDeleteConfirm"))) {
+        return
       }
 
-      if (res.ok) {
-        toast.success(t("message.batchSuccess"))
-        setSelectedIds([])
-        await mutate()
-      } else {
-        const data = await res.json().catch(() => ({}))
-        toast.error(data.error || t("message.batchError"))
+      try {
+        setIsBatchProcessing(true)
+        let res
+        if (action === "delete") {
+          res = await fetch("/api/admin/translation-tasks/batch", {
+            method: "DELETE",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ ids: selectedIds }),
+          })
+        } else {
+          res = await fetch("/api/admin/translation-tasks/batch", {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ ids: selectedIds, action }),
+          })
+        }
+
+        if (res.ok) {
+          toast.success(t("message.batchSuccess"))
+          setSelectedIds([])
+          await mutate()
+        } else {
+          const data = await res.json().catch(() => ({}))
+          toast.error(data.error || t("message.batchError"))
+        }
+      } catch {
+        toast.error(t("message.batchError"))
+      } finally {
+        setIsBatchProcessing(false)
       }
-    } catch {
-      toast.error(t("message.batchError"))
-    } finally {
-      setIsBatchProcessing(false)
-    }
-  }
+    },
+    [selectedIds, t, mutate]
+  )
 
   // Memoize status options to prevent re-rendering of Select items
   const statusOptions = useMemo(() => Object.values(TranslationTaskStatus), [])
