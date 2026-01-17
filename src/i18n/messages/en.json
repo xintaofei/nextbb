@@ -4,8 +4,8 @@
     "description": "This is a production-ready i18n example."
   },
   "Dashboard": {
-    "title": "你好，Next.js",
-    "description": "这是一个生产级多语言示例。"
+    "title": "Hello, Next.js",
+    "description": "This is a production-ready i18n example."
   },
   "Common": {
     "Search": {
@@ -876,6 +876,18 @@
       "page": "Page {page}",
       "prev": "Previous",
       "next": "Next"
+    },
+    "translationDialog": {
+      "title": "Manage Multi-language Translations",
+      "sourceLanguage": "Source Language",
+      "translated": "Translated",
+      "missing": "Not Translated",
+      "noName": "Name not filled",
+      "edit": "Edit",
+      "save": "Save",
+      "cancel": "Cancel",
+      "name": "Name",
+      "description": "Description"
     }
   },
   "AdminTags": {
