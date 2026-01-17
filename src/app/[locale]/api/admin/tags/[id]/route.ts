@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
 import { getSessionUser } from "@/lib/auth"
+import { createTranslationTasks } from "@/lib/services/translation-task"
+import { TranslationEntityType } from "@prisma/client"
 
 type TagDTO = {
   id: string
@@ -180,6 +182,7 @@ export async function PATCH(
             select: {
               name: true,
               description: true,
+              version: true,
             },
             take: 1,
           },
@@ -194,6 +197,16 @@ export async function PATCH(
 
     if (!result) {
       return NextResponse.json({ error: "Tag not found" }, { status: 404 })
+    }
+
+    // 如果更新了源语言翻译，创建翻译任务
+    if (hasTranslationUpdate && result.translations[0]) {
+      await createTranslationTasks(
+        TranslationEntityType.TAG,
+        result.id,
+        result.source_locale,
+        result.translations[0].version
+      )
     }
 
     const translation = result.translations[0]

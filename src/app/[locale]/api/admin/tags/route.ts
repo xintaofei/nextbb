@@ -3,6 +3,8 @@ import { prisma } from "@/lib/prisma"
 import { getSessionUser } from "@/lib/auth"
 import { generateId } from "@/lib/id"
 import { getLocale } from "next-intl/server"
+import { createTranslationTasks } from "@/lib/services/translation-task"
+import { TranslationEntityType } from "@prisma/client"
 
 type TagDTO = {
   id: string
@@ -280,6 +282,14 @@ export async function POST(request: NextRequest) {
 
       return { ...newTag, translation, usageCount: count }
     })
+
+    // 创建翻译任务
+    await createTranslationTasks(
+      TranslationEntityType.TAG,
+      result.id,
+      result.source_locale,
+      result.translation.version
+    )
 
     const tagDTO: TagDTO = {
       id: String(result.id),
