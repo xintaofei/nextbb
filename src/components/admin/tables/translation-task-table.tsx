@@ -286,6 +286,7 @@ interface TranslationTaskTableProps {
   onCancel: (id: string) => void
   onDelete: (id: string) => void
   isRetrying?: string | null
+  isLoading?: boolean
 }
 
 export function TranslationTaskTable({
@@ -296,6 +297,7 @@ export function TranslationTaskTable({
   onCancel,
   onDelete,
   isRetrying,
+  isLoading,
 }: TranslationTaskTableProps) {
   const t = useTranslations("AdminTranslationTasks")
 
@@ -319,7 +321,12 @@ export function TranslationTaskTable({
   )
 
   return (
-    <div className="rounded-2xl border border-border/40 bg-background/60 backdrop-blur overflow-hidden">
+    <div className="relative rounded-2xl border border-border/40 bg-background/60 backdrop-blur overflow-hidden">
+      {isLoading && (
+        <div className="absolute inset-0 z-20 flex items-center justify-center bg-background/40 backdrop-blur-[1px]">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        </div>
+      )}
       <div className="overflow-x-auto">
         <Table>
           <TableHeader>

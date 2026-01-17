@@ -71,19 +71,14 @@ export default function AdminTranslationTasksPage() {
     return `/api/admin/translation-tasks?${params.toString()}`
   }, [status, priority, entityType, sourceLocale, targetLocale, page])
 
-  const { data, isLoading, mutate } = useSWR<TranslationTaskListResult>(
-    query,
-    fetcher,
-    {
-      keepPreviousData: true, // Keep showing previous data while loading new page
-      revalidateOnFocus: false, // Don't revalidate on window focus to save requests
+  const { data, isLoading, isValidating, mutate } =
+    useSWR<TranslationTaskListResult>(query, fetcher, {
+      keepPreviousData: true,
+      revalidateOnFocus: false,
       onSuccess: () => {
-        // Clear selection when data changes (e.g. page change or refresh)
-        // Ideally we might want to keep selection across pages, but that's more complex
         setSelectedIds([])
       },
-    }
-  )
+    })
 
   // Use useCallback for handlers to prevent recreating them on every render
   const handleRetry = useCallback(
@@ -426,6 +421,7 @@ export default function AdminTranslationTasksPage() {
             onCancel={handleCancel}
             onDelete={handleDelete}
             isRetrying={isRetrying}
+            isLoading={isValidating}
           />
 
           {totalPages > 1 && (
