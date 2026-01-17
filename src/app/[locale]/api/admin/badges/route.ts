@@ -3,6 +3,8 @@ import { prisma } from "@/lib/prisma"
 import { getSessionUser } from "@/lib/auth"
 import { generateId } from "@/lib/id"
 import { getLocale } from "next-intl/server"
+import { createTranslationTasks } from "@/lib/services/translation-task"
+import { TranslationEntityType } from "@prisma/client"
 
 type BadgeDTO = {
   id: string
@@ -57,7 +59,7 @@ function validateLevel(level: number): boolean {
 export async function GET(request: NextRequest) {
   try {
     const auth = await getSessionUser()
-    if (!auth) {
+    if (!auth || !auth.isAdmin) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
@@ -225,7 +227,7 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const auth = await getSessionUser()
-    if (!auth) {
+    if (!auth || !auth.isAdmin) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
@@ -341,6 +343,14 @@ export async function POST(request: NextRequest) {
 
       return { ...newBadge, translation }
     })
+
+    // 创建翻译任务
+    await createTranslationTasks(
+      TranslationEntityType.BADGE,
+      result.id,
+      result.source_locale,
+      0
+    )
 
     const badgeDTO: BadgeDTO = {
       id: String(result.id),

@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
 import { getSessionUser } from "@/lib/auth"
+import { createTranslationTasks } from "@/lib/services/translation-task"
+import { TranslationEntityType } from "@prisma/client"
 
 type BadgeDTO = {
   id: string
@@ -169,6 +171,7 @@ export async function PATCH(
     if (isDeleted !== undefined) badgeUpdateData.is_deleted = isDeleted
 
     // 使用事务更新
+    let newVersion = 0
     const result = await prisma.$transaction(async (tx) => {
       // 1. 更新主表字段
       if (Object.keys(badgeUpdateData).length > 0) {
@@ -190,12 +193,13 @@ export async function PATCH(
 
         if (sourceTranslation) {
           // 构建翻译更新数据
+          newVersion = sourceTranslation.version + 1
           const translationUpdateData: {
             name?: string
             description?: string | null
             version: number
           } = {
-            version: sourceTranslation.version + 1, // 递增版本号
+            version: newVersion, // 递增版本号
           }
 
           if (name !== undefined) translationUpdateData.name = name
@@ -237,6 +241,7 @@ export async function PATCH(
             select: {
               name: true,
               description: true,
+              version: true,
             },
             take: 1,
           },
@@ -246,6 +251,15 @@ export async function PATCH(
 
     if (!result) {
       return NextResponse.json({ error: "Badge not found" }, { status: 404 })
+    }
+
+    if (hasTranslationUpdate && newVersion > 0) {
+      await createTranslationTasks(
+        TranslationEntityType.BADGE,
+        result.id,
+        result.source_locale,
+        newVersion
+      )
     }
 
     const translation = result.translations[0]
