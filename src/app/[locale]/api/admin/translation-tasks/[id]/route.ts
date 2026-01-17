@@ -3,6 +3,8 @@ import { prisma } from "@/lib/prisma"
 import { getSessionUser } from "@/lib/auth"
 import { TranslationTaskStatus, Prisma } from "@prisma/client"
 
+import { getTranslations } from "next-intl/server"
+
 interface RouteParams {
   params: Promise<{ id: string }>
 }
@@ -14,16 +16,17 @@ interface PatchBody {
 // DELETE - 删除任务
 export async function DELETE(request: NextRequest, { params }: RouteParams) {
   try {
+    const t = await getTranslations("AdminTranslationTasks.error")
     const auth = await getSessionUser()
     if (!auth) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+      return NextResponse.json({ error: t("unauthorized") }, { status: 401 })
     }
 
     const { id } = await params
 
     // 验证 ID 格式
     if (!/^\d+$/.test(id)) {
-      return NextResponse.json({ error: "Invalid ID" }, { status: 400 })
+      return NextResponse.json({ error: t("invalidId") }, { status: 400 })
     }
 
     try {
@@ -36,7 +39,7 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
         error instanceof Prisma.PrismaClientKnownRequestError &&
         error.code === "P2025"
       ) {
-        return NextResponse.json({ error: "Task not found" }, { status: 404 })
+        return NextResponse.json({ error: t("taskNotFound") }, { status: 404 })
       }
       throw error
     }
@@ -44,8 +47,9 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
     return NextResponse.json({ success: true })
   } catch (error) {
     console.error("Delete translation task error:", error)
+    const t = await getTranslations("AdminTranslationTasks.error")
     return NextResponse.json(
-      { error: "Internal server error" },
+      { error: t("internalServerError") },
       { status: 500 }
     )
   }
@@ -54,28 +58,50 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
 // PATCH - 更新任务 (主要是重试)
 export async function PATCH(request: NextRequest, { params }: RouteParams) {
   try {
+    const t = await getTranslations("AdminTranslationTasks.error")
     const auth = await getSessionUser()
     if (!auth) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+      return NextResponse.json({ error: t("unauthorized") }, { status: 401 })
     }
 
     const { id } = await params
 
     // 验证 ID 格式
     if (!/^\d+$/.test(id)) {
-      return NextResponse.json({ error: "Invalid ID" }, { status: 400 })
+      return NextResponse.json({ error: t("invalidId") }, { status: 400 })
     }
 
     let body: PatchBody
     try {
       body = await request.json()
     } catch {
-      return NextResponse.json({ error: "Invalid JSON" }, { status: 400 })
+      return NextResponse.json({ error: t("invalidJson") }, { status: 400 })
     }
 
     const { action } = body
 
+    // 获取当前任务状态
+    const task = await prisma.translation_tasks.findUnique({
+      where: { id: BigInt(id) },
+      select: { status: true },
+    })
+
+    if (!task) {
+      return NextResponse.json({ error: t("taskNotFound") }, { status: 404 })
+    }
+
     if (action === "retry") {
+      // 只有非等待中和非进行中的任务才能重试
+      if (
+        task.status === TranslationTaskStatus.PENDING ||
+        task.status === TranslationTaskStatus.PROCESSING
+      ) {
+        return NextResponse.json(
+          { error: t("taskPendingOrProcessing") },
+          { status: 400 }
+        )
+      }
+
       try {
         await prisma.translation_tasks.update({
           where: { id: BigInt(id) },
@@ -88,24 +114,41 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
           },
         })
       } catch (error) {
-        // P2025: Record to update does not exist
-        if (
-          error instanceof Prisma.PrismaClientKnownRequestError &&
-          error.code === "P2025"
-        ) {
-          return NextResponse.json({ error: "Task not found" }, { status: 404 })
-        }
         throw error
       }
 
       return NextResponse.json({ success: true })
     }
 
-    return NextResponse.json({ error: "Invalid action" }, { status: 400 })
+    if (action === "cancel") {
+      // 只有等待中的任务才能取消
+      if (task.status !== TranslationTaskStatus.PENDING) {
+        return NextResponse.json(
+          { error: t("taskNotPending") },
+          { status: 400 }
+        )
+      }
+
+      try {
+        await prisma.translation_tasks.update({
+          where: { id: BigInt(id) },
+          data: {
+            status: TranslationTaskStatus.CANCELLED,
+          },
+        })
+      } catch (error) {
+        throw error
+      }
+
+      return NextResponse.json({ success: true })
+    }
+
+    return NextResponse.json({ error: t("invalidAction") }, { status: 400 })
   } catch (error) {
     console.error("Update translation task error:", error)
+    const t = await getTranslations("AdminTranslationTasks.error")
     return NextResponse.json(
-      { error: "Internal server error" },
+      { error: t("internalServerError") },
       { status: 500 }
     )
   }

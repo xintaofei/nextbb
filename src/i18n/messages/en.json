@@ -1696,8 +1696,8 @@
     "fullLeaderboard": "Full Leaderboard"
   },
   "AdminTranslationTasks": {
-    "title": "Translation Tasks",
-    "description": "Manage all translation tasks in the system, monitor status and handle exceptions",
+    "title": "Translation Tasks Management",
+    "description": "Manage all translation tasks, monitor status and handle exceptions",
     "refresh": "Refresh",
     "loading": "Loading...",
     "empty": "No translation tasks",
@@ -1710,7 +1710,7 @@
       "cancelled": "Cancelled"
     },
     "priority": {
-      "all": "All Priority",
+      "all": "All Priorities",
       "urgent": "Urgent",
       "high": "High",
       "normal": "Normal",
@@ -1743,14 +1743,27 @@
       "updated": "Updated At",
       "action": {
         "retry": "Retry",
-        "delete": "Delete"
+        "delete": "Delete",
+        "cancel": "Cancel"
       }
     },
+    "selectedCount": "{count} selected",
+    "clearSelection": "Clear selection",
+    "batch": {
+      "retry": "Batch Retry",
+      "cancel": "Batch Cancel",
+      "delete": "Batch Delete"
+    },
+    "batchDeleteConfirm": "Are you sure you want to delete selected tasks?",
     "message": {
       "retrySuccess": "Task reset successfully, waiting for processing",
       "retryError": "Failed to retry task",
       "deleteSuccess": "Task deleted successfully",
-      "deleteError": "Failed to delete task"
+      "deleteError": "Failed to delete task",
+      "cancelSuccess": "Task cancelled successfully",
+      "cancelError": "Failed to cancel task",
+      "batchSuccess": "Batch operation successful",
+      "batchError": "Batch operation failed"
     },
     "deleteConfirm": {
       "description": "Are you sure you want to delete this translation task? This action cannot be undone."
@@ -1758,6 +1771,17 @@
     "pagination": {
       "prev": "Previous",
       "next": "Next"
+    },
+    "error": {
+      "unauthorized": "Unauthorized",
+      "invalidId": "Invalid ID",
+      "taskNotFound": "Task not found",
+      "internalServerError": "Internal server error",
+      "invalidJson": "Invalid JSON",
+      "invalidAction": "Invalid action",
+      "taskPendingOrProcessing": "Task is pending or processing",
+      "taskNotPending": "Task is not pending",
+      "invalidIds": "Invalid IDs"
     }
   },
   "AdminAutomationRules": {

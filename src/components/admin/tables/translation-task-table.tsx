@@ -10,6 +10,7 @@ import {
   XCircle,
   Loader2,
   EllipsisVertical,
+  Ban,
 } from "lucide-react"
 import {
   Table,
@@ -19,6 +20,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
+import { Checkbox } from "@/components/ui/checkbox"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { RelativeTime } from "@/components/common/relative-time"
@@ -54,18 +56,40 @@ export interface TranslationTaskItem {
 
 interface TranslationTaskTableProps {
   tasks: TranslationTaskItem[]
+  selectedIds: string[]
+  onSelectionChange: (ids: string[]) => void
   onRetry: (id: string) => void
+  onCancel: (id: string) => void
   onDelete: (id: string) => void
   isRetrying?: string | null
 }
 
 export function TranslationTaskTable({
   tasks,
+  selectedIds,
+  onSelectionChange,
   onRetry,
+  onCancel,
   onDelete,
   isRetrying,
 }: TranslationTaskTableProps) {
   const t = useTranslations("AdminTranslationTasks")
+
+  const toggleSelectAll = () => {
+    if (selectedIds.length === tasks.length) {
+      onSelectionChange([])
+    } else {
+      onSelectionChange(tasks.map((task) => task.id))
+    }
+  }
+
+  const toggleSelect = (id: string) => {
+    if (selectedIds.includes(id)) {
+      onSelectionChange(selectedIds.filter((i) => i !== id))
+    } else {
+      onSelectionChange([...selectedIds, id])
+    }
+  }
 
   const getStatusBadge = (status: TranslationTaskStatus) => {
     switch (status) {
@@ -163,6 +187,15 @@ export function TranslationTaskTable({
         <Table>
           <TableHeader>
             <TableRow className="hover:bg-transparent border-border/40">
+              <TableHead className="w-[40px]">
+                <Checkbox
+                  checked={
+                    tasks.length > 0 && selectedIds.length === tasks.length
+                  }
+                  onCheckedChange={toggleSelectAll}
+                  aria-label="Select all"
+                />
+              </TableHead>
               <TableHead>{t("table.entity")}</TableHead>
               <TableHead>{t("table.language")}</TableHead>
               <TableHead>{t("table.statusLabel")}</TableHead>
@@ -176,7 +209,7 @@ export function TranslationTaskTable({
             {tasks.length === 0 ? (
               <TableRow>
                 <TableCell
-                  colSpan={7}
+                  colSpan={8}
                   className="text-center py-12 text-foreground/60"
                 >
                   {t("empty")}
@@ -187,7 +220,15 @@ export function TranslationTaskTable({
                 <TableRow
                   key={task.id}
                   className="group hover:bg-foreground/5 transition-colors border-border/40"
+                  data-state={selectedIds.includes(task.id) && "selected"}
                 >
+                  <TableCell>
+                    <Checkbox
+                      checked={selectedIds.includes(task.id)}
+                      onCheckedChange={() => toggleSelect(task.id)}
+                      aria-label={`Select task ${task.id}`}
+                    />
+                  </TableCell>
                   <TableCell>
                     <div className="flex flex-col">
                       <span className="font-medium text-sm">
@@ -252,21 +293,26 @@ export function TranslationTaskTable({
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
-                        <DropdownMenuItem
-                          onClick={() => onRetry(task.id)}
-                          disabled={
-                            task.status === "COMPLETED" ||
-                            task.status === "PROCESSING" ||
-                            isRetrying === task.id
-                          }
-                        >
-                          {isRetrying === task.id ? (
-                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                          ) : (
-                            <RotateCcw className="mr-2 h-4 w-4" />
+                        {task.status !== "PENDING" &&
+                          task.status !== "PROCESSING" && (
+                            <DropdownMenuItem
+                              onClick={() => onRetry(task.id)}
+                              disabled={isRetrying === task.id}
+                            >
+                              {isRetrying === task.id ? (
+                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                              ) : (
+                                <RotateCcw className="mr-2 h-4 w-4" />
+                              )}
+                              {t("table.action.retry")}
+                            </DropdownMenuItem>
                           )}
-                          {t("table.action.retry")}
-                        </DropdownMenuItem>
+                        {task.status === "PENDING" && (
+                          <DropdownMenuItem onClick={() => onCancel(task.id)}>
+                            <Ban className="mr-2 h-4 w-4" />
+                            {t("table.action.cancel")}
+                          </DropdownMenuItem>
+                        )}
                         <DropdownMenuItem
                           onClick={() => onDelete(task.id)}
                           className="text-destructive focus:text-destructive"

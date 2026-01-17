@@ -5,7 +5,7 @@ import useSWR from "swr"
 import { useTranslations } from "next-intl"
 import { AdminPageContainer } from "@/components/admin/layout/admin-page-container"
 import { AdminPageSection } from "@/components/admin/layout/admin-page-section"
-import { Filter, RefreshCcw } from "lucide-react"
+import { Filter, RefreshCcw, Ban, Trash2, RotateCcw } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import {
   Select,
@@ -52,6 +52,8 @@ export default function AdminTranslationTasksPage() {
   const pageSize = 20
 
   const [isRetrying, setIsRetrying] = useState<string | null>(null)
+  const [selectedIds, setSelectedIds] = useState<string[]>([])
+  const [isBatchProcessing, setIsBatchProcessing] = useState(false)
 
   // Memoize the query URL to prevent unnecessary recalculations
   const query = useMemo(() => {
@@ -70,6 +72,11 @@ export default function AdminTranslationTasksPage() {
     {
       keepPreviousData: true, // Keep showing previous data while loading new page
       revalidateOnFocus: false, // Don't revalidate on window focus to save requests
+      onSuccess: () => {
+        // Clear selection when data changes (e.g. page change or refresh)
+        // Ideally we might want to keep selection across pages, but that's more complex
+        setSelectedIds([])
+      },
     }
   )
 
@@ -88,12 +95,36 @@ export default function AdminTranslationTasksPage() {
           toast.success(t("message.retrySuccess"))
           await mutate() // Revalidate data
         } else {
-          toast.error(t("message.retryError"))
+          const data = await res.json().catch(() => ({}))
+          toast.error(data.error || t("message.retryError"))
         }
       } catch {
         toast.error(t("message.retryError"))
       } finally {
         setIsRetrying(null)
+      }
+    },
+    [t, mutate]
+  )
+
+  const handleCancel = useCallback(
+    async (id: string) => {
+      try {
+        const res = await fetch(`/api/admin/translation-tasks/${id}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ action: "cancel" }),
+        })
+
+        if (res.ok) {
+          toast.success(t("message.cancelSuccess"))
+          await mutate() // Revalidate data
+        } else {
+          const data = await res.json().catch(() => ({}))
+          toast.error(data.error || t("message.cancelError"))
+        }
+      } catch {
+        toast.error(t("message.cancelError"))
       }
     },
     [t, mutate]
@@ -112,7 +143,8 @@ export default function AdminTranslationTasksPage() {
           toast.success(t("message.deleteSuccess"))
           await mutate() // Revalidate data
         } else {
-          toast.error(t("message.deleteError"))
+          const data = await res.json().catch(() => ({}))
+          toast.error(data.error || t("message.deleteError"))
         }
       } catch {
         toast.error(t("message.deleteError"))
@@ -120,6 +152,45 @@ export default function AdminTranslationTasksPage() {
     },
     [t, mutate]
   )
+
+  const handleBatchAction = async (action: "retry" | "cancel" | "delete") => {
+    if (selectedIds.length === 0) return
+
+    if (action === "delete" && !window.confirm(t("batchDeleteConfirm"))) {
+      return
+    }
+
+    try {
+      setIsBatchProcessing(true)
+      let res
+      if (action === "delete") {
+        res = await fetch("/api/admin/translation-tasks/batch", {
+          method: "DELETE",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ ids: selectedIds }),
+        })
+      } else {
+        res = await fetch("/api/admin/translation-tasks/batch", {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ ids: selectedIds, action }),
+        })
+      }
+
+      if (res.ok) {
+        toast.success(t("message.batchSuccess"))
+        setSelectedIds([])
+        await mutate()
+      } else {
+        const data = await res.json().catch(() => ({}))
+        toast.error(data.error || t("message.batchError"))
+      }
+    } catch {
+      toast.error(t("message.batchError"))
+    } finally {
+      setIsBatchProcessing(false)
+    }
+  }
 
   // Memoize status options to prevent re-rendering of Select items
   const statusOptions = useMemo(() => Object.values(TranslationTaskStatus), [])
@@ -156,6 +227,56 @@ export default function AdminTranslationTasksPage() {
           </Button>
         </div>
       </AdminPageSection>
+
+      {selectedIds.length > 0 && (
+        <AdminPageSection delay={0.15} className="sticky top-4 z-10">
+          <div className="flex items-center justify-between gap-4 rounded-xl border border-border/40 bg-background/80 p-4 backdrop-blur shadow-lg">
+            <div className="flex items-center gap-4">
+              <span className="text-sm font-medium">
+                {t("selectedCount", { count: selectedIds.length })}
+              </span>
+              <div className="h-4 w-px bg-border/60" />
+              <div className="flex items-center gap-2">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => handleBatchAction("retry")}
+                  disabled={isBatchProcessing}
+                >
+                  <RotateCcw className="mr-2 h-4 w-4" />
+                  {t("batch.retry")}
+                </Button>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => handleBatchAction("cancel")}
+                  disabled={isBatchProcessing}
+                >
+                  <Ban className="mr-2 h-4 w-4" />
+                  {t("batch.cancel")}
+                </Button>
+                <Button
+                  size="sm"
+                  variant="destructive"
+                  onClick={() => handleBatchAction("delete")}
+                  disabled={isBatchProcessing}
+                >
+                  <Trash2 className="mr-2 h-4 w-4" />
+                  {t("batch.delete")}
+                </Button>
+              </div>
+            </div>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setSelectedIds([])}
+              disabled={isBatchProcessing}
+            >
+              {t("clearSelection")}
+            </Button>
+          </div>
+        </AdminPageSection>
+      )}
 
       <AdminPageSection
         delay={0.2}
@@ -247,7 +368,10 @@ export default function AdminTranslationTasksPage() {
         <AdminPageSection delay={0.3} className="space-y-4">
           <TranslationTaskTable
             tasks={data.items}
+            selectedIds={selectedIds}
+            onSelectionChange={setSelectedIds}
             onRetry={handleRetry}
+            onCancel={handleCancel}
             onDelete={handleDelete}
             isRetrying={isRetrying}
           />

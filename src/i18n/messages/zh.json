@@ -1755,14 +1755,27 @@
       "updated": "更新于",
       "action": {
         "retry": "重试",
-        "delete": "删除"
+        "delete": "删除",
+        "cancel": "取消"
       }
     },
+    "selectedCount": "已选择 {count} 项",
+    "clearSelection": "清除选择",
+    "batch": {
+      "retry": "批量重试",
+      "cancel": "批量取消",
+      "delete": "批量删除"
+    },
+    "batchDeleteConfirm": "确认删除选中的任务？",
     "message": {
       "retrySuccess": "任务已重置，等待处理",
       "retryError": "任务重试失败",
       "deleteSuccess": "任务已删除",
-      "deleteError": "任务删除失败"
+      "deleteError": "任务删除失败",
+      "cancelSuccess": "任务已取消",
+      "cancelError": "任务取消失败",
+      "batchSuccess": "批量操作成功",
+      "batchError": "批量操作失败"
     },
     "deleteConfirm": {
       "description": "确定要删除此翻译任务吗？此操作无法撤销。"
@@ -1770,6 +1783,17 @@
     "pagination": {
       "prev": "上一页",
       "next": "下一页"
+    },
+    "error": {
+      "unauthorized": "未授权",
+      "invalidId": "无效的 ID",
+      "taskNotFound": "任务未找到",
+      "internalServerError": "服务器内部错误",
+      "invalidJson": "无效的 JSON",
+      "invalidAction": "无效的操作",
+      "taskPendingOrProcessing": "任务正在等待或进行中",
+      "taskNotPending": "任务不在等待中",
+      "invalidIds": "无效的 ID 列表"
     }
   },
   "AdminAutomationRules": {
