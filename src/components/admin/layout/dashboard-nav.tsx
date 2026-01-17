@@ -11,6 +11,7 @@ import {
   Award,
   Settings,
   Workflow,
+  Languages,
 } from "lucide-react"
 import { useState } from "react"
 import Link from "next/link"
@@ -28,6 +29,11 @@ export function DashboardNav() {
     { label: t("categories"), icon: Folder, path: "/admin/categories" },
     { label: t("tags"), icon: Tag, path: "/admin/tags" },
     { label: t("badges"), icon: Award, path: "/admin/badges" },
+    {
+      label: t("translationTasks"),
+      icon: Languages,
+      path: "/admin/translation-tasks",
+    },
     {
       label: t("automationRules"),
       icon: Workflow,

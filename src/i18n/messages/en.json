@@ -676,6 +676,7 @@
       "categories": "Categories",
       "tags": "Tags",
       "badges": "Badges",
+      "translationTasks": "Translation Tasks",
       "automationRules": "Automation Rules",
       "settings": "Settings"
     },
@@ -1693,6 +1694,64 @@
     "people": "donations",
     "donatedAt": "Donated at",
     "fullLeaderboard": "Full Leaderboard"
+  },
+  "AdminTranslationTasks": {
+    "title": "Translation Tasks",
+    "description": "Manage all translation tasks in the system, monitor status and handle exceptions",
+    "refresh": "Refresh",
+    "loading": "Loading...",
+    "empty": "No translation tasks",
+    "status": {
+      "all": "All Status",
+      "pending": "Pending",
+      "processing": "Processing",
+      "completed": "Completed",
+      "failed": "Failed",
+      "cancelled": "Cancelled"
+    },
+    "priority": {
+      "all": "All Priority",
+      "urgent": "Urgent",
+      "high": "High",
+      "normal": "Normal",
+      "low": "Low",
+      "lowest": "Lowest"
+    },
+    "filter": {
+      "title": "Filter",
+      "entityType": {
+        "all": "All Types"
+      }
+    },
+    "table": {
+      "entity": "Entity",
+      "language": "Language",
+      "statusLabel": "Status",
+      "priorityLabel": "Priority",
+      "retry": "Retry",
+      "time": "Time",
+      "actions": "Actions",
+      "empty": "No data",
+      "created": "Created At",
+      "updated": "Updated At",
+      "action": {
+        "retry": "Retry",
+        "delete": "Delete"
+      }
+    },
+    "message": {
+      "retrySuccess": "Task reset successfully, waiting for processing",
+      "retryError": "Failed to retry task",
+      "deleteSuccess": "Task deleted successfully",
+      "deleteError": "Failed to delete task"
+    },
+    "deleteConfirm": {
+      "description": "Are you sure you want to delete this translation task? This action cannot be undone."
+    },
+    "pagination": {
+      "prev": "Previous",
+      "next": "Next"
+    }
   },
   "AdminAutomationRules": {
     "title": "Automation Rules",
