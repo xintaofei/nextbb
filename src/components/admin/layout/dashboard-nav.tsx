@@ -17,6 +17,7 @@ import {
 } from "lucide-react"
 import { useState } from "react"
 import Link from "next/link"
+import { usePathname } from "next/navigation"
 import { useTranslations } from "next-intl"
 import { cn } from "@/lib/utils"
 import {
@@ -28,7 +29,15 @@ import {
 
 export function DashboardNav() {
   const [isOpen, setIsOpen] = useState(false)
+  const pathname = usePathname()
   const t = useTranslations("Admin.nav")
+
+  const isPathActive = (path: string) => {
+    if (path === "/admin") {
+      return pathname === "/admin"
+    }
+    return pathname?.startsWith(path)
+  }
 
   const navItems = [
     { label: t("overview"), icon: BarChart3, path: "/admin" },
@@ -102,26 +111,37 @@ export function DashboardNav() {
               const Icon = item.icon
 
               if (item.items) {
+                const isActive = item.items.some((subItem) =>
+                  isPathActive(subItem.path)
+                )
+
                 return (
                   <DropdownMenu key={item.label}>
                     <DropdownMenuTrigger
                       className={cn(
-                        "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-lg text-xs font-medium transition-all h-8 uppercase tracking-widest outline-none",
-                        "text-foreground/70 hover:text-foreground hover:bg-background/50 focus:bg-background/50"
+                        "group inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-lg text-xs font-medium transition-all h-8 uppercase tracking-widest outline-none",
+                        isActive
+                          ? "text-foreground bg-background/50"
+                          : "text-foreground/70 hover:text-foreground hover:bg-background/50 focus:bg-background/50"
                       )}
                     >
                       <Icon className="h-4 w-4" aria-hidden="true" />
                       <span>{item.label}</span>
-                      <ChevronDown className="h-3 w-3 opacity-50" />
+                      <ChevronDown className="h-3 w-3 opacity-50 transition-transform duration-200 group-data-[state=open]:rotate-180" />
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
                       {item.items.map((subItem) => {
                         const SubIcon = subItem.icon
+                        const isSubActive = isPathActive(subItem.path)
                         return (
                           <DropdownMenuItem key={subItem.path} asChild>
                             <Link
                               href={subItem.path}
-                              className="w-full cursor-pointer"
+                              className={cn(
+                                "w-full cursor-pointer",
+                                isSubActive &&
+                                  "bg-accent text-accent-foreground"
+                              )}
                             >
                               <SubIcon
                                 className="mr-2 h-4 w-4"
@@ -137,16 +157,20 @@ export function DashboardNav() {
                 )
               }
 
+              const isActive = isPathActive(item.path!)
+
               return (
                 <Link
                   key={item.label}
                   href={item.path!}
                   className={cn(
                     "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-lg text-xs font-medium transition-all h-8 uppercase tracking-widest",
-                    "text-foreground/70 hover:text-foreground hover:bg-background/50"
+                    isActive
+                      ? "text-foreground bg-background/50"
+                      : "text-foreground/70 hover:text-foreground hover:bg-background/50"
                   )}
                   role="menuitem"
-                  aria-current={item.path === "/admin" ? "page" : undefined}
+                  aria-current={isActive ? "page" : undefined}
                 >
                   <Icon className="h-4 w-4" aria-hidden="true" />
                   <span>{item.label}</span>
@@ -170,12 +194,18 @@ export function DashboardNav() {
               const Icon = item.icon
 
               if (item.items) {
+                const isParentActive = item.items.some((subItem) =>
+                  isPathActive(subItem.path)
+                )
+
                 return (
                   <div key={item.label} className="flex flex-col gap-1">
                     <div
                       className={cn(
                         "inline-flex items-center justify-start gap-2 whitespace-nowrap rounded-md text-xs font-medium transition-all h-8 px-3 uppercase tracking-widest",
-                        "text-foreground/70"
+                        isParentActive
+                          ? "text-foreground"
+                          : "text-foreground/70"
                       )}
                     >
                       <Icon className="h-4 w-4" aria-hidden="true" />
@@ -184,13 +214,16 @@ export function DashboardNav() {
                     <div className="pl-6 flex flex-col gap-1 border-l ml-4 border-border/40">
                       {item.items.map((subItem) => {
                         const SubIcon = subItem.icon
+                        const isSubActive = isPathActive(subItem.path)
                         return (
                           <Link
                             key={subItem.path}
                             href={subItem.path}
                             className={cn(
                               "inline-flex items-center justify-start gap-2 whitespace-nowrap rounded-md text-xs font-medium transition-all h-8 px-3 uppercase tracking-widest",
-                              "text-foreground/70 hover:text-foreground hover:bg-background/50"
+                              isSubActive
+                                ? "text-foreground bg-background/50"
+                                : "text-foreground/70 hover:text-foreground hover:bg-background/50"
                             )}
                             role="menuitem"
                           >
@@ -204,13 +237,17 @@ export function DashboardNav() {
                 )
               }
 
+              const isActive = isPathActive(item.path!)
+
               return (
                 <Link
                   key={item.label}
                   href={item.path!}
                   className={cn(
                     "inline-flex items-center justify-start gap-2 whitespace-nowrap rounded-md text-xs font-medium transition-all h-8 px-3 uppercase tracking-widest",
-                    "text-foreground/70 hover:text-foreground hover:bg-background/50"
+                    isActive
+                      ? "text-foreground bg-background/50"
+                      : "text-foreground/70 hover:text-foreground hover:bg-background/50"
                   )}
                   role="menuitem"
                 >
