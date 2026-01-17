@@ -11,26 +11,27 @@ import {
 } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { Settings2, Edit, Trash2 } from "lucide-react"
+import { Switch } from "@/components/ui/switch"
+import { Settings2, Edit, Globe, Cpu, Bot } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { LLMConfigDTO, LLMUsageRow } from "@/types/llm"
 
 type LLMConfigCardsProps = {
   data: LLMUsageRow[]
   onConfigure: (usage: string, config: LLMConfigDTO | null) => void
-  onDelete: (config: LLMConfigDTO) => void
+  onToggleEnabled: (config: LLMConfigDTO, enabled: boolean) => void
 }
 
 const LLMConfigCardItem = memo(function LLMConfigCardItem({
   usage,
   config,
   onConfigure,
-  onDelete,
+  onToggleEnabled,
 }: {
   usage: string
   config: LLMConfigDTO | null
   onConfigure: (usage: string, config: LLMConfigDTO | null) => void
-  onDelete: (config: LLMConfigDTO) => void
+  onToggleEnabled: (config: LLMConfigDTO, enabled: boolean) => void
 }) {
   const t = useTranslations("AdminLLMConfigs")
 
@@ -41,47 +42,58 @@ const LLMConfigCardItem = memo(function LLMConfigCardItem({
         !config && "border-dashed opacity-80 hover:opacity-100"
       )}
     >
-      <CardHeader className="flex flex-row items-start justify-between space-y-0 pb-2">
+      <CardHeader className="flex flex-row items-start justify-between space-y-0 pb-3">
         <div className="space-y-1">
-          <CardTitle className="text-base font-semibold">
+          <CardTitle className="text-base font-semibold flex items-center gap-2">
             {t(`usages.${usage}`)}
           </CardTitle>
         </div>
-        {config ? (
-          <Badge variant={config.is_enabled ? "default" : "secondary"}>
-            {config.is_enabled ? t("table.enabled") : t("table.disabled")}
-          </Badge>
-        ) : (
-          <Badge variant="outline" className="text-muted-foreground">
+        {!config && (
+          <Badge
+            variant="outline"
+            className="text-muted-foreground font-normal"
+          >
             {t("table.notConfigured")}
           </Badge>
         )}
       </CardHeader>
-      <CardContent className="flex-1 space-y-4 pt-4">
+      <CardContent className="flex-1 space-y-4">
         {config ? (
-          <div className="space-y-3 text-sm">
-            <div className="flex items-center justify-between">
-              <span className="text-muted-foreground">{t("table.name")}:</span>
-              <span className="font-medium">{config.name}</span>
+          <div className="grid gap-3">
+            <div className="flex items-center justify-between gap-2">
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <Bot className="h-4 w-4" />
+                <span>{t("table.name")}</span>
+              </div>
+              <span className="text-sm font-medium">{config.name}</span>
             </div>
-            <div className="flex items-center justify-between">
-              <span className="text-muted-foreground">
-                {t("table.interfaceMode")}:
-              </span>
-              <Badge variant="outline">{config.interface_mode}</Badge>
+
+            <div className="flex items-center justify-between gap-2">
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <Cpu className="h-4 w-4" />
+                <span>{t("table.interfaceMode")}</span>
+              </div>
+              <Badge
+                variant="outline"
+                className="h-5 px-2 font-mono text-xs font-normal"
+              >
+                {config.interface_mode}
+              </Badge>
             </div>
-            <div className="flex flex-col space-y-1.5">
-              <span className="text-muted-foreground">
-                {t("table.baseUrl")}:
-              </span>
-              <span className="truncate text-xs text-muted-foreground/80 font-mono bg-muted/50 p-1.5 rounded border">
+
+            <div className="space-y-2 pt-1">
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <Globe className="h-4 w-4" />
+                <span>{t("table.baseUrl")}</span>
+              </div>
+              <div className="rounded-md bg-muted/40 px-3 py-2 text-xs font-mono text-muted-foreground break-all border border-border/40">
                 {config.base_url}
-              </span>
+              </div>
             </div>
           </div>
         ) : (
-          <div className="flex h-full flex-col items-center justify-center space-y-2 text-muted-foreground py-6">
-            <div className="p-3 bg-muted/50 rounded-full">
+          <div className="flex h-full flex-col items-center justify-center space-y-2 text-muted-foreground py-8">
+            <div className="p-3 bg-muted/40 rounded-full">
               <Settings2 className="h-6 w-6 opacity-40" />
             </div>
             <p className="text-sm">{t("table.noConfig")}</p>
@@ -89,9 +101,24 @@ const LLMConfigCardItem = memo(function LLMConfigCardItem({
         )}
       </CardContent>
       <CardFooter className="bg-muted/20 px-6 py-3">
-        <div className="flex w-full items-center justify-end gap-2">
+        <div className="flex w-full items-center justify-between gap-2">
           {config ? (
             <>
+              <div className="flex items-center gap-2">
+                <Switch
+                  checked={config.is_enabled}
+                  onCheckedChange={(checked) =>
+                    onToggleEnabled(config, checked)
+                  }
+                  id={`switch-${usage}`}
+                />
+                <label
+                  htmlFor={`switch-${usage}`}
+                  className="text-xs text-muted-foreground cursor-pointer select-none"
+                >
+                  {config.is_enabled ? t("table.enabled") : t("table.disabled")}
+                </label>
+              </div>
               <Button
                 variant="outline"
                 size="sm"
@@ -100,14 +127,6 @@ const LLMConfigCardItem = memo(function LLMConfigCardItem({
               >
                 <Edit className="mr-2 h-3.5 w-3.5" />
                 {t("table.edit")}
-              </Button>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10"
-                onClick={() => onDelete(config)}
-              >
-                <Trash2 className="h-4 w-4" />
               </Button>
             </>
           ) : (
@@ -129,7 +148,7 @@ const LLMConfigCardItem = memo(function LLMConfigCardItem({
 export function LLMConfigCards({
   data,
   onConfigure,
-  onDelete,
+  onToggleEnabled,
 }: LLMConfigCardsProps) {
   return (
     <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
@@ -139,7 +158,7 @@ export function LLMConfigCards({
           usage={usage}
           config={config}
           onConfigure={onConfigure}
-          onDelete={onDelete}
+          onToggleEnabled={onToggleEnabled}
         />
       ))}
     </div>

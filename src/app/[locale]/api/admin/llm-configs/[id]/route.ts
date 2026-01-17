@@ -25,7 +25,11 @@ const updateLLMConfigSchema = z.object({
     .optional(),
   api_key: z.string().max(255).optional(),
   usage: z.enum(Object.values(LLMUsage) as [string, ...string[]]).optional(),
-  is_enabled: z.boolean().optional(),
+  // PUT updates configuration only, not enabled status
+})
+
+const patchLLMConfigSchema = z.object({
+  is_enabled: z.boolean(),
 })
 
 export async function PUT(
@@ -49,8 +53,7 @@ export async function PUT(
       )
     }
 
-    const { interface_mode, name, base_url, api_key, usage, is_enabled } =
-      validation.data
+    const { interface_mode, name, base_url, api_key, usage } = validation.data
 
     // 检查是否存在
     const existingConfig = await prisma.llm_configs.findUnique({
@@ -68,7 +71,6 @@ export async function PUT(
     if (name !== undefined) updateData.name = name
     if (base_url !== undefined) updateData.base_url = base_url
     if (usage !== undefined) updateData.usage = usage as LLMUsage
-    if (is_enabled !== undefined) updateData.is_enabled = is_enabled
 
     // 只有当 api_key 存在且不包含 *** 时才更新（简单的掩码检查）
     // 或者前端约定：不修改就不传 api_key
@@ -103,8 +105,8 @@ export async function PUT(
   }
 }
 
-export async function DELETE(
-  _request: NextRequest,
+export async function PATCH(
+  request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
@@ -114,15 +116,29 @@ export async function DELETE(
     }
 
     const { id } = await params
+    const body = await request.json()
+    const validation = patchLLMConfigSchema.safeParse(body)
 
-    await prisma.llm_configs.delete({
+    if (!validation.success) {
+      return NextResponse.json(
+        { error: "Validation error", details: validation.error.format() },
+        { status: 400 }
+      )
+    }
+
+    const { is_enabled } = validation.data
+
+    const updatedConfig = await prisma.llm_configs.update({
       where: { id: BigInt(id) },
+      data: { is_enabled },
     })
 
-    return NextResponse.json({ success: true })
+    return NextResponse.json({
+      id: String(updatedConfig.id),
+      is_enabled: updatedConfig.is_enabled,
+    })
   } catch (error) {
-    console.error("Delete LLM config error:", error)
-    // Prisma record not found error code is P2025
+    console.error("Patch LLM config error:", error)
     if (
       error instanceof Prisma.PrismaClientKnownRequestError &&
       error.code === "P2025"

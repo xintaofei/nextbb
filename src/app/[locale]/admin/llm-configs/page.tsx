@@ -7,16 +7,6 @@ import { toast } from "sonner"
 
 import { AdminPageContainer } from "@/components/admin/layout/admin-page-container"
 import { AdminPageSection } from "@/components/admin/layout/admin-page-section"
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog"
 
 import { LLMConfigCards } from "@/components/admin/cards/llm-config-cards"
 import { LLMConfigDialog } from "@/components/admin/dialogs/llm-config-dialog"
@@ -41,11 +31,6 @@ export default function LLMConfigsPage() {
     undefined
   )
 
-  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
-  const [configToDelete, setConfigToDelete] = useState<LLMConfigDTO | null>(
-    null
-  )
-
   const handleConfigure = useCallback(
     (usage: string, config: LLMConfigDTO | null) => {
       setEditingConfig(config || undefined)
@@ -55,28 +40,26 @@ export default function LLMConfigsPage() {
     []
   )
 
-  const handleDeleteClick = useCallback((config: LLMConfigDTO) => {
-    setConfigToDelete(config)
-    setDeleteDialogOpen(true)
-  }, [])
-
-  const handleConfirmDelete = async () => {
-    if (!configToDelete) return
-
+  const handleToggleEnabled = async (
+    config: LLMConfigDTO,
+    enabled: boolean
+  ) => {
     try {
-      const res = await fetch(`/api/admin/llm-configs/${configToDelete.id}`, {
-        method: "DELETE",
+      const res = await fetch(`/api/admin/llm-configs/${config.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          is_enabled: enabled,
+        }),
       })
 
-      if (!res.ok) throw new Error("Failed to delete")
+      if (!res.ok) throw new Error("Failed to update")
 
-      toast.success(t("message.deleteSuccess"))
+      toast.success(t("message.updateSuccess"))
       mutate()
     } catch {
-      toast.error(t("message.deleteError"))
-    } finally {
-      setDeleteDialogOpen(false)
-      setConfigToDelete(null)
+      toast.error(t("message.updateError"))
+      // Revert optimistic update if we implemented it, but here we just rely on SWR revalidation
     }
   }
 
@@ -144,7 +127,7 @@ export default function LLMConfigsPage() {
           <LLMConfigCards
             data={tableData}
             onConfigure={handleConfigure}
-            onDelete={handleDeleteClick}
+            onToggleEnabled={handleToggleEnabled}
           />
         )}
       </div>
@@ -156,26 +139,6 @@ export default function LLMConfigsPage() {
         defaultUsage={defaultUsage}
         onSubmit={handleSubmit}
       />
-
-      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>{t("deleteConfirm.title")}</AlertDialogTitle>
-            <AlertDialogDescription>
-              {t("deleteConfirm.description")}
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>{t("deleteConfirm.cancel")}</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={handleConfirmDelete}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-            >
-              {t("deleteConfirm.confirm")}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
     </AdminPageContainer>
   )
 }

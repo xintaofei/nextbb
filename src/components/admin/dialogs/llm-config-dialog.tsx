@@ -18,7 +18,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { Switch } from "@/components/ui/switch"
 import { LLMConfigDTO, LLMConfigFormData } from "@/types/llm"
 
 type LLMConfigDialogProps = {
@@ -161,17 +160,6 @@ export function LLMConfigDialog({
                 placeholder={config ? t("dialog.apiKeyPlaceholder") : ""}
                 required={!config} // Required only when creating
                 maxLength={255}
-              />
-            </div>
-
-            <div className="flex items-center justify-between space-y-2">
-              <Label htmlFor="is_enabled">{t("dialog.isEnabled")}</Label>
-              <Switch
-                id="is_enabled"
-                checked={formData.is_enabled}
-                onCheckedChange={(checked) =>
-                  setFormData({ ...formData, is_enabled: checked })
-                }
               />
             </div>
           </div>
