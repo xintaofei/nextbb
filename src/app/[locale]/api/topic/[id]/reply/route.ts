@@ -7,7 +7,8 @@ import { generateId } from "@/lib/id"
 import { TopicType } from "@/types/topic-type"
 import { notifyMentions, notifyReply } from "@/lib/notification-service"
 import { emitPostReplyEvent } from "@/lib/automation/events"
-import { Prisma } from "@prisma/client"
+import { Prisma, TranslationEntityType } from "@prisma/client"
+import { createTranslationTasks } from "@/lib/services/translation-task"
 
 const ReplyCreateSchema = z.object({
   content: z.string().min(1),
@@ -300,6 +301,9 @@ export async function POST(
       topicType: topic.type,
       isFirstReply: !previousReply,
     })
+
+    // 4. Create translation tasks
+    await createTranslationTasks(TranslationEntityType.POST, postId, locale, 1)
   } catch (error) {
     console.error("Failed to process reply creation side effects:", error)
   }

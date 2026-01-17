@@ -3,6 +3,9 @@ import { prisma } from "@/lib/prisma"
 import { z } from "zod"
 import { getSessionUser } from "@/lib/auth"
 
+import { createTranslationTasks } from "@/lib/services/translation-task"
+import { TranslationEntityType } from "@prisma/client"
+
 const PostUpdateSchema = z.object({
   content: z.string().min(1),
   content_html: z.string(),
@@ -48,6 +51,18 @@ export async function PATCH(
 
   const sourceLocale = post.source_locale || "zh"
 
+  // Get current translation version
+  const currentTranslation = await prisma.post_translations.findUnique({
+    where: {
+      post_id_locale: {
+        post_id: postId,
+        locale: sourceLocale,
+      },
+    },
+    select: { version: true },
+  })
+  const newVersion = (currentTranslation?.version || 0) + 1
+
   await prisma.posts.update({
     where: { id: postId },
     data: {
@@ -62,6 +77,7 @@ export async function PATCH(
           },
           update: {
             content_html: body.content_html,
+            version: newVersion,
           },
           create: {
             locale: sourceLocale,
@@ -74,6 +90,13 @@ export async function PATCH(
     },
     select: { id: true },
   })
+
+  await createTranslationTasks(
+    TranslationEntityType.POST,
+    postId,
+    sourceLocale,
+    newVersion
+  )
 
   return NextResponse.json({ ok: true }, { status: 200 })
 }

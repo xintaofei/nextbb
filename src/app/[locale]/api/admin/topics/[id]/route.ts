@@ -4,6 +4,8 @@ import { getSessionUser } from "@/lib/auth"
 import { getLocale } from "next-intl/server"
 import { getTranslationsQuery } from "@/lib/locale"
 import { getTopicTitle } from "@/lib/topic-translation"
+import { createTranslationTasks } from "@/lib/services/translation-task"
+import { TranslationEntityType } from "@prisma/client"
 
 type TopicDetail = {
   id: string
@@ -218,6 +220,18 @@ export async function PATCH(
       return NextResponse.json({ error: "Topic not found" }, { status: 404 })
     }
 
+    // Get current translation version
+    const currentTranslation = await prisma.topic_translations.findUnique({
+      where: {
+        topic_id_locale: {
+          topic_id: topicId,
+          locale: topic.source_locale || "zh",
+        },
+      },
+      select: { version: true },
+    })
+    const newVersion = (currentTranslation?.version || 0) + 1
+
     // 验证标题
     if (
       title !== undefined &&
@@ -304,12 +318,13 @@ export async function PATCH(
               locale: topic.source_locale || "zh",
             },
           },
-          update: { title },
+          update: { title, version: newVersion },
           create: {
             topic_id: topicId,
             locale: topic.source_locale || "zh",
             title,
             is_source: true,
+            version: 1,
           },
         })
       }
@@ -341,6 +356,15 @@ export async function PATCH(
         }
       }
     })
+
+    if (title !== undefined) {
+      await createTranslationTasks(
+        TranslationEntityType.TOPIC,
+        topicId,
+        topic.source_locale || "zh",
+        newVersion
+      )
+    }
 
     return NextResponse.json({ success: true })
   } catch (error) {

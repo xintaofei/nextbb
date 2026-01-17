@@ -12,6 +12,8 @@ import { getTranslationsQuery, getTranslationFields } from "@/lib/locale"
 import { getTopicTitle, getPostHtml } from "@/lib/topic-translation"
 import { notifyMentions } from "@/lib/notification-service"
 import { emitPostCreateEvent } from "@/lib/automation/events"
+import { createTranslationTasks } from "@/lib/services/translation-task"
+import { TranslationEntityType } from "@prisma/client"
 
 interface TopicsDelegate {
   create(args: unknown): Promise<{ id: bigint }>
@@ -692,6 +694,20 @@ export async function POST(req: Request) {
         content: body.content,
         isFirstPost: true,
       })
+
+      // 3. Create translation tasks
+      await createTranslationTasks(
+        TranslationEntityType.TOPIC,
+        topicId,
+        locale,
+        1
+      )
+      await createTranslationTasks(
+        TranslationEntityType.POST,
+        postId,
+        locale,
+        1
+      )
     } catch (error) {
       console.error("Failed to process topic creation side effects:", error)
     }
