@@ -38,7 +38,7 @@ const LLMConfigCardItem = memo(function LLMConfigCardItem({
   return (
     <Card
       className={cn(
-        "flex flex-col transition-all hover:shadow-md",
+        "flex flex-col transition-all shadow-none hover:shadow-md",
         !config && "border-dashed opacity-80 hover:opacity-100"
       )}
     >
