@@ -1,28 +1,35 @@
 import { RedisStreamBus } from "@/lib/redis/stream-bus"
+import { TranslationEntityType, TranslationTaskPriority } from "@prisma/client"
 
 /**
- * 翻译任务事件定义
+ * 基础翻译创建事件
  */
-export interface TranslationTaskEventData {
-  taskId: string
-  content: string
-  targetLanguage: string
-  priority?: number
+export interface BaseTranslationCreatedEvent {
+  taskId: bigint
+  entityId: bigint
+  targetLocale: string
+  priority?: TranslationTaskPriority
 }
 
-export interface TranslationResultEventData {
-  taskId: string
-  result: string
-  originalContent: string
-}
+/**
+ * 特定实体类型的翻译事件
+ */
+export type TranslationCategoryCreatedEvent = BaseTranslationCreatedEvent
+export type TranslationTagCreatedEvent = BaseTranslationCreatedEvent
+export type TranslationBadgeCreatedEvent = BaseTranslationCreatedEvent
+export type TranslationTopicCreatedEvent = BaseTranslationCreatedEvent
+export type TranslationPostCreatedEvent = BaseTranslationCreatedEvent
 
 /**
  * 翻译系统事件映射
  */
 export interface TranslationEventMap extends Record<string, unknown> {
-  "translation:task:created": TranslationTaskEventData
-  "translation:task:completed": TranslationResultEventData
-  "translation:task:failed": { taskId: string; error: string }
+  // 按实体类型区分
+  category: TranslationCategoryCreatedEvent
+  tag: TranslationTagCreatedEvent
+  badge: TranslationBadgeCreatedEvent
+  topic: TranslationTopicCreatedEvent
+  post: TranslationPostCreatedEvent
 }
 
 /**
@@ -56,13 +63,26 @@ export const translationBus = globalForTranslation.translationBusState.bus
  * 辅助函数示例
  */
 export const TranslationEvents = {
-  createTask: async (data: TranslationTaskEventData) => {
-    await translationBus.emit("translation:task:created", data)
-  },
-
-  onTaskCreated: (
-    handler: (data: TranslationTaskEventData) => Promise<void>
+  createTask: async (
+    entityType: TranslationEntityType,
+    data: BaseTranslationCreatedEvent
   ) => {
-    translationBus.on("translation:task:created", handler)
+    switch (entityType) {
+      case TranslationEntityType.CATEGORY:
+        await translationBus.emit("category", data)
+        break
+      case TranslationEntityType.TAG:
+        await translationBus.emit("tag", data)
+        break
+      case TranslationEntityType.BADGE:
+        await translationBus.emit("badge", data)
+        break
+      case TranslationEntityType.TOPIC:
+        await translationBus.emit("topic", data)
+        break
+      case TranslationEntityType.POST:
+        await translationBus.emit("post", data)
+        break
+    }
   },
 }

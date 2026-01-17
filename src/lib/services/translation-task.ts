@@ -5,6 +5,7 @@ import {
   TranslationTaskPriority,
 } from "@prisma/client"
 import { generateId } from "@/lib/id"
+import { TranslationEvents } from "@/lib/translation/event-bus"
 
 /**
  * 创建或更新翻译任务
@@ -57,6 +58,7 @@ export async function createTranslationTasks(
       target_locale: { in: targetLocales },
     },
     select: {
+      id: true,
       target_locale: true,
     },
   })
@@ -83,6 +85,16 @@ export async function createTranslationTasks(
         updated_at: new Date(),
       },
     })
+
+    // 触发事件
+    for (const task of existingTasks) {
+      await TranslationEvents.createTask(entityType, {
+        taskId: task.id,
+        entityId: entityId,
+        targetLocale: task.target_locale,
+        priority: TranslationTaskPriority.NORMAL,
+      })
+    }
   }
 
   // 5. 创建新任务
@@ -102,5 +114,15 @@ export async function createTranslationTasks(
     await prisma.translation_tasks.createMany({
       data: newTasks,
     })
+
+    // 触发事件
+    for (const task of newTasks) {
+      await TranslationEvents.createTask(entityType, {
+        taskId: task.id,
+        entityId: entityId,
+        targetLocale: task.target_locale,
+        priority: task.priority,
+      })
+    }
   }
 }
