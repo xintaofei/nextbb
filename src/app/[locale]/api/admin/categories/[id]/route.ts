@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
 import { getSessionUser } from "@/lib/auth"
+import { createTranslationTasks } from "@/lib/services/translation-task"
+import { TranslationEntityType } from "@prisma/client"
 
 type CategoryDTO = {
   id: string
@@ -170,6 +172,7 @@ export async function PATCH(
             select: {
               name: true,
               description: true,
+              version: true,
             },
             take: 1,
           },
@@ -184,6 +187,16 @@ export async function PATCH(
 
     if (!result) {
       return NextResponse.json({ error: "Category not found" }, { status: 404 })
+    }
+
+    // 如果更新了源语言翻译，创建翻译任务
+    if (hasTranslationUpdate && result.translations[0]) {
+      await createTranslationTasks(
+        TranslationEntityType.CATEGORY,
+        result.id,
+        result.source_locale,
+        result.translations[0].version
+      )
     }
 
     const translation = result.translations[0]
@@ -214,12 +227,12 @@ export async function PATCH(
 
 // DELETE - 软删除分类
 export async function DELETE(
-  request: NextRequest,
+  _: NextRequest,
   context: { params: Promise<{ id: string }> }
 ) {
   try {
     const auth = await getSessionUser()
-    if (!auth) {
+    if (!auth || !auth.isAdmin) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 

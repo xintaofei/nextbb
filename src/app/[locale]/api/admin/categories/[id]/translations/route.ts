@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
 import { getSessionUser } from "@/lib/auth"
 import { Locale, routing } from "@/i18n/routing"
+import { createTranslationTasks } from "@/lib/services/translation-task"
+import { TranslationEntityType } from "@prisma/client"
 
 // GET - 获取分类的所有翻译信息
 export async function GET(
@@ -10,7 +12,7 @@ export async function GET(
 ) {
   try {
     const auth = await getSessionUser()
-    if (!auth) {
+    if (!auth || !auth.isAdmin) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
@@ -93,7 +95,7 @@ export async function PUT(
 ) {
   try {
     const auth = await getSessionUser()
-    if (!auth) {
+    if (!auth || !auth.isAdmin) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
@@ -139,6 +141,7 @@ export async function PUT(
     }
 
     const isSource = category.source_locale === locale
+    let newVersion = 0
 
     const existing = await prisma.category_translations.findUnique({
       where: {
@@ -150,6 +153,7 @@ export async function PUT(
     })
 
     if (existing) {
+      newVersion = existing.version + 1
       await prisma.category_translations.update({
         where: {
           category_id_locale: {
@@ -160,7 +164,7 @@ export async function PUT(
         data: {
           name,
           description: description || null,
-          version: existing.version + 1,
+          version: newVersion,
           is_source: isSource,
         },
       })
@@ -172,9 +176,18 @@ export async function PUT(
           name,
           description: description || null,
           is_source: isSource,
-          version: 0,
+          version: newVersion,
         },
       })
+    }
+
+    if (isSource) {
+      await createTranslationTasks(
+        TranslationEntityType.CATEGORY,
+        categoryId,
+        locale,
+        newVersion
+      )
     }
 
     return NextResponse.json({ success: true })

@@ -41,7 +41,7 @@ function validateColor(color: string | null): boolean {
 export async function GET(request: NextRequest) {
   try {
     const auth = await getSessionUser()
-    if (!auth) {
+    if (!auth || !auth.isAdmin) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
@@ -161,7 +161,7 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const auth = await getSessionUser()
-    if (!auth) {
+    if (!auth || !auth.isAdmin) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
