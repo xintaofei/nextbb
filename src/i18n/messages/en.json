@@ -678,6 +678,7 @@
       "badges": "Badges",
       "translationTasks": "Translation Tasks",
       "automationRules": "Automation Rules",
+      "llmConfigs": "LLM Configs",
       "settings": "Settings"
     },
     "translationDialog": {
@@ -1804,6 +1805,61 @@
       "taskPendingOrProcessing": "Task is pending or processing",
       "taskNotPending": "Task is not pending",
       "invalidIds": "Invalid IDs"
+    }
+  },
+  "AdminLLMConfigs": {
+    "title": "LLM Configurations",
+    "description": "Manage Large Language Model configurations",
+    "createButton": "Create Config",
+    "searchPlaceholder": "Search config name",
+    "table": {
+      "name": "Name",
+      "interfaceMode": "Interface Mode",
+      "baseUrl": "Base URL",
+      "apiKey": "API Key",
+      "usage": "Usage",
+      "status": "Status",
+      "actions": "Actions",
+      "edit": "Edit",
+      "delete": "Delete",
+      "enabled": "Enabled",
+      "disabled": "Disabled",
+      "notConfigured": "Not Configured",
+      "noConfig": "No configuration set",
+      "configure": "Configure"
+    },
+    "usages": {
+      "TRANSLATION": "Translation",
+      "CHAT": "Chat",
+      "SUMMARIZATION": "Summarization"
+    },
+    "dialog": {
+      "title": "LLM Configuration",
+      "createTitle": "Create LLM Config",
+      "editTitle": "Edit LLM Config",
+      "interfaceMode": "Interface Mode",
+      "name": "Name",
+      "baseUrl": "Base URL",
+      "apiKey": "API Key",
+      "apiKeyPlaceholder": "Leave empty to keep existing key",
+      "usage": "Usage",
+      "isEnabled": "Enabled",
+      "cancel": "Cancel",
+      "submit": "Submit"
+    },
+    "deleteConfirm": {
+      "title": "Confirm Delete",
+      "description": "Are you sure you want to delete this configuration? This action cannot be undone.",
+      "cancel": "Cancel",
+      "confirm": "Delete"
+    },
+    "message": {
+      "createSuccess": "Config created successfully",
+      "updateSuccess": "Config updated successfully",
+      "deleteSuccess": "Config deleted successfully",
+      "createError": "Failed to create config",
+      "updateError": "Failed to update config",
+      "deleteError": "Failed to delete config"
     }
   },
   "AdminAutomationRules": {

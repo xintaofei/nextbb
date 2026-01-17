@@ -678,6 +678,7 @@
       "badges": "徽章",
       "translationTasks": "翻译任务",
       "automationRules": "自动化规则",
+      "llmConfigs": "大模型配置",
       "settings": "系统配置"
     },
     "translationDialog": {
@@ -1804,6 +1805,61 @@
       "taskPendingOrProcessing": "任务正在等待或进行中",
       "taskNotPending": "任务不在等待中",
       "invalidIds": "无效的 ID 列表"
+    }
+  },
+  "AdminLLMConfigs": {
+    "title": "大模型配置",
+    "description": "管理大语言模型配置信息",
+    "createButton": "新建配置",
+    "searchPlaceholder": "搜索配置名称",
+    "table": {
+      "name": "名称",
+      "interfaceMode": "接口模式",
+      "baseUrl": "接口地址",
+      "apiKey": "密钥",
+      "usage": "用途",
+      "status": "状态",
+      "actions": "操作",
+      "edit": "编辑",
+      "delete": "删除",
+      "enabled": "启用",
+      "disabled": "禁用",
+      "notConfigured": "未配置",
+      "noConfig": "暂无配置",
+      "configure": "去配置"
+    },
+    "usages": {
+      "TRANSLATION": "翻译",
+      "CHAT": "聊天",
+      "SUMMARIZATION": "摘要"
+    },
+    "dialog": {
+      "title": "大模型配置",
+      "createTitle": "新建配置",
+      "editTitle": "编辑配置",
+      "interfaceMode": "接口模式",
+      "name": "名称",
+      "baseUrl": "接口地址",
+      "apiKey": "密钥",
+      "apiKeyPlaceholder": "留空则保留原有密钥",
+      "usage": "用途",
+      "isEnabled": "启用",
+      "cancel": "取消",
+      "submit": "提交"
+    },
+    "deleteConfirm": {
+      "title": "确认删除",
+      "description": "确定要删除此配置吗？此操作无法撤销。",
+      "cancel": "取消",
+      "confirm": "删除"
+    },
+    "message": {
+      "createSuccess": "配置创建成功",
+      "updateSuccess": "配置更新成功",
+      "deleteSuccess": "配置删除成功",
+      "createError": "配置创建失败",
+      "updateError": "配置更新失败",
+      "deleteError": "配置删除失败"
     }
   },
   "AdminAutomationRules": {

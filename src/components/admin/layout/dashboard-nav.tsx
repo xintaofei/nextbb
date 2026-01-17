@@ -12,6 +12,7 @@ import {
   Settings,
   Workflow,
   Languages,
+  Bot,
 } from "lucide-react"
 import { useState } from "react"
 import Link from "next/link"
@@ -38,6 +39,11 @@ export function DashboardNav() {
       label: t("automationRules"),
       icon: Workflow,
       path: "/admin/automation-rules",
+    },
+    {
+      label: t("llmConfigs"),
+      icon: Bot,
+      path: "/admin/llm-configs",
     },
     { label: t("settings"), icon: Settings, path: "/admin/settings" },
   ]
