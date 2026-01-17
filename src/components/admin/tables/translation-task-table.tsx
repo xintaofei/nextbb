@@ -293,26 +293,28 @@ export function TranslationTaskTable({
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
-                        {task.status !== "PENDING" &&
-                          task.status !== "PROCESSING" && (
-                            <DropdownMenuItem
-                              onClick={() => onRetry(task.id)}
-                              disabled={isRetrying === task.id}
-                            >
-                              {isRetrying === task.id ? (
-                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                              ) : (
-                                <RotateCcw className="mr-2 h-4 w-4" />
-                              )}
-                              {t("table.action.retry")}
-                            </DropdownMenuItem>
+                        <DropdownMenuItem
+                          onClick={() => onRetry(task.id)}
+                          disabled={
+                            isRetrying === task.id ||
+                            task.status === "PENDING" ||
+                            task.status === "PROCESSING"
+                          }
+                        >
+                          {isRetrying === task.id ? (
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          ) : (
+                            <RotateCcw className="mr-2 h-4 w-4" />
                           )}
-                        {task.status === "PENDING" && (
-                          <DropdownMenuItem onClick={() => onCancel(task.id)}>
-                            <Ban className="mr-2 h-4 w-4" />
-                            {t("table.action.cancel")}
-                          </DropdownMenuItem>
-                        )}
+                          {t("table.action.retry")}
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                          onClick={() => onCancel(task.id)}
+                          disabled={task.status !== "PENDING"}
+                        >
+                          <Ban className="mr-2 h-4 w-4" />
+                          {t("table.action.cancel")}
+                        </DropdownMenuItem>
                         <DropdownMenuItem
                           onClick={() => onDelete(task.id)}
                           className="text-destructive focus:text-destructive"
