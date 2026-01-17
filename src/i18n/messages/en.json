@@ -1577,7 +1577,7 @@
     "preferences": {
       "title": "Settings",
       "account": {
-        "title": "Account Settings",
+        "title": "Account",
         "description": "Manage your account information and profile",
         "basicInfo": "Basic Information",
         "username": "Username",
@@ -1609,16 +1609,16 @@
         "usernameChecking": "Checking username availability..."
       },
       "security": {
-        "title": "Security Settings"
+        "title": "Security"
       },
       "interface": {
-        "title": "Interface Settings"
+        "title": "Interface"
       },
       "notifications": {
-        "title": "Notification Preferences"
+        "title": "Notification"
       },
       "privacy": {
-        "title": "Privacy Settings"
+        "title": "Privacy"
       }
     }
   },
