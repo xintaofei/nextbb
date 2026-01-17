@@ -191,7 +191,7 @@ export function TranslationTaskTable({
                   <TableCell>
                     <div className="flex flex-col">
                       <span className="font-medium text-sm">
-                        {task.entityType}
+                        {t(`entityType.${task.entityType.toLowerCase()}`)}
                       </span>
                       <span className="text-xs text-foreground/40">
                         ID: {task.entityId}

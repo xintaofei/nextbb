@@ -1729,6 +1729,13 @@
       "low": "低",
       "lowest": "最低"
     },
+    "entityType": {
+      "category": "分类",
+      "tag": "标签",
+      "badge": "徽章",
+      "topic": "话题",
+      "post": "帖子"
+    },
     "filter": {
       "title": "筛选",
       "entityType": {

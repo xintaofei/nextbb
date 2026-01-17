@@ -228,7 +228,7 @@ export default function AdminTranslationTasksPage() {
                 </SelectItem>
                 {entityTypeOptions.map((e) => (
                   <SelectItem key={e} value={e}>
-                    {e}
+                    {t(`entityType.${e.toLowerCase()}`)}
                   </SelectItem>
                 ))}
               </SelectContent>

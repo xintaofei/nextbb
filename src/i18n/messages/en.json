@@ -1717,6 +1717,13 @@
       "low": "Low",
       "lowest": "Lowest"
     },
+    "entityType": {
+      "category": "Category",
+      "tag": "Tag",
+      "badge": "Badge",
+      "topic": "Topic",
+      "post": "Post"
+    },
     "filter": {
       "title": "Filter",
       "entityType": {
