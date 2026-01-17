@@ -13,7 +13,7 @@ export async function DELETE(request: NextRequest) {
   try {
     const t = await getTranslations("AdminTranslationTasks.error")
     const auth = await getSessionUser()
-    if (!auth) {
+    if (!auth || !auth.isAdmin) {
       return NextResponse.json({ error: t("unauthorized") }, { status: 401 })
     }
 
@@ -45,7 +45,7 @@ export async function PATCH(request: NextRequest) {
   try {
     const t = await getTranslations("AdminTranslationTasks.error")
     const auth = await getSessionUser()
-    if (!auth) {
+    if (!auth || !auth.isAdmin) {
       return NextResponse.json({ error: t("unauthorized") }, { status: 401 })
     }
 

@@ -65,6 +65,98 @@ interface TranslationTaskRowProps {
   isRetrying: boolean
 }
 
+const StatusBadge = ({ status }: { status: TranslationTaskStatus }) => {
+  const t = useTranslations("AdminTranslationTasks")
+  switch (status) {
+    case "COMPLETED":
+      return (
+        <Badge variant="default" className="bg-green-500 hover:bg-green-600">
+          <CheckCircle2 className="h-3 w-3 mr-1" />
+          {t("status.completed")}
+        </Badge>
+      )
+    case "FAILED":
+      return (
+        <Badge variant="destructive">
+          <XCircle className="h-3 w-3 mr-1" />
+          {t("status.failed")}
+        </Badge>
+      )
+    case "PROCESSING":
+      return (
+        <Badge
+          variant="secondary"
+          className="bg-blue-500/20 text-blue-600 dark:text-blue-400"
+        >
+          <Loader2 className="h-3 w-3 mr-1 animate-spin" />
+          {t("status.processing")}
+        </Badge>
+      )
+    case "PENDING":
+      return (
+        <Badge variant="outline" className="text-foreground/60">
+          <Clock className="h-3 w-3 mr-1" />
+          {t("status.pending")}
+        </Badge>
+      )
+    case "CANCELLED":
+      return (
+        <Badge variant="outline" className="text-foreground/40">
+          {t("status.cancelled")}
+        </Badge>
+      )
+    default:
+      return <Badge variant="outline">{status}</Badge>
+  }
+}
+
+const PriorityBadge = ({ priority }: { priority: TranslationTaskPriority }) => {
+  const t = useTranslations("AdminTranslationTasks")
+  switch (priority) {
+    case "URGENT":
+      return (
+        <Badge variant="destructive" className="h-5 text-[10px] px-1.5">
+          {t("priority.urgent")}
+        </Badge>
+      )
+    case "HIGH":
+      return (
+        <Badge
+          variant="secondary"
+          className="h-5 text-[10px] px-1.5 bg-orange-500/20 text-orange-600"
+        >
+          {t("priority.high")}
+        </Badge>
+      )
+    case "NORMAL":
+      return (
+        <Badge variant="outline" className="h-5 text-[10px] px-1.5">
+          {t("priority.normal")}
+        </Badge>
+      )
+    case "LOW":
+      return (
+        <Badge
+          variant="outline"
+          className="h-5 text-[10px] px-1.5 text-foreground/60"
+        >
+          {t("priority.low")}
+        </Badge>
+      )
+    case "LOWEST":
+      return (
+        <Badge
+          variant="outline"
+          className="h-5 text-[10px] px-1.5 text-foreground/40"
+        >
+          {t("priority.lowest")}
+        </Badge>
+      )
+    default:
+      return null
+  }
+}
+
 const TranslationTaskRow = memo(
   ({
     task,
@@ -76,99 +168,6 @@ const TranslationTaskRow = memo(
     isRetrying,
   }: TranslationTaskRowProps) => {
     const t = useTranslations("AdminTranslationTasks")
-
-    const getStatusBadge = (status: TranslationTaskStatus) => {
-      switch (status) {
-        case "COMPLETED":
-          return (
-            <Badge
-              variant="default"
-              className="bg-green-500 hover:bg-green-600"
-            >
-              <CheckCircle2 className="h-3 w-3 mr-1" />
-              {t("status.completed")}
-            </Badge>
-          )
-        case "FAILED":
-          return (
-            <Badge variant="destructive">
-              <XCircle className="h-3 w-3 mr-1" />
-              {t("status.failed")}
-            </Badge>
-          )
-        case "PROCESSING":
-          return (
-            <Badge
-              variant="secondary"
-              className="bg-blue-500/20 text-blue-600 dark:text-blue-400"
-            >
-              <Loader2 className="h-3 w-3 mr-1 animate-spin" />
-              {t("status.processing")}
-            </Badge>
-          )
-        case "PENDING":
-          return (
-            <Badge variant="outline" className="text-foreground/60">
-              <Clock className="h-3 w-3 mr-1" />
-              {t("status.pending")}
-            </Badge>
-          )
-        case "CANCELLED":
-          return (
-            <Badge variant="outline" className="text-foreground/40">
-              {t("status.cancelled")}
-            </Badge>
-          )
-        default:
-          return <Badge variant="outline">{status}</Badge>
-      }
-    }
-
-    const getPriorityBadge = (priority: TranslationTaskPriority) => {
-      switch (priority) {
-        case "URGENT":
-          return (
-            <Badge variant="destructive" className="h-5 text-[10px] px-1.5">
-              {t("priority.urgent")}
-            </Badge>
-          )
-        case "HIGH":
-          return (
-            <Badge
-              variant="secondary"
-              className="h-5 text-[10px] px-1.5 bg-orange-500/20 text-orange-600"
-            >
-              {t("priority.high")}
-            </Badge>
-          )
-        case "NORMAL":
-          return (
-            <Badge variant="outline" className="h-5 text-[10px] px-1.5">
-              {t("priority.normal")}
-            </Badge>
-          )
-        case "LOW":
-          return (
-            <Badge
-              variant="outline"
-              className="h-5 text-[10px] px-1.5 text-foreground/60"
-            >
-              {t("priority.low")}
-            </Badge>
-          )
-        case "LOWEST":
-          return (
-            <Badge
-              variant="outline"
-              className="h-5 text-[10px] px-1.5 text-foreground/40"
-            >
-              {t("priority.lowest")}
-            </Badge>
-          )
-        default:
-          return null
-      }
-    }
 
     return (
       <TableRow
@@ -201,7 +200,7 @@ const TranslationTaskRow = memo(
         </TableCell>
         <TableCell>
           <div className="flex items-center gap-2">
-            {getStatusBadge(task.status)}
+            <StatusBadge status={task.status} />
             {task.errorMessage && (
               <TooltipProvider>
                 <Tooltip>
@@ -216,7 +215,9 @@ const TranslationTaskRow = memo(
             )}
           </div>
         </TableCell>
-        <TableCell>{getPriorityBadge(task.priority)}</TableCell>
+        <TableCell>
+          <PriorityBadge priority={task.priority} />
+        </TableCell>
         <TableCell>
           <span className="text-sm text-foreground/60">{task.retryCount}</span>
         </TableCell>
@@ -281,7 +282,7 @@ TranslationTaskRow.displayName = "TranslationTaskRow"
 interface TranslationTaskTableProps {
   tasks: TranslationTaskItem[]
   selectedIds: string[]
-  onSelectionChange: (ids: string[]) => void
+  onSelectionChange: (ids: string[] | ((prev: string[]) => string[])) => void
   onRetry: (id: string) => void
   onCancel: (id: string) => void
   onDelete: (id: string) => void
@@ -302,22 +303,26 @@ export function TranslationTaskTable({
   const t = useTranslations("AdminTranslationTasks")
 
   const toggleSelectAll = useCallback(() => {
-    if (selectedIds.length === tasks.length) {
-      onSelectionChange([])
-    } else {
-      onSelectionChange(tasks.map((task) => task.id))
-    }
-  }, [selectedIds.length, tasks, onSelectionChange])
+    onSelectionChange((prev) => {
+      if (prev.length === tasks.length) {
+        return []
+      } else {
+        return tasks.map((task) => task.id)
+      }
+    })
+  }, [tasks, onSelectionChange])
 
   const toggleSelect = useCallback(
     (id: string) => {
-      if (selectedIds.includes(id)) {
-        onSelectionChange(selectedIds.filter((i) => i !== id))
-      } else {
-        onSelectionChange([...selectedIds, id])
-      }
+      onSelectionChange((prev) => {
+        if (prev.includes(id)) {
+          return prev.filter((i) => i !== id)
+        } else {
+          return [...prev, id]
+        }
+      })
     },
-    [selectedIds, onSelectionChange]
+    [onSelectionChange]
   )
 
   return (
