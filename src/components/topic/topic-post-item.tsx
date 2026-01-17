@@ -37,9 +37,14 @@ const SubReplyItem = memo(function SubReplyItem({
 }) {
   return (
     <TimelineStepsItem size="sm">
-      <TimelineStepsConnector size="sm" />
-      {idx == 0 && <TimelineStepsConnector size="top" />}
-      <TimelineStepsIcon size="sm" className="overflow-hidden p-0">
+      <TimelineStepsConnector size="sm" className="max-sm:hidden" />
+      {idx == 0 && (
+        <TimelineStepsConnector size="top" className="max-sm:hidden" />
+      )}
+      <TimelineStepsIcon
+        size="sm"
+        className="overflow-hidden p-0 max-sm:hidden"
+      >
         <UserInfoCard
           userId={sub.author.id}
           userName={sub.author.name}
