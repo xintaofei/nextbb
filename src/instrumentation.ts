@@ -8,10 +8,17 @@ export async function register() {
   if (process.env.NEXT_RUNTIME === "nodejs") {
     const { initializeAutomationSystem } =
       await import("@/lib/automation/index")
+    const { initializeTranslationSystem } =
+      await import("@/lib/translation/index")
+
     try {
-      await initializeAutomationSystem()
+      // 并行初始化
+      await Promise.all([
+        initializeAutomationSystem(),
+        initializeTranslationSystem(),
+      ])
     } catch (error) {
-      console.error("[Instrumentation] 自动化规则系统初始化失败:", error)
+      console.error("[Instrumentation] 系统初始化失败:", error)
     }
   }
 }

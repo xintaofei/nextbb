@@ -68,8 +68,9 @@ export async function initializeAutomationSystem(): Promise<void> {
       await CronManager.initialize()
 
       state.isInitialized = true
+      console.log("[Automation] System initialized successfully")
     } catch (error) {
-      console.error("[Automation] 初始化失败:", error)
+      console.error("[Automation] System initialization failed:", error)
       state.initializationPromise = null
       throw error
     }
