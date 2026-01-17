@@ -22,7 +22,7 @@ export type BadgeItem = {
 export type UserBadgesDisplayProps = {
   badges: BadgeItem[]
   maxDisplay?: number
-  size?: "sm" | "md" | "lg"
+  size?: "xs" | "sm" | "md" | "lg"
 }
 
 export const UserBadgesDisplay = memo(UserBadgesDisplayBase)

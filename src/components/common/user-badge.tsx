@@ -15,7 +15,7 @@ export type UserBadgeProps = {
   textColor?: string | null
   level?: number
   className?: string
-  size?: "sm" | "md" | "lg"
+  size?: "xs" | "sm" | "md" | "lg"
   description?: string | null
 }
 

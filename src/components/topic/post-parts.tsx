@@ -37,8 +37,10 @@ import { cn } from "@/lib/utils"
 
 export const PostBadges = memo(function PostBadges({
   post,
+  size = "sm",
 }: {
   post: PostItem
+  size?: "xs" | "sm" | "md" | "lg"
 }) {
   const tCommon = useTranslations("Common")
   const tQuestion = useTranslations("Question")
@@ -46,7 +48,7 @@ export const PostBadges = memo(function PostBadges({
   return (
     <>
       {post.badges && post.badges.length > 0 && (
-        <UserBadgesDisplay badges={post.badges} maxDisplay={1} size="sm" />
+        <UserBadgesDisplay badges={post.badges} maxDisplay={1} size={size} />
       )}
       {post.bountyReward && (
         <Badge
@@ -82,10 +84,12 @@ export const PostHeader = memo(function PostHeader({
   post,
   index,
   floorOpText,
+  size = "sm",
 }: {
   post: PostItem
   index: number
-  floorOpText: string
+  floorOpText: React.ReactNode
+  size?: "xs" | "sm" | "md" | "lg"
 }) {
   const displayAvatar = post.author.avatar || undefined
 
@@ -104,9 +108,9 @@ export const PostHeader = memo(function PostHeader({
           </Avatar>
         </UserInfoCard>
         <TimelineStepsTitle>{post.author.name}</TimelineStepsTitle>
-        <PostBadges post={post} />
+        <PostBadges post={post} size={size} />
       </div>
-      <span className="text-muted-foreground text-sm">
+      <span className={`text-muted-foreground text-${size}`}>
         {index === 0 ? floorOpText : "#" + index}
       </span>
     </div>

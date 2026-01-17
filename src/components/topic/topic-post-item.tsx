@@ -56,12 +56,12 @@ const SubReplyItem = memo(function SubReplyItem({
         </UserInfoCard>
       </TimelineStepsIcon>
       <TimelineStepsContent>
-        <div className="flex items-center justify-between">
-          <span className="text-sm font-medium">{sub.author.name}</span>
-          <span className="text-xs text-muted-foreground">
-            <RelativeTime date={sub.createdAt} />
-          </span>
-        </div>
+        <PostHeader
+          post={sub}
+          index={0}
+          floorOpText={<RelativeTime date={sub.createdAt} />}
+          size="xs"
+        />
         <div className="text-sm text-muted-foreground">
           {sub.contentHtml ? (
             <div className="prose prose-sm dark:prose-invert max-w-none whitespace-normal">
@@ -232,7 +232,10 @@ export const TopicPostItem = memo(function TopicPostItem({
                     />
                     <TimelineStepsContent>
                       <div className="flex flex-col gap-2">
-                        <Skeleton className="h-4 w-20" />
+                        <div className="flex items-center gap-4">
+                          <Skeleton className="h-4 w-12" />
+                          <Skeleton className="h-4 w-20" />
+                        </div>
                         <Skeleton className="h-4 w-full" />
                       </div>
                     </TimelineStepsContent>
