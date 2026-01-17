@@ -8,43 +8,43 @@ datasource db {
 }
 
 model users {
-  id          BigInt   @id @db.BigInt
-  name        String   @db.VarChar(32)
-  avatar      String   @db.VarChar(256)
-  email       String   @db.VarChar(256)
-  password    String   @db.VarChar(255)
-  status      Int
-  is_deleted  Boolean
-  is_admin    Boolean  @default(false)
-  credits     Int      @default(0)
-  bio         String   @default("") @db.VarChar(500)
-  website     String   @default("") @db.VarChar(256)
-  location    String   @default("") @db.VarChar(100)
-  birthday    DateTime?
-  created_at  DateTime @default(now())
-  updated_at  DateTime @updatedAt
+  id         BigInt    @id @db.BigInt
+  name       String    @db.VarChar(32)
+  avatar     String    @db.VarChar(256)
+  email      String    @db.VarChar(256)
+  password   String    @db.VarChar(255)
+  status     Int
+  is_deleted Boolean
+  is_admin   Boolean   @default(false)
+  credits    Int       @default(0)
+  bio        String    @default("") @db.VarChar(500)
+  website    String    @default("") @db.VarChar(256)
+  location   String    @default("") @db.VarChar(100)
+  birthday   DateTime?
+  created_at DateTime  @default(now())
+  updated_at DateTime  @updatedAt
 
-  topics topics[]
-  posts  posts[]
-  post_likes post_likes[] @relation("post_likes_user")
-  post_bookmarks post_bookmarks[] @relation("post_bookmarks_user")
-  user_badges user_badges[] @relation("user_badges_user")
-  awarded_badges user_badges[] @relation("user_badges_awarder")
-  followers user_follows[] @relation("user_follows_following")
-  following user_follows[] @relation("user_follows_follower")
-  conversations_initiated conversations[] @relation("conversations_user1")
-  conversations_received conversations[] @relation("conversations_user2")
-  messages messages[] @relation("messages_sender")
-  poll_votes poll_votes[] @relation("poll_votes_user")
-  lottery_participants lottery_participants[] @relation("lottery_participants_user")
-  lottery_winners lottery_winners[] @relation("lottery_winners_user")
-  bounty_rewards_given bounty_rewards[] @relation("bounty_rewards_giver")
-  bounty_rewards_received bounty_rewards[] @relation("bounty_rewards_receiver")
-  question_acceptances question_acceptances[] @relation("question_acceptances_accepter")
-  checkins user_checkins[] @relation("user_checkins_user")
-  credit_logs user_credit_logs[] @relation("user_credit_logs_user")
-  donations donations[] @relation("donations_user")
-  confirmed_donations donations[] @relation("donations_confirmer")
+  topics                  topics[]
+  posts                   posts[]
+  post_likes              post_likes[]           @relation("post_likes_user")
+  post_bookmarks          post_bookmarks[]       @relation("post_bookmarks_user")
+  user_badges             user_badges[]          @relation("user_badges_user")
+  awarded_badges          user_badges[]          @relation("user_badges_awarder")
+  followers               user_follows[]         @relation("user_follows_following")
+  following               user_follows[]         @relation("user_follows_follower")
+  conversations_initiated conversations[]        @relation("conversations_user1")
+  conversations_received  conversations[]        @relation("conversations_user2")
+  messages                messages[]             @relation("messages_sender")
+  poll_votes              poll_votes[]           @relation("poll_votes_user")
+  lottery_participants    lottery_participants[] @relation("lottery_participants_user")
+  lottery_winners         lottery_winners[]      @relation("lottery_winners_user")
+  bounty_rewards_given    bounty_rewards[]       @relation("bounty_rewards_giver")
+  bounty_rewards_received bounty_rewards[]       @relation("bounty_rewards_receiver")
+  question_acceptances    question_acceptances[] @relation("question_acceptances_accepter")
+  checkins                user_checkins[]        @relation("user_checkins_user")
+  credit_logs             user_credit_logs[]     @relation("user_credit_logs_user")
+  donations               donations[]            @relation("donations_user")
+  confirmed_donations     donations[]            @relation("donations_confirmer")
 
   notifications      notifications[] @relation("notifications_user")
   sent_notifications notifications[] @relation("notifications_sender")
@@ -53,8 +53,8 @@ model users {
   login_logs  user_login_logs[]
   uploads     uploads[]
 
-  @@map("users")
   @@unique([email], map: "users_email_key")
+  @@map("users")
 }
 
 model categories {
@@ -128,35 +128,35 @@ model tag_translations {
 }
 
 model topics {
-  id          BigInt   @id @db.BigInt
-  category_id BigInt   @db.BigInt
-  user_id     BigInt   @db.BigInt
-  source_locale String   @default("zh") @db.VarChar(8)
-  type        String   @default("GENERAL") @db.VarChar(32)
-  status      String   @default("ACTIVE") @db.VarChar(32)
-  end_time    DateTime?
-  is_settled  Boolean  @default(false)
-  views       Int      @default(0)
-  is_pinned   Boolean  @default(false)
-  is_community Boolean @default(false)
-  is_deleted  Boolean
-  created_at  DateTime @default(now())
-  updated_at  DateTime @updatedAt
+  id            BigInt    @id @db.BigInt
+  category_id   BigInt    @db.BigInt
+  user_id       BigInt    @db.BigInt
+  source_locale String    @default("zh") @db.VarChar(8)
+  type          String    @default("GENERAL") @db.VarChar(32)
+  status        String    @default("ACTIVE") @db.VarChar(32)
+  end_time      DateTime?
+  is_settled    Boolean   @default(false)
+  views         Int       @default(0)
+  is_pinned     Boolean   @default(false)
+  is_community  Boolean   @default(false)
+  is_deleted    Boolean
+  created_at    DateTime  @default(now())
+  updated_at    DateTime  @updatedAt
 
-  category categories @relation(fields: [category_id], references: [id])
-  user     users      @relation(fields: [user_id], references: [id])
-  posts    posts[]
-  tag_links topic_tags[]
-  poll_options poll_options[]
-  poll_config poll_configs?
-  lottery_config lottery_configs?
+  category             categories             @relation(fields: [category_id], references: [id])
+  user                 users                  @relation(fields: [user_id], references: [id])
+  posts                posts[]
+  tag_links            topic_tags[]
+  poll_options         poll_options[]
+  poll_config          poll_configs?
+  lottery_config       lottery_configs?
   lottery_participants lottery_participants[]
-  lottery_winners lottery_winners[]
-  bounty_config bounty_configs?
-  bounty_rewards bounty_rewards[]
-  question_acceptance question_acceptances?
-  notifications notifications[]
-  translations topic_translations[]
+  lottery_winners      lottery_winners[]
+  bounty_config        bounty_configs?
+  bounty_rewards       bounty_rewards[]
+  question_acceptance  question_acceptances?
+  notifications        notifications[]
+  translations         topic_translations[]
 
   @@index([user_id], map: "topics_user_index")
   @@index([category_id], map: "topics_category_index")
@@ -168,13 +168,13 @@ model topics {
 }
 
 model topic_translations {
-  topic_id    BigInt   @db.BigInt
-  locale      String   @db.VarChar(8)
-  title       String   @db.VarChar(256)
-  is_source   Boolean  @default(false)
-  version     Int      @default(0)
-  created_at  DateTime @default(now())
-  updated_at  DateTime @updatedAt
+  topic_id   BigInt   @db.BigInt
+  locale     String   @db.VarChar(8)
+  title      String   @db.VarChar(256)
+  is_source  Boolean  @default(false)
+  version    Int      @default(0)
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
 
   topic topics @relation(fields: [topic_id], references: [id], onDelete: Cascade)
 
@@ -197,15 +197,15 @@ model posts {
   created_at       DateTime @default(now())
   updated_at       DateTime @updatedAt
 
-  topic topics @relation(fields: [topic_id], references: [id])
-  user  users  @relation(fields: [user_id], references: [id])
-  likes post_likes[] @relation("post_likes_post")
-  bookmarks post_bookmarks[] @relation("post_bookmarks_post")
-  bounty_rewards bounty_rewards[]
-  lottery_winners lottery_winners[]
+  topic               topics                @relation(fields: [topic_id], references: [id])
+  user                users                 @relation(fields: [user_id], references: [id])
+  likes               post_likes[]          @relation("post_likes_post")
+  bookmarks           post_bookmarks[]      @relation("post_bookmarks_post")
+  bounty_rewards      bounty_rewards[]
+  lottery_winners     lottery_winners[]
   question_acceptance question_acceptances?
-  notifications notifications[]
-  translations post_translations[]
+  notifications       notifications[]
+  translations        post_translations[]
 
   @@index([topic_id], map: "posts_topic_index")
   @@index([user_id], map: "posts_user_index")
@@ -286,7 +286,7 @@ model badges {
   created_at    DateTime @default(now())
   updated_at    DateTime @updatedAt
 
-  user_badges  user_badges[] @relation("user_badges_badge")
+  user_badges  user_badges[]        @relation("user_badges_badge")
   translations badge_translations[]
 
   @@index([badge_type], map: "badges_type_index")
@@ -407,7 +407,7 @@ model poll_options {
   is_deleted  Boolean  @default(false)
   created_at  DateTime @default(now())
 
-  topic topics @relation(fields: [topic_id], references: [id])
+  topic topics       @relation(fields: [topic_id], references: [id])
   votes poll_votes[]
 
   @@index([topic_id], map: "poll_options_topic_index")
@@ -534,10 +534,10 @@ model bounty_rewards {
   giver    users  @relation("bounty_rewards_giver", fields: [giver_id], references: [id])
   receiver users  @relation("bounty_rewards_receiver", fields: [receiver_id], references: [id])
 
+  @@unique([topic_id, receiver_id], map: "bounty_rewards_topic_receiver_unique")
   @@index([topic_id], map: "bounty_rewards_topic_index")
   @@index([receiver_id], map: "bounty_rewards_receiver_index")
   @@index([giver_id], map: "bounty_rewards_giver_index")
-  @@unique([topic_id, receiver_id], map: "bounty_rewards_topic_receiver_unique")
   @@map("bounty_rewards")
 }
 
@@ -559,11 +559,11 @@ model question_acceptances {
 }
 
 model user_checkins {
-  id          BigInt   @id @db.BigInt
-  user_id     BigInt   @db.BigInt
-  checkin_date DateTime @db.Date
-  credits_earned Int   @default(0)
-  created_at  DateTime @default(now())
+  id             BigInt   @id @db.BigInt
+  user_id        BigInt   @db.BigInt
+  checkin_date   DateTime @db.Date
+  credits_earned Int      @default(0)
+  created_at     DateTime @default(now())
 
   user users @relation("user_checkins_user", fields: [user_id], references: [id])
 
@@ -621,23 +621,23 @@ enum CreditLogType {
 
 // 捐赠来源类型
 enum DonationSource {
-  KOFI           // Ko-fi 平台
-  PATREON        // Patreon 平台
-  PAYPAL         // PayPal 直接捐赠
-  ALIPAY         // 支付宝
-  WECHAT_PAY     // 微信支付
-  BANK_TRANSFER  // 银行转账/线下转账
-  CRYPTO         // 加密货币
-  OTHER          // 其它来源
+  KOFI // Ko-fi 平台
+  PATREON // Patreon 平台
+  PAYPAL // PayPal 直接捐赠
+  ALIPAY // 支付宝
+  WECHAT_PAY // 微信支付
+  BANK_TRANSFER // 银行转账/线下转账
+  CRYPTO // 加密货币
+  OTHER // 其它来源
 }
 
 // 捐赠状态
 enum DonationStatus {
-  PENDING    // 待确认（线下转账等需要人工确认）
-  CONFIRMED  // 已确认
-  FAILED     // 失败/无效
-  REFUNDED   // 已退款
-  CANCELLED  // 已取消
+  PENDING // 待确认（线下转账等需要人工确认）
+  CONFIRMED // 已确认
+  FAILED // 失败/无效
+  REFUNDED // 已退款
+  CANCELLED // 已取消
 }
 
 model user_credit_logs {
@@ -659,51 +659,51 @@ model user_credit_logs {
 
 // 捐赠记录表
 model donations {
-  id              BigInt         @id @db.BigInt
+  id BigInt @id @db.BigInt
 
   // 捐赠用户（可为空，支持非注册用户捐赠）
-  user_id         BigInt?        @db.BigInt
+  user_id BigInt? @db.BigInt
 
   // 金额相关
-  amount          Decimal        @db.Decimal(10, 2)  // 捐赠金额，支持小数
-  currency        String         @default("CNY") @db.VarChar(8)  // 货币类型：CNY, USD, EUR 等
+  amount   Decimal @db.Decimal(10, 2) // 捐赠金额，支持小数
+  currency String  @default("CNY") @db.VarChar(8) // 货币类型：CNY, USD, EUR 等
 
   // 来源区分
-  source          DonationSource // 捐赠来源
+  source DonationSource // 捐赠来源
 
   // 状态
-  status          DonationStatus @default(PENDING)
+  status DonationStatus @default(PENDING)
 
   // 外部关联ID（用于对接第三方平台的交易ID）
-  external_id     String?        @db.VarChar(128)
+  external_id String? @db.VarChar(128)
 
   // 是否匿名捐赠
-  is_anonymous    Boolean        @default(false)
+  is_anonymous Boolean @default(false)
 
   // 捐赠者显示名称（用于非注册用户或匿名用户的展示名）
-  donor_name      String?        @db.VarChar(64)
+  donor_name String? @db.VarChar(64)
 
   // 捐赠者邮箱（用于非注册用户联系或发送感谢）
-  donor_email     String?        @db.VarChar(256)
+  donor_email String? @db.VarChar(256)
 
   // 捐赠留言
-  message         String?        @db.VarChar(500)
+  message String? @db.VarChar(500)
 
   // 管理员备注（仅管理员可见）
-  admin_note      String?        @db.VarChar(500)
+  admin_note String? @db.VarChar(500)
 
   // 确认信息
-  confirmed_by    BigInt?        @db.BigInt  // 确认人（管理员）
-  confirmed_at    DateTime?                   // 确认时间
+  confirmed_by BigInt?   @db.BigInt // 确认人（管理员）
+  confirmed_at DateTime? // 确认时间
 
   // 通用字段
-  is_deleted      Boolean        @default(false)
-  created_at      DateTime       @default(now())
-  updated_at      DateTime       @updatedAt
+  is_deleted Boolean  @default(false)
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
 
   // 关联关系
-  user            users?         @relation("donations_user", fields: [user_id], references: [id])
-  confirmer       users?         @relation("donations_confirmer", fields: [confirmed_by], references: [id])
+  user      users? @relation("donations_user", fields: [user_id], references: [id])
+  confirmer users? @relation("donations_confirmer", fields: [confirmed_by], references: [id])
 
   @@index([user_id], map: "donations_user_index")
   @@index([source], map: "donations_source_index")
@@ -719,36 +719,36 @@ model donations {
 
 // 触发器类型枚举
 enum RuleTriggerType {
-  CRON         // 定时任务
-  POST_CREATE  // 发帖
-  POST_REPLY   // 回帖
-  CHECKIN      // 签到
-  DONATION     // 捐赠
-  POST_LIKE_GIVEN    // 送出的赞
+  CRON // 定时任务
+  POST_CREATE // 发帖
+  POST_REPLY // 回帖
+  CHECKIN // 签到
+  DONATION // 捐赠
+  POST_LIKE_GIVEN // 送出的赞
   POST_LIKE_RECEIVED // 收到的赞
   USER_REGISTER // 注册
-  USER_LOGIN   // 登录
+  USER_LOGIN // 登录
 }
 
 // 执行动作类型枚举
 enum RuleActionType {
-  CREDIT_CHANGE   // 积分变动
-  BADGE_GRANT     // 授予徽章
-  BADGE_REVOKE    // 撤销徽章
+  CREDIT_CHANGE // 积分变动
+  BADGE_GRANT // 授予徽章
+  BADGE_REVOKE // 撤销徽章
   USER_GROUP_CHANGE // 用户组变更（预留）
 }
 
 // 自动化规则表
 model automation_rules {
-  id          BigInt           @id @db.BigInt
+  id BigInt @id @db.BigInt
 
   // 规则基本信息
-  name        String           @db.VarChar(128)  // 规则名称
-  description String?          @db.VarChar(512)  // 规则描述
+  name        String  @db.VarChar(128) // 规则名称
+  description String? @db.VarChar(512) // 规则描述
 
   // 触发器配置
-  trigger_type RuleTriggerType                   // 触发器类型
-  trigger_conditions Json?                        // 触发条件（JSON格式存储动态配置）
+  trigger_type       RuleTriggerType // 触发器类型
+  trigger_conditions Json? // 触发条件（JSON格式存储动态配置）
   // 示例:
   // CRON: {"cron": "0 0 * * *", "timezone": "Asia/Shanghai"}
   // POST_CREATE: {"category_ids": [1,2,3], "min_content_length": 100}
@@ -763,7 +763,7 @@ model automation_rules {
   // USER_LOGIN: {"consecutive_days": 30}
 
   // 执行动作配置（支持多个动作）
-  actions Json                                   // 动作列表（JSON数组格式）
+  actions Json // 动作列表（JSON数组格式）
   // 示例:
   // [
   //   {"type": "CREDIT_CHANGE", "params": {"amount": 10, "description": "每日签到奖励"}},
@@ -775,22 +775,22 @@ model automation_rules {
   // - params: 动作参数对象
 
   // 规则控制
-  priority    Int              @default(0)       // 优先级（数字越大优先级越高）
-  is_enabled  Boolean          @default(true)    // 是否启用
-  is_repeatable Boolean        @default(true)    // 是否可重复触发
-  max_executions Int?                            // 最大执行次数（null表示无限制）
-  cooldown_seconds Int?                          // 冷却时间（秒）
+  priority         Int     @default(0) // 优先级（数字越大优先级越高）
+  is_enabled       Boolean @default(true) // 是否启用
+  is_repeatable    Boolean @default(true) // 是否可重复触发
+  max_executions   Int? // 最大执行次数（null表示无限制）
+  cooldown_seconds Int? // 冷却时间（秒）
 
   // 时间限制
-  start_time  DateTime?                          // 规则生效开始时间
-  end_time    DateTime?                          // 规则生效结束时间
+  start_time DateTime? // 规则生效开始时间
+  end_time   DateTime? // 规则生效结束时间
 
   // 审计字段
-  created_by  BigInt?          @db.BigInt        // 创建人（管理员ID）
-  updated_by  BigInt?          @db.BigInt        // 最后更新人
-  is_deleted  Boolean          @default(false)
-  created_at  DateTime         @default(now())
-  updated_at  DateTime         @updatedAt
+  created_by BigInt?  @db.BigInt // 创建人（管理员ID）
+  updated_by BigInt?  @db.BigInt // 最后更新人
+  is_deleted Boolean  @default(false)
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
 
   // 关联关系
   execution_logs automation_rule_logs[]
@@ -805,15 +805,15 @@ model automation_rules {
 
 // 规则执行日志表
 model automation_rule_logs {
-  id          BigInt   @id @db.BigInt
+  id BigInt @id @db.BigInt
 
   // 关联规则
-  rule_id     BigInt   @db.BigInt
+  rule_id BigInt @db.BigInt
 
   // 触发信息
-  triggered_by BigInt?  @db.BigInt  // 触发用户ID(可为空,如定时任务)
-  target_user_id BigInt? @db.BigInt // 执行对象的用户ID(如授予徽章的目标用户)
-  trigger_context Json?              // 触发上下文数据
+  triggered_by    BigInt? @db.BigInt // 触发用户ID(可为空,如定时任务)
+  target_user_id  BigInt? @db.BigInt // 执行对象的用户ID(如授予徽章的目标用户)
+  trigger_context Json? // 触发上下文数据
   // 示例:
   // {"topic_id": 123, "post_id": 456, "category_id": 1}
   // {"donation_id": 789, "amount": 500}
@@ -821,7 +821,7 @@ model automation_rule_logs {
 
   // 执行结果
   execution_status String @db.VarChar(32) // SUCCESS, FAILED, SKIPPED (按优先级: FAILED > SKIPPED > SUCCESS)
-  execution_result Json?              // 执行结果详情(聚合所有动作的结果)
+  execution_result Json? // 执行结果详情(聚合所有动作的结果)
   // 格式示例(一次规则执行记录一条日志，包含所有动作结果):
   // [
   //   {"actionType": "CREDIT_CHANGE", "status": "SUCCESS", "data": {"credit_changed": 10, "new_balance": 1000}},
@@ -834,7 +834,7 @@ model automation_rule_logs {
   // - message: 失败/跳过的多语言键值
   // - messageParams: 失败/跳过消息的参数
 
-  error_message String? @db.Text      // 错误信息（如果失败）
+  error_message String? @db.Text // 错误信息（如果失败）
 
   // 执行时间
   executed_at DateTime @default(now())
@@ -859,113 +859,108 @@ model automation_rule_logs {
 
 // 翻译实体类型枚举
 enum TranslationEntityType {
-  CATEGORY  // 分类
-  TAG       // 标签
-  BADGE     // 徽章
-  TOPIC     // 话题
-  POST      // 帖子
+  CATEGORY // 分类
+  TAG // 标签
+  BADGE // 徽章
+  TOPIC // 话题
+  POST // 帖子
 }
 
 // 翻译任务状态枚举
 enum TranslationTaskStatus {
-  PENDING     // 待处理
-  PROCESSING  // 处理中
-  COMPLETED   // 已完成
-  FAILED      // 失败
-  CANCELLED   // 已取消
+  PENDING // 待处理
+  PROCESSING // 处理中
+  COMPLETED // 已完成
+  FAILED // 失败
+  CANCELLED // 已取消
 }
 
 // 翻译任务优先级枚举
 enum TranslationTaskPriority {
-  LOWEST   // 最低优先级
-  LOW      // 低优先级
-  NORMAL   // 普通优先级
-  HIGH     // 高优先级
-  URGENT   // 紧急优先级
+  LOWEST // 最低优先级
+  LOW // 低优先级
+  NORMAL // 普通优先级
+  HIGH // 高优先级
+  URGENT // 紧急优先级
 }
 
 // 翻译任务表
 model translation_tasks {
-  id          BigInt                 @id @db.BigInt
+  id BigInt @id @db.BigInt
 
   // 目标实体信息
-  entity_type TranslationEntityType  // 实体类型
-  entity_id   BigInt                  @db.BigInt  // 目标实体ID
+  entity_type TranslationEntityType // 实体类型
+  entity_id   BigInt                @db.BigInt // 目标实体ID
 
   // 翻译配置
-  source_locale  String              @db.VarChar(8)  // 源语言代码
-  target_locale  String              @db.VarChar(8)  // 目标语言代码
-  source_version Int                 @default(1)     // 源内容版本号
+  source_locale  String @db.VarChar(8) // 源语言代码
+  target_locale  String @db.VarChar(8) // 目标语言代码
+  source_version Int    @default(1) // 源内容版本号
 
   // 任务状态
-  status      TranslationTaskStatus    @default(PENDING)  // 任务状态
-  priority    TranslationTaskPriority  @default(NORMAL)   // 任务优先级
+  status   TranslationTaskStatus   @default(PENDING) // 任务状态
+  priority TranslationTaskPriority @default(NORMAL) // 任务优先级
 
   // 重试机制
-  retry_count   Int                   @default(0)        // 重试次数
-  error_message String?               @db.Text           // 错误信息
+  retry_count   Int     @default(0) // 重试次数
+  error_message String? @db.Text // 错误信息
 
   // 时间追踪
-  started_at   DateTime?              // 开始处理时间
-  completed_at DateTime?              // 完成时间
-  created_at   DateTime               @default(now())
-  updated_at   DateTime               @updatedAt
+  started_at   DateTime? // 开始处理时间
+  completed_at DateTime? // 完成时间
+  created_at   DateTime  @default(now())
+  updated_at   DateTime  @updatedAt
 
   // 复合索引：按状态和优先级查询待处理任务(用于任务队列)
   @@index([status, priority], map: "translation_tasks_status_priority_index")
-
   // 复合索引：查询特定实体的所有翻译任务
   @@index([entity_type, entity_id], map: "translation_tasks_entity_index")
-
   // 复合索引：查询特定实体和语言的任务(避免重复创建)
   @@index([entity_type, entity_id, target_locale], map: "translation_tasks_entity_locale_index")
-
   @@map("translation_tasks")
 }
 
 enum NotificationType {
-  SYSTEM          // System announcement
-  TOPIC_REPLY     // Someone replied to your topic
-  POST_REPLY      // Someone replied to your post
-  MENTION         // Someone @mentioned you
-  LIKE            // Someone liked your post
-  BADGE_AWARD     // You received a badge
-  BOUNTY_REWARD   // You received a bounty reward
-  LOTTERY_WIN     // You won a lottery
+  SYSTEM // System announcement
+  TOPIC_REPLY // Someone replied to your topic
+  POST_REPLY // Someone replied to your post
+  MENTION // Someone @mentioned you
+  LIKE // Someone liked your post
+  BADGE_AWARD // You received a badge
+  BOUNTY_REWARD // You received a bounty reward
+  LOTTERY_WIN // You won a lottery
 }
 
 model notifications {
-  id          BigInt           @id @db.BigInt
-  user_id     BigInt           @db.BigInt        // Recipient
-  sender_id   BigInt           @db.BigInt        // Triggered by (e.g., the person who replied)
-  type        NotificationType
-  read        Boolean          @default(false)
-  is_deleted  Boolean          @default(false)
+  id         BigInt           @id @db.BigInt
+  user_id    BigInt           @db.BigInt // Recipient
+  sender_id  BigInt           @db.BigInt // Triggered by (e.g., the person who replied)
+  type       NotificationType
+  read       Boolean          @default(false)
+  is_deleted Boolean          @default(false)
 
   // Context References
-  topic_id    BigInt?          @db.BigInt
-  post_id     BigInt?          @db.BigInt
+  topic_id BigInt? @db.BigInt
+  post_id  BigInt? @db.BigInt
 
   // Flexible data for other types (e.g., badge_id, system message content)
-  data        Json?
+  data Json?
 
-  created_at  DateTime         @default(now())
+  created_at DateTime @default(now())
 
   // Relations
-  user      users   @relation("notifications_user", fields: [user_id], references: [id])
-  sender    users?  @relation("notifications_sender", fields: [sender_id], references: [id])
-  topic     topics? @relation(fields: [topic_id], references: [id])
-  post      posts?  @relation(fields: [post_id], references: [id])
+  user   users   @relation("notifications_user", fields: [user_id], references: [id])
+  sender users?  @relation("notifications_sender", fields: [sender_id], references: [id])
+  topic  topics? @relation(fields: [topic_id], references: [id])
+  post   posts?  @relation(fields: [post_id], references: [id])
 
   // Indexes for performance
   @@index([user_id], map: "notifications_user_index")
   @@index([read], map: "notifications_read_index")
   @@index([type], map: "notifications_type_index")
   @@index([created_at], map: "notifications_created_index")
-
   // Composite index for fetching unread notifications efficiently
   @@index([user_id, read, created_at], map: "notifications_user_read_created_index")
-
   @@map("notifications")
 }
 
@@ -983,4 +978,37 @@ model uploads {
   @@index([user_id], map: "uploads_user_index")
   @@index([created_at], map: "uploads_created_index")
   @@map("uploads")
+}
+
+enum LLMProvider {
+  OPENAI
+  GEMINI
+  DEEPSEEK
+  ANTHROPIC
+  GROK
+  OTHER
+}
+
+enum LLMUsage {
+  TRANSLATION
+  CHAT
+  SUMMARIZATION
+  OTHER
+}
+
+model llm_configs {
+  id         BigInt      @id @db.BigInt
+  provider   LLMProvider
+  name       String      @db.VarChar(64)
+  base_url   String      @db.VarChar(255)
+  api_key    String      @db.VarChar(255)
+  usage      LLMUsage    @default(OTHER)
+  is_enabled Boolean     @default(true)
+  created_at DateTime    @default(now())
+  updated_at DateTime    @updatedAt
+
+  @@index([provider], map: "llm_configs_provider_index")
+  @@index([usage], map: "llm_configs_usage_index")
+  @@index([is_enabled], map: "llm_configs_enabled_index")
+  @@map("llm_configs")
 }
