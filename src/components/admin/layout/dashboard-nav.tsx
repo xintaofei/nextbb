@@ -57,6 +57,11 @@ export function DashboardNav() {
       icon: Bot,
       items: [
         {
+          label: t("llmConfigs"),
+          icon: Bot,
+          path: "/admin/llm-configs",
+        },
+        {
           label: t("translationTasks"),
           icon: Languages,
           path: "/admin/translation-tasks",
@@ -65,11 +70,6 @@ export function DashboardNav() {
           label: t("automationRules"),
           icon: Workflow,
           path: "/admin/automation-rules",
-        },
-        {
-          label: t("llmConfigs"),
-          icon: Bot,
-          path: "/admin/llm-configs",
         },
       ],
     },
@@ -134,14 +134,18 @@ export function DashboardNav() {
                         const SubIcon = subItem.icon
                         const isSubActive = isPathActive(subItem.path)
                         return (
-                          <DropdownMenuItem key={subItem.path} asChild>
+                          <DropdownMenuItem
+                            key={subItem.path}
+                            asChild
+                            className={cn(
+                              "mb-1 last:mb-0",
+                              isSubActive &&
+                                "bg-primary/10 text-primary font-semibold focus:bg-primary/10 focus:text-primary"
+                            )}
+                          >
                             <Link
                               href={subItem.path}
-                              className={cn(
-                                "w-full cursor-pointer",
-                                isSubActive &&
-                                  "bg-accent text-accent-foreground"
-                              )}
+                              className="w-full cursor-pointer"
                             >
                               <SubIcon
                                 className="mr-2 h-4 w-4"
@@ -220,9 +224,9 @@ export function DashboardNav() {
                             key={subItem.path}
                             href={subItem.path}
                             className={cn(
-                              "inline-flex items-center justify-start gap-2 whitespace-nowrap rounded-md text-xs font-medium transition-all h-8 px-3 uppercase tracking-widest",
+                              "inline-flex items-center justify-start gap-2 whitespace-nowrap rounded-md text-xs font-medium transition-all h-8 px-3 uppercase tracking-widest mb-1 last:mb-0",
                               isSubActive
-                                ? "text-foreground bg-background/50"
+                                ? "bg-primary/10 text-primary font-semibold hover:bg-primary/15"
                                 : "text-foreground/70 hover:text-foreground hover:bg-background/50"
                             )}
                             role="menuitem"
