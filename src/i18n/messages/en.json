@@ -1701,6 +1701,10 @@
     "refresh": "Refresh",
     "loading": "Loading...",
     "empty": "No translation tasks",
+    "locales": {
+      "en": "English",
+      "zh": "Chinese"
+    },
     "status": {
       "all": "All Status",
       "pending": "Pending",
@@ -1728,6 +1732,12 @@
       "title": "Filter",
       "entityType": {
         "all": "All Types"
+      },
+      "sourceLocale": {
+        "all": "All Source Locales"
+      },
+      "targetLocale": {
+        "all": "All Target Locales"
       }
     },
     "table": {

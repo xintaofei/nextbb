@@ -3,6 +3,7 @@
 import { useMemo, useState, useCallback } from "react"
 import useSWR from "swr"
 import { useTranslations } from "next-intl"
+import { routing } from "@/i18n/routing"
 import { AdminPageContainer } from "@/components/admin/layout/admin-page-container"
 import { AdminPageSection } from "@/components/admin/layout/admin-page-section"
 import { Filter, RefreshCcw, Ban, Trash2, RotateCcw } from "lucide-react"
@@ -48,6 +49,8 @@ export default function AdminTranslationTasksPage() {
   const [status, setStatus] = useState<string>("ALL")
   const [priority, setPriority] = useState<string>("ALL")
   const [entityType, setEntityType] = useState<string>("ALL")
+  const [sourceLocale, setSourceLocale] = useState<string>("ALL")
+  const [targetLocale, setTargetLocale] = useState<string>("ALL")
   const [page, setPage] = useState(1)
   const pageSize = 20
 
@@ -61,10 +64,12 @@ export default function AdminTranslationTasksPage() {
     if (status !== "ALL") params.set("status", status)
     if (priority !== "ALL") params.set("priority", priority)
     if (entityType !== "ALL") params.set("entityType", entityType)
+    if (sourceLocale !== "ALL") params.set("sourceLocale", sourceLocale)
+    if (targetLocale !== "ALL") params.set("targetLocale", targetLocale)
     params.set("page", page.toString())
     params.set("pageSize", pageSize.toString())
     return `/api/admin/translation-tasks?${params.toString()}`
-  }, [status, priority, entityType, page])
+  }, [status, priority, entityType, sourceLocale, targetLocale, page])
 
   const { data, isLoading, mutate } = useSWR<TranslationTaskListResult>(
     query,
@@ -295,7 +300,51 @@ export default function AdminTranslationTasksPage() {
             </h2>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
+            <Select
+              value={sourceLocale}
+              onValueChange={(val) => {
+                setSourceLocale(val)
+                setPage(1)
+              }}
+            >
+              <SelectTrigger className="bg-background/60 border-border/40 focus:border-border/60">
+                <SelectValue placeholder={t("filter.sourceLocale.all")} />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="ALL">
+                  {t("filter.sourceLocale.all")}
+                </SelectItem>
+                {routing.locales.map((locale) => (
+                  <SelectItem key={locale} value={locale}>
+                    {t(`locales.${locale}`)}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+
+            <Select
+              value={targetLocale}
+              onValueChange={(val) => {
+                setTargetLocale(val)
+                setPage(1)
+              }}
+            >
+              <SelectTrigger className="bg-background/60 border-border/40 focus:border-border/60">
+                <SelectValue placeholder={t("filter.targetLocale.all")} />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="ALL">
+                  {t("filter.targetLocale.all")}
+                </SelectItem>
+                {routing.locales.map((locale) => (
+                  <SelectItem key={locale} value={locale}>
+                    {t(`locales.${locale}`)}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+
             <Select
               value={status}
               onValueChange={(val) => {

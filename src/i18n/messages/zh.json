@@ -1713,6 +1713,10 @@
     "refresh": "刷新",
     "loading": "加载中...",
     "empty": "暂无翻译任务",
+    "locales": {
+      "en": "英语",
+      "zh": "中文"
+    },
     "status": {
       "all": "全部状态",
       "pending": "等待中",
@@ -1740,6 +1744,12 @@
       "title": "筛选",
       "entityType": {
         "all": "全部类型"
+      },
+      "sourceLocale": {
+        "all": "全部源语言"
+      },
+      "targetLocale": {
+        "all": "全部目标语言"
       }
     },
     "table": {

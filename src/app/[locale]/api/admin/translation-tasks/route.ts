@@ -41,6 +41,7 @@ export async function GET(request: NextRequest) {
     const status = searchParams.get("status")
     const entityType = searchParams.get("entityType")
     const priority = searchParams.get("priority")
+    const sourceLocale = searchParams.get("sourceLocale")
     const targetLocale = searchParams.get("targetLocale")
 
     // 限制分页参数，防止恶意请求
@@ -63,6 +64,10 @@ export async function GET(request: NextRequest) {
 
     if (priority && priority !== "ALL") {
       where.priority = priority as TranslationTaskPriority
+    }
+
+    if (sourceLocale && sourceLocale !== "ALL") {
+      where.source_locale = sourceLocale
     }
 
     if (targetLocale && targetLocale !== "ALL") {
