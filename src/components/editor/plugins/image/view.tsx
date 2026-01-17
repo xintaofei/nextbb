@@ -50,20 +50,22 @@ export const ImageView: React.FC = () => {
         sizes="100vw"
         unoptimized
         className={`max-w-full h-auto transition-opacity duration-300 ${
-          status === "success" ? "opacity-100" : "opacity-0"
+          status === "success"
+            ? "opacity-100"
+            : "opacity-0 absolute top-0 left-0"
         }`}
         onLoad={() => setStatus("success")}
         onError={() => setStatus("error")}
       />
 
       {status === "loading" && (
-        <div className="absolute inset-0 flex items-center justify-center bg-muted/50 min-h-[100px] min-w-[100px]">
+        <div className="flex items-center justify-center bg-muted/50 min-h-[100px] min-w-[100px] rounded-md">
           <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
         </div>
       )}
 
       {status === "error" && (
-        <div className="absolute inset-0 flex flex-col items-center justify-center bg-muted/20 border border-border min-h-[150px] min-w-[200px] p-4 gap-2">
+        <div className="flex flex-col items-center justify-center bg-muted/20 border border-border min-h-[150px] min-w-[200px] p-4 gap-2 rounded-md">
           <ImageOff className="w-8 h-8 text-muted-foreground" />
           <span className="text-sm text-muted-foreground">图片加载失败</span>
           <Button
