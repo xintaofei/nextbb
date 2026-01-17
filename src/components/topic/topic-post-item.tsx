@@ -28,10 +28,17 @@ const repliesFetcher = async (url: string) => {
   return (await res.json()) as { items: PostItem[] }
 }
 
-const SubReplyItem = memo(function SubReplyItem({ sub }: { sub: PostItem }) {
+const SubReplyItem = memo(function SubReplyItem({
+  sub,
+  idx,
+}: {
+  sub: PostItem
+  idx: number
+}) {
   return (
     <TimelineStepsItem size="sm">
       <TimelineStepsConnector size="sm" />
+      {idx == 0 && <TimelineStepsConnector size="top" />}
       <TimelineStepsIcon size="sm" className="overflow-hidden p-0">
         <UserInfoCard
           userId={sub.author.id}
@@ -212,11 +219,12 @@ export const TopicPostItem = memo(function TopicPostItem({
             </TimelineStepsAction>
           )}
           {expanded && (
-            <TimelineSteps className="my-4">
+            <TimelineSteps className="mb-4">
               {loadingSubReplies ? (
                 Array.from({ length: 2 }).map((_, i) => (
                   <TimelineStepsItem key={i} size="sm">
                     <TimelineStepsConnector size="sm" />
+                    {i == 0 && <TimelineStepsConnector size="top" />}
                     <TimelineStepsIcon
                       size="sm"
                       className="border-none bg-muted"
@@ -230,7 +238,9 @@ export const TopicPostItem = memo(function TopicPostItem({
                   </TimelineStepsItem>
                 ))
               ) : subReplies.length > 0 ? (
-                subReplies.map((sub) => <SubReplyItem key={sub.id} sub={sub} />)
+                subReplies.map((sub, idx) => (
+                  <SubReplyItem key={sub.id} sub={sub} idx={idx} />
+                ))
               ) : (
                 <div className="text-sm text-muted-foreground py-2 pl-2">
                   No replies yet.

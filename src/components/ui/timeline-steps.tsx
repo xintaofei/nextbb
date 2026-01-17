@@ -114,6 +114,7 @@ const timelineStepsConnectorVariants = cva("", {
       sm: "left-[calc(var(--timeline-steps-icon-size,1.5rem)/2)] top-[calc(var(--timeline-steps-icon-size,1.25rem)+1rem)] h-[calc(100%-var(--timeline-steps-icon-size,1.25rem))]",
       default:
         "left-[calc(var(--timeline-steps-icon-size,3rem)/2)] top-[calc(var(--timeline-steps-icon-size,2.5rem)+1rem)] h-[calc(100%-var(--timeline-steps-icon-size,2.5rem))]",
+      top: "left-[calc(var(--timeline-steps-icon-size,1.5rem)/2)] -top-[1rem] h-[1rem]",
     },
     orientation: {
       vertical: "absolute w-px -translate-x-1/2",
