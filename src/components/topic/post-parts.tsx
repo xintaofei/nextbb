@@ -192,16 +192,27 @@ export const PostReplyExpandButton = memo(function PostReplyExpandButton({
   post,
   onShowReplies,
   repliesText,
+  isExpanded,
 }: {
   post: PostItem
   onShowReplies?: (postId: string) => void
   repliesText?: string
+  isExpanded?: boolean
 }) {
   if (post.replyCount > 0 && onShowReplies) {
     return (
-      <Button variant="ghost" size="sm" onClick={() => onShowReplies(post.id)}>
+      <Button
+        variant={isExpanded ? "secondary" : "ghost"}
+        size="sm"
+        onClick={() => onShowReplies(post.id)}
+      >
         {post.replyCount} {repliesText}
-        <ChevronDown />
+        <ChevronDown
+          className={cn(
+            "h-4 w-4 transition-transform duration-200",
+            isExpanded && "rotate-180"
+          )}
+        />
       </Button>
     )
   }

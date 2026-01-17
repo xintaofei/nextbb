@@ -193,6 +193,7 @@ export const TopicPostItem = memo(function TopicPostItem({
                 post={post}
                 onShowReplies={handleShowReplies}
                 repliesText={repliesText}
+                isExpanded={expanded}
               />
               <PostActions
                 post={post}
