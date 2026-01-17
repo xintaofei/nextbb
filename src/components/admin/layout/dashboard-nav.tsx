@@ -13,11 +13,18 @@ import {
   Workflow,
   Languages,
   Bot,
+  ChevronDown,
 } from "lucide-react"
 import { useState } from "react"
 import Link from "next/link"
 import { useTranslations } from "next-intl"
 import { cn } from "@/lib/utils"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 
 export function DashboardNav() {
   const [isOpen, setIsOpen] = useState(false)
@@ -27,23 +34,35 @@ export function DashboardNav() {
     { label: t("overview"), icon: BarChart3, path: "/admin" },
     { label: t("topics"), icon: FileText, path: "/admin/topics" },
     { label: t("users"), icon: Users, path: "/admin/users" },
-    { label: t("categories"), icon: Folder, path: "/admin/categories" },
-    { label: t("tags"), icon: Tag, path: "/admin/tags" },
-    { label: t("badges"), icon: Award, path: "/admin/badges" },
     {
-      label: t("translationTasks"),
-      icon: Languages,
-      path: "/admin/translation-tasks",
+      label: t("contentStructure"),
+      icon: Folder,
+      items: [
+        { label: t("categories"), icon: Folder, path: "/admin/categories" },
+        { label: t("tags"), icon: Tag, path: "/admin/tags" },
+        { label: t("badges"), icon: Award, path: "/admin/badges" },
+      ],
     },
     {
-      label: t("automationRules"),
-      icon: Workflow,
-      path: "/admin/automation-rules",
-    },
-    {
-      label: t("llmConfigs"),
+      label: t("intelligence"),
       icon: Bot,
-      path: "/admin/llm-configs",
+      items: [
+        {
+          label: t("translationTasks"),
+          icon: Languages,
+          path: "/admin/translation-tasks",
+        },
+        {
+          label: t("automationRules"),
+          icon: Workflow,
+          path: "/admin/automation-rules",
+        },
+        {
+          label: t("llmConfigs"),
+          icon: Bot,
+          path: "/admin/llm-configs",
+        },
+      ],
     },
     { label: t("settings"), icon: Settings, path: "/admin/settings" },
   ]
@@ -81,10 +100,47 @@ export function DashboardNav() {
           >
             {navItems.map((item) => {
               const Icon = item.icon
+
+              if (item.items) {
+                return (
+                  <DropdownMenu key={item.label}>
+                    <DropdownMenuTrigger
+                      className={cn(
+                        "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-lg text-xs font-medium transition-all h-8 uppercase tracking-widest outline-none",
+                        "text-foreground/70 hover:text-foreground hover:bg-background/50 focus:bg-background/50"
+                      )}
+                    >
+                      <Icon className="h-4 w-4" aria-hidden="true" />
+                      <span>{item.label}</span>
+                      <ChevronDown className="h-3 w-3 opacity-50" />
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      {item.items.map((subItem) => {
+                        const SubIcon = subItem.icon
+                        return (
+                          <DropdownMenuItem key={subItem.path} asChild>
+                            <Link
+                              href={subItem.path}
+                              className="w-full cursor-pointer"
+                            >
+                              <SubIcon
+                                className="mr-2 h-4 w-4"
+                                aria-hidden="true"
+                              />
+                              <span>{subItem.label}</span>
+                            </Link>
+                          </DropdownMenuItem>
+                        )
+                      })}
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                )
+              }
+
               return (
                 <Link
                   key={item.label}
-                  href={item.path}
+                  href={item.path!}
                   className={cn(
                     "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-lg text-xs font-medium transition-all h-8 uppercase tracking-widest",
                     "text-foreground/70 hover:text-foreground hover:bg-background/50"
@@ -112,10 +168,46 @@ export function DashboardNav() {
           >
             {navItems.map((item) => {
               const Icon = item.icon
+
+              if (item.items) {
+                return (
+                  <div key={item.label} className="flex flex-col gap-1">
+                    <div
+                      className={cn(
+                        "inline-flex items-center justify-start gap-2 whitespace-nowrap rounded-md text-xs font-medium transition-all h-8 px-3 uppercase tracking-widest",
+                        "text-foreground/70"
+                      )}
+                    >
+                      <Icon className="h-4 w-4" aria-hidden="true" />
+                      <span>{item.label}</span>
+                    </div>
+                    <div className="pl-6 flex flex-col gap-1 border-l ml-4 border-border/40">
+                      {item.items.map((subItem) => {
+                        const SubIcon = subItem.icon
+                        return (
+                          <Link
+                            key={subItem.path}
+                            href={subItem.path}
+                            className={cn(
+                              "inline-flex items-center justify-start gap-2 whitespace-nowrap rounded-md text-xs font-medium transition-all h-8 px-3 uppercase tracking-widest",
+                              "text-foreground/70 hover:text-foreground hover:bg-background/50"
+                            )}
+                            role="menuitem"
+                          >
+                            <SubIcon className="h-4 w-4" aria-hidden="true" />
+                            <span>{subItem.label}</span>
+                          </Link>
+                        )
+                      })}
+                    </div>
+                  </div>
+                )
+              }
+
               return (
                 <Link
                   key={item.label}
-                  href={item.path}
+                  href={item.path!}
                   className={cn(
                     "inline-flex items-center justify-start gap-2 whitespace-nowrap rounded-md text-xs font-medium transition-all h-8 px-3 uppercase tracking-widest",
                     "text-foreground/70 hover:text-foreground hover:bg-background/50"

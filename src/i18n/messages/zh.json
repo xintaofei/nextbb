@@ -679,6 +679,8 @@
       "translationTasks": "翻译任务",
       "automationRules": "自动化规则",
       "llmConfigs": "大模型配置",
+      "contentStructure": "内容结构",
+      "intelligence": "智能服务",
       "settings": "系统配置"
     },
     "translationDialog": {

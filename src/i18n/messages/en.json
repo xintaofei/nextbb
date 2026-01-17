@@ -679,6 +679,8 @@
       "translationTasks": "Translation Tasks",
       "automationRules": "Automation Rules",
       "llmConfigs": "LLM Configs",
+      "contentStructure": "Content Structure",
+      "intelligence": "Intelligence Services",
       "settings": "Settings"
     },
     "translationDialog": {
