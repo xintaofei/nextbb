@@ -2,6 +2,7 @@
 
 import { useParams } from "next/navigation"
 import Link from "next/link"
+import { UserInfoCard } from "@/components/common/user-info-card"
 import { TimelineSteps } from "@/components/ui/timeline-steps"
 import { DrawerEditor } from "@/components/editor/drawer-editor"
 import { TopicNavigator } from "@/components/topic/topic-navigator"
@@ -904,13 +905,18 @@ export default function TopicPage() {
               {topicInfo?.participants && topicInfo.participants.length > 0 && (
                 <div className="flex items-center -space-x-2">
                   {topicInfo.participants.map((user) => (
-                    <Avatar
+                    <UserInfoCard
                       key={user.id}
-                      className="w-6 h-6 border-2 border-background"
+                      userId={user.id}
+                      userName={user.name}
+                      userAvatar={user.avatar}
+                      side="bottom"
                     >
-                      <AvatarImage src={user.avatar} alt={user.name} />
-                      <AvatarFallback>{user.name[0]}</AvatarFallback>
-                    </Avatar>
+                      <Avatar className="w-6 h-6 border-2 border-background cursor-pointer">
+                        <AvatarImage src={user.avatar} alt={user.name} />
+                        <AvatarFallback>{user.name[0]}</AvatarFallback>
+                      </Avatar>
+                    </UserInfoCard>
                   ))}
                 </div>
               )}
