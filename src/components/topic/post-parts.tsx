@@ -113,6 +113,7 @@ export const PostHeader = memo(function PostHeader({
   >([])
   const [isLoadingLanguages, setIsLoadingLanguages] = useState(false)
   const [isOpen, setIsOpen] = useState(false)
+  const tPost = useTranslations("Topic.Post")
 
   const handleOpenChange = async (open: boolean) => {
     setIsOpen(open)
@@ -166,11 +167,13 @@ export const PostHeader = memo(function PostHeader({
                 </DropdownMenuTrigger>
               </TooltipTrigger>
               <TooltipContent>
-                <p>此帖子最初使用 {currentLocale} 编写</p>
+                {tPost("originallyWrittenIn", { locale: currentLocale })}
               </TooltipContent>
             </Tooltip>
             <DropdownMenuContent align="end">
-              <DropdownMenuLabel>多语言选择</DropdownMenuLabel>
+              <DropdownMenuLabel>
+                {tPost("languageSelection")}
+              </DropdownMenuLabel>
               <DropdownMenuSeparator />
               {isLoadingLanguages ? (
                 <div className="p-2 flex justify-center items-center">
@@ -188,8 +191,8 @@ export const PostHeader = memo(function PostHeader({
                     >
                       {lang.locale}
                       {lang.isSource && (
-                        <span className="ml-2 text-xs text-muted-foreground">
-                          (Source)
+                        <span className="ml-1 text-xs text-muted-foreground">
+                          {tPost("source")}
                         </span>
                       )}
                     </DropdownMenuRadioItem>

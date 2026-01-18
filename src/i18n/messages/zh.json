@@ -115,7 +115,12 @@
     "noDescription": "暂无描述"
   },
   "Topic": {
-    "edit": "编辑",
+      "Post": {
+        "originallyWrittenIn": "此帖子最初使用 {locale} 编写",
+        "languageSelection": "多语言选择",
+        "source": "(原文)"
+      },
+      "edit": "编辑",
     "delete": "删除",
     "deleted": "该楼层已被删除",
     "deleteConfirm": "确认删除当前楼层？",

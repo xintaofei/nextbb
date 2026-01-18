@@ -115,7 +115,12 @@
     "noDescription": "No description"
   },
   "Topic": {
-    "edit": "Edit",
+      "Post": {
+        "originallyWrittenIn": "This post was originally written in {locale}",
+        "languageSelection": "Language Selection",
+        "source": "(Source)"
+      },
+      "edit": "Edit",
     "delete": "Delete",
     "deleted": "This floor has been deleted",
     "deleteConfirm": "Are you sure to delete this floor?",
