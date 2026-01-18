@@ -16,7 +16,7 @@ const TopicTranslationSchema = z.object({
 })
 
 const PostTranslationSchema = z.object({
-  content: z.string().describe("The translated content in Markdown"),
+  content_html: z.string().describe("The translated content in HTML format"),
 })
 
 export class TranslationService {
@@ -60,15 +60,18 @@ For Categories, Tags, and Badges:
       case "TOPIC":
         return `${basePrompt}
 For Topics (Threads):
-- The title should be engaging and accurately reflect the content.
+- The title is plain text. Do NOT use Markdown in the title.
 - The content may contain Markdown. PRESERVE all Markdown formatting (links, images, code blocks, bold, etc.) exactly as is.
 - Translate the meaning, not just word-for-word.`
 
       case "POST":
         return `${basePrompt}
 For Posts (Replies):
-- The content may contain Markdown. PRESERVE all Markdown formatting (links, images, code blocks, bold, etc.) exactly as is.
-- Maintain the original tone of the user (e.g., helpful, questioning, casual).`
+- The input content is HTML format (serialized from ProseMirror/Milkdown).
+- Your task is to translate the visible text content ONLY.
+- DO NOT translate any HTML tags, attributes, or classes.
+- DO NOT change the HTML structure in any way.
+- Maintain the original tone of the user.`
 
       default:
         return basePrompt
@@ -128,14 +131,14 @@ ${data.content}`
    * Translates a Post.
    */
   async translatePost(
-    data: { content: string },
+    data: { content_html: string },
     sourceLocale: string,
     targetLocale: string
   ) {
     const model = await this.getTranslationModel()
-    const prompt = `Translate the following post content:
+    const prompt = `Translate the following post content (HTML):
 
-${data.content}`
+${data.content_html}`
 
     const { object } = await generateObject({
       model,

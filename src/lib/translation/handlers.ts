@@ -349,13 +349,24 @@ export class PostTranslationHandler extends BaseTranslationHandler<TranslationPo
 
     const post = await prisma.posts.findUnique({
       where: { id },
+      include: {
+        translations: {
+          where: { is_source: true },
+        },
+      },
     })
 
     if (!post) throw new Error(`Post ${entityId} not found`)
 
+    // Ensure we have the source translation (HTML)
+    const sourceTranslation = post.translations[0]
+    if (!sourceTranslation) {
+      throw new Error(`No source translation found for Post ${entityId}`)
+    }
+
     const sourceLocale = post.source_locale
     const sourceData = {
-      content: post.content,
+      content_html: sourceTranslation.content_html,
     }
 
     const result = await translationService.translatePost(
@@ -372,13 +383,13 @@ export class PostTranslationHandler extends BaseTranslationHandler<TranslationPo
         },
       },
       update: {
-        content_html: result.content, // Map 'content' from service to 'content_html' in DB
+        content_html: result.content_html,
         version: { increment: 1 },
       },
       create: {
         post_id: id,
         locale: targetLocale,
-        content_html: result.content,
+        content_html: result.content_html,
         version: 1,
         is_source: false,
       },
