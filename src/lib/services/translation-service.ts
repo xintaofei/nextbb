@@ -1,6 +1,6 @@
 import { createModel } from "@/lib/ai/model-provider"
 import { prisma } from "@/lib/prisma"
-import { generateObject } from "ai"
+import { generateText, Output } from "ai"
 import { z } from "zod"
 import { TranslationEntityType, LLMUsage } from "@prisma/client"
 
@@ -92,14 +92,14 @@ For Posts (Replies):
 Name: "${data.name}"
 ${data.description ? `Description: "${data.description}"` : ""}`
 
-    const { object } = await generateObject({
+    const { output } = await generateText({
       model,
-      schema: SimpleTranslationSchema,
+      output: Output.object({ schema: SimpleTranslationSchema }),
       system: this.getSystemPrompt(type, sourceLocale, targetLocale),
       prompt,
     })
 
-    return object
+    return output
   }
 
   /**
@@ -117,14 +117,14 @@ Title: "${data.title}"
 Content:
 ${data.content}`
 
-    const { object } = await generateObject({
+    const { output } = await generateText({
       model,
-      schema: TopicTranslationSchema,
+      output: Output.object({ schema: TopicTranslationSchema }),
       system: this.getSystemPrompt("TOPIC", sourceLocale, targetLocale),
       prompt,
     })
 
-    return object
+    return output
   }
 
   /**
@@ -140,14 +140,14 @@ ${data.content}`
 
 ${data.content_html}`
 
-    const { object } = await generateObject({
+    const { output } = await generateText({
       model,
-      schema: PostTranslationSchema,
+      output: Output.object({ schema: PostTranslationSchema }),
       system: this.getSystemPrompt("POST", sourceLocale, targetLocale),
       prompt,
     })
 
-    return object
+    return output
   }
 }
 
