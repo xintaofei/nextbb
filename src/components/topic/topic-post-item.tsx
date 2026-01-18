@@ -21,6 +21,7 @@ import {
 import { Skeleton } from "@/components/ui/skeleton"
 import { RelativeTime } from "@/components/common/relative-time"
 import parse from "html-react-parser"
+import { toast } from "sonner"
 
 const repliesFetcher = async (url: string) => {
   const res = await fetch(url)
@@ -149,10 +150,43 @@ export const TopicPostItem = memo(function TopicPostItem({
   }, [post.author.avatar])
 
   const [expanded, setExpanded] = useState(false)
+  const [overrideLocale, setOverrideLocale] = useState<string | null>(null)
+  const [translatedContent, setTranslatedContent] = useState<string | null>(
+    null
+  )
+
+  const currentDisplayLocale = overrideLocale ?? post.sourceLocale
 
   const handleShowReplies = useCallback(() => {
     setExpanded((prev) => !prev)
   }, [])
+
+  const handleLanguageChange = useCallback(
+    async (locale: string) => {
+      if (locale === post.sourceLocale) {
+        setOverrideLocale(null)
+        setTranslatedContent(null)
+        return
+      }
+
+      try {
+        const res = await fetch(
+          `/api/post/${post.id}/translation?locale=${locale}`
+        )
+        if (res.ok) {
+          const data = await res.json()
+          setTranslatedContent(data.contentHtml)
+          setOverrideLocale(locale)
+        } else {
+          toast.error("Failed to load translation")
+        }
+      } catch (e) {
+        console.error(e)
+        toast.error("Error loading translation")
+      }
+    },
+    [post.id, post.sourceLocale]
+  )
 
   const { data: subRepliesData, isLoading: loadingSubReplies } = useSWR(
     expanded ? `/api/post/${post.id}/replies` : null,
@@ -185,9 +219,19 @@ export const TopicPostItem = memo(function TopicPostItem({
         </UserInfoCard>
       </TimelineStepsIcon>
       <TimelineStepsContent className={`border-b`}>
-        <PostHeader post={post} index={index} floorOpText={floorOpText} />
+        <PostHeader
+          post={post}
+          index={index}
+          floorOpText={floorOpText}
+          currentLocale={currentDisplayLocale}
+          onLanguageChange={handleLanguageChange}
+        />
 
-        <PostContent post={post} deletedText={deletedText} />
+        <PostContent
+          post={post}
+          deletedText={deletedText}
+          translatedContent={translatedContent}
+        />
 
         {topicTypeSlot}
 

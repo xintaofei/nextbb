@@ -44,6 +44,7 @@ export async function GET(
         created_at: true,
         is_deleted: true,
         parent_id: true,
+        source_locale: true,
         user: { select: { id: true, name: true, avatar: true } },
       },
       orderBy: { floor_number: "asc" },
@@ -282,6 +283,7 @@ export async function GET(
       },
       content: p.content,
       contentHtml: getPostHtml(p.translations, locale) || undefined,
+      sourceLocale: p.source_locale,
       createdAt: p.created_at.toISOString(),
       minutesAgo: Math.max(
         Math.round((Date.now() - p.created_at.getTime()) / 60000),

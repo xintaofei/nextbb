@@ -5,6 +5,15 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuLabel,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import {
   Bookmark,
   Heart,
   Reply,
@@ -15,7 +24,10 @@ import {
   X,
   Gift,
   ChevronDown,
+  Languages,
+  Loader2,
 } from "lucide-react"
+import { useState } from "react"
 import { RelativeTime } from "@/components/common/relative-time"
 import { PostItem } from "@/types/topic"
 import { UserBadgesDisplay } from "@/components/common/user-badges-display"
@@ -31,6 +43,7 @@ import parse, {
 } from "html-react-parser"
 import { useTranslations } from "next-intl"
 import { cn } from "@/lib/utils"
+import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip"
 
 // --- Helper Components ---
 
@@ -84,13 +97,40 @@ export const PostHeader = memo(function PostHeader({
   index,
   floorOpText,
   size = "sm",
+  currentLocale,
+  onLanguageChange,
 }: {
   post: PostItem
   index: number
   floorOpText: React.ReactNode
   size?: "xs" | "sm" | "md" | "lg"
+  currentLocale?: string
+  onLanguageChange?: (locale: string) => void
 }) {
   const displayAvatar = post.author.avatar || undefined
+  const [languages, setLanguages] = useState<
+    { locale: string; isSource: boolean }[]
+  >([])
+  const [isLoadingLanguages, setIsLoadingLanguages] = useState(false)
+  const [isOpen, setIsOpen] = useState(false)
+
+  const handleOpenChange = async (open: boolean) => {
+    setIsOpen(open)
+    if (open && languages.length === 0) {
+      setIsLoadingLanguages(true)
+      try {
+        const res = await fetch(`/api/post/${post.id}/languages`)
+        if (res.ok) {
+          const data = await res.json()
+          setLanguages(data.languages)
+        }
+      } catch (e) {
+        console.error(e)
+      } finally {
+        setIsLoadingLanguages(false)
+      }
+    }
+  }
 
   return (
     <div className="flex flex-row justify-between items-center w-full">
@@ -109,9 +149,60 @@ export const PostHeader = memo(function PostHeader({
         <TimelineStepsTitle>{post.author.name}</TimelineStepsTitle>
         <PostBadges post={post} size={size} />
       </div>
-      <span className={`text-muted-foreground text-${size}`}>
-        {index === 0 ? floorOpText : "#" + index}
-      </span>
+      <div className="flex items-center gap-2">
+        {/* 多语言 */}
+        {onLanguageChange && currentLocale && (
+          <DropdownMenu open={isOpen} onOpenChange={handleOpenChange}>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className={`h-5 px-2 text-muted-foreground text-${size}`}
+                  >
+                    <Languages className="size-3" />
+                  </Button>
+                </DropdownMenuTrigger>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>此帖子最初使用 {currentLocale} 编写</p>
+              </TooltipContent>
+            </Tooltip>
+            <DropdownMenuContent align="end">
+              <DropdownMenuLabel>多语言选择</DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              {isLoadingLanguages ? (
+                <div className="p-2 flex justify-center items-center">
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                </div>
+              ) : (
+                <DropdownMenuRadioGroup
+                  value={currentLocale}
+                  onValueChange={onLanguageChange}
+                >
+                  {languages.map((lang) => (
+                    <DropdownMenuRadioItem
+                      key={lang.locale}
+                      value={lang.locale}
+                    >
+                      {lang.locale}
+                      {lang.isSource && (
+                        <span className="ml-2 text-xs text-muted-foreground">
+                          (Source)
+                        </span>
+                      )}
+                    </DropdownMenuRadioItem>
+                  ))}
+                </DropdownMenuRadioGroup>
+              )}
+            </DropdownMenuContent>
+          </DropdownMenu>
+        )}
+        <span className={`text-muted-foreground text-${size}`}>
+          {index === 0 ? floorOpText : "#" + index}
+        </span>
+      </div>
     </div>
   )
 })
@@ -145,14 +236,20 @@ export const parseOptions: HTMLReactParserOptions = {
 export const PostContent = memo(function PostContent({
   post,
   deletedText,
+  translatedContent,
 }: {
   post: PostItem
   deletedText: string
+  translatedContent?: string | null
 }) {
   return (
     <TimelineStepsDescription>
       {post.isDeleted ? (
         <span className="text-muted-foreground">{deletedText}</span>
+      ) : translatedContent ? (
+        <div className="prose dark:prose-invert max-w-none whitespace-normal">
+          {parse(translatedContent, parseOptions)}
+        </div>
       ) : post.contentHtml ? (
         <div className="prose dark:prose-invert max-w-none whitespace-normal">
           {parse(post.contentHtml, parseOptions)}
