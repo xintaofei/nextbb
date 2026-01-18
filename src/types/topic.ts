@@ -97,6 +97,7 @@ export type TopicInfo = {
   views: number
   participantCount: number
   participants: Author[]
+  lastActiveTime?: string | null
 }
 
 export type TopicInfoResult = { topic: TopicInfo }

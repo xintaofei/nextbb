@@ -44,7 +44,7 @@ import { BountyDisplay } from "@/components/topic/bounty-display"
 import { QuestionAcceptanceDisplay } from "@/components/topic/question-acceptance-display"
 import { LotteryDisplay } from "@/components/topic/lottery-display"
 import { type TopicTypeValue, TopicType, BountyType } from "@/types/topic-type"
-import { Eye, Users } from "lucide-react"
+import { Eye, Users, Clock } from "lucide-react"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 
 const fetcherInfo = async (url: string): Promise<TopicInfoResult> => {
@@ -884,21 +884,21 @@ export default function TopicPage() {
             </div>
           </>
         )}
-        <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-muted-foreground mt-2 bg-muted px-4 py-2 rounded-lg">
-          {loadingInfo ? (
-            <Skeleton className="h-5 w-64" />
-          ) : (
-            <>
+        {loadingInfo ? (
+          <Skeleton className="h-10 w-full mt-2" />
+        ) : (
+          <div className="flex flex-wrap justify-between items-center text-sm text-muted-foreground mt-2 bg-muted px-4 max-sm:px-2 py-2 rounded-lg">
+            <div className="flex items-center gap-x-6 max-sm:gap-x-4 gap-y-2">
               <div className="flex items-center gap-1">
                 <Eye className="w-4 h-4" />
-                <span>
-                  {topicInfo?.views || 0} {tc("Table.views")}
-                </span>
+                <span>{topicInfo?.views || 0}</span>
+                <span className="max-sm:hidden">{tc("Table.views")}</span>
               </div>
               <div className="flex items-center gap-1">
                 <Users className="w-4 h-4" />
-                <span>
-                  {topicInfo?.participantCount || 0} {tc("Table.participants")}
+                <span>{topicInfo?.participantCount || 0}</span>
+                <span className="max-sm:hidden">
+                  {tc("Table.participants")}
                 </span>
               </div>
               {topicInfo?.participants && topicInfo.participants.length > 0 && (
@@ -914,9 +914,16 @@ export default function TopicPage() {
                   ))}
                 </div>
               )}
-            </>
-          )}
-        </div>
+            </div>
+            <div className="flex items-center gap-1">
+              <Clock className="w-4 h-4" />
+              <span className="max-sm:hidden">{tc("Table.activity")} </span>
+              <RelativeTime
+                date={topicInfo?.lastActiveTime || topicInfo?.endTime || ""}
+              />
+            </div>
+          </div>
+        )}
       </div>
 
       <div className="flex flex-row justify-between gap-16">

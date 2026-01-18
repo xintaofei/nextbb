@@ -37,6 +37,7 @@ type TopicInfo = {
     name: string
     avatar: string
   }[]
+  lastActiveTime?: string
 }
 
 export async function GET(
@@ -102,7 +103,7 @@ export async function GET(
     Prisma.sql`UPDATE topics SET views = views + 1 WHERE id = ${topic.id}`
   )
 
-  const [participants, participantCountData] = await Promise.all([
+  const [participants, participantCountData, lastPost] = await Promise.all([
     prisma.posts.findMany({
       where: { topic_id: topicId, is_deleted: false },
       select: {
@@ -115,6 +116,11 @@ export async function GET(
     prisma.posts.groupBy({
       by: ["user_id"],
       where: { topic_id: topicId, is_deleted: false },
+    }),
+    prisma.posts.findFirst({
+      where: { topic_id: topicId, is_deleted: false },
+      orderBy: { created_at: "desc" },
+      select: { created_at: true },
     }),
   ])
 
@@ -161,6 +167,7 @@ export async function GET(
       name: p.user.name,
       avatar: p.user.avatar,
     })),
+    lastActiveTime: lastPost?.created_at.toISOString(),
   }
   return NextResponse.json({ topic: result })
 }
