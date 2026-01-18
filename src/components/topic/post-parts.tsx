@@ -152,7 +152,7 @@ export const PostHeader = memo(function PostHeader({
       </div>
       <div className="flex items-center gap-2">
         {/* 多语言 */}
-        {onLanguageChange && currentLocale && (
+        {onLanguageChange && currentLocale && !post.isDeleted && (
           <DropdownMenu open={isOpen} onOpenChange={handleOpenChange}>
             <Tooltip>
               <TooltipTrigger asChild>
