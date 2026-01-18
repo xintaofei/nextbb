@@ -50,9 +50,10 @@ export async function GET(
   }
 
   // If no translation record but it IS the source locale,
-  // we might want to return something?
-  // But usually source content is also stored in post_translations with is_source=true.
-  // If not, it might mean the background job hasn't run.
+  // fall back to the raw content from the posts table.
+  if (locale === post.source_locale) {
+    return NextResponse.json({ contentHtml: null, content: post.content })
+  }
 
   return NextResponse.json({ error: "Translation not found" }, { status: 404 })
 }

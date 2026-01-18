@@ -9,7 +9,7 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { PostItem } from "@/types/topic"
 import { UserInfoCard } from "@/components/common/user-info-card"
-import { ReactNode, useMemo, useState, memo, useCallback } from "react"
+import { ReactNode, useMemo, useState, memo, useCallback, useRef } from "react"
 import useSWR from "swr"
 import {
   PostHeader,
@@ -151,9 +151,13 @@ export const TopicPostItem = memo(function TopicPostItem({
 
   const [expanded, setExpanded] = useState(false)
   const [overrideLocale, setOverrideLocale] = useState<string | null>(null)
-  const [translatedContent, setTranslatedContent] = useState<string | null>(
+  const [overrideContentHtml, setOverrideContentHtml] = useState<string | null>(
     null
   )
+  const [overrideContentRaw, setOverrideContentRaw] = useState<string | null>(
+    null
+  )
+  const latestRequestedLocale = useRef<string | null>(null)
 
   const currentDisplayLocale =
     overrideLocale ?? post.contentLocale ?? post.sourceLocale
@@ -164,27 +168,38 @@ export const TopicPostItem = memo(function TopicPostItem({
 
   const handleLanguageChange = useCallback(
     async (locale: string) => {
-      const defaultLocale = post.contentLocale ?? post.sourceLocale
-      if (locale === defaultLocale) {
+      const initialLocale = post.contentLocale ?? post.sourceLocale
+      if (locale === initialLocale) {
+        latestRequestedLocale.current = locale
         setOverrideLocale(null)
-        setTranslatedContent(null)
+        setOverrideContentHtml(null)
+        setOverrideContentRaw(null)
         return
       }
 
+      latestRequestedLocale.current = locale
       try {
         const res = await fetch(
           `/api/post/${post.id}/translation?locale=${locale}`
         )
         if (res.ok) {
           const data = await res.json()
-          setTranslatedContent(data.contentHtml)
-          setOverrideLocale(locale)
+          // Race condition check: only update if this is still the latest requested locale
+          if (latestRequestedLocale.current === locale) {
+            setOverrideContentHtml(data.contentHtml || null)
+            setOverrideContentRaw(data.content || null)
+            setOverrideLocale(locale)
+          }
         } else {
-          toast.error("Failed to load translation")
+          if (latestRequestedLocale.current === locale) {
+            toast.error("Failed to load translation")
+          }
         }
       } catch (e) {
         console.error(e)
-        toast.error("Error loading translation")
+        if (latestRequestedLocale.current === locale) {
+          toast.error("Error loading translation")
+        }
       }
     },
     [post.id, post.sourceLocale, post.contentLocale]
@@ -232,7 +247,8 @@ export const TopicPostItem = memo(function TopicPostItem({
         <PostContent
           post={post}
           deletedText={deletedText}
-          translatedContent={translatedContent}
+          overrideContentHtml={overrideContentHtml}
+          overrideContentRaw={overrideContentRaw}
         />
 
         {topicTypeSlot}

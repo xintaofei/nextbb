@@ -239,20 +239,24 @@ export const parseOptions: HTMLReactParserOptions = {
 export const PostContent = memo(function PostContent({
   post,
   deletedText,
-  translatedContent,
+  overrideContentHtml,
+  overrideContentRaw,
 }: {
   post: PostItem
   deletedText: string
-  translatedContent?: string | null
+  overrideContentHtml?: string | null
+  overrideContentRaw?: string | null
 }) {
   return (
     <TimelineStepsDescription>
       {post.isDeleted ? (
         <span className="text-muted-foreground">{deletedText}</span>
-      ) : translatedContent ? (
+      ) : overrideContentHtml ? (
         <div className="prose dark:prose-invert max-w-none whitespace-normal">
-          {parse(translatedContent, parseOptions)}
+          {parse(overrideContentHtml, parseOptions)}
         </div>
+      ) : overrideContentRaw ? (
+        <div className="whitespace-pre-wrap">{overrideContentRaw}</div>
       ) : post.contentHtml ? (
         <div className="prose dark:prose-invert max-w-none whitespace-normal">
           {parse(post.contentHtml, parseOptions)}
