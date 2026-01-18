@@ -94,6 +94,9 @@ export type TopicInfo = {
     bgColor?: string | null
     textColor?: string | null
   }[]
+  views: number
+  participantCount: number
+  participants: Author[]
 }
 
 export type TopicInfoResult = { topic: TopicInfo }

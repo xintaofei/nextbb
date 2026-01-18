@@ -44,6 +44,8 @@ import { BountyDisplay } from "@/components/topic/bounty-display"
 import { QuestionAcceptanceDisplay } from "@/components/topic/question-acceptance-display"
 import { LotteryDisplay } from "@/components/topic/lottery-display"
 import { type TopicTypeValue, TopicType, BountyType } from "@/types/topic-type"
+import { Eye, Users } from "lucide-react"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 
 const fetcherInfo = async (url: string): Promise<TopicInfoResult> => {
   const res = await fetch(url, { cache: "no-store" })
@@ -882,6 +884,39 @@ export default function TopicPage() {
             </div>
           </>
         )}
+        <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-muted-foreground mt-2 bg-muted px-4 py-2 rounded-lg">
+          {loadingInfo ? (
+            <Skeleton className="h-5 w-64" />
+          ) : (
+            <>
+              <div className="flex items-center gap-1">
+                <Eye className="w-4 h-4" />
+                <span>
+                  {topicInfo?.views || 0} {tc("Table.views")}
+                </span>
+              </div>
+              <div className="flex items-center gap-1">
+                <Users className="w-4 h-4" />
+                <span>
+                  {topicInfo?.participantCount || 0} {tc("Table.participants")}
+                </span>
+              </div>
+              {topicInfo?.participants && topicInfo.participants.length > 0 && (
+                <div className="flex items-center -space-x-2">
+                  {topicInfo.participants.map((user) => (
+                    <Avatar
+                      key={user.id}
+                      className="w-6 h-6 border-2 border-background"
+                    >
+                      <AvatarImage src={user.avatar} alt={user.name} />
+                      <AvatarFallback>{user.name[0]}</AvatarFallback>
+                    </Avatar>
+                  ))}
+                </div>
+              )}
+            </>
+          )}
+        </div>
       </div>
 
       <div className="flex flex-row justify-between gap-16">

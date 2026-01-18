@@ -30,6 +30,13 @@ type TopicInfo = {
     bgColor?: string | null
     textColor?: string | null
   }[]
+  views: number
+  participantCount: number
+  participants: {
+    id: string
+    name: string
+    avatar: string
+  }[]
 }
 
 export async function GET(
@@ -50,6 +57,7 @@ export async function GET(
     where: { id: topicId, is_deleted: false },
     select: {
       id: true,
+      views: true,
       translations: getTranslationsQuery(locale, { title: true }),
       type: true,
       status: true,
@@ -94,6 +102,22 @@ export async function GET(
     Prisma.sql`UPDATE topics SET views = views + 1 WHERE id = ${topic.id}`
   )
 
+  const [participants, participantCountData] = await Promise.all([
+    prisma.posts.findMany({
+      where: { topic_id: topicId, is_deleted: false },
+      select: {
+        user: { select: { id: true, name: true, avatar: true } },
+      },
+      orderBy: { created_at: "asc" },
+      distinct: ["user_id"],
+      take: 5,
+    }),
+    prisma.posts.groupBy({
+      by: ["user_id"],
+      where: { topic_id: topicId, is_deleted: false },
+    }),
+  ])
+
   const categoryFields = getTranslationFields(
     topic.category.translations,
     locale,
@@ -130,6 +154,13 @@ export async function GET(
         textColor: l.tag.text_color,
       }
     }),
+    views: topic.views + 1,
+    participantCount: participantCountData.length,
+    participants: participants.map((p) => ({
+      id: String(p.user.id),
+      name: p.user.name,
+      avatar: p.user.avatar,
+    })),
   }
   return NextResponse.json({ topic: result })
 }

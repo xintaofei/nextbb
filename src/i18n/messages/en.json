@@ -34,6 +34,7 @@
       "topic": "Topic",
       "replies": "Replies",
       "views": "Views",
+      "participants": "Participants",
       "activity": "Activity",
       "empty": "No data",
       "related": "Related Topics"
