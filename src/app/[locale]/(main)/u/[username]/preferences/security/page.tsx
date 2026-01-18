@@ -16,9 +16,7 @@ export async function generateMetadata({
   }
 }
 
-export default async function SecurityPage({ params }: SecurityPageProps) {
-  const { username } = await params
-
+export default async function SecurityPage() {
   return (
     <div className="space-y-6">
       <div>

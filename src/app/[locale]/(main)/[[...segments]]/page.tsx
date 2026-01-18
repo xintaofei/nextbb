@@ -1,7 +1,7 @@
 "use client"
 
 import { useTranslations } from "next-intl"
-import { useEffect, useState, useMemo } from "react"
+import { useEffect, useState, useMemo, useCallback } from "react"
 import { SearchIcon } from "lucide-react"
 import {
   InputGroup,
@@ -61,63 +61,66 @@ export default function DynamicRoutePage() {
   const [loadingMore, setLoadingMore] = useState<boolean>(false)
   const hasMore = useMemo(() => topics.length < total, [topics.length, total])
 
-  async function loadTopics(initial?: boolean, overridePage?: number) {
-    try {
-      if (initial) {
-        setLoading(true)
-      } else {
-        setLoadingMore(true)
-      }
+  const loadTopics = useCallback(
+    async (initial?: boolean, overridePage?: number) => {
+      try {
+        if (initial) {
+          setLoading(true)
+        } else {
+          setLoadingMore(true)
+        }
 
-      // 将路由参数转换为 API 查询参数
-      const apiQuery = routeParamsToApiQuery(routeParams)
-      const qs = new URLSearchParams()
+        // 将路由参数转换为 API 查询参数
+        const apiQuery = routeParamsToApiQuery(routeParams)
+        const qs = new URLSearchParams()
 
-      if (apiQuery.categoryId) qs.set("categoryId", apiQuery.categoryId)
-      if (apiQuery.tagId) qs.set("tagId", apiQuery.tagId)
-      if (apiQuery.sort) qs.set("sort", apiQuery.sort)
+        if (apiQuery.categoryId) qs.set("categoryId", apiQuery.categoryId)
+        if (apiQuery.tagId) qs.set("tagId", apiQuery.tagId)
+        if (apiQuery.sort) qs.set("sort", apiQuery.sort)
 
-      qs.set("page", String(overridePage ?? (initial ? 1 : page)))
-      qs.set("pageSize", String(pageSize))
+        qs.set("page", String(overridePage ?? (initial ? 1 : page)))
+        qs.set("pageSize", String(pageSize))
 
-      const res = await fetch(`/api/topics?${qs.toString()}`, {
-        cache: "no-store",
-      })
-      if (!res.ok) return
-      const data: TopicListResult = await res.json()
-
-      if (initial) {
-        const unique = (() => {
-          const seen = new Set<string>()
-          const res: TopicListItem[] = []
-          for (const it of data.items) {
-            if (!seen.has(it.id)) {
-              seen.add(it.id)
-              res.push(it)
-            }
-          }
-          return res
-        })()
-        setTopics(unique)
-        setTotal(data.total)
-        setPage(1)
-      } else {
-        setTopics((prev) => {
-          const seen = new Set(prev.map((p) => p.id))
-          const next = data.items.filter((it) => !seen.has(it.id))
-          return [...prev, ...next]
+        const res = await fetch(`/api/topics?${qs.toString()}`, {
+          cache: "no-store",
         })
-        setTotal(data.total)
+        if (!res.ok) return
+        const data: TopicListResult = await res.json()
+
+        if (initial) {
+          const unique = (() => {
+            const seen = new Set<string>()
+            const res: TopicListItem[] = []
+            for (const it of data.items) {
+              if (!seen.has(it.id)) {
+                seen.add(it.id)
+                res.push(it)
+              }
+            }
+            return res
+          })()
+          setTopics(unique)
+          setTotal(data.total)
+          setPage(1)
+        } else {
+          setTopics((prev) => {
+            const seen = new Set(prev.map((p) => p.id))
+            const next = data.items.filter((it) => !seen.has(it.id))
+            return [...prev, ...next]
+          })
+          setTotal(data.total)
+        }
+      } catch {
+      } finally {
+        if (initial) {
+          setLoading(false)
+        } else {
+          setLoadingMore(false)
+        }
       }
-    } catch {
-    } finally {
-      if (initial) {
-        setLoading(false)
-      } else {
-        setLoadingMore(false)
-      }
-    }
-  }
+    },
+    [routeParams, page, pageSize]
+  )
 
   useEffect(() => {
     ;(async () => {
@@ -128,7 +131,7 @@ export default function DynamicRoutePage() {
       await loadTopics(true)
     })()
     return () => {}
-  }, [routeParams])
+  }, [routeParams, loadTopics])
 
   // 加载分类信息
   useEffect(() => {

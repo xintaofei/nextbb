@@ -41,5 +41,5 @@ export default async function FollowsPage({ params }: FollowsPageProps) {
     notFound()
   }
 
-  return <FollowsClient userId={user.id.toString()} username={user.name} />
+  return <FollowsClient userId={user.id.toString()} />
 }

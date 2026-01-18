@@ -39,7 +39,7 @@ export async function POST(req: Request) {
   try {
     const json = await req.json()
     body = CheckUsernameSchema.parse(json)
-  } catch (error) {
+  } catch {
     return NextResponse.json(
       { available: false, error: "Invalid username format" },
       { status: 400 }

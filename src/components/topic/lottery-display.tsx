@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Alert, AlertDescription } from "@/components/ui/alert"
-import { Clock, Users, Gift, Trophy, Target } from "lucide-react"
+import { Clock, Users, Gift, Target } from "lucide-react"
 import type { LotteryConfig, LotteryWinner } from "@/types/topic-type"
 
 type LotteryDisplayProps = {

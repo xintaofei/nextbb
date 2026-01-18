@@ -112,7 +112,7 @@ export async function recordLogin(
     const headersList = await headers()
     const ip = headersList.get("x-forwarded-for") || "unknown"
     const userAgent = headersList.get("user-agent")
-    const geo = await getGeoInfo(ip)
+    const geo = await getGeoInfo()
     const now = new Date()
 
     if (status === "SUCCESS" && userId) {

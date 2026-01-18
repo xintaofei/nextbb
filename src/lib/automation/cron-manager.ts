@@ -226,7 +226,7 @@ export class CronManager {
    * 停止所有任务
    */
   static stopAll(): void {
-    for (const [key, task] of state.tasks.entries()) {
+    for (const [, task] of state.tasks.entries()) {
       task.job.stop()
       console.log(`[CronManager] 已停止任务: 规则=${task.ruleId}`)
     }

@@ -20,9 +20,7 @@ export async function generateMetadata({
   }
 }
 
-export default async function AccountPage({ params }: AccountPageProps) {
-  const { username } = await params
-  const decodedUsername = decodeUsername(username)
+export default async function AccountPage() {
   const t = await getTranslations("User.preferences.account")
 
   // 获取当前用户信息

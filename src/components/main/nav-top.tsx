@@ -4,13 +4,7 @@ import Image from "next/image"
 import Link from "next/link"
 import { useSidebar } from "@/components/ui/sidebar"
 
-export function NavTop({
-  width = 120,
-  height = 80,
-}: {
-  width?: number
-  height?: number
-}) {
+export function NavTop({ width = 120 }: { width?: number }) {
   const { isMobile, setOpenMobile } = useSidebar()
 
   return (

@@ -24,7 +24,7 @@ function replaceLocaleInPath(
   const parts = pathname.split("/").filter(Boolean)
   if (parts.length === 0) return `/${target}`
   const first = parts[0]
-  if (first === "zh" || first === "en") {
+  if ((SUPPORTED_LOCALES as readonly string[]).includes(first)) {
     parts[0] = target
     return `/${parts.join("/")}`
   }

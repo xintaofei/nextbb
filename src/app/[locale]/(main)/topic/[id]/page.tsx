@@ -574,6 +574,7 @@ export default function TopicPage() {
       mutatePosts,
       pageSize,
       triggerReply,
+      locale,
     ]
   )
 

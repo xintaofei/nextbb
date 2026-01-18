@@ -395,8 +395,10 @@ export class BadgeRevokeHandler implements IActionHandler<BadgeRevokeParams> {
  */
 export class UserGroupChangeHandler implements IActionHandler<UserGroupChangeParams> {
   async execute(
-    _params: UserGroupChangeParams,
-    _context: ActionContext
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    _: UserGroupChangeParams,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    __: ActionContext
   ): Promise<ActionResult> {
     // TODO: 实现用户组变更逻辑
     return {

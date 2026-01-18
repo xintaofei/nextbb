@@ -80,7 +80,7 @@ function UserListItem({ user }: { user: User }) {
   )
 }
 
-function FollowsClient({ userId, username }: FollowsClientProps) {
+function FollowsClient({ userId }: Omit<FollowsClientProps, "username">) {
   const t = useTranslations("User.profile")
   const tEmpty = useTranslations("User.profile.empty")
   const [activeTab, setActiveTab] = useState<"followers" | "following">(

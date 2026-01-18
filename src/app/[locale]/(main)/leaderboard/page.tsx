@@ -59,7 +59,6 @@ function RankBadge({ rank }: { rank: number }) {
 function LeaderboardItem({
   ranking,
   valueLabel,
-  highlight = false,
 }: {
   ranking: RankingUser
   valueLabel: string

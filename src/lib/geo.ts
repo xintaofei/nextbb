@@ -10,7 +10,7 @@ interface GeoInfo {
  * 优先从请求头获取 (Vercel, Cloudflare, Generic)
  * 如果没有请求头，尝试通过 IP 获取 (TODO: 集成 IP 库)
  */
-export async function getGeoInfo(ip: string): Promise<GeoInfo> {
+export async function getGeoInfo(): Promise<GeoInfo> {
   try {
     const headersList = await headers()
 

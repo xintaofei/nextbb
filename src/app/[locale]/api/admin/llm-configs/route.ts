@@ -29,7 +29,7 @@ const createLLMConfigSchema = z.object({
   is_enabled: z.boolean().default(true),
 })
 
-export async function GET(_request: NextRequest) {
+export async function GET() {
   try {
     const auth = await getSessionUser()
     if (!auth || !auth.isAdmin) {

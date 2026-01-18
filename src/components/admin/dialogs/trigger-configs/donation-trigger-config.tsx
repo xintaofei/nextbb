@@ -1,6 +1,5 @@
 "use client"
 
-import { useEffect, useState } from "react"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Checkbox } from "@/components/ui/checkbox"
@@ -39,24 +38,18 @@ export function DonationTriggerConfig({
   const currency = (value.currency as string) || "CNY"
   const sources = (value.sources as string[]) || []
 
-  const [selectedSources, setSelectedSources] = useState<string[]>(sources)
+  const toggleSource = (source: string) => {
+    const next = sources.includes(source)
+      ? sources.filter((s) => s !== source)
+      : [...sources, source]
 
-  useEffect(() => {
-    if (selectedSources.length > 0) {
-      onChange({ ...value, sources: selectedSources })
+    if (next.length > 0) {
+      onChange({ ...value, sources: next })
     } else {
       const newValue = { ...value }
       delete newValue.sources
       onChange(newValue)
     }
-  }, [selectedSources])
-
-  const toggleSource = (source: string) => {
-    setSelectedSources((prev) =>
-      prev.includes(source)
-        ? prev.filter((s) => s !== source)
-        : [...prev, source]
-    )
   }
 
   return (
@@ -105,9 +98,10 @@ export function DonationTriggerConfig({
         <Label>{t("sources")}</Label>
         <div className="grid grid-cols-2 gap-2">
           {DONATION_SOURCES.map((source) => (
-            <div key={source} className="flex items-center gap-2">
+            <div key={source} className="flex items-center space-x-2">
               <Checkbox
-                checked={selectedSources.includes(source)}
+                id={`source-${source}`}
+                checked={sources.includes(source)}
                 onCheckedChange={() => toggleSource(source)}
               />
               <Label className="cursor-pointer">

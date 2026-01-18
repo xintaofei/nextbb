@@ -16,11 +16,7 @@ export async function generateMetadata({
   }
 }
 
-export default async function NotificationsPrefsPage({
-  params,
-}: NotificationsPrefsPageProps) {
-  const { username } = await params
-
+export default async function NotificationsPrefsPage() {
   return (
     <div className="space-y-6">
       <div>
