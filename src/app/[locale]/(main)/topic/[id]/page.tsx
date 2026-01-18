@@ -510,6 +510,8 @@ export default function TopicPage() {
           },
           content,
           contentHtml,
+          sourceLocale: locale,
+          contentLocale: locale,
           createdAt: new Date().toISOString(),
           minutesAgo: 0,
           isDeleted: false,
