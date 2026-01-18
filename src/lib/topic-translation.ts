@@ -28,6 +28,18 @@ export function getTopicTitle(
  * 根据当前语言获取帖子 HTML 内容
  * 优先返回当前语言的翻译，如果不存在则返回源语言翻译
  */
+export function getPostHtml(
+  translations: PostTranslation[] | undefined | null,
+  locale: string
+): string {
+  const { contentHtml } = getPostHtmlWithLocale(translations, locale)
+  return contentHtml
+}
+
+/**
+ * 根据当前语言获取帖子 HTML 内容及语言代码
+ * 优先返回当前语言的翻译，如果不存在则返回源语言翻译
+ */
 export function getPostHtmlWithLocale(
   translations: PostTranslation[] | undefined | null,
   locale: string

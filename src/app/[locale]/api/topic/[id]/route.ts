@@ -4,7 +4,11 @@ import { Prisma } from "@prisma/client"
 import { getSessionUser } from "@/lib/auth"
 import { getLocale } from "next-intl/server"
 import { getTranslationsQuery, getTranslationField } from "@/lib/locale"
-import { getTopicTitle, getPostHtml } from "@/lib/topic-translation"
+import {
+  getTopicTitle,
+  getPostHtmlWithLocale,
+  PostTranslation,
+} from "@/lib/topic-translation"
 
 type Author = {
   id: string
@@ -140,6 +144,10 @@ export async function GET(
   }
   const posts: PostItem[] = postsDb.map((p: PostRow) => {
     const idStr = String(p.id)
+    const { contentHtml, contentLocale } = getPostHtmlWithLocale(
+      p.translations as PostTranslation[],
+      locale
+    )
     return {
       id: idStr,
       author: {
@@ -148,7 +156,8 @@ export async function GET(
         avatar: p.user.avatar,
       },
       content: p.content,
-      contentHtml: getPostHtml(p.translations, locale),
+      contentHtml,
+      contentLocale,
       sourceLocale: p.source_locale,
       createdAt: p.created_at.toISOString(),
       minutesAgo: Math.max(
