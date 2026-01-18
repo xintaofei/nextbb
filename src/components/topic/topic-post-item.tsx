@@ -155,7 +155,8 @@ export const TopicPostItem = memo(function TopicPostItem({
     null
   )
 
-  const currentDisplayLocale = overrideLocale ?? post.sourceLocale
+  const currentDisplayLocale =
+    overrideLocale ?? post.contentLocale ?? post.sourceLocale
 
   const handleShowReplies = useCallback(() => {
     setExpanded((prev) => !prev)
@@ -163,7 +164,8 @@ export const TopicPostItem = memo(function TopicPostItem({
 
   const handleLanguageChange = useCallback(
     async (locale: string) => {
-      if (locale === post.sourceLocale) {
+      const defaultLocale = post.contentLocale ?? post.sourceLocale
+      if (locale === defaultLocale) {
         setOverrideLocale(null)
         setTranslatedContent(null)
         return
@@ -185,7 +187,7 @@ export const TopicPostItem = memo(function TopicPostItem({
         toast.error("Error loading translation")
       }
     },
-    [post.id, post.sourceLocale]
+    [post.id, post.sourceLocale, post.contentLocale]
   )
 
   const { data: subRepliesData, isLoading: loadingSubReplies } = useSWR(

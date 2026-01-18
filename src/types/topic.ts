@@ -19,6 +19,7 @@ export type PostItem = {
   author: Author
   content: string
   contentHtml?: string
+  contentLocale?: string
   sourceLocale: string
   createdAt: string
   minutesAgo: number

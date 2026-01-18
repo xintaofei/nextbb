@@ -167,7 +167,7 @@ export const PostHeader = memo(function PostHeader({
                 </DropdownMenuTrigger>
               </TooltipTrigger>
               <TooltipContent>
-                {tPost("originallyWrittenIn", { locale: currentLocale })}
+                {tPost("originallyWrittenIn", { locale: post.sourceLocale })}
               </TooltipContent>
             </Tooltip>
             <DropdownMenuContent align="end">

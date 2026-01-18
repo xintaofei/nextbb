@@ -1,4 +1,8 @@
-import { BaseTranslation, getTranslationField } from "@/lib/locale"
+import {
+  BaseTranslation,
+  getTranslationField,
+  selectTranslation,
+} from "@/lib/locale"
 
 export interface TopicTranslation extends BaseTranslation {
   title: string
@@ -24,10 +28,15 @@ export function getTopicTitle(
  * 根据当前语言获取帖子 HTML 内容
  * 优先返回当前语言的翻译，如果不存在则返回源语言翻译
  */
-export function getPostHtml(
+export function getPostHtmlWithLocale(
   translations: PostTranslation[] | undefined | null,
   locale: string
-): string {
-  if (!translations) return ""
-  return getTranslationField(translations, locale, "content_html", "")
+): { contentHtml: string; contentLocale: string } {
+  if (!translations || translations.length === 0)
+    return { contentHtml: "", contentLocale: "" }
+  const translation = selectTranslation(translations, locale)
+  return {
+    contentHtml: translation?.content_html || "",
+    contentLocale: translation?.locale || "",
+  }
 }

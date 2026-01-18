@@ -7,7 +7,7 @@ import {
   getTranslationFields,
   BadgeTranslation,
 } from "@/lib/locale"
-import { getPostHtml } from "@/lib/topic-translation"
+import { getPostHtmlWithLocale } from "@/lib/topic-translation"
 
 import { BadgeItem, PostItem, PostPage } from "@/types/topic"
 
@@ -274,6 +274,10 @@ export async function GET(
   const items: PostItem[] = postsDb.map((p) => {
     const idStr = String(p.id)
     const userId = String(p.user.id)
+    const { contentHtml, contentLocale } = getPostHtmlWithLocale(
+      p.translations,
+      locale
+    )
     return {
       id: idStr,
       author: {
@@ -282,7 +286,8 @@ export async function GET(
         avatar: p.user.avatar,
       },
       content: p.content,
-      contentHtml: getPostHtml(p.translations, locale) || undefined,
+      contentHtml: contentHtml || undefined,
+      contentLocale: contentLocale || undefined,
       sourceLocale: p.source_locale,
       createdAt: p.created_at.toISOString(),
       minutesAgo: Math.max(

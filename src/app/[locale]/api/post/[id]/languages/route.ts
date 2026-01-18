@@ -27,19 +27,25 @@ export async function GET(
     select: { locale: true, is_source: true },
   })
 
-  // Ensure source locale is in the list even if no translation record exists (though it should)
-  const languages = translations.map((t) => ({
-    locale: t.locale,
-    isSource: t.is_source,
-  }))
+  // Ensure source locale is in the list and normalized
+  const languagesMap = new Map<string, { locale: string; isSource: boolean }>()
 
-  const hasSourceInList = languages.some((l) => l.locale === post.source_locale)
-  if (!hasSourceInList) {
-    languages.push({
-      locale: post.source_locale,
-      isSource: true,
+  // Add source language first
+  languagesMap.set(post.source_locale, {
+    locale: post.source_locale,
+    isSource: true,
+  })
+
+  // Add other languages from translations
+  for (const t of translations) {
+    if (t.is_source) continue
+    languagesMap.set(t.locale, {
+      locale: t.locale,
+      isSource: false,
     })
   }
+
+  const languages = Array.from(languagesMap.values())
 
   return NextResponse.json({
     sourceLocale: post.source_locale,
