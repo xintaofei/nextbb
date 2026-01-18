@@ -12,6 +12,7 @@ import {
   Loader2,
   EllipsisVertical,
   Ban,
+  Play,
 } from "lucide-react"
 import {
   Table,
@@ -60,6 +61,7 @@ interface TranslationTaskRowProps {
   isSelected: boolean
   onToggle: (id: string) => void
   onRetry: (id: string) => void
+  onExecute: (id: string) => void
   onCancel: (id: string) => void
   onDelete: (id: string) => void
   isRetrying: boolean
@@ -164,6 +166,7 @@ const TranslationTaskRow = memo(
     isSelected,
     onToggle,
     onRetry,
+    onExecute,
     onCancel,
     onDelete,
     isRetrying,
@@ -243,6 +246,13 @@ const TranslationTaskRow = memo(
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
               <DropdownMenuItem
+                onClick={() => onExecute(task.id)}
+                disabled={isRetrying}
+              >
+                <Play className="mr-2 h-4 w-4" />
+                {t("table.action.execute")}
+              </DropdownMenuItem>
+              <DropdownMenuItem
                 onClick={() => onRetry(task.id)}
                 disabled={
                   isRetrying ||
@@ -285,6 +295,7 @@ interface TranslationTaskTableProps {
   selectedIds: string[]
   onSelectionChange: (ids: string[] | ((prev: string[]) => string[])) => void
   onRetry: (id: string) => void
+  onExecute: (id: string) => void
   onCancel: (id: string) => void
   onDelete: (id: string) => void
   isRetrying?: string | null
@@ -296,6 +307,7 @@ export function TranslationTaskTable({
   selectedIds,
   onSelectionChange,
   onRetry,
+  onExecute,
   onCancel,
   onDelete,
   isRetrying,
@@ -373,6 +385,7 @@ export function TranslationTaskTable({
                   isSelected={selectedIds.includes(task.id)}
                   onToggle={toggleSelect}
                   onRetry={onRetry}
+                  onExecute={onExecute}
                   onCancel={onCancel}
                   onDelete={onDelete}
                   isRetrying={isRetrying === task.id}

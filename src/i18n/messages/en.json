@@ -1769,7 +1769,8 @@
       "action": {
         "retry": "Retry",
         "delete": "Delete",
-        "cancel": "Cancel"
+        "cancel": "Cancel",
+        "execute": "Execute"
       }
     },
     "selectedCount": "{count} selected",
@@ -1783,6 +1784,8 @@
     "message": {
       "retrySuccess": "Task reset successfully, waiting for processing",
       "retryError": "Failed to retry task",
+      "executeSuccess": "Task execution triggered successfully",
+      "executeError": "Failed to trigger task execution",
       "deleteSuccess": "Task deleted successfully",
       "deleteError": "Failed to delete task",
       "cancelSuccess": "Task cancelled successfully",

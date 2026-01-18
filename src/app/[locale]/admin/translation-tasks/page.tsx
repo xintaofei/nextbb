@@ -107,6 +107,32 @@ export default function AdminTranslationTasksPage() {
     [t, mutate]
   )
 
+  const handleExecute = useCallback(
+    async (id: string) => {
+      try {
+        setIsRetrying(id)
+        const res = await fetch(`/api/admin/translation-tasks/${id}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ action: "execute" }),
+        })
+
+        if (res.ok) {
+          toast.success(t("message.executeSuccess"))
+          await mutate() // Revalidate data
+        } else {
+          const data = await res.json().catch(() => ({}))
+          toast.error(data.error || t("message.executeError"))
+        }
+      } catch {
+        toast.error(t("message.executeError"))
+      } finally {
+        setIsRetrying(null)
+      }
+    },
+    [t, mutate]
+  )
+
   const handleCancel = useCallback(
     async (id: string) => {
       try {
@@ -418,6 +444,7 @@ export default function AdminTranslationTasksPage() {
             selectedIds={selectedIds}
             onSelectionChange={setSelectedIds}
             onRetry={handleRetry}
+            onExecute={handleExecute}
             onCancel={handleCancel}
             onDelete={handleDelete}
             isRetrying={isRetrying}

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
 import { getSessionUser } from "@/lib/auth"
 import { TranslationTaskStatus, Prisma } from "@prisma/client"
+import { TranslationEvents } from "@/lib/translation/event-bus"
 
 import { getTranslations } from "next-intl/server"
 
@@ -83,11 +84,44 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
     // 获取当前任务状态
     const task = await prisma.translation_tasks.findUnique({
       where: { id: BigInt(id) },
-      select: { status: true },
+      select: {
+        status: true,
+        entity_type: true,
+        entity_id: true,
+        target_locale: true,
+        priority: true,
+      },
     })
 
     if (!task) {
       return NextResponse.json({ error: t("taskNotFound") }, { status: 404 })
+    }
+
+    if (action === "execute") {
+      try {
+        await prisma.translation_tasks.update({
+          where: { id: BigInt(id) },
+          data: {
+            status: TranslationTaskStatus.PENDING,
+            retry_count: 0,
+            error_message: null,
+            started_at: null,
+            completed_at: null,
+          },
+        })
+
+        // 触发事件
+        await TranslationEvents.createTask(task.entity_type, {
+          taskId: BigInt(id),
+          entityId: task.entity_id,
+          targetLocale: task.target_locale,
+          priority: task.priority,
+        })
+      } catch (error) {
+        throw error
+      }
+
+      return NextResponse.json({ success: true })
     }
 
     if (action === "retry") {

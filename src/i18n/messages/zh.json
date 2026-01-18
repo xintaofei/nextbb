@@ -1769,7 +1769,8 @@
       "action": {
         "retry": "重试",
         "delete": "删除",
-        "cancel": "取消"
+        "cancel": "取消",
+        "execute": "执行"
       }
     },
     "selectedCount": "已选择 {count} 项",
@@ -1783,6 +1784,8 @@
     "message": {
       "retrySuccess": "任务已重置，等待处理",
       "retryError": "任务重试失败",
+      "executeSuccess": "任务已触发执行",
+      "executeError": "任务执行触发失败",
       "deleteSuccess": "任务已删除",
       "deleteError": "任务删除失败",
       "cancelSuccess": "任务已取消",
