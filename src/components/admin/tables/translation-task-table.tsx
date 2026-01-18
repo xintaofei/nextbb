@@ -102,6 +102,7 @@ const StatusBadge = ({ status }: { status: TranslationTaskStatus }) => {
     case "CANCELLED":
       return (
         <Badge variant="outline" className="text-foreground/40">
+          <Ban className="h-3 w-3 mr-1" />
           {t("status.cancelled")}
         </Badge>
       )
