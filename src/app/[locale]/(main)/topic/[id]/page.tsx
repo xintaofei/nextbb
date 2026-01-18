@@ -105,8 +105,8 @@ export default function TopicPage() {
   const [editPostId, setEditPostId] = useState<string | null>(null)
   const [editInitial, setEditInitial] = useState<string>("")
   const [mutatingPostId, setMutatingPostId] = useState<string | null>(null)
-  const [previousPostsLength, setPreviousPostsLength] = useState<number>(0)
   const [highlightIndex, setHighlightIndex] = useState<number | null>(null)
+  const previousPostsLengthRef = useRef(0)
   const [bountyConfig, setBountyConfig] = useState<{
     bountyTotal: number
     bountyType: string
@@ -146,16 +146,25 @@ export default function TopicPage() {
     [postsPages]
   )
 
+  // 当 ID 变化时重置，避免不同话题切换时的高亮残留
   useEffect(() => {
-    if (posts.length > previousPostsLength && previousPostsLength > 0) {
-      setHighlightIndex(previousPostsLength)
+    previousPostsLengthRef.current = 0
+  }, [id])
+
+  useEffect(() => {
+    const previousLength = previousPostsLengthRef.current
+    // 只有在已有帖子且长度增加时才高亮（加载更多场景）
+    if (posts.length > previousLength && previousLength > 0) {
+      setHighlightIndex(previousLength)
       const timer = setTimeout(() => {
         setHighlightIndex(null)
       }, 2000)
+      previousPostsLengthRef.current = posts.length
       return () => clearTimeout(timer)
     }
-    setPreviousPostsLength(posts.length)
-  }, [posts.length, previousPostsLength])
+    // 更新长度记录
+    previousPostsLengthRef.current = posts.length
+  }, [posts.length])
 
   const lastPage =
     postsPages && postsPages.length > 0
