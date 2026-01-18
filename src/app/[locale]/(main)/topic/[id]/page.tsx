@@ -64,7 +64,7 @@ const fetcherRelated = async (url: string): Promise<RelatedResult> => {
 }
 
 export default function TopicPage() {
-  const { id } = useParams() as { id: string }
+  const { id, locale } = useParams() as { id: string; locale: string }
   const tc = useTranslations("Common")
   const t = useTranslations("Topic")
   const tb = useTranslations("Topic.Bounty")
@@ -115,11 +115,14 @@ export default function TopicPage() {
   } | null>(null)
 
   const getKey = useCallback(
-    (index: number, previousPageData: PostPage | null): string | null => {
+    (index: number, previousPageData: PostPage | null) => {
       if (previousPageData && !previousPageData.hasMore) return null
-      return `/api/topic/${id}/posts?page=${index + 1}&pageSize=${pageSize}`
+      return [
+        `/api/topic/${id}/posts?page=${index + 1}&pageSize=${pageSize}`,
+        locale,
+      ]
     },
-    [id, pageSize]
+    [id, pageSize, locale]
   )
   const {
     data: postsPages,
@@ -127,10 +130,17 @@ export default function TopicPage() {
     setSize,
     isLoading: loadingPosts,
     isValidating: validatingPosts,
-  } = useSWRInfinite<PostPage>(getKey, fetcherPosts, {
-    revalidateOnFocus: false,
-    revalidateFirstPage: false,
-  })
+  } = useSWRInfinite<PostPage>(
+    getKey,
+    (args: string | [string, string]) => {
+      const url = Array.isArray(args) ? args[0] : args
+      return fetcherPosts(url)
+    },
+    {
+      revalidateOnFocus: false,
+      revalidateFirstPage: false,
+    }
+  )
   const posts = useMemo(
     () => (postsPages ? postsPages.flatMap((p) => p.items) : []),
     [postsPages]
