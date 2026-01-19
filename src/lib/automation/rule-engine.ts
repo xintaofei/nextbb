@@ -11,8 +11,12 @@ import {
   type ActionContext,
   type ActionResult,
 } from "./action-handlers"
-import { RuleTriggerType, RuleActionType, RuleExecutionStatus } from "./types"
-import type { AutomationEventMap } from "./events"
+import {
+  RuleTriggerType,
+  RuleActionType,
+  RuleExecutionStatus,
+  type AutomationEventMap,
+} from "./types"
 
 // ==================== 规则条件匹配器 ====================
 

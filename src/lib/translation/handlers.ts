@@ -7,7 +7,7 @@ import {
   TranslationTopicCreatedEvent,
   TranslationPostCreatedEvent,
   BaseTranslationCreatedEvent,
-} from "./event-bus"
+} from "./types"
 import { translationService } from "@/lib/services/translation-service"
 
 /**

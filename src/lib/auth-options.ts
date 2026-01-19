@@ -5,7 +5,7 @@ import { prisma } from "@/lib/prisma"
 import { generateId } from "@/lib/id"
 import { LinuxDoProvider } from "@/lib/providers/linuxdo"
 import { uploadAvatarFromUrl } from "@/lib/blob"
-import { emitUserRegisterEvent } from "@/lib/automation/events"
+import { AutomationEvents } from "@/lib/automation/event-bus"
 import { recordLogin } from "@/lib/auth"
 
 function getEnv(name: string): string {
@@ -163,7 +163,7 @@ export const authOptions: NextAuthOptions = {
         })
 
         // 触发用户注册事件
-        await emitUserRegisterEvent({
+        await AutomationEvents.userRegister({
           userId: targetUser.id,
           email: targetUser.email,
           oauthProvider: provider,

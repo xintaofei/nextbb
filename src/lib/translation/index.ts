@@ -1,4 +1,5 @@
-import { translationBus } from "./event-bus"
+import { createServiceInitializer } from "@/lib/utils/service-lifecycle"
+import { TranslationEvents } from "./event-bus"
 import {
   CategoryTranslationHandler,
   TagTranslationHandler,
@@ -6,61 +7,30 @@ import {
   TopicTranslationHandler,
   PostTranslationHandler,
 } from "./handlers"
-
-/**
- * 全局状态类型
- */
-interface TranslationSystemState {
-  isInitialized: boolean
-  initializationPromise: Promise<void> | null
-}
-
-const globalForTranslationSystem = globalThis as unknown as {
-  translationSystemState: TranslationSystemState
-}
-
-if (!globalForTranslationSystem.translationSystemState) {
-  globalForTranslationSystem.translationSystemState = {
-    isInitialized: false,
-    initializationPromise: null,
-  }
-}
-
-const state = globalForTranslationSystem.translationSystemState
+import {
+  TranslationCategoryCreatedEvent,
+  TranslationTagCreatedEvent,
+  TranslationBadgeCreatedEvent,
+  TranslationTopicCreatedEvent,
+  TranslationPostCreatedEvent,
+} from "./types"
 
 /**
  * 初始化翻译系统
  *
  * 注册事件监听器并启动 Redis Stream 总线
+ * 使用通用生命周期管理器
  */
-export async function initializeTranslationSystem(): Promise<void> {
-  if (state.isInitialized) {
-    return
+export const initializeTranslationSystem = createServiceInitializer(
+  "Translation",
+  async () => {
+    // 1. 注册事件监听器
+    registerEventListeners()
+
+    // 2. 初始化 Redis 事件总线
+    await TranslationEvents.initialize()
   }
-
-  if (state.initializationPromise) {
-    return state.initializationPromise
-  }
-
-  state.initializationPromise = (async () => {
-    try {
-      // 1. 注册事件监听器
-      registerEventListeners()
-
-      // 2. 初始化 Redis 事件总线
-      await translationBus.initialize()
-
-      state.isInitialized = true
-      console.log("[Translation] System initialized successfully")
-    } catch (error) {
-      console.error("[Translation] System initialization failed:", error)
-      state.initializationPromise = null
-      throw error
-    }
-  })()
-
-  return state.initializationPromise
-}
+)
 
 /**
  * 注册事件监听器
@@ -74,27 +44,30 @@ function registerEventListeners(): void {
   const postHandler = new PostTranslationHandler()
 
   // 注册分类事件
-  translationBus.on("category", async (data) => {
-    await categoryHandler.handle(data)
-  })
+  TranslationEvents.on(
+    "category",
+    async (data: TranslationCategoryCreatedEvent) => {
+      await categoryHandler.handle(data)
+    }
+  )
 
   // 注册标签事件
-  translationBus.on("tag", async (data) => {
+  TranslationEvents.on("tag", async (data: TranslationTagCreatedEvent) => {
     await tagHandler.handle(data)
   })
 
   // 注册徽章事件
-  translationBus.on("badge", async (data) => {
+  TranslationEvents.on("badge", async (data: TranslationBadgeCreatedEvent) => {
     await badgeHandler.handle(data)
   })
 
   // 注册话题事件
-  translationBus.on("topic", async (data) => {
+  TranslationEvents.on("topic", async (data: TranslationTopicCreatedEvent) => {
     await topicHandler.handle(data)
   })
 
   // 注册帖子事件
-  translationBus.on("post", async (data) => {
+  TranslationEvents.on("post", async (data: TranslationPostCreatedEvent) => {
     await postHandler.handle(data)
   })
 }

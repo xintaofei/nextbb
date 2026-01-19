@@ -4,7 +4,7 @@ import { prisma } from "@/lib/prisma"
 import { getGeoInfo } from "@/lib/geo"
 import { differenceInCalendarDays } from "date-fns"
 import { generateId } from "@/lib/id"
-import { emitUserLoginEvent } from "@/lib/automation/events"
+import { AutomationEvents } from "@/lib/automation/event-bus"
 
 const ALG = "HS256"
 const ISS = "nextbb"
@@ -163,7 +163,7 @@ export async function recordLogin(
       })
 
       // Emit event
-      await emitUserLoginEvent({
+      await AutomationEvents.userLogin({
         userId: userId,
         loginTime: now,
         consecutiveDays: consecutiveDays,

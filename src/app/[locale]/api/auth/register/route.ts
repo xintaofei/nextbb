@@ -5,7 +5,7 @@ import { prisma } from "@/lib/prisma"
 import { generateId } from "@/lib/id"
 import { signAuthToken, setAuthCookie, recordLogin } from "@/lib/auth"
 import { createHash } from "crypto"
-import { emitUserRegisterEvent } from "@/lib/automation/events"
+import { AutomationEvents } from "@/lib/automation/event-bus"
 
 const schema = z.object({
   email: z.email(),
@@ -75,7 +75,7 @@ export async function POST(request: Request) {
   })
 
   // 触发用户注册事件
-  await emitUserRegisterEvent({
+  await AutomationEvents.userRegister({
     userId: user.id,
     email: user.email,
   })
