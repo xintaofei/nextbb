@@ -27,7 +27,7 @@ export const initializeAutomationSystem = createServiceInitializer(
     // 1. 注册事件监听器（必须在初始化前注册）
     registerEventListeners()
 
-    // 2. 初始化 Redis 事件总线（启动消息处理循环）
+    // 2. 初始化事件总线（根据配置启动 Redis 或本地消息处理）
     await AutomationEvents.initialize()
 
     // 3. 初始化定时任务管理器

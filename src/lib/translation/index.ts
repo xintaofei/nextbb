@@ -18,7 +18,7 @@ import {
 /**
  * 初始化翻译系统
  *
- * 注册事件监听器并启动 Redis Stream 总线
+ * 注册事件监听器并启动事件总线（根据配置启动 Redis 或本地消息处理）
  * 使用通用生命周期管理器
  */
 export const initializeTranslationSystem = createServiceInitializer(
@@ -27,7 +27,7 @@ export const initializeTranslationSystem = createServiceInitializer(
     // 1. 注册事件监听器
     registerEventListeners()
 
-    // 2. 初始化 Redis 事件总线
+    // 2. 初始化事件总线
     await TranslationEvents.initialize()
   }
 )
