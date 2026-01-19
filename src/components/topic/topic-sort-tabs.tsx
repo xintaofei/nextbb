@@ -90,33 +90,39 @@ export function TopicSortTabs({
     })
   }
 
-  function handleSortClick(e: React.MouseEvent) {
+  function handleSortClick(e: React.MouseEvent, sort: RouteSortValue) {
     if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) {
       e.stopPropagation()
       return
     }
     e.preventDefault()
+    setSort(sort)
   }
 
   return (
-    <Tabs
-      value={selectedSort}
-      onValueChange={(v) => setSort(v as SortValue)}
-      className={className}
-    >
+    <Tabs value={selectedSort} onValueChange={() => {}} className={className}>
       <TabsList>
         <TabsTrigger className="md:px-4" value="latest" asChild>
-          <Link href={getSortPath("latest")} onClick={handleSortClick}>
+          <Link
+            href={getSortPath("latest")}
+            onClick={(e) => handleSortClick(e, "latest")}
+          >
             {tc("Tabs.latest")}
           </Link>
         </TabsTrigger>
         <TabsTrigger className="md:px-4" value="top" asChild>
-          <Link href={getSortPath("top")} onClick={handleSortClick}>
+          <Link
+            href={getSortPath("top")}
+            onClick={(e) => handleSortClick(e, "top")}
+          >
             {tc("Tabs.top")}
           </Link>
         </TabsTrigger>
         <TabsTrigger className="md:px-4" value="new" asChild>
-          <Link href={getSortPath("new")} onClick={handleSortClick}>
+          <Link
+            href={getSortPath("new")}
+            onClick={(e) => handleSortClick(e, "new")}
+          >
             {tc("Tabs.new")}
           </Link>
         </TabsTrigger>
