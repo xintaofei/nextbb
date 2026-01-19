@@ -1,8 +1,10 @@
 "use client"
 
 import { useTranslations } from "next-intl"
-import { useEffect, useState, useMemo, useCallback } from "react"
+import { useState, useMemo } from "react"
 import { SearchIcon } from "lucide-react"
+import useSWR from "swr"
+import useSWRInfinite from "swr/infinite"
 import {
   InputGroup,
   InputGroupAddon,
@@ -19,7 +21,6 @@ import {
 } from "@/lib/route-utils"
 import { notFound } from "next/navigation"
 import { Skeleton } from "@/components/ui/skeleton"
-import useSWR from "swr"
 
 type TopicListResult = {
   items: TopicListItem[]
@@ -37,7 +38,7 @@ type CategoryDTO = {
 
 const fetcher = async (url: string) => {
   const res = await fetch(url)
-  if (!res.ok) throw new Error("Failed to fetch category")
+  if (!res.ok) throw new Error("Failed to fetch data")
   return res.json()
 }
 
@@ -63,85 +64,38 @@ export default function DynamicRoutePage() {
     fetcher
   )
 
-  const [loading, setLoading] = useState<boolean>(true)
-  const [topics, setTopics] = useState<TopicListItem[]>([])
-  const [page, setPage] = useState<number>(1)
-  const [pageSize] = useState<number>(20)
-  const [total, setTotal] = useState<number>(0)
-  const [loadingMore, setLoadingMore] = useState<boolean>(false)
-  const hasMore = useMemo(() => topics.length < total, [topics.length, total])
+  const getKey = (pageIndex: number, previousPageData: TopicListResult) => {
+    if (previousPageData && !previousPageData.items.length) return null
+    const apiQuery = routeParamsToApiQuery(routeParams)
+    const qs = new URLSearchParams()
+    if (apiQuery.categoryId) qs.set("categoryId", apiQuery.categoryId)
+    if (apiQuery.tagId) qs.set("tagId", apiQuery.tagId)
+    if (apiQuery.sort) qs.set("sort", apiQuery.sort)
+    qs.set("page", String(pageIndex + 1))
+    qs.set("pageSize", "2")
+    return `/api/topics?${qs.toString()}`
+  }
 
-  const loadTopics = useCallback(
-    async (initial?: boolean, overridePage?: number) => {
-      try {
-        if (initial) {
-          setLoading(true)
-        } else {
-          setLoadingMore(true)
-        }
+  const {
+    data: topicPages,
+    size,
+    setSize,
+    isLoading: isTopicLoading,
+    mutate,
+  } = useSWRInfinite<TopicListResult>(getKey, fetcher, {
+    revalidateFirstPage: true, // 始终重新验证第一页以获取最新数据
+    revalidateOnFocus: true, // 窗口聚焦时自动刷新
+  })
 
-        // 将路由参数转换为 API 查询参数
-        const apiQuery = routeParamsToApiQuery(routeParams)
-        const qs = new URLSearchParams()
+  const topics = useMemo(() => {
+    return topicPages ? topicPages.flatMap((page) => page.items) : []
+  }, [topicPages])
 
-        if (apiQuery.categoryId) qs.set("categoryId", apiQuery.categoryId)
-        if (apiQuery.tagId) qs.set("tagId", apiQuery.tagId)
-        if (apiQuery.sort) qs.set("sort", apiQuery.sort)
-
-        qs.set("page", String(overridePage ?? (initial ? 1 : page)))
-        qs.set("pageSize", String(pageSize))
-
-        const res = await fetch(`/api/topics?${qs.toString()}`, {
-          cache: "no-store",
-        })
-        if (!res.ok) return
-        const data: TopicListResult = await res.json()
-
-        if (initial) {
-          const unique = (() => {
-            const seen = new Set<string>()
-            const res: TopicListItem[] = []
-            for (const it of data.items) {
-              if (!seen.has(it.id)) {
-                seen.add(it.id)
-                res.push(it)
-              }
-            }
-            return res
-          })()
-          setTopics(unique)
-          setTotal(data.total)
-          setPage(1)
-        } else {
-          setTopics((prev) => {
-            const seen = new Set(prev.map((p) => p.id))
-            const next = data.items.filter((it) => !seen.has(it.id))
-            return [...prev, ...next]
-          })
-          setTotal(data.total)
-        }
-      } catch {
-      } finally {
-        if (initial) {
-          setLoading(false)
-        } else {
-          setLoadingMore(false)
-        }
-      }
-    },
-    [routeParams, page, pageSize]
-  )
-
-  useEffect(() => {
-    ;(async () => {
-      setLoading(true)
-      setPage(1)
-      setTotal(0)
-      setTopics([])
-      await loadTopics(true)
-    })()
-    return () => {}
-  }, [routeParams, loadTopics])
+  const total = topicPages?.[0]?.total ?? 0
+  const isLoadingMore =
+    isTopicLoading ||
+    (size > 0 && topicPages && typeof topicPages[size - 1] === "undefined")
+  const hasMore = topics.length < total
 
   return (
     <div className="flex min-h-screen w-full flex-col px-8 max-sm:p-4 gap-4 max-sm:gap-2">
@@ -187,31 +141,23 @@ export default function DynamicRoutePage() {
         </InputGroup>
       </div>
       <TopicHeaderBar
-        onSortStart={() => {
-          setLoading(true)
-          setPage(1)
-          setTotal(0)
-          setTopics([])
-        }}
+        onSortStart={() => {}}
         onNewTopicClick={() => setIsNewTopicDialogOpen(true)}
       />
       <TopicList
         items={topics}
-        loading={loading}
+        loading={!topicPages && isTopicLoading}
         hasMore={hasMore}
-        loadingMore={loadingMore}
-        onLoadMore={async () => {
-          if (loadingMore || !hasMore) return
-          const next = page + 1
-          setPage(next)
-          await loadTopics(false, next)
+        loadingMore={isLoadingMore}
+        onLoadMore={() => {
+          setSize(size + 1)
         }}
       />
       <NewTopicDialog
         open={isNewTopicDialogOpen}
         onOpenChange={setIsNewTopicDialogOpen}
         onPublished={() => {
-          loadTopics(true)
+          mutate()
         }}
       />
     </div>
