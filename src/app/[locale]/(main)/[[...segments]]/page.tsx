@@ -19,6 +19,7 @@ import {
 } from "@/lib/route-utils"
 import { notFound } from "next/navigation"
 import { Skeleton } from "@/components/ui/skeleton"
+import useSWR from "swr"
 
 type TopicListResult = {
   items: TopicListItem[]
@@ -34,14 +35,18 @@ type CategoryDTO = {
   description: string | null
 }
 
+const fetcher = async (url: string) => {
+  const res = await fetch(url)
+  if (!res.ok) throw new Error("Failed to fetch category")
+  return res.json()
+}
+
 export default function DynamicRoutePage() {
   const t = useTranslations("Index")
   const tc = useTranslations("Common")
   const tCat = useTranslations("Category")
   const params = useParams<{ segments?: string[] }>()
   const [isNewTopicDialogOpen, setIsNewTopicDialogOpen] = useState(false)
-  const [category, setCategory] = useState<CategoryDTO | null>(null)
-  const [categoryLoading, setCategoryLoading] = useState(false)
 
   // 解析路由参数
   const routeParams = useMemo(() => {
@@ -52,6 +57,11 @@ export default function DynamicRoutePage() {
     }
     return parsed as RouteParams
   }, [params.segments])
+
+  const { data: category, isLoading: categoryLoading } = useSWR<CategoryDTO>(
+    routeParams.categoryId ? `/api/category/${routeParams.categoryId}` : null,
+    fetcher
+  )
 
   const [loading, setLoading] = useState<boolean>(true)
   const [topics, setTopics] = useState<TopicListItem[]>([])
@@ -132,32 +142,6 @@ export default function DynamicRoutePage() {
     })()
     return () => {}
   }, [routeParams, loadTopics])
-
-  // 加载分类信息
-  useEffect(() => {
-    if (routeParams.categoryId) {
-      ;(async () => {
-        setCategoryLoading(true)
-        try {
-          const res = await fetch(`/api/category/${routeParams.categoryId}`, {
-            cache: "no-store",
-          })
-          if (res.ok) {
-            const data = await res.json()
-            setCategory(data)
-          } else {
-            setCategory(null)
-          }
-        } catch {
-          setCategory(null)
-        } finally {
-          setCategoryLoading(false)
-        }
-      })()
-    } else {
-      setCategory(null)
-    }
-  }, [routeParams.categoryId])
 
   return (
     <div className="flex min-h-screen w-full flex-col px-8 max-sm:p-4 gap-4 max-sm:gap-2">
