@@ -833,7 +833,7 @@ export default function TopicPage() {
   }
 
   return (
-    <div className="flex min-h-screen w-full flex-col p-8 max-sm:p-4 gap-8">
+    <div className="flex min-h-screen w-full flex-col p-8 max-sm:p-4 gap-4">
       <div className="flex flex-col gap-2">
         {loadingInfo ? (
           <>
@@ -888,55 +888,56 @@ export default function TopicPage() {
             </div>
           </>
         )}
-        {loadingInfo ? (
-          <Skeleton className="h-10 w-full mt-2" />
-        ) : (
-          <div className="flex flex-wrap justify-between items-center text-sm text-muted-foreground mt-2 bg-muted px-4 max-sm:px-2 py-2 rounded-lg">
-            <div className="flex items-center gap-x-6 max-sm:gap-x-4 gap-y-2">
-              <div className="flex items-center gap-1">
-                <Eye className="w-4 h-4" />
-                <span>{topicInfo?.views || 0}</span>
-                <span className="max-sm:hidden">{tc("Table.views")}</span>
-              </div>
-              <div className="flex items-center gap-1">
-                <Users className="w-4 h-4" />
-                <span>{topicInfo?.participantCount || 0}</span>
-                <span className="max-sm:hidden">
-                  {tc("Table.participants")}
-                </span>
-              </div>
-              {topicInfo?.participants && topicInfo.participants.length > 0 && (
-                <div className="flex items-center -space-x-2">
-                  {topicInfo.participants.map((user) => (
-                    <UserInfoCard
-                      key={user.id}
-                      userId={user.id}
-                      userName={user.name}
-                      userAvatar={user.avatar}
-                      side="bottom"
-                    >
-                      <Avatar className="w-6 h-6 border-2 border-background cursor-pointer">
-                        <AvatarImage src={user.avatar} alt={user.name} />
-                        <AvatarFallback>{user.name[0]}</AvatarFallback>
-                      </Avatar>
-                    </UserInfoCard>
-                  ))}
-                </div>
-              )}
-            </div>
-            <div className="flex items-center gap-1">
-              <Clock className="w-4 h-4" />
-              <span className="max-sm:hidden">{tc("Table.activity")} </span>
-              <RelativeTime
-                date={topicInfo?.lastActiveTime || topicInfo?.endTime || ""}
-              />
-            </div>
-          </div>
-        )}
       </div>
 
       <div className="flex flex-row justify-between gap-16">
         <div className="flex-1">
+          {loadingInfo ? (
+            <Skeleton className="h-10 w-full mb-8" />
+          ) : (
+            <div className="flex flex-wrap justify-between items-center text-sm text-muted-foreground mb-8 bg-muted/50 px-4 max-sm:px-2 py-2 rounded-lg">
+              <div className="flex items-center gap-x-8 max-sm:gap-x-4 gap-y-2">
+                <div className="flex items-center gap-1">
+                  <Eye className="w-4 h-4" />
+                  <span>{topicInfo?.views || 0}</span>
+                  <span className="max-sm:hidden">{tc("Table.views")}</span>
+                </div>
+                <div className="flex items-center gap-1">
+                  <Users className="w-4 h-4" />
+                  <span>{topicInfo?.participantCount || 0}</span>
+                  <span className="max-sm:hidden">
+                    {tc("Table.participants")}
+                  </span>
+                </div>
+                {topicInfo?.participants &&
+                  topicInfo.participants.length > 0 && (
+                    <div className="flex items-center -space-x-2">
+                      {topicInfo.participants.map((user) => (
+                        <UserInfoCard
+                          key={user.id}
+                          userId={user.id}
+                          userName={user.name}
+                          userAvatar={user.avatar}
+                          side="bottom"
+                        >
+                          <Avatar className="w-6 h-6 border-2 border-background cursor-pointer">
+                            <AvatarImage src={user.avatar} alt={user.name} />
+                            <AvatarFallback>{user.name[0]}</AvatarFallback>
+                          </Avatar>
+                        </UserInfoCard>
+                      ))}
+                    </div>
+                  )}
+              </div>
+              <div className="flex items-center gap-1">
+                <Clock className="w-4 h-4" />
+                <span className="max-sm:hidden">{tc("Table.activity")} </span>
+                <RelativeTime
+                  date={topicInfo?.lastActiveTime || topicInfo?.endTime || ""}
+                />
+              </div>
+            </div>
+          )}
           {postListLoading ? (
             <TimelineSteps>
               <PostSkeletonList count={8} />

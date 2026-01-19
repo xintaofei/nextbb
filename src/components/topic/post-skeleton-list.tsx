@@ -40,7 +40,10 @@ export function PostSkeletonList({
                 <Skeleton className="h-5 w-24" />
                 <Skeleton className="h-4 w-16" />
               </div>
-              <Skeleton className="h-4 w-10" />
+              <div className="flex flex-row gap-2 items-center">
+                <Skeleton className="h-4 w-8" />
+                <Skeleton className="h-4 w-10" />
+              </div>
             </div>
             <div className="mt-2 flex flex-col gap-2">
               <Skeleton className="h-4 w-full" />
