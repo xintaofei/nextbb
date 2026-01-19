@@ -67,11 +67,12 @@ export function HotTags({ className, count = 5 }: HotTagsProps) {
 
   return (
     <div className={className} aria-label={tc("Filters.tag")}>
-      <div className="flex flex-row flex-wrap items-center gap-2 bg-muted p-2 rounded-lg">
-        <span className="inline-flex items-center gap-1 text-sm">
+      <div className="flex flex-row flex-wrap items-center gap-2">
+        <span
+          className="inline-flex items-center text-sm"
+          title={tc("Tabs.hot") + tc("Filters.tag")}
+        >
           <Flame className="size-4 text-destructive" />
-          {tc("Tabs.hot")}
-          {tc("Filters.tag")}
         </span>
         <div className="flex flex-row flex-wrap items-center gap-2">
           {loading
