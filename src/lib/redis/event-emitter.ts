@@ -90,6 +90,55 @@ export class RedisEventEmitter<TEventMap extends Record<string, unknown>> {
   }
 
   /**
+   * 恢复未处理的消息 (PEL)
+   *
+   * 在服务重启时，处理那些已分发给消费者但未被 ACK 的消息
+   */
+  private async recoverPendingMessages(): Promise<void> {
+    const eventTypes = Array.from(this.handlers.keys())
+    if (eventTypes.length === 0) return
+
+    console.log(
+      `[RedisStreamBus:${this.options.consumerGroup}] 开始恢复未处理消息 (PEL)...`
+    )
+
+    for (const eventType of eventTypes) {
+      const streamKey = this.options.streamPrefix + eventType
+      try {
+        // 循环读取直到没有待处理消息
+        while (true) {
+          const results = (await this.getClient().xreadgroup(
+            "GROUP",
+            this.options.consumerGroup,
+            this.getConsumerName(),
+            "COUNT",
+            "50", // 恢复时使用较大的批量
+            "STREAMS",
+            streamKey,
+            "0" // 0 表示读取 PEL 中的消息
+          )) as Array<[string, Array<[string, string[]]>]> | null
+
+          if (!results || results.length === 0) break
+
+          const [, entries] = results[0]
+          if (!entries || entries.length === 0) break
+
+          console.log(
+            `[RedisStreamBus:${this.options.consumerGroup}] 恢复 ${entries.length} 条 ${eventType} 消息`
+          )
+
+          await this.processStreamEntries(eventType, streamKey, entries)
+        }
+      } catch (error) {
+        console.error(
+          `[RedisStreamBus:${this.options.consumerGroup}] 恢复消息失败 ${eventType}:`,
+          error
+        )
+      }
+    }
+  }
+
+  /**
    * 订阅事件
    */
   on<K extends keyof TEventMap>(
@@ -161,16 +210,18 @@ export class RedisEventEmitter<TEventMap extends Record<string, unknown>> {
     this.isProcessing = true
 
     // 异步启动处理循环
-    this.processMessages().catch((err) => {
-      console.error(
-        `[RedisStreamBus:${this.options.consumerGroup}] 消息处理循环异常:`,
-        err
-      )
-      this.isProcessing = false
+    this.recoverPendingMessages()
+      .then(() => this.processMessages())
+      .catch((err) => {
+        console.error(
+          `[RedisStreamBus:${this.options.consumerGroup}] 消息处理循环异常:`,
+          err
+        )
+        this.isProcessing = false
 
-      // 尝试重启
-      this.attemptRestart()
-    })
+        // 尝试重启
+        this.attemptRestart()
+      })
   }
 
   /**
