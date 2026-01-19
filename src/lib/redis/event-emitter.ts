@@ -92,42 +92,50 @@ export class RedisEventEmitter<TEventMap extends Record<string, unknown>> {
   /**
    * 恢复未处理的消息 (PEL)
    *
-   * 在服务重启时，处理那些已分发给消费者但未被 ACK 的消息
+   * 使用 XAUTOCLAIM 扫描并接管消费者组中长时间未处理的消息
+   * 即使消息属于已崩溃的旧消费者（因为消费者名称是随机的），也能被接管处理
    */
   private async recoverPendingMessages(): Promise<void> {
     const eventTypes = Array.from(this.handlers.keys())
     if (eventTypes.length === 0) return
 
     console.log(
-      `[RedisStreamBus:${this.options.consumerGroup}] 开始恢复未处理消息 (PEL)...`
+      `[RedisStreamBus:${this.options.consumerGroup}] 开始检查并恢复失效消费者遗留的消息 (XAUTOCLAIM)...`
     )
 
     for (const eventType of eventTypes) {
       const streamKey = this.options.streamPrefix + eventType
+      let cursor = "0-0"
+
       try {
-        // 循环读取直到没有待处理消息
+        // 循环读取直到游标回到 0-0，表示扫描完一遍 PEL
         while (true) {
-          const results = (await this.getClient().xreadgroup(
-            "GROUP",
+          // XAUTOCLAIM key group consumer min-idle-time start [COUNT count]
+          // 这里的 min-idle-time 设为 60000ms (1分钟)，认为超过1分钟未 ACK 的消息是处理失败或消费者崩溃
+          const result = (await this.getClient().xautoclaim(
+            streamKey,
             this.options.consumerGroup,
             this.getConsumerName(),
+            60000,
+            cursor,
             "COUNT",
-            "50", // 恢复时使用较大的批量
-            "STREAMS",
-            streamKey,
-            "0" // 0 表示读取 PEL 中的消息
-          )) as Array<[string, Array<[string, string[]]>]> | null
+            50
+          )) as [string, Array<[string, string[]]>]
 
-          if (!results || results.length === 0) break
+          const nextCursor = result[0]
+          const entries = result[1]
 
-          const [, entries] = results[0]
-          if (!entries || entries.length === 0) break
+          if (entries && entries.length > 0) {
+            console.log(
+              `[RedisStreamBus:${this.options.consumerGroup}] 从流 ${eventType} 恢复了 ${entries.length} 条超时消息`
+            )
 
-          console.log(
-            `[RedisStreamBus:${this.options.consumerGroup}] 恢复 ${entries.length} 条 ${eventType} 消息`
-          )
+            // 处理这批抢救回来的消息
+            await this.processStreamEntries(eventType, streamKey, entries)
+          }
 
-          await this.processStreamEntries(eventType, streamKey, entries)
+          cursor = nextCursor
+          if (cursor === "0-0") break
         }
       } catch (error) {
         console.error(
