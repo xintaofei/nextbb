@@ -2,6 +2,7 @@
 
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { useTranslations } from "next-intl"
+import Link from "next/link"
 import { useRouter, useParams } from "next/navigation"
 import { useEffect, useMemo, useState, useTransition } from "react"
 import {
@@ -82,6 +83,21 @@ export function TopicSortTabs({
     })
   }
 
+  function getSortPath(sort: RouteSortValue) {
+    return buildRoutePath({
+      ...routeParams,
+      sort,
+    })
+  }
+
+  function handleSortClick(e: React.MouseEvent) {
+    if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) {
+      e.stopPropagation()
+      return
+    }
+    e.preventDefault()
+  }
+
   return (
     <Tabs
       value={selectedSort}
@@ -89,14 +105,20 @@ export function TopicSortTabs({
       className={className}
     >
       <TabsList>
-        <TabsTrigger className="md:px-4" value="latest">
-          {tc("Tabs.latest")}
+        <TabsTrigger className="md:px-4" value="latest" asChild>
+          <Link href={getSortPath("latest")} onClick={handleSortClick}>
+            {tc("Tabs.latest")}
+          </Link>
         </TabsTrigger>
-        <TabsTrigger className="md:px-4" value="top">
-          {tc("Tabs.top")}
+        <TabsTrigger className="md:px-4" value="top" asChild>
+          <Link href={getSortPath("top")} onClick={handleSortClick}>
+            {tc("Tabs.top")}
+          </Link>
         </TabsTrigger>
-        <TabsTrigger className="md:px-4" value="new">
-          {tc("Tabs.new")}
+        <TabsTrigger className="md:px-4" value="new" asChild>
+          <Link href={getSortPath("new")} onClick={handleSortClick}>
+            {tc("Tabs.new")}
+          </Link>
         </TabsTrigger>
         <TabsTrigger className="md:px-4" value="hot" disabled>
           {tc("Tabs.hot")}
