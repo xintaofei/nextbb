@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useMemo, useState } from "react"
+import { useMemo } from "react"
 import { cn } from "@/lib/utils"
 import { Skeleton } from "@/components/ui/skeleton"
 import {
@@ -11,6 +11,7 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { useTranslations } from "next-intl"
+import useSWR from "swr"
 
 type CategoryOption = {
   id: string
@@ -25,6 +26,12 @@ type Props = {
   clearable?: boolean
 }
 
+const fetcher = async (url: string) => {
+  const res = await fetch(url)
+  if (!res.ok) throw new Error("Failed to fetch categories")
+  return res.json()
+}
+
 export function CategorySelect({
   value,
   onChange,
@@ -32,44 +39,19 @@ export function CategorySelect({
   clearable,
 }: Props) {
   const tc = useTranslations("Common")
-  const [options, setOptions] = useState<CategoryOption[]>([])
-  const [selected, setSelected] = useState<string | undefined>(value)
-  const [isLoading, setIsLoading] = useState<boolean>(true)
+  const { data, isLoading } = useSWR<CategoryOption[]>(
+    "/api/categories",
+    fetcher
+  )
 
-  useEffect(() => {
-    let cancelled = false
-    ;(async () => {
-      try {
-        const res = await fetch("/api/categories", { cache: "no-store" })
-        if (!res.ok) return
-        const data: Array<{
-          id: string
-          name: string
-          icon?: string
-        }> = await res.json()
-        if (!cancelled) {
-          type CategoryApiItem = { id: string; name: string; icon?: string }
-          setOptions(
-            data.map((c: CategoryApiItem) => ({
-              id: c.id,
-              name: c.name,
-              icon: c.icon,
-            }))
-          )
-          setIsLoading(false)
-        }
-      } catch {
-        if (!cancelled) setIsLoading(false)
-      }
-    })()
-    return () => {
-      cancelled = true
-    }
-  }, [])
-
-  useEffect(() => {
-    setSelected(value)
-  }, [value])
+  const options = useMemo(() => {
+    if (!data) return []
+    return data.map((c) => ({
+      id: c.id,
+      name: c.name,
+      icon: c.icon,
+    }))
+  }, [data])
 
   const placeholder = useMemo(() => tc("Filters.category"), [tc])
   const allLabel = useMemo(() => tc("Filters.all"), [tc])
@@ -78,10 +60,9 @@ export function CategorySelect({
     <Skeleton className={cn("h-9", className)} />
   ) : (
     <Select
-      value={selected ?? ""}
+      value={value ?? ""}
       onValueChange={(v) => {
         const next = v === "__all__" ? undefined : v
-        setSelected(next)
         onChange?.(next)
       }}
     >
