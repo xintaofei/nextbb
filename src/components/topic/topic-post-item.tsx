@@ -22,6 +22,8 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { RelativeTime } from "@/components/common/relative-time"
 import parse from "html-react-parser"
 import { toast } from "sonner"
+import { Button } from "@/components/ui/button"
+import { ChevronUp } from "lucide-react"
 
 const repliesFetcher = async (url: string) => {
   const res = await fetch(url)
@@ -287,37 +289,42 @@ export const TopicPostItem = memo(function TopicPostItem({
             </TimelineStepsAction>
           )}
           {expanded && (
-            <TimelineSteps className="mb-4">
-              {loadingSubReplies ? (
-                Array.from({ length: 2 }).map((_, i) => (
-                  <TimelineStepsItem key={i} size="sm">
-                    <TimelineStepsConnector size="sm" />
-                    {i == 0 && <TimelineStepsConnector size="top" />}
-                    <TimelineStepsIcon
-                      size="sm"
-                      className="border-none bg-muted"
-                    />
-                    <TimelineStepsContent>
-                      <div className="flex flex-col gap-2">
-                        <div className="flex items-center gap-4">
-                          <Skeleton className="h-4 w-12" />
-                          <Skeleton className="h-4 w-20" />
+            <div className="mb-4">
+              <TimelineSteps>
+                {loadingSubReplies ? (
+                  Array.from({ length: 2 }).map((_, i) => (
+                    <TimelineStepsItem key={i} size="sm">
+                      <TimelineStepsConnector size="sm" />
+                      {i == 0 && <TimelineStepsConnector size="top" />}
+                      <TimelineStepsIcon
+                        size="sm"
+                        className="border-none bg-muted"
+                      />
+                      <TimelineStepsContent>
+                        <div className="flex flex-col gap-2">
+                          <div className="flex items-center gap-4">
+                            <Skeleton className="h-4 w-12" />
+                            <Skeleton className="h-4 w-20" />
+                          </div>
+                          <Skeleton className="h-4 w-full" />
                         </div>
-                        <Skeleton className="h-4 w-full" />
-                      </div>
-                    </TimelineStepsContent>
-                  </TimelineStepsItem>
-                ))
-              ) : subReplies.length > 0 ? (
-                subReplies.map((sub, idx) => (
-                  <SubReplyItem key={sub.id} sub={sub} idx={idx} />
-                ))
-              ) : (
-                <div className="text-sm text-muted-foreground py-2 pl-2">
-                  No replies yet.
-                </div>
-              )}
-            </TimelineSteps>
+                      </TimelineStepsContent>
+                    </TimelineStepsItem>
+                  ))
+                ) : subReplies.length > 0 ? (
+                  subReplies.map((sub, idx) => (
+                    <SubReplyItem key={sub.id} sub={sub} idx={idx} />
+                  ))
+                ) : (
+                  <div className="text-sm text-muted-foreground py-2 pl-2">
+                    No replies yet.
+                  </div>
+                )}
+              </TimelineSteps>
+              <Button variant="secondary" size="sm" onClick={handleShowReplies}>
+                <ChevronUp />
+              </Button>
+            </div>
           )}
         </div>
       </TimelineStepsContent>

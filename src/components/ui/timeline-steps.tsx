@@ -57,9 +57,9 @@ function TimelineSteps({
 const timelineStepsItemVariants = cva("relative flex flex-row w-full gap-4", {
   variants: {
     size: {
-      sm: "first:[&>div:first-child]:top-[var(--timeline-steps-icon-size,1.25rem)] first:[&>div:first-child]:h-[calc(100%-var(--timeline-steps-icon-size,1.25rem)+1rem)] last:[&>div:first-child]:h-[calc(100%-var(--timeline-steps-icon-size,1.25rem)-1rem)]",
+      sm: "first:[&>div:first-child]:top-[var(--timeline-steps-icon-size,1.25rem)] first:[&>div:first-child]:h-[calc(100%-var(--timeline-steps-icon-size,1.25rem)+1rem)] last:[&>div:first-child]:top-[var(--timeline-steps-icon-size,1.5rem)] last:[&>div:first-child]:h-[calc(100%-var(--timeline-steps-icon-size,1.25rem)-0.25rem)]",
       default:
-        "first:[&>div:first-child]:top-[var(--timeline-steps-icon-size,2.5rem)] first:[&>div:first-child]:h-[calc(100%-var(--timeline-steps-icon-size,2.5rem)+1rem)] last:[&>div:first-child]:h-[calc(100%-var(--timeline-steps-icon-size,2.5rem)-1rem)]",
+        "first:[&>div:first-child]:top-[var(--timeline-steps-icon-size,2.5rem)] first:[&>div:first-child]:h-[calc(100%-var(--timeline-steps-icon-size,2.5rem)+1rem)] last:[&>div:first-child]:top-[var(--timeline-steps-icon-size,2.5rem)-2rem] last:[&>div:first-child]:h-[calc(100%-var(--timeline-steps-icon-size,2.5rem)+1.5rem)]",
     },
     orientation: {
       vertical: "pt-4 first:pt-0",
