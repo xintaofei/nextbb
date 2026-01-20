@@ -1,10 +1,7 @@
 import { NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
 import { getSessionUser } from "@/lib/auth"
-import {
-  emitPostLikeGivenEvent,
-  emitPostLikeReceivedEvent,
-} from "@/lib/automation/events"
+import { AutomationEvents } from "@/lib/automation/event-bus"
 
 type LikeToggleResult = {
   liked: boolean
@@ -86,13 +83,13 @@ export async function POST(
     // 同时触发两个独立事件
     await Promise.all([
       // 送出点赞事件
-      emitPostLikeGivenEvent({
+      AutomationEvents.postLikeGiven({
         postId,
         userId: auth.userId,
         totalLikesGiven,
       }),
       // 收到点赞事件
-      emitPostLikeReceivedEvent({
+      AutomationEvents.postLikeReceived({
         postId,
         postAuthorId: postWithAuthor.user_id,
         totalLikesReceived,

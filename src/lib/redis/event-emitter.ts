@@ -1,8 +1,9 @@
 import type Redis from "ioredis"
 import { getRedisClient } from "./index"
 import crypto from "crypto"
+import { serializeData, deserializeData } from "@/lib/utils/serialization"
 
-export interface RedisStreamBusOptions {
+export interface RedisEventEmitterOptions {
   streamPrefix: string
   consumerGroup: string
   consumerName?: string
@@ -19,8 +20,8 @@ export interface RedisStreamBusOptions {
  * 使用 Redis Stream 实现跨进程的事件通信
  * 支持泛型事件映射，可用于不同的业务场景
  */
-export class RedisStreamBus<TEventMap extends Record<string, unknown>> {
-  private options: Required<Omit<RedisStreamBusOptions, "consumerName">> & {
+export class RedisEventEmitter<TEventMap extends Record<string, unknown>> {
+  private options: Required<Omit<RedisEventEmitterOptions, "consumerName">> & {
     consumerName: string | null
   }
   private isInitialized = false
@@ -30,7 +31,7 @@ export class RedisStreamBus<TEventMap extends Record<string, unknown>> {
   private restartAttempts = 0
   private lastRestartTime = 0
 
-  constructor(options: RedisStreamBusOptions) {
+  constructor(options: RedisEventEmitterOptions) {
     this.options = {
       streamPrefix: options.streamPrefix,
       consumerGroup: options.consumerGroup,
@@ -89,6 +90,63 @@ export class RedisStreamBus<TEventMap extends Record<string, unknown>> {
   }
 
   /**
+   * 恢复未处理的消息 (PEL)
+   *
+   * 使用 XAUTOCLAIM 扫描并接管消费者组中长时间未处理的消息
+   * 即使消息属于已崩溃的旧消费者（因为消费者名称是随机的），也能被接管处理
+   */
+  private async recoverPendingMessages(): Promise<void> {
+    const eventTypes = Array.from(this.handlers.keys())
+    if (eventTypes.length === 0) return
+
+    console.log(
+      `[RedisStreamBus:${this.options.consumerGroup}] 开始检查并恢复失效消费者遗留的消息 (XAUTOCLAIM)...`
+    )
+
+    for (const eventType of eventTypes) {
+      const streamKey = this.options.streamPrefix + eventType
+      let cursor = "0-0"
+
+      try {
+        // 循环读取直到游标回到 0-0，表示扫描完一遍 PEL
+        while (true) {
+          // XAUTOCLAIM key group consumer min-idle-time start [COUNT count]
+          // 这里的 min-idle-time 设为 60000ms (1分钟)，认为超过1分钟未 ACK 的消息是处理失败或消费者崩溃
+          const result = (await this.getClient().xautoclaim(
+            streamKey,
+            this.options.consumerGroup,
+            this.getConsumerName(),
+            60000,
+            cursor,
+            "COUNT",
+            50
+          )) as [string, Array<[string, string[]]>]
+
+          const nextCursor = result[0]
+          const entries = result[1]
+
+          if (entries && entries.length > 0) {
+            console.log(
+              `[RedisStreamBus:${this.options.consumerGroup}] 从流 ${eventType} 恢复了 ${entries.length} 条超时消息`
+            )
+
+            // 处理这批抢救回来的消息
+            await this.processStreamEntries(eventType, streamKey, entries)
+          }
+
+          cursor = nextCursor
+          if (cursor === "0-0") break
+        }
+      } catch (error) {
+        console.error(
+          `[RedisStreamBus:${this.options.consumerGroup}] 恢复消息失败 ${eventType}:`,
+          error
+        )
+      }
+    }
+  }
+
+  /**
    * 订阅事件
    */
   on<K extends keyof TEventMap>(
@@ -126,7 +184,7 @@ export class RedisStreamBus<TEventMap extends Record<string, unknown>> {
   ): Promise<void> {
     try {
       const streamKey = this.options.streamPrefix + String(eventType)
-      const optimizedData = this.serializeData(data)
+      const optimizedData = serializeData(data)
       const message = JSON.stringify(optimizedData)
 
       await this.getClient().xadd(
@@ -160,16 +218,18 @@ export class RedisStreamBus<TEventMap extends Record<string, unknown>> {
     this.isProcessing = true
 
     // 异步启动处理循环
-    this.processMessages().catch((err) => {
-      console.error(
-        `[RedisStreamBus:${this.options.consumerGroup}] 消息处理循环异常:`,
-        err
-      )
-      this.isProcessing = false
+    this.recoverPendingMessages()
+      .then(() => this.processMessages())
+      .catch((err) => {
+        console.error(
+          `[RedisStreamBus:${this.options.consumerGroup}] 消息处理循环异常:`,
+          err
+        )
+        this.isProcessing = false
 
-      // 尝试重启
-      this.attemptRestart()
-    })
+        // 尝试重启
+        this.attemptRestart()
+      })
   }
 
   /**
@@ -214,23 +274,41 @@ export class RedisStreamBus<TEventMap extends Record<string, unknown>> {
   private async processMessages(): Promise<void> {
     while (this.isProcessing) {
       try {
-        // 每次循环都动态获取当前的事件类型列表
         const eventTypes = Array.from(this.handlers.keys())
 
-        // 处理所有已订阅的事件类型
-        for (const eventType of eventTypes) {
-          await this.processEventType(eventType)
+        if (eventTypes.length === 0) {
+          await this.sleep(this.options.pollInterval)
+          continue
         }
 
-        // 等待一段时间再进行下次轮询
-        await this.sleep(this.options.pollInterval)
-      } catch (error) {
-        console.error(
-          `[RedisStreamBus:${this.options.consumerGroup}] 处理消息失败:`,
-          error
+        const streams = eventTypes.map(
+          (type) => this.options.streamPrefix + type
         )
+        const ids = streams.map(() => ">")
 
-        // 检查是否是 Redis 连接错误
+        // 使用多流监听，一次性监听所有流
+        const results = (await this.getClient().xreadgroup(
+          "GROUP",
+          this.options.consumerGroup,
+          this.getConsumerName(),
+          "COUNT",
+          this.options.batchSize.toString(),
+          "BLOCK",
+          "2000", // 增加阻塞时间减少轮询频率
+          "STREAMS",
+          ...streams,
+          ...ids
+        )) as Array<[string, Array<[string, string[]]>]> | null
+
+        if (!results || results.length === 0) {
+          continue
+        }
+
+        for (const [streamKey, entries] of results) {
+          const eventType = streamKey.slice(this.options.streamPrefix.length)
+          await this.processStreamEntries(eventType, streamKey, entries)
+        }
+      } catch (error) {
         if (this.isRedisConnectionError(error)) {
           console.error(
             `[RedisStreamBus:${this.options.consumerGroup}] 检测到 Redis 连接错误，退出处理循环`
@@ -240,7 +318,65 @@ export class RedisStreamBus<TEventMap extends Record<string, unknown>> {
           return
         }
 
-        await this.sleep(this.options.pollInterval)
+        // 处理 NOGROUP 错误
+        if (
+          error &&
+          typeof error === "object" &&
+          "message" in error &&
+          (error as { message: string }).message.includes("NOGROUP")
+        ) {
+          // 尝试为所有订阅的事件类型重新创建消费者组
+          const eventTypes = Array.from(this.handlers.keys())
+          for (const type of eventTypes) {
+            await this.ensureConsumerGroup(type)
+          }
+        } else {
+          console.error(
+            `[RedisStreamBus:${this.options.consumerGroup}] 处理消息失败:`,
+            error
+          )
+          await this.sleep(this.options.pollInterval)
+        }
+      }
+    }
+  }
+
+  /**
+   * 处理单个流的消息条目
+   */
+  private async processStreamEntries(
+    eventType: string,
+    streamKey: string,
+    entries: Array<[string, string[]]>
+  ): Promise<void> {
+    const handlers = this.handlers.get(eventType)
+    if (!handlers || handlers.length === 0) return
+
+    for (const [messageId, fields] of entries) {
+      try {
+        const messageData: Record<string, string> = {}
+        for (let i = 0; i < fields.length; i += 2) {
+          messageData[fields[i]] = fields[i + 1]
+        }
+
+        const rawData = messageData.data
+        if (typeof rawData !== "string") continue
+
+        const parsedData = JSON.parse(rawData)
+        const data = deserializeData(parsedData as Record<string, unknown>)
+
+        await Promise.all(handlers.map((handler) => handler(data)))
+
+        await this.getClient().xack(
+          streamKey,
+          this.options.consumerGroup,
+          messageId
+        )
+      } catch (error) {
+        console.error(
+          `[RedisStreamBus:${this.options.consumerGroup}] 处理单条消息失败 (${eventType}:${messageId}):`,
+          error
+        )
       }
     }
   }
@@ -264,88 +400,6 @@ export class RedisStreamBus<TEventMap extends Record<string, unknown>> {
       code === "econnrefused" ||
       code === "etimedout"
     )
-  }
-
-  /**
-   * 处理特定事件类型的消息
-   */
-  private async processEventType(eventType: string): Promise<void> {
-    const streamKey = this.options.streamPrefix + eventType
-    const handlers = this.handlers.get(eventType)
-
-    if (!handlers || handlers.length === 0) {
-      return
-    }
-
-    try {
-      const messages = (await this.getClient().xreadgroup(
-        "GROUP",
-        this.options.consumerGroup,
-        this.getConsumerName(),
-        "COUNT",
-        this.options.batchSize.toString(),
-        "BLOCK",
-        "1000",
-        "STREAMS",
-        streamKey,
-        ">"
-      )) as Array<[string, Array<[string, string[]]>]> | null
-
-      if (!messages || messages.length === 0) {
-        return
-      }
-
-      for (const [, entries] of messages) {
-        for (const [messageId, fields] of entries) {
-          try {
-            const messageData: Record<string, string> = {}
-            for (let i = 0; i < fields.length; i += 2) {
-              messageData[fields[i]] = fields[i + 1]
-            }
-
-            const rawData = messageData.data
-            if (typeof rawData !== "string") {
-              continue
-            }
-
-            const parsedData = JSON.parse(rawData)
-            const data = this.deserializeData(
-              parsedData as Record<string, unknown>
-            )
-
-            await Promise.all(handlers.map((handler) => handler(data)))
-
-            await this.getClient().xack(
-              streamKey,
-              this.options.consumerGroup,
-              messageId
-            )
-          } catch (error) {
-            console.error(
-              `[RedisStreamBus:${this.options.consumerGroup}] 处理消息失败:`,
-              error
-            )
-          }
-        }
-      }
-    } catch (error: unknown) {
-      if (error && typeof error === "object" && "message" in error) {
-        const errMsg = (error as { message: string }).message
-        if (errMsg.includes("NOGROUP")) {
-          await this.ensureConsumerGroup(eventType)
-        } else {
-          console.error(
-            `[RedisStreamBus:${this.options.consumerGroup}] xreadgroup 错误 (${eventType}):`,
-            errMsg
-          )
-        }
-      } else {
-        console.error(
-          `[RedisStreamBus:${this.options.consumerGroup}] 未知错误 (${eventType}):`,
-          error
-        )
-      }
-    }
   }
 
   /**
@@ -376,40 +430,6 @@ export class RedisStreamBus<TEventMap extends Record<string, unknown>> {
         }
       }
     }
-  }
-
-  /**
-   * 序列化数据（转换 BigInt）
-   */
-  private serializeData(data: unknown): unknown {
-    return JSON.parse(
-      JSON.stringify(data, (_, value) =>
-        typeof value === "bigint" ? value.toString() : value
-      )
-    )
-  }
-
-  /**
-   * 反序列化数据（恢复 BigInt）
-   */
-  private deserializeData(data: Record<string, unknown>): unknown {
-    const result: Record<string, unknown> = {}
-
-    for (const [key, value] of Object.entries(data)) {
-      if (
-        typeof value === "string" &&
-        /^\d{13,}$/.test(value) &&
-        (key.endsWith("Id") || key.endsWith("_id"))
-      ) {
-        result[key] = BigInt(value)
-      } else if (typeof value === "object" && value !== null) {
-        result[key] = this.deserializeData(value as Record<string, unknown>)
-      } else {
-        result[key] = value
-      }
-    }
-
-    return result
   }
 
   private sleep(ms: number): Promise<void> {

@@ -10,6 +10,7 @@ import { prisma } from "@/lib/prisma"
 import { CreditService } from "@/lib/credit-service"
 import { CreditLogType } from "@prisma/client"
 import { getTranslationsQuery, selectTranslation } from "@/lib/locale"
+import { safeParseBigInt } from "@/lib/utils/params"
 
 // ==================== Action 参数类型定义 ====================
 
@@ -162,14 +163,8 @@ export class BadgeGrantHandler implements IActionHandler<BadgeGrantParams> {
       const badgeIdRaw = rawParams.badge_id
 
       // 将 badge_id 转换为 bigint
-      let badge_id: bigint
-      if (typeof badgeIdRaw === "string") {
-        badge_id = BigInt(badgeIdRaw)
-      } else if (typeof badgeIdRaw === "number") {
-        badge_id = BigInt(badgeIdRaw)
-      } else if (typeof badgeIdRaw === "bigint") {
-        badge_id = badgeIdRaw
-      } else {
+      const badge_id = safeParseBigInt(badgeIdRaw)
+      if (badge_id === null) {
         return {
           actionType: RuleActionType.BADGE_GRANT,
           status: RuleExecutionStatus.FAILED,
@@ -298,14 +293,8 @@ export class BadgeRevokeHandler implements IActionHandler<BadgeRevokeParams> {
       const reason = rawParams.reason as string | undefined
 
       // 将 badge_id 转换为 bigint
-      let badge_id: bigint
-      if (typeof badgeIdRaw === "string") {
-        badge_id = BigInt(badgeIdRaw)
-      } else if (typeof badgeIdRaw === "number") {
-        badge_id = BigInt(badgeIdRaw)
-      } else if (typeof badgeIdRaw === "bigint") {
-        badge_id = badgeIdRaw
-      } else {
+      const badge_id = safeParseBigInt(badgeIdRaw)
+      if (badge_id === null) {
         return {
           actionType: RuleActionType.BADGE_REVOKE,
           status: RuleExecutionStatus.FAILED,

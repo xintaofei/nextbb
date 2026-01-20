@@ -11,7 +11,7 @@ import { getLocale } from "next-intl/server"
 import { getTranslationsQuery, getTranslationFields } from "@/lib/locale"
 import { getTopicTitle, getPostHtml } from "@/lib/topic-translation"
 import { notifyMentions } from "@/lib/notification-service"
-import { emitPostCreateEvent } from "@/lib/automation/events"
+import { AutomationEvents } from "@/lib/automation/event-bus"
 import { createTranslationTasks } from "@/lib/services/translation-task"
 import { TranslationEntityType } from "@prisma/client"
 
@@ -686,7 +686,7 @@ export async function POST(req: Request) {
       })
 
       // 2. Emit automation event
-      await emitPostCreateEvent({
+      await AutomationEvents.postCreate({
         postId,
         topicId,
         userId: auth.userId,
