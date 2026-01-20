@@ -118,11 +118,7 @@ export function TopicList({
   }, [hasMore, loadingMore, onLoadMore])
 
   return (
-    <Table
-      className={
-        className ?? "w-full table-fixed max-lg:table-auto max-sm:border-t"
-      }
-    >
+    <Table className={className ?? "w-full table-fixed max-lg:table-auto"}>
       <colgroup>
         <col />
         <col className="w-32 max-lg:w-16" />
@@ -145,11 +141,11 @@ export function TopicList({
             {tc("Table.activity")}
           </TableHead>
           <TableHead className="text-right hidden max-sm:table-cell">
-            <span>{tc("Table.activity")}</span>
+            {tc("Table.activity")}
           </TableHead>
         </TableRow>
       </TableHeader>
-      <TableBody>
+      <TableBody className="[&_tr:first-child]:border-t-3">
         {loading
           ? Array.from({ length: 15 }).map((_, i) => (
               <TableRow key={`skeleton-${i}`}>
