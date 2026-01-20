@@ -7,6 +7,7 @@ import {
 } from "@/components/ui/tooltip"
 import { Highlighter } from "@/components/ui/highlighter"
 import { cn } from "@/lib/utils"
+import { useTranslations } from "next-intl"
 
 export type UserBadgeProps = {
   icon: string
@@ -29,6 +30,7 @@ export function UserBadge({
   size = "md",
   description,
 }: UserBadgeProps) {
+  const t = useTranslations("AdminBadges")
   const badge = (
     <span>
       {" "}
@@ -39,7 +41,7 @@ export function UserBadge({
             className={"text-" + size}
             style={{ color: textColor || undefined }}
           >
-            {"Lv" + level + " " + name}
+            {name}
           </span>
         </div>
       </Highlighter>{" "}
@@ -51,7 +53,9 @@ export function UserBadge({
       <Tooltip>
         <TooltipTrigger asChild>{badge}</TooltipTrigger>
         <TooltipContent>
-          <p className="max-w-xs">{description}</p>
+          <p className="max-w-xs">
+            {"(" + t("filter.levelOptions." + level) + ") " + description}
+          </p>
         </TooltipContent>
       </Tooltip>
     )
