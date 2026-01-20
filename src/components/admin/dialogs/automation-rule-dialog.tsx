@@ -96,6 +96,13 @@ export function AutomationRuleDialog({
       const actions = Array.isArray(rule.actions)
         ? (rule.actions as RuleAction[])
         : [{ type: RuleActionType.CREDIT_CHANGE, params: {} }]
+
+      const convertISOToDateTimeLocal = (
+        isoString: string | null
+      ): string | null => {
+        return isoString ? isoString.slice(0, 16) : null
+      }
+
       setFormData({
         name: rule.name,
         description: rule.description || "",
@@ -108,8 +115,8 @@ export function AutomationRuleDialog({
         isRepeatable: rule.isRepeatable,
         maxExecutions: rule.maxExecutions,
         cooldownSeconds: rule.cooldownSeconds,
-        startTime: rule.startTime,
-        endTime: rule.endTime,
+        startTime: convertISOToDateTimeLocal(rule.startTime),
+        endTime: convertISOToDateTimeLocal(rule.endTime),
       })
     } else {
       setFormData({

@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma"
 import { requireAdmin } from "@/lib/guard"
 import { CronManager } from "@/lib/automation/cron-manager"
 import { RuleActionType, RuleAction } from "@/lib/automation/types"
+import { getTranslations } from "next-intl/server"
 
 type RuleDTO = {
   id: string
@@ -65,9 +66,10 @@ export async function PATCH(
   props: { params: Promise<{ id: string }> }
 ) {
   try {
+    const t = await getTranslations("AdminAutomationRules.error")
     const admin = await requireAdmin()
     if (!admin) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+      return NextResponse.json({ error: t("unauthorized") }, { status: 401 })
     }
 
     const params = await props.params
@@ -79,7 +81,7 @@ export async function PATCH(
     })
 
     if (!existingRule) {
-      return NextResponse.json({ error: "Rule not found" }, { status: 404 })
+      return NextResponse.json({ error: t("ruleNotFound") }, { status: 404 })
     }
 
     const body = await request.json()
@@ -105,7 +107,7 @@ export async function PATCH(
       (typeof name !== "string" || name.length < 1 || name.length > 128)
     ) {
       return NextResponse.json(
-        { error: "Name must be between 1-128 characters" },
+        { error: t("nameLengthInvalid") },
         { status: 400 }
       )
     }
@@ -116,14 +118,14 @@ export async function PATCH(
       (typeof description !== "string" || description.length > 512)
     ) {
       return NextResponse.json(
-        { error: "Description must not exceed 512 characters" },
+        { error: t("descriptionLengthInvalid") },
         { status: 400 }
       )
     }
 
     if (triggerType !== undefined && !validateTriggerType(triggerType)) {
       return NextResponse.json(
-        { error: "Invalid trigger type" },
+        { error: t("invalidTriggerType") },
         { status: 400 }
       )
     }
@@ -131,8 +133,7 @@ export async function PATCH(
     if (actions !== undefined && !validateActions(actions)) {
       return NextResponse.json(
         {
-          error:
-            "Invalid actions: must be a non-empty array with valid action objects",
+          error: t("invalidActions"),
         },
         { status: 400 }
       )
@@ -143,18 +144,23 @@ export async function PATCH(
       (typeof priority !== "number" || !Number.isInteger(priority))
     ) {
       return NextResponse.json(
-        { error: "Priority must be an integer" },
+        { error: t("priorityMustBeInteger") },
         { status: 400 }
       )
     }
 
-    // 时间范围验证
-    if (startTime !== undefined && endTime !== undefined) {
+    if ("startTime" in body && "endTime" in body && startTime && endTime) {
       const start = new Date(startTime)
       const end = new Date(endTime)
+      if (isNaN(start.getTime()) || isNaN(end.getTime())) {
+        return NextResponse.json(
+          { error: t("invalidDateFormat") },
+          { status: 400 }
+        )
+      }
       if (end <= start) {
         return NextResponse.json(
-          { error: "End time must be after start time" },
+          { error: t("endTimeMustBeAfterStartTime") },
           { status: 400 }
         )
       }
@@ -179,9 +185,9 @@ export async function PATCH(
       updateData.max_executions = maxExecutions || null
     if (cooldownSeconds !== undefined)
       updateData.cooldown_seconds = cooldownSeconds || null
-    if (startTime !== undefined)
+    if ("startTime" in body)
       updateData.start_time = startTime ? new Date(startTime) : null
-    if (endTime !== undefined)
+    if ("endTime" in body)
       updateData.end_time = endTime ? new Date(endTime) : null
     if (isDeleted !== undefined) updateData.is_deleted = isDeleted
 
@@ -250,8 +256,9 @@ export async function PATCH(
     return NextResponse.json(result)
   } catch (error) {
     console.error("Update automation rule error:", error)
+    const t = await getTranslations("AdminAutomationRules.error")
     return NextResponse.json(
-      { error: "Internal server error" },
+      { error: t("internalServerError") },
       { status: 500 }
     )
   }

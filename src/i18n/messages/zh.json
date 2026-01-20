@@ -115,12 +115,12 @@
     "noDescription": "暂无描述"
   },
   "Topic": {
-      "Post": {
-        "originallyWrittenIn": "此帖子最初使用 {locale} 编写",
-        "languageSelection": "多语言选择",
-        "source": "(原文)"
-      },
-      "edit": "编辑",
+    "Post": {
+      "originallyWrittenIn": "此帖子最初使用 {locale} 编写",
+      "languageSelection": "多语言选择",
+      "source": "(原文)"
+    },
+    "edit": "编辑",
     "delete": "删除",
     "deleted": "该楼层已被删除",
     "deleteConfirm": "确认删除当前楼层？",
@@ -2067,6 +2067,18 @@
       "page": "第 {page} 页",
       "prev": "上一页",
       "next": "下一页"
+    },
+    "error": {
+      "unauthorized": "未授权",
+      "ruleNotFound": "规则未找到",
+      "nameLengthInvalid": "名称长度必须在 1-128 个字符之间",
+      "descriptionLengthInvalid": "描述不能超过 512 个字符",
+      "invalidTriggerType": "无效的触发器类型",
+      "invalidActions": "无效的动作：必须是非空数组且包含有效的动作对象",
+      "priorityMustBeInteger": "优先级必须是整数",
+      "invalidDateFormat": "无效的日期格式",
+      "endTimeMustBeAfterStartTime": "结束时间必须大于开始时间",
+      "internalServerError": "服务器内部错误"
     },
     "loading": "加载中...",
     "empty": "暂无数据",
