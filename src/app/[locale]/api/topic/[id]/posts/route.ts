@@ -45,7 +45,9 @@ export async function GET(
         is_deleted: true,
         parent_id: true,
         source_locale: true,
-        user: { select: { id: true, name: true, avatar: true } },
+        user: {
+          select: { id: true, name: true, avatar: true, title_badge_id: true },
+        },
       },
       orderBy: { floor_number: "asc" },
       skip,
@@ -57,6 +59,14 @@ export async function GET(
 
   // 获取用户 ID 列表
   const userIds = [...new Set(postsDb.map((p) => p.user.id))]
+
+  // 获取用户头衔徽章映射
+  const userTitleBadgeMap = new Map<string, string>()
+  for (const p of postsDb) {
+    if (p.user.title_badge_id) {
+      userTitleBadgeMap.set(String(p.user.id), String(p.user.title_badge_id))
+    }
+  }
 
   // 并行查询所有关联数据
   const [
@@ -210,6 +220,18 @@ export async function GET(
       textColor: ub.badge.text_color,
       description: badgeFields.description,
     })
+  }
+
+  // 根据头衔徽章调整顺序
+  for (const [userId, badges] of userBadgesMap) {
+    const titleBadgeId = userTitleBadgeMap.get(userId)
+    if (titleBadgeId) {
+      const index = badges.findIndex((b) => b.id === titleBadgeId)
+      if (index > 0) {
+        const [badge] = badges.splice(index, 1)
+        badges.unshift(badge)
+      }
+    }
   }
 
   // 处理计数和状态
