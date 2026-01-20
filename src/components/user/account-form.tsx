@@ -2,7 +2,7 @@
 
 import { useState, useRef } from "react"
 import { useRouter, usePathname } from "next/navigation"
-import { useTranslations, useLocale } from "next-intl"
+import { useTranslations } from "next-intl"
 import useSWR from "swr"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
@@ -34,10 +34,7 @@ type UserData = {
     badge: {
       id: bigint
       icon: string
-      translations: {
-        locale: string
-        name: string
-      }[]
+      name: string
     }
   }[]
 }
@@ -48,7 +45,6 @@ type AccountFormProps = {
 
 export function AccountForm({ user }: AccountFormProps) {
   const t = useTranslations("User.preferences.account")
-  const locale = useLocale()
   const router = useRouter()
   const pathname = usePathname()
   const { mutate: mutateMe } = useSWR("/api/auth/me")
@@ -360,9 +356,6 @@ export function AccountForm({ user }: AccountFormProps) {
               <SelectItem value="none">{t("noTitleBadge")}</SelectItem>
               {user.user_badges.map((ub) => {
                 const badge = ub.badge
-                const translation =
-                  badge.translations.find((tr) => tr.locale === locale) ||
-                  badge.translations[0]
                 return (
                   <SelectItem
                     key={badge.id.toString()}
@@ -370,7 +363,7 @@ export function AccountForm({ user }: AccountFormProps) {
                   >
                     <span className="flex items-center gap-2">
                       <span>{badge.icon}</span>
-                      <span>{translation?.name}</span>
+                      <span>{badge.name}</span>
                     </span>
                   </SelectItem>
                 )

@@ -4,6 +4,9 @@ import { prisma } from "@/lib/prisma"
 import { decodeUsername } from "@/lib/utils"
 import { AccountForm } from "@/components/user/account-form"
 import { getTranslations } from "next-intl/server"
+import { getTranslationsQuery, getTranslationFields } from "@/lib/locale"
+import { getLocale } from "next-intl/server"
+import { BadgeTranslation } from "@/lib/locale"
 
 type AccountPageProps = {
   params: Promise<{ username: string }>
@@ -29,6 +32,8 @@ export default async function AccountPage() {
     return null
   }
 
+  const locale = await getLocale()
+
   const user = await prisma.users.findUnique({
     where: { id: session.userId },
     select: {
@@ -48,12 +53,9 @@ export default async function AccountPage() {
             select: {
               id: true,
               icon: true,
-              translations: {
-                select: {
-                  locale: true,
-                  name: true,
-                },
-              },
+              translations: getTranslationsQuery(locale, {
+                name: true,
+              }),
             },
           },
         },
@@ -61,7 +63,23 @@ export default async function AccountPage() {
     },
   })
 
-  if (!user) {
+  // 处理徽章翻译，在服务端完成多语言处理
+  const processedUser = user && {
+    ...user,
+    user_badges: user.user_badges.map((ub) => ({
+      ...ub,
+      badge: {
+        ...ub.badge,
+        name: getTranslationFields(
+          ub.badge.translations as unknown as BadgeTranslation[],
+          locale,
+          { name: "" }
+        ).name,
+      },
+    })),
+  }
+
+  if (!processedUser) {
     return null
   }
 
@@ -71,7 +89,7 @@ export default async function AccountPage() {
         <h1 className="text-2xl font-bold">{t("title")}</h1>
         <p className="text-sm text-muted-foreground mt-1">{t("description")}</p>
       </div>
-      <AccountForm user={user} />
+      <AccountForm user={processedUser} />
     </div>
   )
 }
