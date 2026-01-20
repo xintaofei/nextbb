@@ -2,13 +2,20 @@
 
 import { useState, useRef } from "react"
 import { useRouter, usePathname } from "next/navigation"
-import { useTranslations } from "next-intl"
+import { useTranslations, useLocale } from "next-intl"
 import useSWR from "swr"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 import { toast } from "sonner"
 import { Upload } from "lucide-react"
 import { encodeUsername } from "@/lib/utils"
@@ -22,6 +29,17 @@ type UserData = {
   website: string
   location: string
   birthday: Date | null
+  title_badge_id: bigint | null
+  user_badges: {
+    badge: {
+      id: bigint
+      icon: string
+      translations: {
+        locale: string
+        name: string
+      }[]
+    }
+  }[]
 }
 
 type AccountFormProps = {
@@ -30,6 +48,7 @@ type AccountFormProps = {
 
 export function AccountForm({ user }: AccountFormProps) {
   const t = useTranslations("User.preferences.account")
+  const locale = useLocale()
   const router = useRouter()
   const pathname = usePathname()
   const { mutate: mutateMe } = useSWR("/api/auth/me")
@@ -45,6 +64,7 @@ export function AccountForm({ user }: AccountFormProps) {
     website: user.website,
     location: user.location,
     birthday: user.birthday ? user.birthday.toISOString().split("T")[0] : "",
+    titleBadgeId: user.title_badge_id?.toString() || "none",
   })
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -69,6 +89,8 @@ export function AccountForm({ user }: AccountFormProps) {
           website: formData.website,
           location: formData.location,
           birthday: formData.birthday || null,
+          titleBadgeId:
+            formData.titleBadgeId === "none" ? null : formData.titleBadgeId,
         }),
       })
 
@@ -323,6 +345,41 @@ export function AccountForm({ user }: AccountFormProps) {
               {t("usernameHelper")}
             </p>
           )}
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="titleBadge">{t("titleBadge")}</Label>
+          <Select
+            value={formData.titleBadgeId}
+            onValueChange={(value) => handleInputChange("titleBadgeId", value)}
+          >
+            <SelectTrigger id="titleBadge">
+              <SelectValue placeholder={t("titleBadgePlaceholder")} />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="none">{t("noTitleBadge")}</SelectItem>
+              {user.user_badges.map((ub) => {
+                const badge = ub.badge
+                const translation =
+                  badge.translations.find((tr) => tr.locale === locale) ||
+                  badge.translations[0]
+                return (
+                  <SelectItem
+                    key={badge.id.toString()}
+                    value={badge.id.toString()}
+                  >
+                    <span className="flex items-center gap-2">
+                      <span>{badge.icon}</span>
+                      <span>{translation?.name}</span>
+                    </span>
+                  </SelectItem>
+                )
+              })}
+            </SelectContent>
+          </Select>
+          <p className="text-sm text-muted-foreground">
+            {t("titleBadgePlaceholder")}
+          </p>
         </div>
 
         {/* 邮箱 */}

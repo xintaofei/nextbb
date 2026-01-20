@@ -21,9 +21,11 @@ model users {
   website    String    @default("") @db.VarChar(256)
   location   String    @default("") @db.VarChar(100)
   birthday   DateTime?
+  title_badge_id BigInt?   @db.BigInt
   created_at DateTime  @default(now())
   updated_at DateTime  @updatedAt
 
+  title_badge             badges?                @relation("user_title_badge", fields: [title_badge_id], references: [id])
   topics                  topics[]
   posts                   posts[]
   post_likes              post_likes[]           @relation("post_likes_user")
@@ -287,6 +289,7 @@ model badges {
   updated_at    DateTime @updatedAt
 
   user_badges  user_badges[]        @relation("user_badges_badge")
+  users_with_title users[]            @relation("user_title_badge")
   translations badge_translations[]
 
   @@index([badge_type], map: "badges_type_index")

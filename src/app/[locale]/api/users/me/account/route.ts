@@ -31,7 +31,8 @@ const UpdateAccountSchema = z.object({
   bio: z.string().max(500).optional(),
   website: z.url().max(256).optional().or(z.literal("")),
   location: z.string().max(100).optional(),
-  birthday: z.iso.date().nullable().optional(),
+  birthday: z.string().nullable().optional(),
+  titleBadgeId: z.string().regex(/^\d+$/).nullable().optional(),
 })
 
 type UpdateAccountDTO = z.infer<typeof UpdateAccountSchema>
@@ -74,6 +75,7 @@ export async function PATCH(req: Request) {
     website?: string
     location?: string
     birthday?: Date | null
+    title_badge_id?: bigint | null
     updated_at: Date
   } = { updated_at: new Date() }
 
@@ -83,6 +85,26 @@ export async function PATCH(req: Request) {
   if (typeof body.location === "string") data.location = body.location
   if (body.birthday !== undefined) {
     data.birthday = body.birthday ? new Date(body.birthday) : null
+  }
+
+  if (body.titleBadgeId !== undefined) {
+    if (body.titleBadgeId === null) {
+      data.title_badge_id = null
+    } else {
+      const userBadge = await prisma.user_badges.findUnique({
+        where: {
+          user_id_badge_id: {
+            user_id: session.userId,
+            badge_id: BigInt(body.titleBadgeId),
+          },
+          is_deleted: false,
+        },
+      })
+      if (!userBadge) {
+        return NextResponse.json({ error: "Badge not owned" }, { status: 400 })
+      }
+      data.title_badge_id = BigInt(body.titleBadgeId)
+    }
   }
 
   try {
@@ -98,6 +120,7 @@ export async function PATCH(req: Request) {
         website: true,
         location: true,
         birthday: true,
+        title_badge_id: true,
         updated_at: true,
       },
     })
@@ -113,6 +136,9 @@ export async function PATCH(req: Request) {
         location: updated.location,
         birthday: updated.birthday
           ? (updated.birthday as Date).toISOString()
+          : null,
+        titleBadgeId: updated.title_badge_id
+          ? String(updated.title_badge_id)
           : null,
         updatedAt: updated.updated_at.toISOString(),
       },

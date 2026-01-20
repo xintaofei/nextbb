@@ -40,6 +40,24 @@ export default async function AccountPage() {
       website: true,
       location: true,
       birthday: true,
+      title_badge_id: true,
+      user_badges: {
+        where: { is_deleted: false },
+        select: {
+          badge: {
+            select: {
+              id: true,
+              icon: true,
+              translations: {
+                select: {
+                  locale: true,
+                  name: true,
+                },
+              },
+            },
+          },
+        },
+      },
     },
   })
 
