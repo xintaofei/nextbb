@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useRef } from "react"
+import { useState, useRef, useEffect } from "react"
 import { useRouter, usePathname } from "next/navigation"
 import { useTranslations } from "next-intl"
 import useSWR from "swr"
@@ -16,8 +16,22 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog"
 import { toast } from "sonner"
-import { Upload } from "lucide-react"
+import { Upload, Smile, X, Settings2 } from "lucide-react"
 import { encodeUsername } from "@/lib/utils"
 
 type UserData = {
@@ -30,6 +44,11 @@ type UserData = {
   location: string
   birthday: Date | null
   title_badge_id: bigint | null
+  custom_status: {
+    emoji: string | null
+    status_text: string
+    expires_at: Date | null
+  } | null
   user_badges: {
     badge: {
       id: bigint
@@ -48,11 +67,13 @@ export function AccountForm({ user }: AccountFormProps) {
   const router = useRouter()
   const pathname = usePathname()
   const { mutate: mutateMe } = useSWR("/api/auth/me")
+  const [mounted, setMounted] = useState(false)
   const [saving, setSaving] = useState(false)
   const [uploading, setUploading] = useState(false)
   const [avatarPreview, setAvatarPreview] = useState(user.avatar)
   const [usernameError, setUsernameError] = useState<string | null>(null)
   const [checkingUsername, setCheckingUsername] = useState(false)
+  const [statusDialogOpen, setStatusDialogOpen] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [formData, setFormData] = useState({
     username: user.name,
@@ -61,7 +82,702 @@ export function AccountForm({ user }: AccountFormProps) {
     location: user.location,
     birthday: user.birthday ? user.birthday.toISOString().split("T")[0] : "",
     titleBadgeId: user.title_badge_id?.toString() || "none",
+    customStatus: {
+      emoji: user.custom_status?.emoji || "",
+      statusText: user.custom_status?.status_text || "",
+      expiresAt:
+        user.custom_status?.expires_at &&
+        new Date(user.custom_status.expires_at) > new Date()
+          ? user.custom_status.expires_at.toISOString()
+          : "never",
+    },
   })
+  const [tempCustomStatus, setTempCustomStatus] = useState({
+    emoji: "",
+    statusText: "",
+    expiresAt: "never" as string,
+  })
+  const [emojiPickerOpen, setEmojiPickerOpen] = useState(false)
+
+  // 只在客户端渲染时间，避免 hydration 错误
+  useEffect(() => {
+    setMounted(true)
+  }, [])
+
+  // 将相对时间转换为具体时间戳
+  const getExpiresAtTimestamp = (relativeTime: string): string | null => {
+    if (relativeTime === "never") return null
+    const now = Date.now()
+    switch (relativeTime) {
+      case "1hour":
+        return new Date(now + 60 * 60 * 1000).toISOString()
+      case "4hours":
+        return new Date(now + 4 * 60 * 60 * 1000).toISOString()
+      case "today":
+        return new Date(new Date().setHours(23, 59, 59, 999)).toISOString()
+      case "1week":
+        return new Date(now + 7 * 24 * 60 * 60 * 1000).toISOString()
+      default:
+        return null
+    }
+  }
+
+  // 格式化过期时间（本地时间）
+  const formatExpiresAt = (isoString: string): string => {
+    const date = new Date(isoString)
+    const year = date.getFullYear()
+    const month = String(date.getMonth() + 1).padStart(2, "0")
+    const day = String(date.getDate()).padStart(2, "0")
+    const hours = String(date.getHours()).padStart(2, "0")
+    const minutes = String(date.getMinutes()).padStart(2, "0")
+    return `${year}-${month}-${day} ${hours}:${minutes}`
+  }
+
+  // 常用 emoji 列表
+  const commonEmojis = [
+    "😀",
+    "😃",
+    "😄",
+    "😁",
+    "😅",
+    "😂",
+    "🤣",
+    "😊",
+    "😇",
+    "🙂",
+    "🙃",
+    "😉",
+    "😌",
+    "😍",
+    "🥰",
+    "😘",
+    "😗",
+    "😙",
+    "😚",
+    "😋",
+    "😛",
+    "😝",
+    "😜",
+    "🤪",
+    "🤨",
+    "🧐",
+    "🤓",
+    "😎",
+    "🤩",
+    "🥳",
+    "😏",
+    "😒",
+    "😞",
+    "😔",
+    "😟",
+    "😕",
+    "🙁",
+    "😣",
+    "😖",
+    "😫",
+    "😩",
+    "🥺",
+    "😢",
+    "😭",
+    "😤",
+    "😠",
+    "😡",
+    "🤬",
+    "🤯",
+    "😳",
+    "🥵",
+    "🥶",
+    "😱",
+    "😨",
+    "😰",
+    "😥",
+    "😓",
+    "🤗",
+    "🤔",
+    "🤭",
+    "🤫",
+    "🤥",
+    "😶",
+    "😐",
+    "😑",
+    "😬",
+    "🙄",
+    "😯",
+    "😦",
+    "😧",
+    "😮",
+    "😲",
+    "🥱",
+    "😴",
+    "🤤",
+    "😪",
+    "😵",
+    "🤐",
+    "🥴",
+    "🤢",
+    "🤮",
+    "🤧",
+    "😷",
+    "🤒",
+    "🤕",
+    "🤑",
+    "🤠",
+    "😈",
+    "👿",
+    "👹",
+    "👺",
+    "🤡",
+    "💩",
+    "👻",
+    "💀",
+    "☠️",
+    "👽",
+    "👾",
+    "🤖",
+    "🎃",
+    "😺",
+    "😸",
+    "😹",
+    "😻",
+    "😼",
+    "😽",
+    "🙀",
+    "😿",
+    "😾",
+    "💋",
+    "👋",
+    "🤚",
+    "🖐️",
+    "✋",
+    "🖖",
+    "👌",
+    "🤌",
+    "🤏",
+    "✌️",
+    "🤞",
+    "🤟",
+    "🤘",
+    "🤙",
+    "👈",
+    "👉",
+    "👆",
+    "🖕",
+    "👇",
+    "☝️",
+    "👍",
+    "👎",
+    "✊",
+    "👊",
+    "🤛",
+    "🤜",
+    "👏",
+    "🙌",
+    "👐",
+    "🤲",
+    "🤝",
+    "🙏",
+    "✍️",
+    "💅",
+    "🤳",
+    "💪",
+    "🦾",
+    "🦿",
+    "🦵",
+    "🦶",
+    "👂",
+    "🦻",
+    "👃",
+    "🧠",
+    "🫀",
+    "🫁",
+    "🦷",
+    "🦴",
+    "👀",
+    "👁️",
+    "👅",
+    "👄",
+    "💔",
+    "❤️",
+    "🧡",
+    "💛",
+    "💚",
+    "💙",
+    "💜",
+    "🤎",
+    "🖤",
+    "🤍",
+    "💯",
+    "💢",
+    "💥",
+    "💫",
+    "💦",
+    "💨",
+    "🕳️",
+    "💬",
+    "👁️‍🗨️",
+    "🗨️",
+    "🗯️",
+    "💭",
+    "💤",
+    "👓",
+    "🕶️",
+    "🥽",
+    "🥼",
+    "🦺",
+    "👔",
+    "👕",
+    "👖",
+    "🧣",
+    "🧤",
+    "🧥",
+    "🧦",
+    "👗",
+    "👘",
+    "🥻",
+    "🩱",
+    "🩲",
+    "🩳",
+    "👙",
+    "👚",
+    "👛",
+    "👜",
+    "👝",
+    "🎒",
+    "👞",
+    "👟",
+    "🥾",
+    "🥿",
+    "👠",
+    "👡",
+    "🩰",
+    "👢",
+    "👑",
+    "👒",
+    "🎩",
+    "🎓",
+    "🧢",
+    "⛑️",
+    "📿",
+    "💄",
+    "💍",
+    "💎",
+    "🔇",
+    "🔈",
+    "🔉",
+    "🔊",
+    "📢",
+    "📣",
+    "📯",
+    "🔔",
+    "🔕",
+    "🎼",
+    "🎵",
+    "🎶",
+    "🎙️",
+    "🎚️",
+    "🎛️",
+    "🎤",
+    "🎧",
+    "📻",
+    "🎷",
+    "🎸",
+    "🎹",
+    "🎺",
+    "🎻",
+    "🪕",
+    "🥁",
+    "📱",
+    "📲",
+    "☎️",
+    "📞",
+    "📟",
+    "📠",
+    "🔋",
+    "🔌",
+    "💻",
+    "🖥️",
+    "🖨️",
+    "⌨️",
+    "🖱️",
+    "🖲️",
+    "💽",
+    "💾",
+    "💿",
+    "📀",
+    "🧮",
+    "🎥",
+    "🎞️",
+    "📽️",
+    "🎬",
+    "📺",
+    "📷",
+    "📸",
+    "📹",
+    "📼",
+    "🔍",
+    "🔎",
+    "🕯️",
+    "💡",
+    "🔦",
+    "🏮",
+    "🪔",
+    "📔",
+    "📕",
+    "📖",
+    "📗",
+    "📘",
+    "📙",
+    "📚",
+    "📓",
+    "📒",
+    "📃",
+    "📜",
+    "📄",
+    "📰",
+    "🗞️",
+    "📑",
+    "🔖",
+    "🏷️",
+    "💰",
+    "💴",
+    "💵",
+    "💶",
+    "💷",
+    "💸",
+    "💳",
+    "🧾",
+    "💹",
+    "✉️",
+    "📧",
+    "📨",
+    "📩",
+    "📤",
+    "📥",
+    "📦",
+    "📫",
+    "📪",
+    "📬",
+    "📭",
+    "📮",
+    "🗳️",
+    "✏️",
+    "✒️",
+    "🖋️",
+    "🖊️",
+    "🖌️",
+    "🖍️",
+    "📝",
+    "💼",
+    "📁",
+    "📂",
+    "🗂️",
+    "📅",
+    "📆",
+    "🗒️",
+    "🗓️",
+    "📇",
+    "📈",
+    "📉",
+    "📊",
+    "📋",
+    "📌",
+    "📍",
+    "📎",
+    "🖇️",
+    "📏",
+    "📐",
+    "✂️",
+    "🗃️",
+    "🗄️",
+    "🗑️",
+    "🔒",
+    "🔓",
+    "🔏",
+    "🔐",
+    "🔑",
+    "🗝️",
+    "🔨",
+    "🪓",
+    "⛏️",
+    "⚒️",
+    "🛠️",
+    "🗡️",
+    "⚔️",
+    "🔫",
+    "🏹",
+    "🛡️",
+    "🔧",
+    "🔩",
+    "⚙️",
+    "🗜️",
+    "⚖️",
+    "🦯",
+    "🔗",
+    "⛓️",
+    "🧰",
+    "🧲",
+    "⚗️",
+    "🧪",
+    "🧫",
+    "🧬",
+    "🔬",
+    "🔭",
+    "📡",
+    "💉",
+    "🩸",
+    "💊",
+    "🩹",
+    "🩺",
+    "🚪",
+    "🛗",
+    "🪞",
+    "🪟",
+    "🛏️",
+    "🛋️",
+    "🪑",
+    "🚽",
+    "🚿",
+    "🛁",
+    "🪒",
+    "🧴",
+    "🧷",
+    "🧹",
+    "🧺",
+    "🧻",
+    "🧼",
+    "🧽",
+    "🧯",
+    "🛒",
+    "🚬",
+    "⚰️",
+    "⚱️",
+    "🗿",
+    "🏧",
+    "🚮",
+    "🚰",
+    "♿",
+    "🚹",
+    "🚺",
+    "🚻",
+    "🚼",
+    "🚾",
+    "🛂",
+    "🛃",
+    "🛄",
+    "🛅",
+    "⚠️",
+    "🚸",
+    "⛔",
+    "🚫",
+    "🚳",
+    "🚭",
+    "🚯",
+    "🚱",
+    "🚷",
+    "📵",
+    "🔞",
+    "☢️",
+    "☣️",
+    "⬆️",
+    "↗️",
+    "➡️",
+    "↘️",
+    "⬇️",
+    "↙️",
+    "⬅️",
+    "↖️",
+    "↕️",
+    "↔️",
+    "↩️",
+    "↪️",
+    "⤴️",
+    "⤵️",
+    "🔃",
+    "🔄",
+    "🔙",
+    "🔚",
+    "🔛",
+    "🔜",
+    "🔝",
+    "🛐",
+    "⚛️",
+    "🕉️",
+    "✡️",
+    "☸️",
+    "☯️",
+    "✝️",
+    "☦️",
+    "☪️",
+    "☮️",
+    "🕎",
+    "🔯",
+    "♈",
+    "♉",
+    "♊",
+    "♋",
+    "♌",
+    "♍",
+    "♎",
+    "♏",
+    "♐",
+    "♑",
+    "♒",
+    "♓",
+    "⛎",
+    "🔀",
+    "🔁",
+    "🔂",
+    "▶️",
+    "⏩",
+    "⏭️",
+    "⏯️",
+    "◀️",
+    "⏪",
+    "⏮️",
+    "🔼",
+    "⏫",
+    "🔽",
+    "⏬",
+    "⏸️",
+    "⏹️",
+    "⏺️",
+    "⏏️",
+    "🎦",
+    "🔅",
+    "🔆",
+    "📶",
+    "📳",
+    "📴",
+    "♀️",
+    "♂️",
+    "⚕️",
+    "♾️",
+    "♻️",
+    "⚜️",
+    "🔱",
+    "📛",
+    "🔰",
+    "⭕",
+    "✅",
+    "☑️",
+    "✔️",
+    "✖️",
+    "❌",
+    "❎",
+    "➕",
+    "➖",
+    "➗",
+    "➰",
+    "➿",
+    "〽️",
+    "✳️",
+    "✴️",
+    "❇️",
+    "‼️",
+    "⁉️",
+    "❓",
+    "❔",
+    "❕",
+    "❗",
+    "〰️",
+    "©️",
+    "®️",
+    "™️",
+    "#️⃣",
+    "*️⃣",
+    "0️⃣",
+    "1️⃣",
+    "2️⃣",
+    "3️⃣",
+    "4️⃣",
+    "5️⃣",
+    "6️⃣",
+    "7️⃣",
+    "8️⃣",
+    "9️⃣",
+    "🔟",
+    "🔠",
+    "🔡",
+    "🔢",
+    "🔣",
+    "🔤",
+    "🅰️",
+    "🆎",
+    "🅱️",
+    "🆑",
+    "🆒",
+    "🆓",
+    "ℹ️",
+    "🆔",
+    "Ⓜ️",
+    "🆕",
+    "🆖",
+    "🅾️",
+    "🆗",
+    "🅿️",
+    "🆘",
+    "🆙",
+    "🆚",
+    "🈁",
+    "🈂️",
+    "🈷️",
+    "🈶",
+    "🈯",
+    "🉐",
+    "🈹",
+    "🈚",
+    "🈲",
+    "🉑",
+    "🈸",
+    "🈴",
+    "🈳",
+    "㊗️",
+    "㊙️",
+    "🈺",
+    "🈵",
+    "🔴",
+    "🟠",
+    "🟡",
+    "🟢",
+    "🔵",
+    "🟣",
+    "🟤",
+    "⚫",
+    "⚪",
+    "🟥",
+    "🟧",
+    "🟨",
+    "🟩",
+    "🟦",
+    "🟪",
+    "🟫",
+    "⬛",
+    "⬜",
+    "◼️",
+    "◻️",
+    "◾",
+    "◽",
+    "▪️",
+    "▫️",
+    "🔶",
+    "🔷",
+    "🔸",
+    "🔹",
+    "🔺",
+    "🔻",
+    "💠",
+    "🔘",
+    "🔳",
+    "🔲",
+    "🏁",
+    "🚩",
+    "🎌",
+    "🏴",
+    "🏳️",
+    "🏳️‍🌈",
+    "🏳️‍⚧️",
+    "🏴‍☠️",
+  ]
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -87,6 +803,16 @@ export function AccountForm({ user }: AccountFormProps) {
           birthday: formData.birthday || null,
           titleBadgeId:
             formData.titleBadgeId === "none" ? null : formData.titleBadgeId,
+          customStatus: formData.customStatus.statusText
+            ? {
+                emoji: formData.customStatus.emoji || null,
+                statusText: formData.customStatus.statusText,
+                expiresAt:
+                  formData.customStatus.expiresAt === "never"
+                    ? null
+                    : formData.customStatus.expiresAt,
+              }
+            : null,
         }),
       })
 
@@ -122,6 +848,41 @@ export function AccountForm({ user }: AccountFormProps) {
     } finally {
       setSaving(false)
     }
+  }
+
+  const handleOpenStatusDialog = () => {
+    // 打开对话框时，初始化临时状态为当前状态
+    setTempCustomStatus({
+      emoji: formData.customStatus.emoji,
+      statusText: formData.customStatus.statusText,
+      expiresAt: formData.customStatus.expiresAt,
+    })
+    setStatusDialogOpen(true)
+  }
+
+  const handleSaveStatus = () => {
+    // 保存临时状态到 formData，将相对时间转换为 ISO 字符串
+    setFormData((prev) => ({
+      ...prev,
+      customStatus: {
+        emoji: tempCustomStatus.emoji,
+        statusText: tempCustomStatus.statusText,
+        expiresAt:
+          tempCustomStatus.expiresAt === "never"
+            ? "never"
+            : getExpiresAtTimestamp(tempCustomStatus.expiresAt) || "never",
+      },
+    }))
+    setStatusDialogOpen(false)
+  }
+
+  const handleClearStatus = () => {
+    // 清除状态
+    setTempCustomStatus({
+      emoji: "",
+      statusText: "",
+      expiresAt: "never",
+    })
   }
 
   const handleInputChange = (field: string, value: string) => {
@@ -430,6 +1191,200 @@ export function AccountForm({ user }: AccountFormProps) {
             value={formData.birthday}
             onChange={(e) => handleInputChange("birthday", e.target.value)}
           />
+        </div>
+
+        {/* 自定义状态 */}
+        <div className="space-y-2">
+          <Label>{t("customStatus")}</Label>
+          <div className="flex items-center gap-3">
+            {/* 设置按钮 */}
+            <Dialog open={statusDialogOpen} onOpenChange={setStatusDialogOpen}>
+              <DialogTrigger asChild>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="icon"
+                  onClick={handleOpenStatusDialog}
+                  className="shrink-0"
+                >
+                  <Settings2 className="h-4 w-4" />
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-md">
+                <DialogHeader>
+                  <DialogTitle>{t("customStatus")}</DialogTitle>
+                  <DialogDescription>
+                    {t("customStatusHelper")}
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="space-y-4 py-4">
+                  {/* Emoji 选择器 */}
+                  <div className="space-y-2">
+                    <Label>{t("emoji")}</Label>
+                    <div className="flex items-center gap-2">
+                      <Popover
+                        open={emojiPickerOpen}
+                        onOpenChange={setEmojiPickerOpen}
+                      >
+                        <PopoverTrigger asChild>
+                          <Button
+                            type="button"
+                            variant="outline"
+                            className="h-12 w-16 text-2xl p-0"
+                          >
+                            {tempCustomStatus.emoji || (
+                              <Smile className="h-5 w-5" />
+                            )}
+                          </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-80 p-2">
+                          <div className="grid grid-cols-8 gap-1 max-h-64 overflow-y-auto">
+                            {commonEmojis.map((emoji, index) => (
+                              <button
+                                key={index}
+                                type="button"
+                                className="h-10 w-10 text-2xl hover:bg-accent rounded flex items-center justify-center"
+                                onClick={() => {
+                                  setTempCustomStatus((prev) => ({
+                                    ...prev,
+                                    emoji,
+                                  }))
+                                  setEmojiPickerOpen(false)
+                                }}
+                              >
+                                {emoji}
+                              </button>
+                            ))}
+                          </div>
+                        </PopoverContent>
+                      </Popover>
+                      {tempCustomStatus.emoji && (
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={() =>
+                            setTempCustomStatus((prev) => ({
+                              ...prev,
+                              emoji: "",
+                            }))
+                          }
+                        >
+                          <X className="h-4 w-4" />
+                        </Button>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* 状态文本 */}
+                  <div className="space-y-2">
+                    <Label htmlFor="statusText">{t("statusText")}</Label>
+                    <Input
+                      id="statusText"
+                      value={tempCustomStatus.statusText}
+                      onChange={(e) =>
+                        setTempCustomStatus((prev) => ({
+                          ...prev,
+                          statusText: e.target.value,
+                        }))
+                      }
+                      placeholder={t("customStatusPlaceholder")}
+                      maxLength={100}
+                    />
+                    <p className="text-xs text-muted-foreground text-right">
+                      {tempCustomStatus.statusText.length}/100
+                    </p>
+                  </div>
+
+                  {/* 过期时间选择 */}
+                  <div className="space-y-2">
+                    <Label htmlFor="statusExpiry">{t("statusExpiry")}</Label>
+                    <Select
+                      value={tempCustomStatus.expiresAt}
+                      onValueChange={(value) => {
+                        setTempCustomStatus((prev) => ({
+                          ...prev,
+                          expiresAt: value === "never" ? "never" : value,
+                        }))
+                      }}
+                    >
+                      <SelectTrigger id="statusExpiry">
+                        <SelectValue
+                          placeholder={t("statusExpiryPlaceholder")}
+                        />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="never">
+                          {t("statusExpiryNever")}
+                        </SelectItem>
+                        <SelectItem value="1hour">
+                          {t("statusExpiry1Hour")}
+                        </SelectItem>
+                        <SelectItem value="4hours">
+                          {t("statusExpiry4Hours")}
+                        </SelectItem>
+                        <SelectItem value="today">
+                          {t("statusExpiryToday")}
+                        </SelectItem>
+                        <SelectItem value="1week">
+                          {t("statusExpiry1Week")}
+                        </SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+                <DialogFooter className="flex-col sm:flex-row gap-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={handleClearStatus}
+                    className="sm:mr-auto"
+                  >
+                    {t("clearStatus")}
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => setStatusDialogOpen(false)}
+                  >
+                    {t("cancel")}
+                  </Button>
+                  <Button type="button" onClick={handleSaveStatus}>
+                    {t("saveStatus")}
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
+
+            {/* 状态信息展示 */}
+            <div className="flex-1 p-2 px-4 border rounded-lg bg-muted/50">
+              {formData.customStatus.statusText ? (
+                <div className="flex items-center gap-3">
+                  {formData.customStatus.emoji && (
+                    <span className="text-sm shrink-0">
+                      {formData.customStatus.emoji}
+                    </span>
+                  )}
+                  <div className="flex-1 min-w-0 flex flex-row flex-wrap items-center gap-2">
+                    <p className="text-sm font-medium truncate">
+                      {formData.customStatus.statusText}
+                    </p>
+                    {mounted && formData.customStatus.expiresAt !== "never" && (
+                      <p className="text-xs text-muted-foreground">
+                        {t("expiresAt")}:{" "}
+                        {formatExpiresAt(formData.customStatus.expiresAt)}
+                      </p>
+                    )}
+                  </div>
+                </div>
+              ) : (
+                <p className="text-sm text-muted-foreground">{t("notSet")}</p>
+              )}
+            </div>
+          </div>
+          <p className="text-sm text-muted-foreground">
+            {t("customStatusHelper")}
+          </p>
         </div>
       </div>
 

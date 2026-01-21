@@ -1617,8 +1617,25 @@
         "emailHelper": "邮箱用于登录和接收通知",
         "usernameInvalid": "用户名格式不正确",
         "usernameTaken": "该用户名已被使用",
-        "usernameCheckError": "检查用户名失败，请重试",
-        "usernameChecking": "正在检查用户名..."
+        "usernameCheckError": "检查用户名失败,请重试",
+        "usernameChecking": "正在检查用户名...",
+        "customStatus": "自定义状态",
+        "customStatusHelper": "设置一个个性化状态，让其他人了解你当前的状态",
+        "customStatusPlaceholder": "你在忙什么...",
+        "statusExpiry": "状态过期时间",
+        "statusExpiryPlaceholder": "选择过期时间",
+        "statusExpiryNever": "永不过期",
+        "statusExpiry1Hour": "1 小时后",
+        "statusExpiry4Hours": "4 小时后",
+        "statusExpiryToday": "今天结束时",
+        "statusExpiry1Week": "1 周后",
+        "notSet": "未设置",
+        "expiresAt": "过期于",
+        "emoji": "表情",
+        "statusText": "状态文本",
+        "clearStatus": "清除状态",
+        "saveStatus": "保存",
+        "cancel": "取消"
       },
       "security": {
         "title": "安全设置"

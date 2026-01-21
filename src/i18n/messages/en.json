@@ -1618,7 +1618,24 @@
         "usernameInvalid": "Username format is invalid",
         "usernameTaken": "This username is already taken",
         "usernameCheckError": "Failed to check username, please try again",
-        "usernameChecking": "Checking username availability..."
+        "usernameChecking": "Checking username availability...",
+        "customStatus": "Custom Status",
+        "customStatusHelper": "Set a personalized status to let others know what you're up to",
+        "customStatusPlaceholder": "What's happening...",
+        "statusExpiry": "Status Expiry",
+        "statusExpiryPlaceholder": "Select expiry time",
+        "statusExpiryNever": "Never",
+        "statusExpiry1Hour": "1 hour",
+        "statusExpiry4Hours": "4 hours",
+        "statusExpiryToday": "End of today",
+        "statusExpiry1Week": "1 week",
+        "notSet": "Not set",
+        "expiresAt": "Expires at",
+        "emoji": "Emoji",
+        "statusText": "Status Text",
+        "clearStatus": "Clear Status",
+        "saveStatus": "Save",
+        "cancel": "Cancel"
       },
       "security": {
         "title": "Security"

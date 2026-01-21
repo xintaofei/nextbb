@@ -54,6 +54,7 @@ model users {
   login_stats user_login_stats?
   login_logs  user_login_logs[]
   uploads     uploads[]
+  custom_status user_custom_statuses?
 
   @@unique([email], map: "users_email_key")
   @@map("users")
@@ -1007,4 +1008,22 @@ model llm_configs {
   is_enabled     Boolean          @default(true)
   created_at     DateTime         @default(now()) @db.Timestamptz(6)
   updated_at     DateTime         @updatedAt @db.Timestamptz(6)
+}
+
+// 用户自定义状态表
+model user_custom_statuses {
+  user_id       BigInt    @id @db.BigInt // 用户ID,作为主键保证一对一关系
+  emoji         String?   @db.VarChar(16) // emoji 表情(可为空,支持仅文本状态)
+  status_text   String    @db.VarChar(100) // 状态描述文本
+  expires_at    DateTime? // 自动移除状态的时间(可为空,表示永不过期)
+  is_deleted    Boolean   @default(false)
+  created_at    DateTime  @default(now())
+  updated_at    DateTime  @updatedAt
+
+  // 关联关系
+  user users @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@index([expires_at], map: "user_custom_statuses_expires_index") // 用于定时清理过期状态
+  @@index([is_deleted], map: "user_custom_statuses_deleted_index")
+  @@map("user_custom_statuses")
 }

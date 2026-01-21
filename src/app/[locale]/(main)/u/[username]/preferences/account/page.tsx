@@ -46,6 +46,13 @@ export default async function AccountPage() {
       location: true,
       birthday: true,
       title_badge_id: true,
+      custom_status: {
+        select: {
+          emoji: true,
+          status_text: true,
+          expires_at: true,
+        },
+      },
       user_badges: {
         where: { is_deleted: false },
         select: {
@@ -66,6 +73,13 @@ export default async function AccountPage() {
   // 处理徽章翻译，在服务端完成多语言处理
   const processedUser = user && {
     ...user,
+    // 过滤过期的自定义状态
+    custom_status:
+      user.custom_status &&
+      (!user.custom_status.expires_at ||
+        new Date(user.custom_status.expires_at) > new Date())
+        ? user.custom_status
+        : null,
     user_badges: user.user_badges.map((ub) => ({
       ...ub,
       badge: {

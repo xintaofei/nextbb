@@ -33,6 +33,14 @@ const UpdateAccountSchema = z.object({
   location: z.string().max(100).optional(),
   birthday: z.string().nullable().optional(),
   titleBadgeId: z.string().regex(/^\d+$/).nullable().optional(),
+  customStatus: z
+    .object({
+      emoji: z.string().max(16).nullable().optional(),
+      statusText: z.string().max(100),
+      expiresAt: z.string().nullable().optional(),
+    })
+    .nullable()
+    .optional(),
 })
 
 type UpdateAccountDTO = z.infer<typeof UpdateAccountSchema>
@@ -108,9 +116,51 @@ export async function PATCH(req: Request) {
   }
 
   try {
-    const updated = await prisma.users.update({
+    // Use transaction to ensure atomicity
+    await prisma.$transaction(async (tx) => {
+      // Update user basic info
+      await tx.users.update({
+        where: { id: session.userId },
+        data,
+      })
+
+      // Handle custom status
+      if (body.customStatus !== undefined) {
+        if (body.customStatus === null) {
+          // Delete custom status if set to null
+          await tx.user_custom_statuses.deleteMany({
+            where: { user_id: session.userId },
+          })
+        } else {
+          // Upsert custom status
+          const expiresAt = body.customStatus.expiresAt
+            ? new Date(body.customStatus.expiresAt)
+            : null
+
+          await tx.user_custom_statuses.upsert({
+            where: { user_id: session.userId },
+            create: {
+              user_id: session.userId,
+              emoji: body.customStatus.emoji || null,
+              status_text: body.customStatus.statusText,
+              expires_at: expiresAt,
+              is_deleted: false,
+            },
+            update: {
+              emoji: body.customStatus.emoji || null,
+              status_text: body.customStatus.statusText,
+              expires_at: expiresAt,
+              is_deleted: false,
+              updated_at: new Date(),
+            },
+          })
+        }
+      }
+    })
+
+    // Fetch updated user data with custom status
+    const updated = await prisma.users.findUnique({
       where: { id: session.userId },
-      data,
       select: {
         id: true,
         name: true,
@@ -122,8 +172,19 @@ export async function PATCH(req: Request) {
         birthday: true,
         title_badge_id: true,
         updated_at: true,
+        custom_status: {
+          select: {
+            emoji: true,
+            status_text: true,
+            expires_at: true,
+          },
+        },
       },
     })
+
+    if (!updated) {
+      return NextResponse.json({ error: "User not found" }, { status: 404 })
+    }
 
     return NextResponse.json(
       {
@@ -140,6 +201,18 @@ export async function PATCH(req: Request) {
         titleBadgeId: updated.title_badge_id
           ? String(updated.title_badge_id)
           : null,
+        customStatus:
+          updated.custom_status &&
+          (!updated.custom_status.expires_at ||
+            new Date(updated.custom_status.expires_at) > new Date())
+            ? {
+                emoji: updated.custom_status.emoji,
+                statusText: updated.custom_status.status_text,
+                expiresAt: updated.custom_status.expires_at
+                  ? updated.custom_status.expires_at.toISOString()
+                  : null,
+              }
+            : null,
         updatedAt: updated.updated_at.toISOString(),
       },
       { status: 200 }
