@@ -133,34 +133,39 @@ export default function DynamicRoutePage() {
         ) : (
           <h1 className="text-[2.75rem] font-bold">{t("title")}</h1>
         )}
-        <InputGroup className="w-80 hidden md:flex">
-          <InputGroupInput placeholder={tc("Search.placeholder")} />
+        <InputGroup className="w-80 h-12 hidden md:flex">
+          <InputGroupInput
+            className="h-full"
+            placeholder={tc("Search.placeholder")}
+          />
           <InputGroupAddon>
             <SearchIcon />
           </InputGroupAddon>
         </InputGroup>
       </div>
-      <TopicHeaderBar
-        className="max-md:mt-8 max-sm:mt-0"
-        onSortStart={() => {}}
-        onNewTopicClick={() => setIsNewTopicDialogOpen(true)}
-      />
-      <TopicList
-        items={topics}
-        loading={!topicPages && isTopicLoading}
-        hasMore={hasMore}
-        loadingMore={isLoadingMore}
-        onLoadMore={() => {
-          setSize(size + 1)
-        }}
-      />
-      <NewTopicDialog
-        open={isNewTopicDialogOpen}
-        onOpenChange={setIsNewTopicDialogOpen}
-        onPublished={() => {
-          mutate()
-        }}
-      />
+      <div className="flex flex-col gap-4 max-sm:gap-2">
+        <TopicHeaderBar
+          className="max-md:mt-8 max-sm:mt-0"
+          onSortStart={() => {}}
+          onNewTopicClick={() => setIsNewTopicDialogOpen(true)}
+        />
+        <TopicList
+          items={topics}
+          loading={!topicPages && isTopicLoading}
+          hasMore={hasMore}
+          loadingMore={isLoadingMore}
+          onLoadMore={() => {
+            setSize(size + 1)
+          }}
+        />
+        <NewTopicDialog
+          open={isNewTopicDialogOpen}
+          onOpenChange={setIsNewTopicDialogOpen}
+          onPublished={() => {
+            mutate()
+          }}
+        />
+      </div>
     </div>
   )
 }
