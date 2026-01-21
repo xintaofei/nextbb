@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import { useTheme } from "next-themes"
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
 import {
@@ -24,6 +25,7 @@ export function EmojiPickerField({
   label,
   placeholder = "点击选择 emoji",
 }: EmojiPickerFieldProps) {
+  const { resolvedTheme } = useTheme()
   const [open, setOpen] = useState(false)
 
   const handleEmojiSelect = (emoji: { native: string }) => {
@@ -66,7 +68,7 @@ export function EmojiPickerField({
               <Picker
                 data={data}
                 onEmojiSelect={handleEmojiSelect}
-                theme="auto"
+                theme={resolvedTheme}
                 previewPosition="none"
                 skinTonePosition="none"
               />
