@@ -1600,6 +1600,7 @@
         "invalidFileType": "只支持 JPG、PNG、WEBP 和 GIF 格式",
         "bio": "个人简介",
         "bioPlaceholder": "介绍一下你自己...",
+        "bioHelper": "介绍一下自己",
         "website": "个人网站",
         "websitePlaceholder": "https://example.com",
         "location": "所在地",

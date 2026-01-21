@@ -400,7 +400,7 @@ export function AccountForm({ user }: AccountFormProps) {
             maxLength={500}
           />
           <p className="flex flex-row justify-between text-sm text-muted-foreground">
-            <span>介绍一下自己</span>
+            <span>{t("bioHelper")}</span>
             <span>{formData.bio.length}/500</span>
           </p>
         </div>

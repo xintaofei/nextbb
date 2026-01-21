@@ -1600,6 +1600,7 @@
         "invalidFileType": "Only JPG, PNG, WEBP and GIF formats are supported",
         "bio": "Bio",
         "bioPlaceholder": "Tell us about yourself...",
+        "bioHelper": "Introduce yourself",
         "website": "Website",
         "websitePlaceholder": "https://example.com",
         "location": "Location",
