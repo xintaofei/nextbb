@@ -2213,5 +2213,38 @@
       "genericError": "上传失败",
       "widgetText": "正在上传图片..."
     }
+  },
+  "EmojiPicker": {
+    "placeholder": "点击选择 emoji",
+    "clear": "清除"
+  },
+  "EmojiMart": {
+    "search": "搜索",
+    "search_no_results_1": "哎呀！",
+    "search_no_results_2": "未找到任何结果",
+    "pick": "选择一个表情...",
+    "add_custom": "添加自定义表情",
+    "categories": {
+      "activity": "活动",
+      "custom": "自定义",
+      "flags": "旗帜",
+      "foods": "食物与饮料",
+      "frequency": "常用",
+      "nature": "动物与自然",
+      "objects": "物体",
+      "people": "表情与人物",
+      "places": "旅行与地点",
+      "search": "搜索结果",
+      "symbols": "符号"
+    },
+    "skins": {
+      "choose": "选择默认肤色",
+      "1": "默认",
+      "2": "浅色",
+      "3": "中浅色",
+      "4": "中色",
+      "5": "中深色",
+      "6": "深色"
+    }
   }
 }
