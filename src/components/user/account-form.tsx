@@ -381,6 +381,31 @@ export function AccountForm({ user }: AccountFormProps) {
           )}
         </div>
 
+        {/* 邮箱 */}
+        <div className="space-y-2">
+          <Label htmlFor="email">{t("email")}</Label>
+          <Input id="email" type="email" value={user.email} disabled />
+          <p className="text-sm text-muted-foreground">{t("emailHelper")}</p>
+        </div>
+
+        {/* 个人简介 */}
+        <div className="space-y-2">
+          <Label htmlFor="bio">{t("bio")}</Label>
+          <Textarea
+            id="bio"
+            value={formData.bio}
+            onChange={(e) => handleInputChange("bio", e.target.value)}
+            placeholder={t("bioPlaceholder")}
+            rows={4}
+            maxLength={500}
+          />
+          <p className="flex flex-row justify-between text-sm text-muted-foreground">
+            <span>介绍一下自己</span>
+            <span>{formData.bio.length}/500</span>
+          </p>
+        </div>
+
+        {/* 头衔 */}
         <div className="space-y-2">
           <Label htmlFor="titleBadge">{t("titleBadge")}</Label>
           <Select
@@ -411,63 +436,6 @@ export function AccountForm({ user }: AccountFormProps) {
           <p className="text-sm text-muted-foreground">
             {t("titleBadgePlaceholder")}
           </p>
-        </div>
-
-        {/* 邮箱 */}
-        <div className="space-y-2">
-          <Label htmlFor="email">{t("email")}</Label>
-          <Input id="email" type="email" value={user.email} disabled />
-          <p className="text-sm text-muted-foreground">{t("emailHelper")}</p>
-        </div>
-
-        {/* 个人简介 */}
-        <div className="space-y-2">
-          <Label htmlFor="bio">{t("bio")}</Label>
-          <Textarea
-            id="bio"
-            value={formData.bio}
-            onChange={(e) => handleInputChange("bio", e.target.value)}
-            placeholder={t("bioPlaceholder")}
-            rows={4}
-            maxLength={500}
-          />
-          <p className="text-sm text-muted-foreground text-right">
-            {formData.bio.length}/500
-          </p>
-        </div>
-
-        {/* 个人网站 */}
-        <div className="space-y-2">
-          <Label htmlFor="website">{t("website")}</Label>
-          <Input
-            id="website"
-            type="url"
-            value={formData.website}
-            onChange={(e) => handleInputChange("website", e.target.value)}
-            placeholder={t("websitePlaceholder")}
-          />
-        </div>
-
-        {/* 所在地 */}
-        <div className="space-y-2">
-          <Label htmlFor="location">{t("location")}</Label>
-          <Input
-            id="location"
-            value={formData.location}
-            onChange={(e) => handleInputChange("location", e.target.value)}
-            placeholder={t("locationPlaceholder")}
-          />
-        </div>
-
-        {/* 生日 */}
-        <div className="space-y-2">
-          <Label htmlFor="birthday">{t("birthday")}</Label>
-          <Input
-            id="birthday"
-            type="date"
-            value={formData.birthday}
-            onChange={(e) => handleInputChange("birthday", e.target.value)}
-          />
         </div>
 
         {/* 自定义状态 */}
@@ -525,6 +493,40 @@ export function AccountForm({ user }: AccountFormProps) {
           <p className="text-sm text-muted-foreground">
             {t("customStatusHelper")}
           </p>
+        </div>
+
+        {/* 个人网站 */}
+        <div className="space-y-2">
+          <Label htmlFor="website">{t("website")}</Label>
+          <Input
+            id="website"
+            type="url"
+            value={formData.website}
+            onChange={(e) => handleInputChange("website", e.target.value)}
+            placeholder={t("websitePlaceholder")}
+          />
+        </div>
+
+        {/* 所在地 */}
+        <div className="space-y-2">
+          <Label htmlFor="location">{t("location")}</Label>
+          <Input
+            id="location"
+            value={formData.location}
+            onChange={(e) => handleInputChange("location", e.target.value)}
+            placeholder={t("locationPlaceholder")}
+          />
+        </div>
+
+        {/* 生日 */}
+        <div className="space-y-2">
+          <Label htmlFor="birthday">{t("birthday")}</Label>
+          <Input
+            id="birthday"
+            type="date"
+            value={formData.birthday}
+            onChange={(e) => handleInputChange("birthday", e.target.value)}
+          />
         </div>
       </div>
 
