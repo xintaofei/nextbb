@@ -99,7 +99,7 @@ export default function DynamicRoutePage() {
 
   return (
     <div className="flex min-h-screen w-full flex-col px-8 max-sm:p-4 gap-4 max-sm:gap-2">
-      <div className="flex flex-row justify-between items-start py-8">
+      <div className="flex flex-col justify-center items-center py-8 gap-8 max-md:hidden">
         {routeParams.categoryId ? (
           <div className="flex flex-col">
             <div className="flex items-center gap-3">
@@ -131,7 +131,7 @@ export default function DynamicRoutePage() {
             )}
           </div>
         ) : (
-          <h1 className="text-5xl">{t("title")}</h1>
+          <h1 className="text-[2.75rem] font-bold">{t("title")}</h1>
         )}
         <InputGroup className="w-80 hidden md:flex">
           <InputGroupInput placeholder={tc("Search.placeholder")} />
@@ -141,6 +141,7 @@ export default function DynamicRoutePage() {
         </InputGroup>
       </div>
       <TopicHeaderBar
+        className="max-md:mt-8 max-sm:mt-0"
         onSortStart={() => {}}
         onNewTopicClick={() => setIsNewTopicDialogOpen(true)}
       />

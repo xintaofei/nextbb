@@ -1,10 +1,10 @@
 {
   "Index": {
-    "title": "Hello, NextBB",
+    "title": "Welcome to NextBB!",
     "description": "This is a production-ready i18n example."
   },
   "Dashboard": {
-    "title": "Hello, Next.js",
+    "title": "Welcome to NextBB!",
     "description": "This is a production-ready i18n example."
   },
   "Common": {
