@@ -1629,13 +1629,18 @@
         "statusExpiry4Hours": "4 hours",
         "statusExpiryToday": "End of today",
         "statusExpiry1Week": "1 week",
+        "statusExpiry1Month": "1 month",
         "notSet": "Not set",
         "expiresAt": "Expires at",
         "emoji": "Emoji",
         "statusText": "Status Text",
         "clearStatus": "Clear Status",
         "saveStatus": "Save",
-        "cancel": "Cancel"
+        "cancel": "Cancel",
+        "statusExpiryCustom": "Quick Set",
+        "statusExpiryCustomPlaceholder": "Select expiry time",
+        "selectedExpiry": "Selected expiry",
+        "apply": "Apply"
       },
       "security": {
         "title": "Security"

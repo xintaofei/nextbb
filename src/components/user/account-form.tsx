@@ -1,8 +1,8 @@
 "use client"
 
-import { useState, useRef, useEffect } from "react"
+import { useState, useRef } from "react"
 import { useRouter, usePathname } from "next/navigation"
-import { useTranslations } from "next-intl"
+import { useTranslations, useLocale } from "next-intl"
 import useSWR from "swr"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
@@ -30,9 +30,12 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog"
+import { Calendar } from "@/components/ui/calendar"
 import { toast } from "sonner"
-import { Upload, Smile, X, Settings2 } from "lucide-react"
-import { encodeUsername } from "@/lib/utils"
+import { Upload, Smile, X, Settings2, CalendarIcon, Clock } from "lucide-react"
+import { encodeUsername, cn } from "@/lib/utils"
+import { format } from "date-fns"
+import { zhCN, enUS } from "date-fns/locale"
 
 type UserData = {
   id: bigint
@@ -64,10 +67,11 @@ type AccountFormProps = {
 
 export function AccountForm({ user }: AccountFormProps) {
   const t = useTranslations("User.preferences.account")
+  const locale = useLocale()
   const router = useRouter()
   const pathname = usePathname()
   const { mutate: mutateMe } = useSWR("/api/auth/me")
-  const [mounted, setMounted] = useState(false)
+  const dateLocale = locale === "zh" ? zhCN : enUS
   const [saving, setSaving] = useState(false)
   const [uploading, setUploading] = useState(false)
   const [avatarPreview, setAvatarPreview] = useState(user.avatar)
@@ -98,28 +102,52 @@ export function AccountForm({ user }: AccountFormProps) {
     expiresAt: "never" as string,
   })
   const [emojiPickerOpen, setEmojiPickerOpen] = useState(false)
+  const [customDate, setCustomDate] = useState<Date | undefined>(undefined)
+  const [customTime, setCustomTime] = useState({ hours: "12", minutes: "00" })
+  const [datePickerOpen, setDatePickerOpen] = useState(false)
 
-  // 只在客户端渲染时间，避免 hydration 错误
-  useEffect(() => {
-    setMounted(true)
-  }, [])
-
-  // 将相对时间转换为具体时间戳
-  const getExpiresAtTimestamp = (relativeTime: string): string | null => {
-    if (relativeTime === "never") return null
-    const now = Date.now()
-    switch (relativeTime) {
-      case "1hour":
-        return new Date(now + 60 * 60 * 1000).toISOString()
-      case "4hours":
-        return new Date(now + 4 * 60 * 60 * 1000).toISOString()
-      case "today":
-        return new Date(new Date().setHours(23, 59, 59, 999)).toISOString()
-      case "1week":
-        return new Date(now + 7 * 24 * 60 * 60 * 1000).toISOString()
-      default:
-        return null
+  // 处理快捷选项点击
+  const handleQuickOption = (value: string): void => {
+    if (value === "never") {
+      // 永不过期，清空日期时间选择器
+      setCustomDate(undefined)
+      setCustomTime({ hours: "12", minutes: "00" })
+      return
     }
+
+    const now = Date.now()
+    let targetDate: Date
+
+    switch (value) {
+      case "1hour":
+        targetDate = new Date(now + 60 * 60 * 1000)
+        break
+      case "4hours":
+        targetDate = new Date(now + 4 * 60 * 60 * 1000)
+        break
+      case "today":
+        targetDate = new Date(new Date().setHours(23, 59, 59, 999))
+        break
+      case "1week":
+        targetDate = new Date(now + 7 * 24 * 60 * 60 * 1000)
+        break
+      case "1month":
+        targetDate = new Date(now + 30 * 24 * 60 * 60 * 1000)
+        break
+      default:
+        return
+    }
+
+    setCustomDate(targetDate)
+    setCustomTime({
+      hours: String(targetDate.getHours()).padStart(2, "0"),
+      minutes: String(targetDate.getMinutes()).padStart(2, "0"),
+    })
+  }
+
+  // 应用自定义日期时间（关闭弹窗）
+  const applyCustomDateTime = (): void => {
+    setDatePickerOpen(false)
   }
 
   // 格式化过期时间（本地时间）
@@ -857,20 +885,53 @@ export function AccountForm({ user }: AccountFormProps) {
       statusText: formData.customStatus.statusText,
       expiresAt: formData.customStatus.expiresAt,
     })
+
+    // 如果有过期时间设置，初始化日期时间选择器
+    if (
+      formData.customStatus.expiresAt &&
+      formData.customStatus.expiresAt !== "never"
+    ) {
+      const expiryDate = new Date(formData.customStatus.expiresAt)
+      setCustomDate(expiryDate)
+      setCustomTime({
+        hours: String(expiryDate.getHours()).padStart(2, "0"),
+        minutes: String(expiryDate.getMinutes()).padStart(2, "0"),
+      })
+    } else {
+      // 否则清空日期时间选择器
+      setCustomDate(undefined)
+      setCustomTime({ hours: "12", minutes: "00" })
+    }
+
     setStatusDialogOpen(true)
   }
 
   const handleSaveStatus = () => {
-    // 保存临时状态到 formData，将相对时间转换为 ISO 字符串
+    // 保存临时状态到 formData
+    let expiresAtValue = "never"
+
+    // 如果设置了自定义日期时间，使用它
+    if (customDate) {
+      const dateTime = new Date(customDate)
+      dateTime.setHours(parseInt(customTime.hours, 10))
+      dateTime.setMinutes(parseInt(customTime.minutes, 10))
+      dateTime.setSeconds(0)
+      dateTime.setMilliseconds(0)
+      expiresAtValue = dateTime.toISOString()
+    } else if (
+      tempCustomStatus.expiresAt !== "never" &&
+      tempCustomStatus.expiresAt !== ""
+    ) {
+      // 如果没有自定义日期但有其他设置，使用它
+      expiresAtValue = tempCustomStatus.expiresAt
+    }
+
     setFormData((prev) => ({
       ...prev,
       customStatus: {
         emoji: tempCustomStatus.emoji,
         statusText: tempCustomStatus.statusText,
-        expiresAt:
-          tempCustomStatus.expiresAt === "never"
-            ? "never"
-            : getExpiresAtTimestamp(tempCustomStatus.expiresAt) || "never",
+        expiresAt: expiresAtValue,
       },
     }))
     setStatusDialogOpen(false)
@@ -883,6 +944,8 @@ export function AccountForm({ user }: AccountFormProps) {
       statusText: "",
       expiresAt: "never",
     })
+    setCustomDate(undefined)
+    setCustomTime({ hours: "12", minutes: "00" })
   }
 
   const handleInputChange = (field: string, value: string) => {
@@ -1297,40 +1360,189 @@ export function AccountForm({ user }: AccountFormProps) {
                   </div>
 
                   {/* 过期时间选择 */}
-                  <div className="space-y-2">
-                    <Label htmlFor="statusExpiry">{t("statusExpiry")}</Label>
-                    <Select
-                      value={tempCustomStatus.expiresAt}
-                      onValueChange={(value) => {
-                        setTempCustomStatus((prev) => ({
-                          ...prev,
-                          expiresAt: value === "never" ? "never" : value,
-                        }))
-                      }}
-                    >
-                      <SelectTrigger id="statusExpiry">
-                        <SelectValue
-                          placeholder={t("statusExpiryPlaceholder")}
-                        />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="never">
-                          {t("statusExpiryNever")}
-                        </SelectItem>
-                        <SelectItem value="1hour">
+                  <div className="space-y-3">
+                    <Label>{t("statusExpiry")}</Label>
+
+                    {/* 自定义时间选择器 */}
+                    <div className="space-y-2">
+                      <Popover
+                        open={datePickerOpen}
+                        onOpenChange={setDatePickerOpen}
+                      >
+                        <PopoverTrigger asChild>
+                          <Button
+                            type="button"
+                            variant="outline"
+                            className={cn(
+                              "w-full justify-start text-left font-normal",
+                              !customDate && "text-muted-foreground"
+                            )}
+                            onClick={() => {
+                              if (!customDate) {
+                                const now = new Date()
+                                setCustomDate(now)
+                                setCustomTime({
+                                  hours: String(now.getHours()).padStart(
+                                    2,
+                                    "0"
+                                  ),
+                                  minutes: String(now.getMinutes()).padStart(
+                                    2,
+                                    "0"
+                                  ),
+                                })
+                              }
+                            }}
+                          >
+                            <CalendarIcon className="mr-2 h-4 w-4" />
+                            {customDate ? (
+                              format(customDate, "PPP", {
+                                locale: dateLocale,
+                              }) +
+                              " " +
+                              customTime.hours +
+                              ":" +
+                              customTime.minutes
+                            ) : (
+                              <span>{t("statusExpiryCustomPlaceholder")}</span>
+                            )}
+                          </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto p-0" align="start">
+                          <div className="p-3 space-y-3">
+                            <Calendar
+                              mode="single"
+                              selected={customDate}
+                              onSelect={setCustomDate}
+                              locale={dateLocale}
+                              disabled={(date) =>
+                                date < new Date(new Date().setHours(0, 0, 0, 0))
+                              }
+                            />
+                            <div className="flex items-center gap-2 px-3">
+                              <Clock className="h-4 w-4 text-muted-foreground" />
+                              <Input
+                                type="number"
+                                min="0"
+                                max="23"
+                                value={customTime.hours}
+                                onChange={(e) => {
+                                  const value = Math.max(
+                                    0,
+                                    Math.min(23, parseInt(e.target.value) || 0)
+                                  )
+                                  setCustomTime((prev) => ({
+                                    ...prev,
+                                    hours: String(value).padStart(2, "0"),
+                                  }))
+                                }}
+                                className="w-16 text-center"
+                                placeholder="HH"
+                              />
+                              <span>:</span>
+                              <Input
+                                type="number"
+                                min="0"
+                                max="59"
+                                value={customTime.minutes}
+                                onChange={(e) => {
+                                  const value = Math.max(
+                                    0,
+                                    Math.min(59, parseInt(e.target.value) || 0)
+                                  )
+                                  setCustomTime((prev) => ({
+                                    ...prev,
+                                    minutes: String(value).padStart(2, "0"),
+                                  }))
+                                }}
+                                className="w-16 text-center"
+                                placeholder="MM"
+                              />
+                            </div>
+                            <div className="flex justify-end gap-2 px-3 pb-2">
+                              <Button
+                                type="button"
+                                variant="outline"
+                                size="sm"
+                                onClick={() => setDatePickerOpen(false)}
+                              >
+                                {t("cancel")}
+                              </Button>
+                              <Button
+                                type="button"
+                                size="sm"
+                                onClick={applyCustomDateTime}
+                              >
+                                {t("apply")}
+                              </Button>
+                            </div>
+                          </div>
+                        </PopoverContent>
+                      </Popover>
+                    </div>
+
+                    {/* 快捷选项按钮组 */}
+                    <div className="space-y-2">
+                      <Label className="text-sm text-muted-foreground">
+                        {t("statusExpiryCustom")}
+                      </Label>
+                      <div className="grid grid-cols-3 gap-2">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleQuickOption("1hour")}
+                          className="w-full"
+                        >
                           {t("statusExpiry1Hour")}
-                        </SelectItem>
-                        <SelectItem value="4hours">
+                        </Button>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleQuickOption("4hours")}
+                          className="w-full"
+                        >
                           {t("statusExpiry4Hours")}
-                        </SelectItem>
-                        <SelectItem value="today">
+                        </Button>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleQuickOption("today")}
+                          className="w-full"
+                        >
                           {t("statusExpiryToday")}
-                        </SelectItem>
-                        <SelectItem value="1week">
+                        </Button>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleQuickOption("1week")}
+                          className="w-full"
+                        >
                           {t("statusExpiry1Week")}
-                        </SelectItem>
-                      </SelectContent>
-                    </Select>
+                        </Button>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleQuickOption("1month")}
+                          className="w-full"
+                        >
+                          {t("statusExpiry1Month")}
+                        </Button>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleQuickOption("never")}
+                          className="w-full"
+                        >
+                          {t("statusExpiryNever")}
+                        </Button>
+                      </div>
+                    </div>
                   </div>
                 </div>
                 <DialogFooter className="flex-col sm:flex-row gap-2">
@@ -1369,7 +1581,7 @@ export function AccountForm({ user }: AccountFormProps) {
                     <p className="text-sm font-medium truncate">
                       {formData.customStatus.statusText}
                     </p>
-                    {mounted && formData.customStatus.expiresAt !== "never" && (
+                    {formData.customStatus.expiresAt !== "never" && (
                       <p className="text-xs text-muted-foreground">
                         {t("expiresAt")}:{" "}
                         {formatExpiresAt(formData.customStatus.expiresAt)}

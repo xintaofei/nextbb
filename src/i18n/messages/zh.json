@@ -1629,13 +1629,18 @@
         "statusExpiry4Hours": "4 小时后",
         "statusExpiryToday": "今天结束时",
         "statusExpiry1Week": "1 周后",
+        "statusExpiry1Month": "1 月后",
         "notSet": "未设置",
         "expiresAt": "过期于",
         "emoji": "表情",
         "statusText": "状态文本",
         "clearStatus": "清除状态",
         "saveStatus": "保存",
-        "cancel": "取消"
+        "cancel": "取消",
+        "statusExpiryCustom": "快捷设置",
+        "statusExpiryCustomPlaceholder": "选择过期时间",
+        "selectedExpiry": "已选择过期时间",
+        "apply": "应用"
       },
       "security": {
         "title": "安全设置"
