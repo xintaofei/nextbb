@@ -21,7 +21,7 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { ColorPickerField } from "../fields/color-picker-field"
-import { EmojiPickerField } from "../fields/emoji-picker-field"
+import { EmojiPickerField } from "@/components/common/emoji-picker-field"
 
 type BadgeFormData = {
   name: string

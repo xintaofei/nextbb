@@ -55,14 +55,22 @@ export function EmojiPickerField({
               )}
             </Button>
           </PopoverTrigger>
-          <PopoverContent className="w-full p-0" align="start">
-            <Picker
-              data={data}
-              onEmojiSelect={handleEmojiSelect}
-              theme="auto"
-              previewPosition="none"
-              skinTonePosition="none"
-            />
+          <PopoverContent
+            className="w-auto p-0 border-none shadow-none"
+            align="start"
+          >
+            <div
+              onWheel={(e) => e.stopPropagation()}
+              onTouchMove={(e) => e.stopPropagation()}
+            >
+              <Picker
+                data={data}
+                onEmojiSelect={handleEmojiSelect}
+                theme="auto"
+                previewPosition="none"
+                skinTonePosition="none"
+              />
+            </div>
           </PopoverContent>
         </Popover>
         {value && (
