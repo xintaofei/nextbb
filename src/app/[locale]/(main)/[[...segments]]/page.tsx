@@ -106,34 +106,22 @@ export default function DynamicRoutePage() {
 
   return (
     <div className="flex min-h-screen w-full flex-col px-8 max-sm:p-4 gap-4 max-sm:gap-2">
-      {!routeParams.categoryId && (
-        <div className="flex flex-col justify-center items-center py-8 gap-8 max-md:hidden">
-          <h1 className="text-[2.75rem] font-bold">
-            {welcomeMessage || t("title")}
-          </h1>
-          <InputGroup className="w-80 h-10 hidden md:flex">
-            <InputGroupInput
-              className="h-full"
-              placeholder={tc("Search.placeholder")}
-            />
-            <InputGroupAddon>
-              <SearchIcon />
-            </InputGroupAddon>
-          </InputGroup>
-        </div>
-      )}
-      <div
-        className={cn(
-          routeParams.categoryId ? "" : "md:mt-0",
-          "flex flex-col border rounded-lg max-sm:border-0 mt-8 max-sm:mt-0"
-        )}
-      >
-        <div
-          className={cn(
-            routeParams.categoryId ? "max-sm:mb-4" : "",
-            "max-md:mt-0"
-          )}
-        >
+      <div className="flex flex-col justify-center items-center py-8 gap-8 max-md:hidden">
+        <h1 className="text-[2.75rem] font-bold">
+          {welcomeMessage || t("title")}
+        </h1>
+        <InputGroup className="w-80 h-10 hidden md:flex">
+          <InputGroupInput
+            className="h-full"
+            placeholder={tc("Search.placeholder")}
+          />
+          <InputGroupAddon>
+            <SearchIcon />
+          </InputGroupAddon>
+        </InputGroup>
+      </div>
+      <div className="flex flex-col border rounded-lg max-sm:border-0 max-md:mt-8 max-sm:mt-0">
+        <div className={cn(routeParams.categoryId ? "max-sm:mb-4" : "")}>
           <TopicHeaderBar
             className="p-4 max-sm:p-0 max-sm:pb-4"
             onSortStart={() => {}}
