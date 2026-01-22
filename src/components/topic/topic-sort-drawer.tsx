@@ -22,17 +22,21 @@ import {
 } from "@/lib/route-utils"
 
 type SortValue = RouteSortValue
+type FilterValue = "community" | "my"
+type TabValue = SortValue | FilterValue
 
 type TopicSortDrawerProps = {
   className?: string
   onPendingChange?: (pending: boolean) => void
   onSortStart?: (next: SortValue) => void
+  onFilterChange?: (filter: FilterValue) => void
 }
 
 export function TopicSortDrawer({
   className,
   onPendingChange,
   onSortStart,
+  onFilterChange,
 }: TopicSortDrawerProps) {
   const tc = useTranslations("Common")
   const router = useRouter()
@@ -54,6 +58,9 @@ export function TopicSortDrawer({
     return "latest"
   }, [routeParams])
 
+  // 当前激活的选项卡（可能是排序或过滤）
+  const [currentTab, setCurrentTab] = useState<TabValue>(currentSort)
+
   const sortLabels: Record<string, string> = {
     latest: tc("Tabs.latest"),
     hot: tc("Tabs.hot"),
@@ -69,42 +76,58 @@ export function TopicSortDrawer({
     onPendingChange?.(isPending)
   }, [isPending, onPendingChange])
 
-  function setSort(next: SortValue) {
-    if (next === currentSort) {
+  // 同步路由变化到当前选项卡
+  useEffect(() => {
+    setCurrentTab(currentSort)
+  }, [currentSort])
+
+  function handleTabClick(value: TabValue) {
+    if (value === currentTab) {
       setOpen(false)
       return
     }
-    onSortStart?.(next)
+
+    setCurrentTab(value)
     setOpen(false)
 
-    // 构建新路由参数
-    const newParams: RouteParams = {
-      ...routeParams,
-      sort: next,
+    // 判断是排序还是过滤
+    if (value === "community" || value === "my") {
+      // 处理过滤类型
+      onFilterChange?.(value)
+    } else {
+      // 处理排序类型
+      const sortValue = value as SortValue
+      onSortStart?.(sortValue)
+
+      // 构建新路由参数
+      const newParams: RouteParams = {
+        ...routeParams,
+        sort: sortValue,
+      }
+
+      // 生成新路由路径
+      const newPath = buildRoutePath(newParams)
+
+      startTransition(() => {
+        router.push(newPath)
+        router.refresh()
+      })
     }
-
-    // 生成新路由路径
-    const newPath = buildRoutePath(newParams)
-
-    startTransition(() => {
-      router.push(newPath)
-      router.refresh()
-    })
   }
 
-  const sortOptions = [
-    { value: "latest" as SortValue, label: sortLabels.latest },
-    { value: "top" as SortValue, label: sortLabels.top },
-    { value: "new" as SortValue, label: sortLabels.new },
-    { value: "community" as const, label: sortLabels.community },
-    { value: "my" as const, label: sortLabels.my },
+  const sortOptions: Array<{ value: TabValue; label: string }> = [
+    { value: "latest", label: sortLabels.latest },
+    { value: "top", label: sortLabels.top },
+    { value: "new", label: sortLabels.new },
+    { value: "community", label: sortLabels.community },
+    { value: "my", label: sortLabels.my },
   ]
 
   return (
     <Drawer open={open} onOpenChange={setOpen}>
       <DrawerTrigger asChild>
         <Label className={className}>
-          <span>{sortLabels[currentSort]}</span>
+          <span>{sortLabels[currentTab]}</span>
           <ChevronsUpDown className="h-4 w-4" />
         </Label>
       </DrawerTrigger>
@@ -117,14 +140,14 @@ export function TopicSortDrawer({
             {sortOptions.map((option) => (
               <button
                 key={option.value}
-                onClick={() => setSort(option.value)}
+                onClick={() => handleTabClick(option.value)}
                 className={cn(
                   "flex items-center justify-between rounded-md px-4 py-3 text-sm font-medium transition-colors hover:bg-accent",
-                  currentSort === option.value && "bg-accent"
+                  currentTab === option.value && "bg-accent"
                 )}
               >
                 <span>{option.label}</span>
-                {currentSort === option.value && <Check className="h-4 w-4" />}
+                {currentTab === option.value && <Check className="h-4 w-4" />}
               </button>
             ))}
           </div>
