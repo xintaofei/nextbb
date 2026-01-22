@@ -1,12 +1,15 @@
 import type { NextAuthOptions } from "next-auth"
-import GitHubProvider from "next-auth/providers/github"
-import GoogleProvider from "next-auth/providers/google"
 import { prisma } from "@/lib/prisma"
 import { generateId } from "@/lib/id"
-import { LinuxDoProvider } from "@/lib/providers/linuxdo"
 import { uploadAvatarFromUrl } from "@/lib/blob"
 import { AutomationEvents } from "@/lib/automation/event-bus"
 import { recordLogin } from "@/lib/auth"
+import { getOAuthConfigs } from "@/lib/services/config-service"
+import {
+  createGitHubProvider,
+  createGoogleProvider,
+  createLinuxDoProvider,
+} from "@/lib/providers/oauth-factory"
 
 function getEnv(name: string): string {
   const v = process.env[name]
@@ -69,133 +72,145 @@ async function ensureUniqueName(name: string): Promise<string> {
   return `${name}${Date.now().toString().slice(-8)}`
 }
 
-export const authOptions: NextAuthOptions = {
-  debug: process.env.NODE_ENV !== "production",
-  providers: [
-    GitHubProvider({
-      clientId: getEnv("GITHUB_CLIENT_ID"),
-      clientSecret: getEnv("GITHUB_CLIENT_SECRET"),
-      httpOptions: { timeout: 60000 },
-    }),
-    GoogleProvider({
-      clientId: getEnv("GOOGLE_CLIENT_ID"),
-      clientSecret: getEnv("GOOGLE_CLIENT_SECRET"),
-      httpOptions: { timeout: 60000 },
-    }),
-    LinuxDoProvider,
-  ],
-  session: {
-    strategy: "jwt",
-  },
-  callbacks: {
-    async signIn({ user, account, profile }) {
-      if (!account) return false
-      const provider = account.provider
-      if (
-        provider !== "github" &&
-        provider !== "google" &&
-        provider !== "linuxdo"
-      )
-        return false
-      const email =
-        user.email ??
-        (typeof profile?.email === "string" ? profile.email : null) ??
-        null
-      if (!email) return false
-      const existing = await prisma.users.findUnique({
-        where: { email },
-      })
+export async function createAuthOptions(): Promise<NextAuthOptions> {
+  // 从数据库加载 OAuth 配置（带缓存）
+  const oauthConfigs = await getOAuthConfigs()
 
-      if (existing && (existing.is_deleted || existing.status !== 1)) {
-        await recordLogin(existing.id, "FAILED", provider.toUpperCase())
-        return false
-      }
+  // 动态构建 providers 数组
+  const providers: NextAuthOptions["providers"] = []
 
-      const avatarSrc =
-        user.image ??
-        (typeof (profile as { picture?: string }).picture === "string"
-          ? (profile as { picture?: string }).picture
-          : null) ??
-        null
+  const githubProvider = createGitHubProvider(oauthConfigs.github)
+  if (githubProvider) providers.push(githubProvider)
 
-      let targetUser = existing
+  const googleProvider = createGoogleProvider(oauthConfigs.google)
+  if (googleProvider) providers.push(googleProvider)
 
-      if (!targetUser) {
-        const id = generateId()
-        let name =
-          user.name ??
-          (typeof profile?.name === "string" && profile.name.length > 0
-            ? profile.name
-            : null)
-        if (!name && provider === "linuxdo") {
-          const p = profile as { username?: string; login?: string }
-          name =
-            (typeof p.username === "string" && p.username.length > 0
-              ? p.username
-              : null) ??
-            (typeof p.login === "string" && p.login.length > 0 ? p.login : null)
-        }
-        if (!name) {
-          name = email.split("@")[0]
+  const linuxdoProvider = createLinuxDoProvider(oauthConfigs.linuxdo)
+  if (linuxdoProvider) providers.push(linuxdoProvider)
+
+  // 如果没有启用任何 Provider，记录警告
+  if (providers.length === 0) {
+    console.warn("[Auth] 警告: 没有启用任何 OAuth Provider")
+  }
+
+  return {
+    debug: process.env.NODE_ENV !== "production",
+    providers,
+    session: {
+      strategy: "jwt",
+    },
+    callbacks: {
+      async signIn({ user, account, profile }) {
+        if (!account) return false
+        const provider = account.provider
+        if (
+          provider !== "github" &&
+          provider !== "google" &&
+          provider !== "linuxdo"
+        )
+          return false
+        const email =
+          user.email ??
+          (typeof profile?.email === "string" ? profile.email : null) ??
+          null
+        if (!email) return false
+        const existing = await prisma.users.findUnique({
+          where: { email },
+        })
+
+        if (existing && (existing.is_deleted || existing.status !== 1)) {
+          await recordLogin(existing.id, "FAILED", provider.toUpperCase())
+          return false
         }
 
-        // 确保用户名唯一
-        const uniqueName = await ensureUniqueName(name)
+        const avatarSrc =
+          user.image ??
+          (typeof (profile as { picture?: string }).picture === "string"
+            ? (profile as { picture?: string }).picture
+            : null) ??
+          null
 
-        let avatar = ""
-        if (avatarSrc && avatarSrc.length > 0) {
-          try {
-            avatar = await uploadAvatarFromUrl(id, avatarSrc)
-          } catch {
-            avatar = avatarSrc
+        let targetUser = existing
+
+        if (!targetUser) {
+          const id = generateId()
+          let name =
+            user.name ??
+            (typeof profile?.name === "string" && profile.name.length > 0
+              ? profile.name
+              : null)
+          if (!name && provider === "linuxdo") {
+            const p = profile as { username?: string; login?: string }
+            name =
+              (typeof p.username === "string" && p.username.length > 0
+                ? p.username
+                : null) ??
+              (typeof p.login === "string" && p.login.length > 0
+                ? p.login
+                : null)
+          }
+          if (!name) {
+            name = email.split("@")[0]
+          }
+
+          // 确保用户名唯一
+          const uniqueName = await ensureUniqueName(name)
+
+          let avatar = ""
+          if (avatarSrc && avatarSrc.length > 0) {
+            try {
+              avatar = await uploadAvatarFromUrl(id, avatarSrc)
+            } catch {
+              avatar = avatarSrc
+            }
+          }
+          targetUser = await prisma.users.create({
+            data: {
+              id,
+              email,
+              name: uniqueName,
+              avatar,
+              password: "oauth",
+              status: 1,
+              is_deleted: false,
+            },
+          })
+
+          // 触发用户注册事件
+          await AutomationEvents.userRegister({
+            userId: targetUser.id,
+            email: targetUser.email,
+            oauthProvider: provider,
+          })
+        }
+
+        // 记录登录信息（包括新用户和老用户）
+        await recordLogin(targetUser.id, "SUCCESS", provider.toUpperCase())
+
+        return true
+      },
+      async jwt({ token, user }) {
+        if (user?.email) {
+          const u = await prisma.users.findUnique({
+            where: { email: user.email },
+            select: { id: true, email: true, name: true, avatar: true },
+          })
+          if (u) {
+            token.id = u.id.toString()
+            token.email = u.email
+            token.name = u.name
+            token.picture = u.avatar
           }
         }
-        targetUser = await prisma.users.create({
-          data: {
-            id,
-            email,
-            name: uniqueName,
-            avatar,
-            password: "oauth",
-            status: 1,
-            is_deleted: false,
-          },
-        })
-
-        // 触发用户注册事件
-        await AutomationEvents.userRegister({
-          userId: targetUser.id,
-          email: targetUser.email,
-          oauthProvider: provider,
-        })
-      }
-
-      // 记录登录信息（包括新用户和老用户）
-      await recordLogin(targetUser.id, "SUCCESS", provider.toUpperCase())
-
-      return true
-    },
-    async jwt({ token, user }) {
-      if (user?.email) {
-        const u = await prisma.users.findUnique({
-          where: { email: user.email },
-          select: { id: true, email: true, name: true, avatar: true },
-        })
-        if (u) {
-          token.id = u.id.toString()
-          token.email = u.email
-          token.name = u.name
-          token.picture = u.avatar
+        return token
+      },
+      async session({ session, token }) {
+        if (session.user && token) {
+          session.user.id = typeof token.id === "string" ? token.id : undefined
         }
-      }
-      return token
+        return session
+      },
     },
-    async session({ session, token }) {
-      if (session.user && token) {
-        session.user.id = typeof token.id === "string" ? token.id : undefined
-      }
-      return session
-    },
-  },
-  secret: getEnv("NEXTAUTH_SECRET"),
+    secret: getEnv("NEXTAUTH_SECRET"),
+  }
 }
