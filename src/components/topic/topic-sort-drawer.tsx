@@ -8,7 +8,6 @@ import {
   DrawerTitle,
   DrawerTrigger,
 } from "@/components/ui/drawer"
-import { Separator } from "@/components/ui/separator"
 import { ChevronsUpDown, Check } from "lucide-react"
 import { useTranslations } from "next-intl"
 import { useRouter, useParams } from "next/navigation"
