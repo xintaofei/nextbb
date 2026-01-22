@@ -126,7 +126,7 @@ export default function DynamicRoutePage() {
           onNewTopicClick={() => setIsNewTopicDialogOpen(true)}
         />
         {routeParams.categoryId && (
-          <div className="flex flex-col p-8 bg-muted/40 border rounded-lg">
+          <div className="flex flex-col p-8 max-sm:p-4 bg-muted/40 border rounded-lg">
             <div className="flex justify-center items-center gap-3">
               {categoryLoading ? (
                 <div className="flex flex-col justify-center gap-4">
