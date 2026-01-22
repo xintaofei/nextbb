@@ -83,7 +83,32 @@ export function TopicList({
   const tc = useTranslations("Common")
   const sentinelRef = useRef<HTMLDivElement | null>(null)
   const [highlightIndex, setHighlightIndex] = useState<number | null>(null)
+  const [clickedTopicId, setClickedTopicId] = useState<string | null>(null)
   const previousItemsLengthRef = useRef<number>(0)
+
+  useEffect(() => {
+    // 恢复之前的点击状态
+    const lastClickedId = sessionStorage.getItem("last_clicked_topic_id")
+    if (lastClickedId) {
+      setTimeout(() => setClickedTopicId(lastClickedId), 0)
+    }
+  }, [])
+
+  useEffect(() => {
+    const handleGlobalClick = (e: MouseEvent) => {
+      // 如果点击的是带有 data-topic-link 属性的元素（即话题链接），则不清除选中状态
+      // 这样可以避免与 Link 的 onMouseDown 冲突
+      if ((e.target as Element).closest("[data-topic-link]")) {
+        return
+      }
+      setClickedTopicId(null)
+      sessionStorage.removeItem("last_clicked_topic_id")
+    }
+    document.addEventListener("mousedown", handleGlobalClick)
+    return () => {
+      document.removeEventListener("mousedown", handleGlobalClick)
+    }
+  }, [])
 
   useEffect(() => {
     const prevLength = previousItemsLengthRef.current
@@ -191,7 +216,10 @@ export function TopicList({
                     : ""
                 }
               >
-                <TableCell className="max-w-full max-sm:px-0">
+                <TableCell className="max-w-full max-sm:px-0 relative">
+                  {clickedTopicId === t.id && (
+                    <div className="absolute left-0 top-0 bottom-0 w-[3px] bg-primary rounded-r-sm" />
+                  )}
                   <div>
                     <TopicStatusTags
                       isPinned={t.isPinned}
@@ -199,7 +227,15 @@ export function TopicList({
                       topicType={t.type as TopicTypeValue}
                       className="align-middle mr-1"
                     />
-                    <Link href={`/topic/${t.id}`} className="align-middle">
+                    <Link
+                      href={`/topic/${t.id}`}
+                      className="align-middle"
+                      data-topic-link
+                      onMouseDown={() => {
+                        setClickedTopicId(t.id)
+                        sessionStorage.setItem("last_clicked_topic_id", t.id)
+                      }}
+                    >
                       <span className="max-w-full text-lg font-medium whitespace-normal wrap-break-word">
                         {t.title}
                       </span>
