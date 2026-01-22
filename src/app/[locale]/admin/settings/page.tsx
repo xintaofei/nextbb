@@ -3,6 +3,7 @@
 import { useState, useMemo } from "react"
 import useSWR from "swr"
 import { useTranslations } from "next-intl"
+import { useRouter } from "next/navigation"
 import { AdminPageContainer } from "@/components/admin/layout/admin-page-container"
 import { AdminPageSection } from "@/components/admin/layout/admin-page-section"
 import { Button } from "@/components/ui/button"
@@ -48,6 +49,7 @@ const fetcher = async (url: string): Promise<ConfigListResult> => {
 export default function SettingsPage() {
   const t = useTranslations("Admin.settings")
   const tConfig = useTranslations("Config")
+  const router = useRouter()
   const [activeTab, setActiveTab] = useState("basic")
   const [saving, setSaving] = useState(false)
   const [uploading, setUploading] = useState(false)
@@ -113,6 +115,9 @@ export default function SettingsPage() {
 
       await mutate()
       toast.success(t("message.saveSuccess"))
+
+      // 刷新服务端组件（包括 layout.tsx 的 metadata）
+      router.refresh()
     } catch (error) {
       console.error("Save error:", error)
       toast.error(t("message.saveError"))
