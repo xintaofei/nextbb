@@ -117,47 +117,49 @@ export default function DynamicRoutePage() {
       )}
       <div
         className={cn(
-          routeParams.categoryId ? "mt-8" : "",
-          "flex flex-col gap-4 max-sm:gap-2"
+          routeParams.categoryId ? "mt-8 max-sm:mt-0" : "",
+          "flex flex-col border rounded-lg max-sm:border-0"
         )}
       >
-        <TopicHeaderBar
-          className="max-md:mt-8 max-sm:mt-0"
-          onSortStart={() => {}}
-          onNewTopicClick={() => setIsNewTopicDialogOpen(true)}
-        />
-        {routeParams.categoryId && (
-          <div className="flex flex-col p-8 max-sm:p-4 bg-muted/40 border rounded-lg">
-            <div className="flex justify-center items-center gap-3">
-              {categoryLoading ? (
-                <div className="flex flex-col justify-center gap-4">
-                  <div className="flex justify-center items-center gap-2">
-                    <Skeleton className="h-12 w-14 rounded-full" />
-                    <Skeleton className="h-12 w-64" />
+        <div className="max-md:mt-8 max-sm:mt-0">
+          <TopicHeaderBar
+            className="p-4"
+            onSortStart={() => {}}
+            onNewTopicClick={() => setIsNewTopicDialogOpen(true)}
+          />
+          {routeParams.categoryId && (
+            <div className="flex flex-col p-8 max-sm:p-4 bg-muted/40 border-y max-sm:border max-sm:rounded-md">
+              <div className="flex justify-center items-center gap-3">
+                {categoryLoading ? (
+                  <div className="flex flex-col justify-center gap-4">
+                    <div className="flex justify-center items-center gap-2">
+                      <Skeleton className="h-12 w-14 rounded-full" />
+                      <Skeleton className="h-12 w-64" />
+                    </div>
+                    <Skeleton className="h-6 w-96" />
                   </div>
-                  <Skeleton className="h-6 w-96" />
-                </div>
-              ) : (
-                <div className="flex flex-col gap-2">
-                  <div className="flex items-center gap-2">
-                    <span className="text-5xl leading-none">
-                      {category?.icon ?? "📁"}
-                    </span>
-                    <h1 className="text-5xl">
-                      {category?.name ??
-                        tCat("defaultName", { id: routeParams.categoryId })}
-                    </h1>
+                ) : (
+                  <div className="flex flex-col gap-2">
+                    <div className="flex items-center gap-2">
+                      <span className="text-5xl leading-none">
+                        {category?.icon ?? "📁"}
+                      </span>
+                      <h1 className="text-5xl">
+                        {category?.name ??
+                          tCat("defaultName", { id: routeParams.categoryId })}
+                      </h1>
+                    </div>
+                    {category?.description && (
+                      <span className="text-muted-foreground mt-2">
+                        {category.description}
+                      </span>
+                    )}
                   </div>
-                  {category?.description && (
-                    <span className="text-muted-foreground mt-2">
-                      {category.description}
-                    </span>
-                  )}
-                </div>
-              )}
+                )}
+              </div>
             </div>
-          </div>
-        )}
+          )}
+        </div>
         <TopicList
           items={topics}
           loading={!topicPages && isTopicLoading}

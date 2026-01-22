@@ -127,7 +127,7 @@ export function TopicList({
         <col className="w-20 max-lg:w-16 max-sm:hidden" />
         <col className="w-16 hidden max-sm:table-cell" />
       </colgroup>
-      <TableHeader className="max-sm:hidden">
+      <TableHeader className="max-sm:hidden py-4 h-14">
         <TableRow>
           <TableHead>{tc("Table.topic")}</TableHead>
           <TableHead className="max-sm:hidden"></TableHead>
@@ -145,7 +145,7 @@ export function TopicList({
           </TableHead>
         </TableRow>
       </TableHeader>
-      <TableBody className="[&_tr:first-child]:border-t-3">
+      <TableBody className="sm:[&_tr:first-child]:border-t-3">
         {loading
           ? Array.from({ length: 15 }).map((_, i) => (
               <TableRow key={`skeleton-${i}`}>
