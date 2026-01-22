@@ -21,6 +21,7 @@ import {
 } from "@/lib/route-utils"
 import { notFound } from "next/navigation"
 import { Skeleton } from "@/components/ui/skeleton"
+import { cn } from "@/lib/utils"
 
 type TopicListResult = {
   items: TopicListItem[]
@@ -99,56 +100,63 @@ export default function DynamicRoutePage() {
 
   return (
     <div className="flex min-h-screen w-full flex-col px-8 max-sm:p-4 gap-4 max-sm:gap-2">
-      <div className="flex flex-col justify-center items-center py-8 gap-8 max-md:hidden">
-        {routeParams.categoryId ? (
-          <div className="flex flex-col">
-            <div className="flex items-center gap-3">
-              {categoryLoading ? (
-                <>
-                  <Skeleton className="h-14 w-14 rounded-full" />
-                  <Skeleton className="h-14 w-64" />
-                </>
-              ) : (
-                <>
-                  <span className="text-5xl leading-none">
-                    {category?.icon ?? "📁"}
-                  </span>
-                  <h1 className="text-5xl">
-                    {category?.name ??
-                      tCat("defaultName", { id: routeParams.categoryId })}
-                  </h1>
-                </>
-              )}
-            </div>
-            {categoryLoading ? (
-              <Skeleton className="h-4 w-96 mt-2" />
-            ) : (
-              category?.description && (
-                <span className="text-muted-foreground mt-2">
-                  {category.description}
-                </span>
-              )
-            )}
-          </div>
-        ) : (
+      {!routeParams.categoryId && (
+        <div className="flex flex-col justify-center items-center py-8 gap-8 max-md:hidden">
           <h1 className="text-[2.75rem] font-bold">{t("title")}</h1>
+          <InputGroup className="w-80 h-10 hidden md:flex">
+            <InputGroupInput
+              className="h-full"
+              placeholder={tc("Search.placeholder")}
+            />
+            <InputGroupAddon>
+              <SearchIcon />
+            </InputGroupAddon>
+          </InputGroup>
+        </div>
+      )}
+      <div
+        className={cn(
+          routeParams.categoryId ? "mt-8" : "",
+          "flex flex-col gap-4 max-sm:gap-2"
         )}
-        <InputGroup className="w-80 h-12 hidden md:flex">
-          <InputGroupInput
-            className="h-full"
-            placeholder={tc("Search.placeholder")}
-          />
-          <InputGroupAddon>
-            <SearchIcon />
-          </InputGroupAddon>
-        </InputGroup>
-      </div>
-      <div className="flex flex-col gap-4 max-sm:gap-2">
+      >
         <TopicHeaderBar
           className="max-md:mt-8 max-sm:mt-0"
           onSortStart={() => {}}
           onNewTopicClick={() => setIsNewTopicDialogOpen(true)}
         />
+        {routeParams.categoryId && (
+          <div className="flex flex-col p-8 bg-muted/40 border rounded-lg">
+            <div className="flex justify-center items-center gap-3">
+              {categoryLoading ? (
+                <div className="flex flex-col justify-center gap-4">
+                  <div className="flex justify-center items-center gap-2">
+                    <Skeleton className="h-12 w-14 rounded-full" />
+                    <Skeleton className="h-12 w-64" />
+                  </div>
+                  <Skeleton className="h-6 w-96" />
+                </div>
+              ) : (
+                <div className="flex flex-col gap-2">
+                  <div className="flex items-center gap-2">
+                    <span className="text-5xl leading-none">
+                      {category?.icon ?? "📁"}
+                    </span>
+                    <h1 className="text-5xl">
+                      {category?.name ??
+                        tCat("defaultName", { id: routeParams.categoryId })}
+                    </h1>
+                  </div>
+                  {category?.description && (
+                    <span className="text-muted-foreground mt-2">
+                      {category.description}
+                    </span>
+                  )}
+                </div>
+              )}
+            </div>
+          </div>
+        )}
         <TopicList
           items={topics}
           loading={!topicPages && isTopicLoading}
