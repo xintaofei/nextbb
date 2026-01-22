@@ -30,8 +30,8 @@ export function TopicStatusTags({
 }: TopicStatusTagsProps) {
   const t = useTranslations("Topic.Type")
 
-  // 如果类型为 GENERAL 且未置顶,则不显示任何内容
-  if (!isPinned && topicType === TopicType.GENERAL) {
+  // 如果类型为 GENERAL 且未置顶且非社区推荐,则不显示任何内容
+  if (!isPinned && !isCommunity && topicType === TopicType.GENERAL) {
     return null
   }
 
@@ -105,7 +105,7 @@ export function TopicStatusTags({
       )}
       {/* 推荐图标 - 显示在置顶图标之后 */}
       {isCommunity && (
-        <span className="text-amber-500" title="Community">
+        <span className="text-muted-foreground" title="Community">
           <Star className={size || "size-4"} />
         </span>
       )}
