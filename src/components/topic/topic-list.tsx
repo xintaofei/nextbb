@@ -208,7 +208,7 @@ export function TopicList({
               <TableRow
                 key={t.id}
                 className={
-                  highlightIndex === index
+                  highlightIndex === index || clickedTopicId === t.id
                     ? "animate-(--animate-highlight-fade)"
                     : ""
                 }
@@ -220,7 +220,7 @@ export function TopicList({
               >
                 <TableCell className="max-w-full max-sm:px-0 relative">
                   {clickedTopicId === t.id && (
-                    <div className="absolute left-0 top-0 bottom-0 w-[3px] bg-primary rounded-r-sm" />
+                    <div className="absolute left-0 max-sm:-left-[3px] top-0 bottom-0 w-[3px] bg-primary rounded-r-sm" />
                   )}
                   <div>
                     <TopicStatusTags
