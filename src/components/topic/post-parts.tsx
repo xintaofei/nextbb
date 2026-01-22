@@ -147,7 +147,27 @@ export const PostHeader = memo(function PostHeader({
             <AvatarFallback>{post.author.name}</AvatarFallback>
           </Avatar>
         </UserInfoCard>
-        <TimelineStepsTitle>{post.author.name}</TimelineStepsTitle>
+        <TimelineStepsTitle>
+          <span className="inline-flex items-center gap-1.5">
+            {post.author.name}
+            {post.author.customStatus?.emoji && (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <span className="text-base">
+                    {post.author.customStatus.emoji}
+                  </span>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>
+                    {post.author.customStatus.emoji +
+                      " " +
+                      post.author.customStatus.statusText}
+                  </p>
+                </TooltipContent>
+              </Tooltip>
+            )}
+          </span>
+        </TimelineStepsTitle>
         <PostBadges post={post} size={size} />
       </div>
       <div className="flex items-center gap-2">

@@ -2,6 +2,10 @@ export type Author = {
   id: string
   name: string
   avatar: string
+  customStatus?: {
+    emoji: string | null
+    statusText: string
+  } | null
 }
 
 export type BadgeItem = {

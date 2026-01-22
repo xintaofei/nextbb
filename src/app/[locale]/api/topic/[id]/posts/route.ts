@@ -46,7 +46,20 @@ export async function GET(
         parent_id: true,
         source_locale: true,
         user: {
-          select: { id: true, name: true, avatar: true, title_badge_id: true },
+          select: {
+            id: true,
+            name: true,
+            avatar: true,
+            title_badge_id: true,
+            custom_status: {
+              select: {
+                emoji: true,
+                status_text: true,
+                expires_at: true,
+                is_deleted: true,
+              },
+            },
+          },
         },
       },
       orderBy: { floor_number: "asc" },
@@ -300,12 +313,26 @@ export async function GET(
       p.translations,
       locale
     )
+
+    // 检查自定义状态是否过期或已删除
+    const customStatus =
+      p.user.custom_status &&
+      !p.user.custom_status.is_deleted &&
+      (!p.user.custom_status.expires_at ||
+        p.user.custom_status.expires_at > new Date())
+        ? {
+            emoji: p.user.custom_status.emoji,
+            statusText: p.user.custom_status.status_text,
+          }
+        : null
+
     return {
       id: idStr,
       author: {
         id: userId,
         name: p.user.name,
         avatar: p.user.avatar,
+        customStatus,
       },
       content: p.content,
       contentHtml: contentHtml || undefined,
