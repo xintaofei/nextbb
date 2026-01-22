@@ -23,7 +23,7 @@ export function TopicHeaderBar({
   return (
     <div
       className={cn(
-        "flex flex-row flex-wrap gap-4 items-center justify-between",
+        "flex flex-row flex-wrap gap-4 items-center justify-between border-b max-sm:border-0",
         className
       )}
     >
