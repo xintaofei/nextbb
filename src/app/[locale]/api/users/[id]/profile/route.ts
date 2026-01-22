@@ -23,12 +23,32 @@ export async function GET(_req: Request, props: { params: Params }) {
         website: true,
         location: true,
         birthday: true,
+        custom_status: {
+          select: {
+            emoji: true,
+            status_text: true,
+            expires_at: true,
+            is_deleted: true,
+          },
+        },
       },
     })
 
     if (!user || user.is_deleted) {
       return NextResponse.json({ error: "User not found" }, { status: 404 })
     }
+
+    // 检查自定义状态是否过期或已删除
+    const customStatus =
+      user.custom_status &&
+      !user.custom_status.is_deleted &&
+      (!user.custom_status.expires_at ||
+        user.custom_status.expires_at > new Date())
+        ? {
+            emoji: user.custom_status.emoji,
+            statusText: user.custom_status.status_text,
+          }
+        : null
 
     return NextResponse.json({
       name: user.name,
@@ -37,6 +57,7 @@ export async function GET(_req: Request, props: { params: Params }) {
       website: user.website,
       location: user.location,
       birthday: user.birthday ? user.birthday.toISOString() : null,
+      customStatus,
     })
   } catch (error) {
     console.error("Error fetching user profile:", error)

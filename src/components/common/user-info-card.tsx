@@ -36,6 +36,10 @@ type UserProfile = {
   website: string | null
   location: string | null
   birthday: string | null
+  customStatus?: {
+    emoji: string | null
+    statusText: string
+  } | null
 }
 
 type BadgeItem = {
@@ -264,10 +268,22 @@ export function UserInfoCard({
                 {isAdmin && (
                   <Badge
                     variant="secondary"
-                    className="text-xs bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400 shrink-0"
+                    className="text-xs bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400"
                   >
                     <Shield className="h-3 w-3 mr-1" />
                     {t("admin")}
+                  </Badge>
+                )}
+                {profileData?.customStatus && (
+                  <Badge variant="secondary" className="text-xs">
+                    {profileData.customStatus.emoji && (
+                      <span className="text-base">
+                        {profileData.customStatus.emoji}
+                      </span>
+                    )}
+                    <span className="truncate max-w-32">
+                      {profileData.customStatus.statusText}
+                    </span>
                   </Badge>
                 )}
               </div>
