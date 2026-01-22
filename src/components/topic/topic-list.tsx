@@ -145,7 +145,7 @@ export function TopicList({
           </TableHead>
         </TableRow>
       </TableHeader>
-      <TableBody className="sm:[&_tr:first-child]:border-t-3">
+      <TableBody className="[&_tr:first-child]:border-t-3">
         {loading
           ? Array.from({ length: 15 }).map((_, i) => (
               <TableRow key={`skeleton-${i}`}>

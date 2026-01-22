@@ -124,13 +124,18 @@ export default function DynamicRoutePage() {
       )}
       <div
         className={cn(
-          routeParams.categoryId ? "mt-8 max-sm:mt-0" : "",
-          "flex flex-col border rounded-lg max-sm:border-0"
+          routeParams.categoryId ? "" : "md:mt-0",
+          "flex flex-col border rounded-lg max-sm:border-0 mt-8 max-sm:mt-0"
         )}
       >
-        <div className="max-md:mt-8 max-sm:mt-0">
+        <div
+          className={cn(
+            routeParams.categoryId ? "max-sm:mb-4" : "",
+            "max-md:mt-0"
+          )}
+        >
           <TopicHeaderBar
-            className="p-4"
+            className="p-4 max-sm:p-0 max-sm:pb-4"
             onSortStart={() => {}}
             onNewTopicClick={() => setIsNewTopicDialogOpen(true)}
           />
