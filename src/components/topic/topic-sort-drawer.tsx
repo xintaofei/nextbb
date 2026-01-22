@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useTransition, useEffect, useMemo } from "react"
+import { useState } from "react"
 import {
   Drawer,
   DrawerContent,
@@ -10,55 +10,47 @@ import {
 } from "@/components/ui/drawer"
 import { ChevronsUpDown, Check } from "lucide-react"
 import { useTranslations } from "next-intl"
-import { useRouter, useParams } from "next/navigation"
+import useSWR from "swr"
 import { Label } from "../ui/label"
 import { cn } from "@/lib/utils"
 import {
-  parseRouteSegments,
-  buildRoutePath,
-  type RouteParams,
-  type SortValue as RouteSortValue,
-} from "@/lib/route-utils"
-
-type SortValue = RouteSortValue
-type FilterValue = "community" | "my"
-type TabValue = SortValue | FilterValue
+  useTopicSortFilter,
+  type TabValue,
+} from "@/hooks/use-topic-sort-filter"
+import type { SortValue, FilterValue } from "@/lib/route-utils"
 
 type TopicSortDrawerProps = {
   className?: string
   onPendingChange?: (pending: boolean) => void
   onSortStart?: (next: SortValue) => void
-  onFilterChange?: (filter: FilterValue) => void
+  onFilterStart?: (filter: FilterValue) => void
 }
 
 export function TopicSortDrawer({
   className,
   onPendingChange,
   onSortStart,
-  onFilterChange,
+  onFilterStart,
 }: TopicSortDrawerProps) {
   const tc = useTranslations("Common")
-  const router = useRouter()
-  const params = useParams<{ segments?: string[] }>()
-  const [isPending, startTransition] = useTransition()
   const [open, setOpen] = useState(false)
 
-  // 从路由段中提取当前排序
-  const routeParams = useMemo(() => {
-    const parsed = parseRouteSegments(params.segments)
-    return parsed.valid ? (parsed as RouteParams) : {}
-  }, [params.segments])
+  // 获取当前用户信息
+  const { data: sessionData } = useSWR<{ userId: string }>(
+    "/api/auth/session",
+    {
+      revalidateOnFocus: false,
+      dedupingInterval: 300000, // 5分钟缓存
+    }
+  )
+  const isLoggedIn = Boolean(sessionData?.userId)
 
-  const currentSort: SortValue = useMemo(() => {
-    // 优先使用路由中的排序参数
-    if (routeParams.sort === "top") return "top"
-    if (routeParams.sort === "new") return "new"
-    if (routeParams.sort === "latest") return "latest"
-    return "latest"
-  }, [routeParams])
-
-  // 当前激活的选项卡（可能是排序或过滤）
-  const [currentTab, setCurrentTab] = useState<TabValue>(currentSort)
+  // 使用共享hook管理排序和过滤
+  const { selectedTab, setTab } = useTopicSortFilter({
+    onPendingChange,
+    onSortStart,
+    onFilterStart,
+  })
 
   const sortLabels: Record<string, string> = {
     latest: tc("Tabs.latest"),
@@ -71,47 +63,14 @@ export function TopicSortDrawer({
     like: tc("Tabs.like"),
   }
 
-  useEffect(() => {
-    onPendingChange?.(isPending)
-  }, [isPending, onPendingChange])
-
-  // 同步路由变化到当前选项卡
-  useEffect(() => {
-    setCurrentTab(currentSort)
-  }, [currentSort])
-
-  function handleTabClick(value: TabValue) {
-    if (value === currentTab) {
+  function handleTabClick(value: TabValue): void {
+    if (value === selectedTab) {
       setOpen(false)
       return
     }
 
-    setCurrentTab(value)
+    setTab(value)
     setOpen(false)
-
-    // 判断是排序还是过滤
-    if (value === "community" || value === "my") {
-      // 处理过滤类型
-      onFilterChange?.(value)
-    } else {
-      // 处理排序类型
-      const sortValue = value as SortValue
-      onSortStart?.(sortValue)
-
-      // 构建新路由参数
-      const newParams: RouteParams = {
-        ...routeParams,
-        sort: sortValue,
-      }
-
-      // 生成新路由路径
-      const newPath = buildRoutePath(newParams)
-
-      startTransition(() => {
-        router.push(newPath)
-        router.refresh()
-      })
-    }
   }
 
   const sortOptions: Array<{ value: TabValue; label: string }> = [
@@ -119,14 +78,14 @@ export function TopicSortDrawer({
     { value: "top", label: sortLabels.top },
     { value: "new", label: sortLabels.new },
     { value: "community", label: sortLabels.community },
-    { value: "my", label: sortLabels.my },
+    ...(isLoggedIn ? [{ value: "my" as const, label: sortLabels.my }] : []),
   ]
 
   return (
     <Drawer open={open} onOpenChange={setOpen}>
       <DrawerTrigger asChild>
         <Label className={className}>
-          <span>{sortLabels[currentTab]}</span>
+          <span>{sortLabels[selectedTab]}</span>
           <ChevronsUpDown className="h-4 w-4" />
         </Label>
       </DrawerTrigger>
@@ -142,11 +101,11 @@ export function TopicSortDrawer({
                 onClick={() => handleTabClick(option.value)}
                 className={cn(
                   "flex items-center justify-between rounded-md px-4 py-3 text-sm font-medium transition-colors hover:bg-accent",
-                  currentTab === option.value && "bg-accent"
+                  selectedTab === option.value && "bg-accent"
                 )}
               >
                 <span>{option.label}</span>
-                {currentTab === option.value && <Check className="h-4 w-4" />}
+                {selectedTab === option.value && <Check className="h-4 w-4" />}
               </button>
             ))}
           </div>

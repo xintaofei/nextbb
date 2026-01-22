@@ -60,7 +60,8 @@ interface TxClient {
 const TopicListQuery = z.object({
   categoryId: z.string().regex(/^\d+$/).optional(),
   tagId: z.string().regex(/^\d+$/).optional(),
-  sort: z.enum(["latest", "hot", "community", "new"]).optional(),
+  sort: z.enum(["latest", "hot", "new"]).optional(),
+  filter: z.enum(["community", "my"]).optional(),
   page: z.string().regex(/^\d+$/).optional(),
   pageSize: z.string().regex(/^\d+$/).optional(),
 })
@@ -117,6 +118,7 @@ export async function GET(req: Request) {
     categoryId: url.searchParams.get("categoryId") ?? undefined,
     tagId: url.searchParams.get("tagId") ?? undefined,
     sort: url.searchParams.get("sort") ?? undefined,
+    filter: url.searchParams.get("filter") ?? undefined,
     page: url.searchParams.get("page") ?? undefined,
     pageSize: url.searchParams.get("pageSize") ?? undefined,
   })
@@ -125,11 +127,16 @@ export async function GET(req: Request) {
   }
   const page = q.data.page ? Number(q.data.page) : 1
   const pageSize = q.data.pageSize ? Number(q.data.pageSize) : 20
+
+  // 获取当前用户（用于 my 过滤）
+  const auth = await getSessionUser()
+
   const where: {
     is_deleted: boolean
     category_id?: bigint
     tag_links?: { some: { tag_id: bigint } }
     is_community?: boolean
+    user_id?: bigint
   } = {
     is_deleted: false,
     ...(q.data.categoryId
@@ -139,10 +146,21 @@ export async function GET(req: Request) {
       ? { tag_links: { some: { tag_id: BigInt(q.data.tagId) } } }
       : undefined),
   }
-  const sortMode = q.success && q.data.sort ? q.data.sort : "latest"
-  if (sortMode === "community") {
+
+  // 处理过滤参数
+  if (q.data.filter === "community") {
     where.is_community = true
+  } else if (q.data.filter === "my") {
+    if (!auth) {
+      return NextResponse.json(
+        { error: "Unauthorized - login required for my filter" },
+        { status: 401 }
+      )
+    }
+    where.user_id = auth.userId
   }
+
+  const sortMode = q.success && q.data.sort ? q.data.sort : "latest"
   const total = await prisma.topics.count({
     where,
   })
@@ -377,12 +395,6 @@ export async function GET(req: Request) {
   let sorted = items
   if (sortMode === "hot") {
     sorted = [...items].sort((a, b) => b.replies - a.replies)
-  } else if (sortMode === "community") {
-    sorted = [...items].sort((a, b) => {
-      const ta = a.activity ? new Date(a.activity).getTime() : 0
-      const tb = b.activity ? new Date(b.activity).getTime() : 0
-      return tb - ta
-    })
   }
   // latest模式下数据库已经按置顶+ID排序，不需要额外排序
   const result: TopicListResult = {

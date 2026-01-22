@@ -3,9 +3,11 @@
  */
 
 export type SortValue = "top" | "new" | "latest"
+export type FilterValue = "community" | "my"
 
 export type RouteParams = {
   sort?: SortValue
+  filter?: FilterValue
   categoryId?: string
   tagId?: string
 }
@@ -49,7 +51,7 @@ export function parseRouteSegments(
     const prefix = segments[i]
 
     // 检查是否为有效前缀
-    if (prefix !== "i" && prefix !== "c" && prefix !== "t") {
+    if (prefix !== "i" && prefix !== "c" && prefix !== "t" && prefix !== "f") {
       return {
         valid: false,
         error: `Invalid prefix: ${prefix}`,
@@ -103,6 +105,15 @@ export function parseRouteSegments(
         }
       }
       result.tagId = value
+    } else if (prefix === "f") {
+      // 验证过滤值
+      if (value !== "community" && value !== "my") {
+        return {
+          valid: false,
+          error: `Invalid filter value: ${value}`,
+        }
+      }
+      result.filter = value as FilterValue
     }
 
     // 跳过前缀和值，继续处理下一对
@@ -123,15 +134,16 @@ export function parseRouteSegments(
 export function buildRoutePath(params: RouteParams): string {
   const segments: string[] = []
 
-  // 判断是否只有排序参数（没有分类和标签）
-  const onlySort = params.sort && !params.categoryId && !params.tagId
+  // 判断是否只有排序参数（没有分类、标签和过滤）
+  const onlySort =
+    params.sort && !params.categoryId && !params.tagId && !params.filter
 
   // 如果只有排序，使用简化格式 /latest、/new、/top
   if (onlySort) {
     return `/${params.sort}`
   }
 
-  // 如果有分类或标签，使用完整格式 /i/sort/c/id
+  // 如果有分类、标签或过滤，使用完整格式
   if (params.sort) {
     segments.push("i", params.sort)
   }
@@ -142,6 +154,10 @@ export function buildRoutePath(params: RouteParams): string {
 
   if (params.tagId) {
     segments.push("t", params.tagId)
+  }
+
+  if (params.filter) {
+    segments.push("f", params.filter)
   }
 
   // 如果没有任何参数，返回主页路径
@@ -160,11 +176,13 @@ export function buildRoutePath(params: RouteParams): string {
  */
 export function routeParamsToApiQuery(params: RouteParams): {
   sort?: string
+  filter?: string
   categoryId?: string
   tagId?: string
 } {
   const query: {
     sort?: string
+    filter?: string
     categoryId?: string
     tagId?: string
   } = {}
@@ -179,6 +197,11 @@ export function routeParamsToApiQuery(params: RouteParams): {
     } else {
       query.sort = "latest"
     }
+  }
+
+  // 直接传递过滤参数
+  if (params.filter) {
+    query.filter = params.filter
   }
 
   // 直接传递分类和标签 ID
@@ -219,6 +242,7 @@ export function extractRouteParamsFromPathname(pathname: string): RouteParams {
 
   return {
     sort: parsed.sort,
+    filter: parsed.filter,
     categoryId: parsed.categoryId,
     tagId: parsed.tagId,
   }
