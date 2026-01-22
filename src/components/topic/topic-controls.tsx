@@ -9,6 +9,7 @@ import {
   buildRoutePath,
   type RouteParams,
 } from "@/lib/route-utils"
+import { cn } from "@/lib/utils"
 
 type TopicControlsState = {
   categoryId?: string
@@ -89,21 +90,17 @@ export function TopicControls({
   )
 
   return (
-    <div className={className}>
-      <div className="flex flex-row gap-2 items-center">
-        <CategorySelect
-          value={categoryId}
-          onChange={(v) => navigateToCategory(v)}
-          className="w-36"
-          clearable
-        />
-        <TagSelect
-          value={tagId}
-          onChange={(v) => updateQuery({ categoryId, tagId: v })}
-          className="w-36"
-          clearable
-        />
-      </div>
+    <div className={cn("flex flex-row gap-2 items-center", className)}>
+      <CategorySelect
+        value={categoryId}
+        onChange={(v) => navigateToCategory(v)}
+        clearable
+      />
+      <TagSelect
+        value={tagId}
+        onChange={(v) => updateQuery({ categoryId, tagId: v })}
+        clearable
+      />
     </div>
   )
 }

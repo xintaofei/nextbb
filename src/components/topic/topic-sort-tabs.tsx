@@ -126,9 +126,6 @@ export function TopicSortTabs({
             {tc("Tabs.new")}
           </Link>
         </TabsTrigger>
-        <TabsTrigger className="md:px-4" value="hot" disabled>
-          {tc("Tabs.hot")}
-        </TabsTrigger>
         <TabsTrigger className="md:px-4" value="community" disabled>
           {tc("Tabs.community")}
         </TabsTrigger>
@@ -138,20 +135,6 @@ export function TopicSortTabs({
           disabled
         >
           {tc("Tabs.my")}
-        </TabsTrigger>
-        <TabsTrigger
-          className="hidden md:px-4 md:inline-flex"
-          value="bookmark"
-          disabled
-        >
-          {tc("Tabs.bookmark")}
-        </TabsTrigger>
-        <TabsTrigger
-          className="hidden md:px-4 md:inline-flex"
-          value="like"
-          disabled
-        >
-          {tc("Tabs.like")}
         </TabsTrigger>
       </TabsList>
     </Tabs>

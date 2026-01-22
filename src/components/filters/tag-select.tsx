@@ -49,7 +49,7 @@ export function TagSelect({ value, onChange, className, clearable }: Props) {
   const allLabel = useMemo(() => tc("Filters.all"), [tc])
 
   return isLoading ? (
-    <Skeleton className={cn("h-9", className)} />
+    <Skeleton className={cn("w-20 h-9", className)} />
   ) : (
     <Select
       value={value ?? ""}

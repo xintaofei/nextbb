@@ -96,17 +96,8 @@ export function TopicSortDrawer({
     { value: "latest" as SortValue, label: sortLabels.latest },
     { value: "top" as SortValue, label: sortLabels.top },
     { value: "new" as SortValue, label: sortLabels.new },
-  ]
-
-  const disabledOptions = [
-    { value: "hot" as const, label: sortLabels.hot },
     { value: "community" as const, label: sortLabels.community },
-  ]
-
-  const userOptions = [
     { value: "my" as const, label: sortLabels.my },
-    { value: "bookmark" as const, label: sortLabels.bookmark },
-    { value: "like" as const, label: sortLabels.like },
   ]
 
   return (
@@ -134,30 +125,6 @@ export function TopicSortDrawer({
               >
                 <span>{option.label}</span>
                 {currentSort === option.value && <Check className="h-4 w-4" />}
-              </button>
-            ))}
-
-            <Separator className="my-2" />
-
-            {disabledOptions.map((option) => (
-              <button
-                key={option.value}
-                disabled
-                className="flex items-center justify-between rounded-md px-4 py-3 text-sm font-medium text-muted-foreground opacity-50 cursor-not-allowed"
-              >
-                <span>{option.label}</span>
-              </button>
-            ))}
-
-            <Separator className="my-2" />
-
-            {userOptions.map((option) => (
-              <button
-                key={option.value}
-                disabled
-                className="flex items-center justify-between rounded-md px-4 py-3 text-sm font-medium text-muted-foreground opacity-50 cursor-not-allowed"
-              >
-                <span>{option.label}</span>
               </button>
             ))}
           </div>
