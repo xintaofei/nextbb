@@ -29,6 +29,7 @@ export function TopicStatusTags({
   className,
 }: TopicStatusTagsProps) {
   const t = useTranslations("Topic.Type")
+  const tStatus = useTranslations("Topic.Status")
 
   // 如果类型为 GENERAL 且未置顶且非社区推荐,则不显示任何内容
   if (!isPinned && !isCommunity && topicType === TopicType.GENERAL) {
@@ -99,13 +100,13 @@ export function TopicStatusTags({
     <div className={cn("inline-flex items-center gap-1", className)}>
       {/* 置顶图标 - 优先显示在最左侧 */}
       {isPinned && (
-        <span className="text-muted-foreground" title="Pin">
+        <span className="text-muted-foreground" title={tStatus("pin")}>
           <Pin className={size || "size-4"} />
         </span>
       )}
       {/* 推荐图标 - 显示在置顶图标之后 */}
       {isCommunity && (
-        <span className="text-muted-foreground" title="Community">
+        <span className="text-muted-foreground" title={tStatus("community")}>
           <Star className={size || "size-4"} />
         </span>
       )}

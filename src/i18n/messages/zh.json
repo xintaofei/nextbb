@@ -487,7 +487,9 @@
       "ending": "即将结束",
       "answered": "已采纳",
       "waiting": "等待采纳",
-      "drawn": "已开奖"
+      "drawn": "已开奖",
+      "pin": "置顶",
+      "community": "推荐"
     },
     "Poll": {
       "title": "投票",

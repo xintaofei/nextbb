@@ -487,7 +487,9 @@
       "ending": "Ending Soon",
       "answered": "Answered",
       "waiting": "Waiting",
-      "drawn": "Drawn"
+      "drawn": "Drawn",
+      "pin": "Pinned",
+      "community": "Community"
     },
     "Poll": {
       "title": "Poll",
