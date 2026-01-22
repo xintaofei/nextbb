@@ -1281,6 +1281,10 @@
       "icp": {
         "label": "Website Registration Info",
         "description": "ICP registration number, etc."
+      },
+      "welcome_message": {
+        "label": "Homepage Welcome Message",
+        "description": "Custom homepage title, leave empty to use default multilingual title"
       }
     },
     "registration": {

@@ -9,6 +9,7 @@ export interface PublicConfigs {
   "basic.description": string
   "basic.contact_email": string
   "basic.icp": string
+  "basic.welcome_message": string
 }
 
 /**

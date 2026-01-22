@@ -1281,6 +1281,10 @@
       "icp": {
         "label": "网站备案信息",
         "description": "ICP 备案号等"
+      },
+      "welcome_message": {
+        "label": "首页欢迎语",
+        "description": "自定义首页标题,留空则使用默认多语言标题"
       }
     },
     "registration": {

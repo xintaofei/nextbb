@@ -98,6 +98,16 @@ const defaultConfigs: ConfigItem[] = [
     isSensitive: false,
     defaultValue: "",
   },
+  {
+    configKey: "basic.welcome_message",
+    configValue: "",
+    configType: "string",
+    category: "basic",
+    description: "首页欢迎语",
+    isPublic: true,
+    isSensitive: false,
+    defaultValue: "",
+  },
 
   // 用户注册配置
   {

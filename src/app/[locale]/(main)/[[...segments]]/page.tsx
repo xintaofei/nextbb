@@ -22,6 +22,7 @@ import {
 import { notFound } from "next/navigation"
 import { Skeleton } from "@/components/ui/skeleton"
 import { cn } from "@/lib/utils"
+import { useConfig } from "@/components/providers/config-provider"
 
 type TopicListResult = {
   items: TopicListItem[]
@@ -49,6 +50,10 @@ export default function DynamicRoutePage() {
   const tCat = useTranslations("Category")
   const params = useParams<{ segments?: string[] }>()
   const [isNewTopicDialogOpen, setIsNewTopicDialogOpen] = useState(false)
+  const { configs } = useConfig()
+  const welcomeMessage = configs?.["basic.welcome_message"] as
+    | string
+    | undefined
 
   // 解析路由参数
   const routeParams = useMemo(() => {
@@ -103,7 +108,9 @@ export default function DynamicRoutePage() {
     <div className="flex min-h-screen w-full flex-col px-8 max-sm:p-4 gap-4 max-sm:gap-2">
       {!routeParams.categoryId && (
         <div className="flex flex-col justify-center items-center py-8 gap-8 max-md:hidden">
-          <h1 className="text-[2.75rem] font-bold">{t("title")}</h1>
+          <h1 className="text-[2.75rem] font-bold">
+            {welcomeMessage || t("title")}
+          </h1>
           <InputGroup className="w-80 h-10 hidden md:flex">
             <InputGroupInput
               className="h-full"
