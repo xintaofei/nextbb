@@ -90,7 +90,8 @@ export function TopicList({
     // 恢复之前的点击状态
     const lastClickedId = sessionStorage.getItem("last_clicked_topic_id")
     if (lastClickedId) {
-      setTimeout(() => setClickedTopicId(lastClickedId), 0)
+      // 使用 requestAnimationFrame 来避免同步 setState
+      requestAnimationFrame(() => setClickedTopicId(lastClickedId))
     }
   }, [])
 
@@ -114,11 +115,7 @@ export function TopicList({
     const prevLength = previousItemsLengthRef.current
     if (items.length > prevLength && prevLength > 0) {
       setHighlightIndex(prevLength)
-      const timer = setTimeout(() => {
-        setHighlightIndex(null)
-      }, 2000)
       previousItemsLengthRef.current = items.length
-      return () => clearTimeout(timer)
     }
     previousItemsLengthRef.current = items.length
   }, [items.length])
@@ -215,6 +212,11 @@ export function TopicList({
                     ? "animate-(--animate-highlight-fade)"
                     : ""
                 }
+                onAnimationEnd={() => {
+                  if (highlightIndex === index) {
+                    setHighlightIndex(null)
+                  }
+                }}
               >
                 <TableCell className="max-w-full max-sm:px-0 relative">
                   {clickedTopicId === t.id && (

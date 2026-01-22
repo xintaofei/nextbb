@@ -105,7 +105,7 @@ export default function DynamicRoutePage() {
   const hasMore = topics.length < total
 
   return (
-    <div className="flex min-h-screen w-full flex-col px-8 max-sm:p-4 gap-4 max-sm:gap-2">
+    <div className="flex min-h-screen w-full flex-col px-8 mb-8 max-sm:p-4 gap-4 max-sm:gap-2">
       <div className="flex flex-col justify-center items-center py-8 gap-8 max-md:hidden">
         <h1 className="text-[2.75rem] font-bold">
           {welcomeMessage || t("title")}
