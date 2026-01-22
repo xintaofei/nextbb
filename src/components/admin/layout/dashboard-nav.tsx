@@ -26,11 +26,15 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import { useConfig } from "@/components/providers/config-provider"
 
 export function DashboardNav() {
   const [isOpen, setIsOpen] = useState(false)
   const pathname = usePathname()
   const t = useTranslations("Admin.nav")
+  const { configs } = useConfig()
+
+  const siteName = configs?.["basic.name"] || "NextBB"
 
   const isPathActive = (path: string) => {
     if (path === "/admin") {
@@ -88,7 +92,7 @@ export function DashboardNav() {
       <div className="mx-auto max-w-7xl py-4">
         <div className="flex items-center justify-between">
           <div className="text-xl font-semibold text-foreground tracking-tight">
-            NextBB Admin
+            {siteName}
           </div>
 
           {/* Mobile menu button */}

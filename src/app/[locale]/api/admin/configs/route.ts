@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
 import { getSessionUser } from "@/lib/auth"
+import { revalidateConfigs } from "@/lib/config"
 
 type ConfigDTO = {
   id: string
@@ -142,6 +143,11 @@ export async function PUT(request: NextRequest) {
           error: error instanceof Error ? error.message : "Unknown error",
         })
       }
+    }
+
+    // 清除配置缓存
+    if (updated > 0) {
+      await revalidateConfigs()
     }
 
     return NextResponse.json({

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
 import { getSessionUser } from "@/lib/auth"
+import { revalidateConfigs } from "@/lib/config"
 
 // 格式化配置值为字符串
 function stringifyConfigValue(value: unknown): string {
@@ -95,6 +96,9 @@ export async function PATCH(
       where: { config_key: configKey },
       data: { config_value: valueStr },
     })
+
+    // 清除配置缓存
+    await revalidateConfigs()
 
     return NextResponse.json({
       success: true,

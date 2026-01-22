@@ -5,16 +5,17 @@ import { ReactNode } from "react"
 import { getLocale, getMessages } from "next-intl/server"
 import { NextIntlClientProvider } from "next-intl"
 import { ThemeProvider } from "next-themes"
-import { getTranslations } from "next-intl/server"
 import { Toaster } from "@/components/ui/sonner"
 import { SWRProvider } from "@/components/providers/swr-provider"
 import NextTopLoader from "nextjs-toploader"
+import { getPublicConfigs } from "@/lib/config"
+import { ConfigProvider } from "@/components/providers/config-provider"
 
 export async function generateMetadata(): Promise<Metadata> {
-  const t = await getTranslations("Index")
+  const configs = await getPublicConfigs()
   return {
-    title: t("title"),
-    description: t("description"),
+    title: configs["basic.name"],
+    description: configs["basic.description"],
   }
 }
 
@@ -25,6 +26,8 @@ export default async function RootLayout({
 }>) {
   const messages = await getMessages()
   const locale = await getLocale()
+  const configs = await getPublicConfigs()
+
   return (
     <html lang={locale} suppressHydrationWarning>
       <body className={`antialiased`}>
@@ -45,7 +48,9 @@ export default async function RootLayout({
             enableSystem
             disableTransitionOnChange
           >
-            <SWRProvider>{children}</SWRProvider>
+            <ConfigProvider initialConfigs={configs}>
+              <SWRProvider>{children}</SWRProvider>
+            </ConfigProvider>
             <Toaster richColors closeButton />
             <Analytics />
           </ThemeProvider>
