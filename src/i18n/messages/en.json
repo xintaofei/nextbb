@@ -708,6 +708,8 @@
       "reset": "Reset",
       "resetAll": "Reset All",
       "saving": "Saving...",
+      "upload": "Upload",
+      "uploading": "Uploading...",
       "basic": "Basic Info",
       "registration": "Registration",
       "oauth": "OAuth",
@@ -717,7 +719,9 @@
         "saveSuccess": "Settings saved successfully",
         "saveError": "Failed to save settings",
         "resetSuccess": "Settings reset successfully",
-        "resetError": "Failed to reset settings"
+        "resetError": "Failed to reset settings",
+        "uploadSuccess": "Upload successful",
+        "uploadError": "Upload failed"
       }
     }
   },

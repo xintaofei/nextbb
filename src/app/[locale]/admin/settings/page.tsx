@@ -11,10 +11,11 @@ import { Textarea } from "@/components/ui/textarea"
 import { Switch } from "@/components/ui/switch"
 import { Label } from "@/components/ui/label"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Save, RotateCcw } from "lucide-react"
+import { Save, RotateCcw, Upload, X } from "lucide-react"
 import { toast } from "sonner"
 import { routing } from "@/i18n/routing"
 import { LocaleMultiSelect } from "@/components/admin/fields/locale-multi-select"
+import Image from "next/image"
 
 type ConfigItem = {
   id: string
@@ -49,6 +50,7 @@ export default function SettingsPage() {
   const tConfig = useTranslations("Config")
   const [activeTab, setActiveTab] = useState("basic")
   const [saving, setSaving] = useState(false)
+  const [uploading, setUploading] = useState(false)
 
   const { data, mutate, isLoading } = useSWR<ConfigListResult>(
     "/api/admin/configs?pageSize=100",
@@ -129,6 +131,36 @@ export default function SettingsPage() {
     toast.success(t("message.resetSuccess"))
   }
 
+  const handleImageUpload = async (
+    configKey: string,
+    file: File
+  ): Promise<void> => {
+    setUploading(true)
+    try {
+      const formData = new FormData()
+      formData.append("file", file)
+
+      const res = await fetch("/api/upload/image", {
+        method: "POST",
+        body: formData,
+      })
+
+      if (!res.ok) {
+        const error = await res.json()
+        throw new Error(error.error || "Upload failed")
+      }
+
+      const { url } = await res.json()
+      handleValueChange(configKey, url)
+      toast.success(t("message.uploadSuccess"))
+    } catch (error) {
+      console.error("Upload error:", error)
+      toast.error(t("message.uploadError"))
+    } finally {
+      setUploading(false)
+    }
+  }
+
   const renderConfigInput = (config: ConfigItem) => {
     const value = formValues[config.configKey] ?? config.configValue
     // configKey 现在统一为 2 层结构："category.subkey"
@@ -169,6 +201,66 @@ export default function SettingsPage() {
             description={description}
             placeholder="选择语言"
           />
+        </div>
+      )
+    }
+
+    // 特殊处理：Logo 图片上传
+    if (config.configKey === "basic.logo") {
+      return (
+        <div key={config.configKey} className="space-y-2">
+          <Label htmlFor={config.configKey}>{label}</Label>
+          <div className="space-y-4">
+            {value && (
+              <div className="relative inline-block">
+                <div className="relative h-24 w-auto max-w-xs overflow-hidden rounded-lg border bg-muted">
+                  <Image
+                    src={value}
+                    alt="Logo"
+                    width={200}
+                    height={96}
+                    className="h-full w-auto object-contain"
+                  />
+                </div>
+                <Button
+                  variant="destructive"
+                  size="icon"
+                  className="absolute -right-2 -top-2 h-6 w-6 rounded-full"
+                  onClick={() => handleValueChange(config.configKey, "")}
+                >
+                  <X className="h-3 w-3" />
+                </Button>
+              </div>
+            )}
+            <div className="flex items-center gap-2">
+              <Input
+                id={config.configKey}
+                type="file"
+                accept="image/jpeg,image/jpg,image/png,image/webp,image/gif"
+                onChange={async (e) => {
+                  const file = e.target.files?.[0]
+                  if (file) {
+                    await handleImageUpload(config.configKey, file)
+                    e.target.value = ""
+                  }
+                }}
+                disabled={uploading}
+                className="cursor-pointer"
+              />
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={uploading}
+                onClick={() => {
+                  document.getElementById(config.configKey)?.click()
+                }}
+              >
+                <Upload className="mr-2 h-4 w-4" />
+                {uploading ? t("uploading") : t("upload")}
+              </Button>
+            </div>
+          </div>
+          <div className="text-sm text-muted-foreground">{description}</div>
         </div>
       )
     }
