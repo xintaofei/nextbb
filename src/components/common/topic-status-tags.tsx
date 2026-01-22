@@ -4,6 +4,7 @@ import { cn } from "@/lib/utils"
 import { TopicType, type TopicTypeValue } from "@/types/topic-type"
 import {
   Pin,
+  Star,
   HelpCircle,
   Trophy,
   BarChart3,
@@ -14,6 +15,7 @@ import { useTranslations } from "next-intl"
 
 export type TopicStatusTagsProps = {
   isPinned: boolean
+  isCommunity?: boolean
   topicType: TopicTypeValue
   size?: string
   className?: string
@@ -21,6 +23,7 @@ export type TopicStatusTagsProps = {
 
 export function TopicStatusTags({
   isPinned,
+  isCommunity,
   topicType,
   size,
   className,
@@ -98,6 +101,12 @@ export function TopicStatusTags({
       {isPinned && (
         <span className="text-muted-foreground" title="Pin">
           <Pin className={size || "size-4"} />
+        </span>
+      )}
+      {/* 推荐图标 - 显示在置顶图标之后 */}
+      {isCommunity && (
+        <span className="text-amber-500" title="Community">
+          <Star className={size || "size-4"} />
         </span>
       )}
       {/* 类型 Badge - 只在非 GENERAL 类型时显示 */}

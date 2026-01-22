@@ -83,6 +83,7 @@ export type TopicInfo = {
   status?: string
   endTime?: string | null
   isPinned: boolean
+  isCommunity: boolean
   isSettled?: boolean
   category: {
     id: string

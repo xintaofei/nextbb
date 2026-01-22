@@ -383,6 +383,7 @@ export async function GET(req: Request) {
       views: t.views ?? 0,
       activity: agg.activity ? agg.activity.toISOString() : "",
       isPinned: Boolean(t.is_pinned),
+      isCommunity: Boolean(t.is_community),
       ...(firstPost && {
         firstPost: {
           id: String(firstPost.id),

@@ -11,6 +11,7 @@ type TopicInfo = {
   title: string
   type: string
   isPinned: boolean
+  isCommunity: boolean
   status?: string | null
   endTime?: string | null
   isSettled?: boolean
@@ -63,6 +64,7 @@ export async function GET(
       type: true,
       status: true,
       is_pinned: true,
+      is_community: true,
       end_time: true,
       is_settled: true,
       category: {
@@ -135,6 +137,7 @@ export async function GET(
     title: getTopicTitle(topic.translations, locale),
     type: topic.type || "GENERAL",
     isPinned: topic.is_pinned,
+    isCommunity: topic.is_community ?? false,
     status: topic.status ?? undefined,
     endTime: topic.end_time ? topic.end_time.toISOString() : null,
     isSettled: topic.is_settled,

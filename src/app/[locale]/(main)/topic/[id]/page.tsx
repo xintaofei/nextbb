@@ -850,6 +850,7 @@ export default function TopicPage() {
               {topicInfo && (
                 <TopicStatusTags
                   isPinned={topicInfo.isPinned}
+                  isCommunity={topicInfo.isCommunity}
                   topicType={topicInfo.type as TopicTypeValue}
                   size="size-5"
                   className="align-middle mr-1"

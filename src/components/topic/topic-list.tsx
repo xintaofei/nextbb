@@ -57,6 +57,7 @@ export type TopicListItem = {
   views: number
   activity: string
   isPinned: boolean
+  isCommunity: boolean
   firstPost?: {
     id: string
     content: string
@@ -194,6 +195,7 @@ export function TopicList({
                   <div>
                     <TopicStatusTags
                       isPinned={t.isPinned}
+                      isCommunity={t.isCommunity}
                       topicType={t.type as TopicTypeValue}
                       className="align-middle mr-1"
                     />
