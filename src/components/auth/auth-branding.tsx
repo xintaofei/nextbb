@@ -2,9 +2,14 @@
 
 import { useTranslations } from "next-intl"
 import Image from "next/image"
+import { useConfig } from "@/components/providers/config-provider"
 
 export function AuthBranding() {
   const t = useTranslations("Auth.Login")
+  const { configs } = useConfig()
+
+  const logoSrc = configs?.["basic.logo"] || "/nextbb-logo.png"
+  const siteName = configs?.["basic.name"] || "NextBB"
 
   return (
     <div className="hidden lg:flex flex-col justify-between p-12 xl:p-16 border-r border-border/40 relative overflow-hidden bg-gray-50 dark:bg-gray-950">
@@ -96,8 +101,8 @@ export function AuthBranding() {
         <div className="flex items-center">
           <div className="relative w-32 h-32">
             <Image
-              src="/nextbb-logo.png"
-              alt="NextBB"
+              src={logoSrc}
+              alt={`${siteName} Logo`}
               fill
               className="object-contain"
               priority

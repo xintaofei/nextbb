@@ -21,6 +21,7 @@ import Image from "next/image"
 import { Loader2 } from "lucide-react"
 import { AuthBranding } from "@/components/auth/auth-branding"
 import { OAuthButtons } from "@/components/auth/oauth-buttons"
+import { useConfig } from "@/components/providers/config-provider"
 
 type LoginValues = {
   email: string
@@ -47,6 +48,10 @@ export default function LoginPage() {
   const router = useRouter()
   const t = useTranslations("Auth.Login")
   const [serverError, setServerError] = useState<string | null>(null)
+  const { configs } = useConfig()
+
+  const logoSrc = configs?.["basic.logo"] || "/nextbb-logo.png"
+  const siteName = configs?.["basic.name"] || "NextBB"
 
   const schema = z.object({
     email: z.email(t("error.emailInvalid")),
@@ -86,8 +91,8 @@ export default function LoginPage() {
             <div className="lg:hidden flex flex-col items-center gap-4">
               <div className="relative w-32 h-32">
                 <Image
-                  src="/nextbb-logo.png"
-                  alt="NextBB"
+                  src={logoSrc}
+                  alt={`${siteName} Logo`}
                   fill
                   className="object-contain"
                   priority
