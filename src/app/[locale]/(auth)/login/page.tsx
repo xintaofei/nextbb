@@ -47,7 +47,7 @@ export default function LoginPage() {
   const [serverError, setServerError] = useState<string | null>(null)
 
   const schema = z.object({
-    email: z.string().email(t("error.emailInvalid")),
+    email: z.email(t("error.emailInvalid")),
     password: z.string().min(6, t("error.passwordMin")),
   })
 
@@ -95,7 +95,7 @@ export default function LoginPage() {
                 />
               </svg>
               <svg
-                className="w-1/2 h-full -ml-[1px]"
+                className="w-1/2 h-full -ml-px"
                 viewBox="0 0 1440 320"
                 preserveAspectRatio="none"
               >
@@ -122,7 +122,7 @@ export default function LoginPage() {
                 />
               </svg>
               <svg
-                className="w-1/2 h-ful -ml-[1px]"
+                className="w-1/2 h-ful -ml-px"
                 viewBox="0 0 1440 320"
                 preserveAspectRatio="none"
               >
@@ -149,7 +149,7 @@ export default function LoginPage() {
                 />
               </svg>
               <svg
-                className="w-1/2 h-full -ml-[1px]"
+                className="w-1/2 h-full -ml-px"
                 viewBox="0 0 1440 320"
                 preserveAspectRatio="none"
               >
