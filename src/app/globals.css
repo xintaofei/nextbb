@@ -68,6 +68,18 @@
       background-position: bottom center;
     }
   }
+
+  --animate-wave-slow: wave 25s cubic-bezier(0.36, 0.45, 0.63, 0.53) infinite;
+  --animate-wave-medium: wave 20s cubic-bezier(0.36, 0.45, 0.63, 0.53) infinite;
+  --animate-wave-fast: wave 15s cubic-bezier(0.36, 0.45, 0.63, 0.53) infinite;
+  @keyframes wave {
+    0% {
+      transform: translateX(0);
+    }
+    100% {
+      transform: translateX(-50%);
+    }
+  }
 }
 
 :root {
