@@ -3,14 +3,27 @@
 import { useState } from "react"
 import useSWR from "swr"
 import { useTranslations } from "next-intl"
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragEndEvent,
+} from "@dnd-kit/core"
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  verticalListSortingStrategy,
+} from "@dnd-kit/sortable"
 import { AdminPageContainer } from "@/components/admin/layout/admin-page-container"
 import { AdminPageSection } from "@/components/admin/layout/admin-page-section"
 import { Plus } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import {
-  SocialProviderCard,
-  SocialProviderItem,
-} from "@/components/admin/cards/social-provider-card"
+import { SocialProviderItem } from "@/components/admin/cards/social-provider-card"
+import { SocialProviderListItem } from "@/components/admin/lists/social-provider-list-item"
 import { SocialProviderDialog } from "@/components/admin/dialogs/social-provider-dialog"
 import {
   AlertDialog,
@@ -40,6 +53,18 @@ export default function AdminSocialProvidersPage() {
   >(undefined)
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [deletingId, setDeletingId] = useState<string | null>(null)
+  const [isReordering, setIsReordering] = useState(false)
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 8,
+      },
+    }),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  )
 
   const { data, isLoading, mutate } = useSWR<SocialProviderItem[]>(
     "/api/admin/social-providers",
@@ -117,8 +142,6 @@ export default function AdminSocialProvidersPage() {
     wellKnownUrl: string
     scope: string
     icon: string
-    sort: number
-    isEnabled: boolean
   }) => {
     try {
       const url = editingProvider
@@ -156,6 +179,50 @@ export default function AdminSocialProvidersPage() {
     }
   }
 
+  const handleDragEnd = async (event: DragEndEvent) => {
+    const { active, over } = event
+    if (!over || active.id === over.id) return
+
+    const activeId = String(active.id)
+    const overId = String(over.id)
+
+    const oldIndex = data?.findIndex((p) => p.id === activeId) ?? -1
+    const newIndex = data?.findIndex((p) => p.id === overId) ?? -1
+
+    if (oldIndex === -1 || newIndex === -1 || !data) return
+
+    const newItems = arrayMove(data, oldIndex, newIndex)
+
+    try {
+      setIsReordering(true)
+      await mutate(newItems, false)
+
+      const itemsWithSort = newItems.map((item, index) => ({
+        id: item.id,
+        sort: index,
+      }))
+
+      const res = await fetch("/api/admin/social-providers/reorder", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ items: itemsWithSort }),
+      })
+
+      if (res.ok) {
+        toast.success(t("message.reorderSuccess"))
+        await mutate()
+      } else {
+        toast.error(t("message.reorderError"))
+        await mutate()
+      }
+    } catch {
+      toast.error(t("message.reorderError"))
+      await mutate()
+    } finally {
+      setIsReordering(false)
+    }
+  }
+
   return (
     <AdminPageContainer>
       <AdminPageSection delay={0}>
@@ -185,19 +252,31 @@ export default function AdminSocialProvidersPage() {
           {t("empty")}
         </AdminPageSection>
       ) : (
-        <AdminPageSection
-          delay={0.1}
-          className="grid gap-4 sm:grid-cols-1 lg:grid-cols-2 xl:grid-cols-3"
-        >
-          {data.map((provider) => (
-            <SocialProviderCard
-              key={provider.id}
-              provider={provider}
-              onEdit={handleEdit}
-              onDelete={handleDelete}
-              onToggleEnabled={handleToggleEnabled}
-            />
-          ))}
+        <AdminPageSection delay={0.1} className="space-y-4">
+          <div className="text-sm text-muted-foreground mb-2">
+            {t("list.dragHint")}
+          </div>
+          <DndContext
+            sensors={sensors}
+            collisionDetection={closestCenter}
+            onDragEnd={handleDragEnd}
+          >
+            <SortableContext
+              items={data.map((p) => p.id)}
+              strategy={verticalListSortingStrategy}
+            >
+              {data.map((provider) => (
+                <SocialProviderListItem
+                  key={provider.id}
+                  provider={provider}
+                  onEdit={handleEdit}
+                  onDelete={handleDelete}
+                  onToggleEnabled={handleToggleEnabled}
+                  disabled={isReordering}
+                />
+              ))}
+            </SortableContext>
+          </DndContext>
         </AdminPageSection>
       )}
 

@@ -79,8 +79,6 @@ export async function POST(request: NextRequest) {
       wellKnownUrl,
       scope,
       icon,
-      sort,
-      isEnabled,
     } = body
 
     if (
@@ -132,6 +130,11 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    const maxSortResult = await prisma.social_providers.aggregate({
+      _max: { sort: true },
+    })
+    const nextSort = (maxSortResult._max.sort ?? -1) + 1
+
     const provider = await prisma.social_providers.create({
       data: {
         id: generateId(),
@@ -145,8 +148,8 @@ export async function POST(request: NextRequest) {
         well_known_url: wellKnownUrl || null,
         scope: scope || null,
         icon: icon || null,
-        sort: typeof sort === "number" ? sort : 0,
-        is_enabled: typeof isEnabled === "boolean" ? isEnabled : true,
+        sort: nextSort,
+        is_enabled: true,
       },
     })
 

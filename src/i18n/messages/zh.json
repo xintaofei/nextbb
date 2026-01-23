@@ -2410,10 +2410,13 @@
   },
   "AdminSocialProviders": {
     "title": "社交登录管理",
-    "description": "配置OAuth社交登录提供商，支持Google、GitHub、LinuxDo等平台",
+    "description": "配置 OAuth 社交登录提供商",
     "createButton": "添加提供商",
     "loading": "加载中...",
     "empty": "暂无社交登录配置，点击上方按钮添加",
+    "list": {
+      "dragHint": "拖拽调整排序"
+    },
     "card": {
       "enabled": "已启用",
       "disabled": "已禁用",
@@ -2426,10 +2429,16 @@
     "dialog": {
       "createTitle": "添加社交登录提供商",
       "editTitle": "编辑社交登录提供商",
+      "template": "选择模板",
+      "templatePlaceholder": "选择预设模板",
+      "custom": "自定义",
       "providerKey": "提供商标识",
       "name": "显示名称",
       "icon": "图标",
-      "sort": "排序",
+      "uploadIcon": "上传图标",
+      "uploading": "上传中...",
+      "uploadSuccess": "上传成功",
+      "uploadError": "上传失败",
       "clientId": "Client ID",
       "clientSecret": "Client Secret",
       "secretPlaceholder": "留空保持不变",
@@ -2439,7 +2448,6 @@
       "tokenUrl": "令牌地址",
       "userinfoUrl": "用户信息地址",
       "scope": "授权范围",
-      "isEnabled": "启用此提供商",
       "cancel": "取消",
       "submit": "保存",
       "submitting": "保存中..."
@@ -2456,7 +2464,9 @@
       "updateSuccess": "更新成功",
       "updateError": "更新失败",
       "deleteSuccess": "删除成功",
-      "deleteError": "删除失败"
+      "deleteError": "删除失败",
+      "reorderSuccess": "排序更新成功",
+      "reorderError": "排序更新失败"
     }
   }
 }

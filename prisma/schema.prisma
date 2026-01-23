@@ -1040,7 +1040,7 @@ model social_providers {
   userinfo_url   String?  @db.VarChar(512)
   well_known_url String?  @db.VarChar(512)
   scope          String?  @db.VarChar(256)
-  icon           String?  @db.VarChar(64)
+  icon           String?  @db.VarChar(512)
   sort           Int      @default(0)
   is_enabled     Boolean  @default(true)
   created_at     DateTime @default(now())

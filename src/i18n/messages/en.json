@@ -2410,10 +2410,13 @@
   },
   "AdminSocialProviders": {
     "title": "Social Login Providers",
-    "description": "Configure OAuth social login providers like Google, GitHub, LinuxDo, etc.",
+    "description": "Configure OAuth social login providers.",
     "createButton": "Add Provider",
     "loading": "Loading...",
     "empty": "No social login providers configured. Click the button above to add one.",
+    "list": {
+      "dragHint": "Drag to reorder"
+    },
     "card": {
       "enabled": "Enabled",
       "disabled": "Disabled",
@@ -2426,10 +2429,16 @@
     "dialog": {
       "createTitle": "Add Social Login Provider",
       "editTitle": "Edit Social Login Provider",
+      "template": "Select Template",
+      "templatePlaceholder": "Choose a preset template",
+      "custom": "Custom",
       "providerKey": "Provider Key",
       "name": "Display Name",
       "icon": "Icon",
-      "sort": "Sort Order",
+      "uploadIcon": "Upload Icon",
+      "uploading": "Uploading...",
+      "uploadSuccess": "Upload successful",
+      "uploadError": "Upload failed",
       "clientId": "Client ID",
       "clientSecret": "Client Secret",
       "secretPlaceholder": "Leave empty to keep unchanged",
@@ -2439,7 +2448,6 @@
       "tokenUrl": "Token URL",
       "userinfoUrl": "User Info URL",
       "scope": "Scope",
-      "isEnabled": "Enable this provider",
       "cancel": "Cancel",
       "submit": "Save",
       "submitting": "Saving..."
@@ -2456,7 +2464,9 @@
       "updateSuccess": "Provider updated successfully",
       "updateError": "Failed to update provider",
       "deleteSuccess": "Provider deleted successfully",
-      "deleteError": "Failed to delete provider"
+      "deleteError": "Failed to delete provider",
+      "reorderSuccess": "Order updated successfully",
+      "reorderError": "Failed to update order"
     }
   }
 }
