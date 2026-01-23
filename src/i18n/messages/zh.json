@@ -897,6 +897,12 @@
       "createTitle": "添加捐赠记录",
       "editTitle": "编辑捐赠记录",
       "form": {
+        "donorType": "捐赠者类型",
+        "guestDonor": "非注册用户",
+        "registeredDonor": "注册用户",
+        "selectUser": "选择用户",
+        "searchUserPlaceholder": "搜索用户名或邮箱",
+        "noUserFound": "未找到用户",
         "donorName": "捐赠者名称",
         "donorNamePlaceholder": "请输入捐赠者名称",
         "donorEmail": "捐赠者邮箱",
@@ -912,9 +918,7 @@
         "message": "捐赠留言",
         "messagePlaceholder": "捐赠者留言（可选）",
         "adminNote": "管理员备注",
-        "adminNotePlaceholder": "管理员备注（仅管理员可见）",
-        "user": "关联用户",
-        "userPlaceholder": "选择关联用户（可选）"
+        "adminNotePlaceholder": "管理员备注（仅管理员可见）"
       },
       "cancel": "取消",
       "save": "保存",

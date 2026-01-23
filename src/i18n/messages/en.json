@@ -897,6 +897,12 @@
       "createTitle": "Add Donation",
       "editTitle": "Edit Donation",
       "form": {
+        "donorType": "Donor Type",
+        "guestDonor": "Guest",
+        "registeredDonor": "Registered User",
+        "selectUser": "Select User",
+        "searchUserPlaceholder": "Search by name or email",
+        "noUserFound": "No user found",
         "donorName": "Donor Name",
         "donorNamePlaceholder": "Enter donor name",
         "donorEmail": "Donor Email",
@@ -912,9 +918,7 @@
         "message": "Message",
         "messagePlaceholder": "Donor message (optional)",
         "adminNote": "Admin Note",
-        "adminNotePlaceholder": "Admin note (only visible to admins)",
-        "user": "Linked User",
-        "userPlaceholder": "Select linked user (optional)"
+        "adminNotePlaceholder": "Admin note (only visible to admins)"
       },
       "cancel": "Cancel",
       "save": "Save",
