@@ -1030,21 +1030,21 @@ model user_custom_statuses {
 }
 
 model social_providers {
-  id            BigInt   @id @db.BigInt
-  provider_key  String   @unique @db.VarChar(32)
-  name          String   @db.VarChar(64)
-  client_id     String   @db.VarChar(256)
-  client_secret String   @db.VarChar(256)
-  authorize_url String?  @db.VarChar(512)
-  token_url     String?  @db.VarChar(512)
-  userinfo_url  String?  @db.VarChar(512)
-  well_known    String?  @db.VarChar(512)
-  scope         String?  @db.VarChar(256)
-  icon          String?  @db.VarChar(64)
-  sort          Int      @default(0)
-  is_enabled    Boolean  @default(true)
-  created_at    DateTime @default(now())
-  updated_at    DateTime @updatedAt
+  id             BigInt   @id @db.BigInt
+  provider_key   String   @unique @db.VarChar(32)
+  name           String   @db.VarChar(64)
+  client_id      String   @db.VarChar(256)
+  client_secret  String   @db.VarChar(256)
+  authorize_url  String?  @db.VarChar(512)
+  token_url      String?  @db.VarChar(512)
+  userinfo_url   String?  @db.VarChar(512)
+  well_known_url String?  @db.VarChar(512)
+  scope          String?  @db.VarChar(256)
+  icon           String?  @db.VarChar(64)
+  sort           Int      @default(0)
+  is_enabled     Boolean  @default(true)
+  created_at     DateTime @default(now())
+  updated_at     DateTime @updatedAt
 
   user_accounts user_social_accounts[] @relation("user_social_accounts_provider")
 
