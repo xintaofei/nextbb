@@ -2,7 +2,7 @@ import { config } from "dotenv"
 import { PrismaClient } from "@prisma/client"
 import { PrismaPg } from "@prisma/adapter-pg"
 import { Pool } from "pg"
-import { generateId } from "../src/lib/id"
+import { generateId } from "@/lib/id"
 import process from "node:process"
 
 // 加载环境变量
