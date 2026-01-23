@@ -537,8 +537,22 @@
       "oauthLinuxDo": "Sign in with LINUX.DO",
       "questionNoAccount": "Don't have an account?",
       "toRegister": "Go to Sign Up",
+      "welcomeBack": "Welcome back. Sign in to continue your journey.",
+      "Branding": {
+        "titlePart1": "Next bulletin board, ",
+        "titlePart2": "reimagined",
+        "description": "A next-generation community platform built with cutting-edge technology for meaningful conversations.",
+        "fastTitle": "Fast",
+        "fastDesc": "Built on Next.js 16",
+        "secureTitle": "Secure",
+        "secureDesc": "Enterprise-grade auth",
+        "modernTitle": "Modern",
+        "modernDesc": "Beautiful interface"
+      },
       "error": {
-        "failed": "Sign in failed"
+        "failed": "Sign in failed",
+        "emailInvalid": "Invalid email address",
+        "passwordMin": "Password must be at least 6 characters"
       }
     },
     "Register": {

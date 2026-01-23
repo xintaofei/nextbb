@@ -20,12 +20,10 @@ import { Button } from "@/components/ui/button"
 import Link from "next/link"
 import Image from "next/image"
 
-const schema = z.object({
-  email: z.email(),
-  password: z.string().min(6),
-})
-
-type LoginValues = z.infer<typeof schema>
+type LoginValues = {
+  email: string
+  password: string
+}
 
 type ApiUser = {
   id: string
@@ -47,6 +45,11 @@ export default function LoginPage() {
   const router = useRouter()
   const t = useTranslations("Auth.Login")
   const [serverError, setServerError] = useState<string | null>(null)
+
+  const schema = z.object({
+    email: z.string().email(t("error.emailInvalid")),
+    password: z.string().min(6, t("error.passwordMin")),
+  })
 
   const form = useForm<LoginValues>({
     resolver: zodResolver(schema),
@@ -173,15 +176,14 @@ export default function LoginPage() {
 
             <div className="space-y-8 max-w-md">
               <h1 className="font-serif text-5xl xl:text-6xl font-bold leading-tight tracking-tight">
-                Next bulletin board,{" "}
+                {t("Branding.titlePart1")}{" "}
                 <span className="text-primary relative inline-block">
-                  reimagined
+                  {t("Branding.titlePart2")}
                   <div className="absolute -bottom-4 left-0 right-0 h-1 bg-primary/20" />
                 </span>
               </h1>
               <p className="text-lg text-muted-foreground leading-relaxed">
-                A next-generation community platform built with cutting-edge
-                technology for meaningful conversations.
+                {t("Branding.description")}
               </p>
             </div>
           </div>
@@ -189,16 +191,22 @@ export default function LoginPage() {
           <div className="space-y-6 text-sm text-muted-foreground relative z-10">
             <div className="flex items-center gap-8">
               <div className="space-y-1">
-                <div className="text-2xl font-bold text-foreground">Fast</div>
-                <div>Built on Next.js 16</div>
+                <div className="text-2xl font-bold text-foreground">
+                  {t("Branding.fastTitle")}
+                </div>
+                <div>{t("Branding.fastDesc")}</div>
               </div>
               <div className="space-y-1">
-                <div className="text-2xl font-bold text-foreground">Secure</div>
-                <div>Enterprise-grade auth</div>
+                <div className="text-2xl font-bold text-foreground">
+                  {t("Branding.secureTitle")}
+                </div>
+                <div>{t("Branding.secureDesc")}</div>
               </div>
               <div className="space-y-1">
-                <div className="text-2xl font-bold text-foreground">Modern</div>
-                <div>Beautiful interface</div>
+                <div className="text-2xl font-bold text-foreground">
+                  {t("Branding.modernTitle")}
+                </div>
+                <div>{t("Branding.modernDesc")}</div>
               </div>
             </div>
           </div>
@@ -224,9 +232,7 @@ export default function LoginPage() {
               <h2 className="font-serif text-4xl font-bold tracking-tight">
                 {t("title")}
               </h2>
-              <p className="text-muted-foreground">
-                Welcome back. Sign in to continue your journey.
-              </p>
+              <p className="text-muted-foreground">{t("welcomeBack")}</p>
             </div>
 
             <Form {...form}>

@@ -537,8 +537,22 @@
       "oauthLinuxDo": "使用 LINUX.DO 登录",
       "questionNoAccount": "还没有账号？",
       "toRegister": "去注册",
+      "welcomeBack": "欢迎回来，登录以继续您的旅程。",
+      "Branding": {
+        "titlePart1": "Next 论坛系统，",
+        "titlePart2": "重构想象",
+        "description": "采用尖端技术构建的下一代社区平台，只为更有意义的对话。",
+        "fastTitle": "极速",
+        "fastDesc": "基于 Next.js 16",
+        "secureTitle": "安全",
+        "secureDesc": "企业级认证",
+        "modernTitle": "现代",
+        "modernDesc": "精美界面"
+      },
       "error": {
-        "failed": "登录失败"
+        "failed": "登录失败",
+        "emailInvalid": "邮箱格式不正确",
+        "passwordMin": "密码至少需要6个字符"
       }
     },
     "Register": {
