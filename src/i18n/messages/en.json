@@ -565,7 +565,6 @@
       "usernamePlaceholder": "Enter your username",
       "submit": "Sign Up",
       "hintTitle": "Sign up with social accounts",
-      "hintDesc": "Sign in with GitHub, Google, or LINUX.DO to create your account automatically.",
       "oauthGithub": "One-click sign up with GitHub",
       "oauthGoogle": "One-click sign up with Google",
       "oauthLinuxDo": "One-click sign up with LINUX.DO",

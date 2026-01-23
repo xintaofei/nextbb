@@ -2,11 +2,10 @@
 
 import { useState } from "react"
 import { useRouter } from "next/navigation"
-import { useLocale, useTranslations } from "next-intl"
+import { useTranslations } from "next-intl"
 import { z } from "zod"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
-import { signIn } from "next-auth/react"
 import {
   Form,
   FormControl,
@@ -17,9 +16,10 @@ import {
 } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import Link from "next/link"
+import Image from "next/image"
+import { AuthBranding } from "@/components/auth/auth-branding"
+import { OAuthButtons } from "@/components/auth/oauth-buttons"
 
 const schema = z.object({
   email: z.email(),
@@ -69,8 +69,8 @@ type ApiResponse =
 
 export default function RegisterPage() {
   const router = useRouter()
-  const locale = useLocale()
   const t = useTranslations("Auth.Register")
+  const tLogin = useTranslations("Auth.Login")
   const [serverError, setServerError] = useState<string | null>(null)
 
   const form = useForm<RegisterValues>({
@@ -96,123 +96,142 @@ export default function RegisterPage() {
       setServerError("error" in data ? data.error : t("error.failed"))
       return
     }
-    router.replace(`/${locale}`)
+    router.replace(`/`)
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-4">
-      <Card className="w-full max-w-sm">
-        <CardHeader>
-          <CardTitle>{t("title")}</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-              <FormField
-                control={form.control}
-                name="email"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>{t("email")}</FormLabel>
-                    <FormControl>
-                      <Input
-                        type="email"
-                        placeholder={t("emailPlaceholder")}
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="password"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>{t("password")}</FormLabel>
-                    <FormControl>
-                      <Input
-                        type="password"
-                        placeholder={t("passwordPlaceholder")}
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="username"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>{t("username")}</FormLabel>
-                    <FormControl>
-                      <Input
-                        placeholder={t("usernamePlaceholder")}
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              {serverError ? (
-                <div className="text-destructive text-sm">{serverError}</div>
-              ) : null}
-              <Button type="submit" className="w-full">
-                {t("submit")}
-              </Button>
-            </form>
-          </Form>
-          <Alert>
-            <AlertTitle>{t("hintTitle")}</AlertTitle>
-            <AlertDescription>{t("hintDesc")}</AlertDescription>
-          </Alert>
-          <div className="grid grid-cols-1 gap-2">
-            <Button
-              variant="outline"
-              className="w-full"
-              onClick={() =>
-                signIn("github", {
-                  callbackUrl: `/api/auth/bridge?locale=${locale}`,
-                })
-              }
-            >
-              {t("oauthGithub")}
-            </Button>
-            <Button
-              variant="outline"
-              className="w-full"
-              onClick={() =>
-                signIn("google", {
-                  callbackUrl: `/api/auth/bridge?locale=${locale}`,
-                })
-              }
-            >
-              {t("oauthGoogle")}
-            </Button>
-            <Button
-              variant="outline"
-              className="w-full"
-              onClick={() =>
-                signIn("linuxdo", {
-                  callbackUrl: `/api/auth/bridge?locale=${locale}`,
-                })
-              }
-            >
-              {t("oauthLinuxDo")}
-            </Button>
+    <div className="min-h-screen relative overflow-hidden bg-linear-to-br from-background via-background to-muted/20">
+      <div className="relative min-h-screen grid lg:grid-cols-2 gap-8 lg:gap-0">
+        <AuthBranding />
+
+        {/* Right Panel - Register Form */}
+        <div className="flex items-center justify-center p-4 sm:p-8">
+          <div className="w-full max-w-md space-y-4 animate-slideUp">
+            {/* Mobile Logo */}
+            <div className="lg:hidden flex flex-col items-center gap-4">
+              <div className="relative w-32 h-32">
+                <Image
+                  src="/nextbb-logo.png"
+                  alt="NextBB"
+                  fill
+                  className="object-contain"
+                  priority
+                />
+              </div>
+            </div>
+
+            <div className="space-y-4">
+              <h2 className="font-serif text-4xl font-bold tracking-tight">
+                {t("title")}
+              </h2>
+              <p className="text-muted-foreground">{t("hintTitle")}</p>
+            </div>
+
+            <Form {...form}>
+              <form
+                onSubmit={form.handleSubmit(onSubmit)}
+                className="space-y-4"
+              >
+                <FormField
+                  control={form.control}
+                  name="email"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-sm font-medium">
+                        {t("email")}
+                      </FormLabel>
+                      <FormControl>
+                        <Input
+                          type="email"
+                          placeholder={t("emailPlaceholder")}
+                          className="h-11"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="password"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-sm font-medium">
+                        {t("password")}
+                      </FormLabel>
+                      <FormControl>
+                        <Input
+                          type="password"
+                          placeholder={t("passwordPlaceholder")}
+                          className="h-11"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="username"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-sm font-medium">
+                        {t("username")}
+                      </FormLabel>
+                      <FormControl>
+                        <Input
+                          placeholder={t("usernamePlaceholder")}
+                          className="h-11"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                {serverError ? (
+                  <div className="px-4 py-3 bg-destructive/10 border border-destructive/20 rounded-lg text-destructive text-sm font-medium">
+                    {serverError}
+                  </div>
+                ) : null}
+                <Button type="submit" className="w-full h-11 font-medium">
+                  {t("submit")}
+                </Button>
+              </form>
+            </Form>
+
+            <div className="relative">
+              <div className="absolute inset-0 flex items-center">
+                <span className="w-full border-t border-border" />
+              </div>
+              <div className="relative flex justify-center text-xs uppercase">
+                <span className="bg-background px-4 text-muted-foreground font-medium tracking-wider">
+                  {tLogin("or")}
+                </span>
+              </div>
+            </div>
+
+            <OAuthButtons
+              githubText={t("oauthGithub")}
+              googleText={t("oauthGoogle")}
+              linuxdoText={t("oauthLinuxDo")}
+              callbackUrl={`/api/auth/bridge`}
+            />
+
+            <div className="text-center text-sm text-muted-foreground">
+              {t("questionHaveAccount")}{" "}
+              <Link
+                href={`/login`}
+                className="text-primary font-medium hover:underline transition-colors"
+              >
+                {t("toLogin")}
+              </Link>
+            </div>
           </div>
-          <div className="text-sm text-muted-foreground">
-            {t("questionHaveAccount")}{" "}
-            <Link href={`/${locale}/login`} className="text-primary">
-              {t("toLogin")}
-            </Link>
-          </div>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     </div>
   )
 }
