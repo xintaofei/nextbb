@@ -3,6 +3,7 @@ import { getSessionUser } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import { decodeUsername } from "@/lib/utils"
 import { AccountForm } from "@/components/user/account-form"
+import { SocialAccounts } from "@/components/user/social-accounts"
 import { getTranslations } from "next-intl/server"
 import { getTranslationsQuery, getTranslationFields } from "@/lib/locale"
 import { getLocale } from "next-intl/server"
@@ -97,6 +98,22 @@ export default async function AccountPage() {
     return null
   }
 
+  const socialProviders = await prisma.social_providers.findMany({
+    where: { is_enabled: true },
+    orderBy: { sort: "asc" },
+    select: {
+      provider_key: true,
+      name: true,
+      icon: true,
+    },
+  })
+
+  const providers = socialProviders.map((p) => ({
+    providerKey: p.provider_key,
+    name: p.name,
+    icon: p.icon,
+  }))
+
   return (
     <div className="space-y-6">
       <div>
@@ -104,6 +121,8 @@ export default async function AccountPage() {
         <p className="text-sm text-muted-foreground mt-1">{t("description")}</p>
       </div>
       <AccountForm user={processedUser} />
+      <hr className="border-border" />
+      <SocialAccounts providers={providers} />
     </div>
   )
 }

@@ -1752,7 +1752,27 @@
         "statusExpiryCustom": "Quick Set",
         "statusExpiryCustomPlaceholder": "Select expiry time",
         "selectedExpiry": "Selected expiry",
-        "apply": "Apply"
+        "apply": "Apply",
+        "socialAccounts": {
+          "title": "Connected Accounts",
+          "description": "Manage your connected third-party accounts for easier login",
+          "linked": "Connected",
+          "notLinked": "Not connected",
+          "link": "Connect",
+          "unlink": "Disconnect",
+          "lastUsed": "Last used",
+          "linkSuccess": "Account connected successfully",
+          "linkError": "Failed to connect account, please try again",
+          "unlinkSuccess": "Account disconnected",
+          "unlinkError": "Failed to disconnect account, please try again",
+          "alreadyLinked": "This account is already connected to your profile",
+          "linkedToOther": "This social account is connected to another user",
+          "cannotUnlinkLast": "Cannot disconnect the only linked account (no password set)",
+          "unlinkConfirmTitle": "Confirm Disconnect",
+          "unlinkConfirmDescription": "Are you sure you want to disconnect from {provider}? You will no longer be able to sign in with this platform.",
+          "cancel": "Cancel",
+          "confirmUnlink": "Disconnect"
+        }
       },
       "security": {
         "title": "Security"

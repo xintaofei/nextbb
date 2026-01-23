@@ -1,4 +1,5 @@
 import type { NextAuthOptions } from "next-auth"
+import { cookies } from "next/headers"
 import { prisma } from "@/lib/prisma"
 import { generateId } from "@/lib/id"
 import { uploadAvatarFromUrl } from "@/lib/blob"
@@ -6,6 +7,8 @@ import { AutomationEvents } from "@/lib/automation/event-bus"
 import { recordLogin } from "@/lib/auth"
 import { getSocialProviders } from "@/lib/services/social-provider-service"
 import { createOAuthProvider } from "@/lib/providers/oauth-factory"
+
+export const SOCIAL_LINK_COOKIE = "social_link_user_id"
 
 function getEnv(name: string): string {
   const v = process.env[name]
@@ -107,14 +110,13 @@ export async function createAuthOptions(): Promise<NextAuthOptions> {
           (typeof profile?.email === "string" ? profile.email : null) ??
           null
         if (!email) return false
-        const existing = await prisma.users.findUnique({
-          where: { email },
-        })
 
-        if (existing && (existing.is_deleted || existing.status !== 1)) {
-          await recordLogin(existing.id, "FAILED", provider.toUpperCase())
-          return false
-        }
+        const providerUid = account.providerAccountId
+        const providerUsername =
+          (profile as { login?: string })?.login ??
+          (profile as { username?: string })?.username ??
+          user.name ??
+          null
 
         const avatarSrc =
           user.image ??
@@ -123,41 +125,169 @@ export async function createAuthOptions(): Promise<NextAuthOptions> {
             : null) ??
           null
 
-        let targetUser = existing
+        const cookieStore = await cookies()
+        const linkUserIdStr = cookieStore.get(SOCIAL_LINK_COOKIE)?.value
+        const isLinkMode = !!linkUserIdStr
 
-        if (!targetUser) {
-          const id = generateId()
-          let name =
-            user.name ??
-            (typeof profile?.name === "string" && profile.name.length > 0
-              ? profile.name
-              : null)
-          if (!name && provider === "linuxdo") {
-            const p = profile as { username?: string; login?: string }
-            name =
-              (typeof p.username === "string" && p.username.length > 0
-                ? p.username
-                : null) ??
-              (typeof p.login === "string" && p.login.length > 0
-                ? p.login
-                : null)
-          }
-          if (!name) {
-            name = email.split("@")[0]
-          }
+        if (isLinkMode) {
+          cookieStore.delete(SOCIAL_LINK_COOKIE)
+          const linkUserId = BigInt(linkUserIdStr)
 
-          // 确保用户名唯一
-          const uniqueName = await ensureUniqueName(name)
+          const existingLink = await prisma.user_social_accounts.findUnique({
+            where: {
+              provider_key_provider_uid: {
+                provider_key: provider,
+                provider_uid: providerUid,
+              },
+            },
+          })
 
-          let avatar = ""
-          if (avatarSrc && avatarSrc.length > 0) {
-            try {
-              avatar = await uploadAvatarFromUrl(id, avatarSrc)
-            } catch {
-              avatar = avatarSrc
+          if (existingLink) {
+            if (existingLink.user_id === linkUserId) {
+              return `/u/preferences/account?error=already_linked`
             }
+            return `/u/preferences/account?error=account_linked_other`
           }
-          targetUser = await prisma.users.create({
+
+          await prisma.user_social_accounts.create({
+            data: {
+              id: generateId(),
+              user_id: linkUserId,
+              provider_key: provider,
+              provider_uid: providerUid,
+              provider_username: providerUsername,
+              provider_email: email,
+              provider_avatar: avatarSrc,
+              access_token: account.access_token ?? null,
+              refresh_token: account.refresh_token ?? null,
+              token_expires_at: account.expires_at
+                ? new Date(account.expires_at * 1000)
+                : null,
+              last_used_at: new Date(),
+            },
+          })
+
+          return `/u/preferences/account?success=linked`
+        }
+
+        const existingSocialAccount =
+          await prisma.user_social_accounts.findUnique({
+            where: {
+              provider_key_provider_uid: {
+                provider_key: provider,
+                provider_uid: providerUid,
+              },
+            },
+            include: { user: true },
+          })
+
+        if (existingSocialAccount) {
+          const linkedUser = existingSocialAccount.user
+          if (linkedUser.is_deleted || linkedUser.status !== 1) {
+            await recordLogin(linkedUser.id, "FAILED", provider.toUpperCase())
+            return false
+          }
+
+          await prisma.user_social_accounts.update({
+            where: { id: existingSocialAccount.id },
+            data: {
+              provider_username: providerUsername,
+              provider_email: email,
+              provider_avatar: avatarSrc,
+              access_token: account.access_token ?? null,
+              refresh_token: account.refresh_token ?? null,
+              token_expires_at: account.expires_at
+                ? new Date(account.expires_at * 1000)
+                : null,
+              last_used_at: new Date(),
+            },
+          })
+
+          await recordLogin(linkedUser.id, "SUCCESS", provider.toUpperCase())
+          return true
+        }
+
+        const existingUserByEmail = await prisma.users.findUnique({
+          where: { email },
+          include: {
+            social_accounts: {
+              where: { provider_key: provider },
+            },
+          },
+        })
+
+        if (existingUserByEmail) {
+          if (
+            existingUserByEmail.is_deleted ||
+            existingUserByEmail.status !== 1
+          ) {
+            await recordLogin(
+              existingUserByEmail.id,
+              "FAILED",
+              provider.toUpperCase()
+            )
+            return false
+          }
+
+          if (existingUserByEmail.social_accounts.length === 0) {
+            await prisma.user_social_accounts.create({
+              data: {
+                id: generateId(),
+                user_id: existingUserByEmail.id,
+                provider_key: provider,
+                provider_uid: providerUid,
+                provider_username: providerUsername,
+                provider_email: email,
+                provider_avatar: avatarSrc,
+                access_token: account.access_token ?? null,
+                refresh_token: account.refresh_token ?? null,
+                token_expires_at: account.expires_at
+                  ? new Date(account.expires_at * 1000)
+                  : null,
+                last_used_at: new Date(),
+              },
+            })
+          }
+
+          await recordLogin(
+            existingUserByEmail.id,
+            "SUCCESS",
+            provider.toUpperCase()
+          )
+          return true
+        }
+
+        const id = generateId()
+        let name =
+          user.name ??
+          (typeof profile?.name === "string" && profile.name.length > 0
+            ? profile.name
+            : null)
+        if (!name && provider === "linuxdo") {
+          const p = profile as { username?: string; login?: string }
+          name =
+            (typeof p.username === "string" && p.username.length > 0
+              ? p.username
+              : null) ??
+            (typeof p.login === "string" && p.login.length > 0 ? p.login : null)
+        }
+        if (!name) {
+          name = email.split("@")[0]
+        }
+
+        const uniqueName = await ensureUniqueName(name)
+
+        let avatar = ""
+        if (avatarSrc && avatarSrc.length > 0) {
+          try {
+            avatar = await uploadAvatarFromUrl(id, avatarSrc)
+          } catch {
+            avatar = avatarSrc
+          }
+        }
+
+        await prisma.$transaction(async (tx) => {
+          await tx.users.create({
             data: {
               id,
               email,
@@ -169,16 +299,32 @@ export async function createAuthOptions(): Promise<NextAuthOptions> {
             },
           })
 
-          // 触发用户注册事件
-          await AutomationEvents.userRegister({
-            userId: targetUser.id,
-            email: targetUser.email,
-            oauthProvider: provider,
+          await tx.user_social_accounts.create({
+            data: {
+              id: generateId(),
+              user_id: id,
+              provider_key: provider,
+              provider_uid: providerUid,
+              provider_username: providerUsername,
+              provider_email: email,
+              provider_avatar: avatarSrc,
+              access_token: account.access_token ?? null,
+              refresh_token: account.refresh_token ?? null,
+              token_expires_at: account.expires_at
+                ? new Date(account.expires_at * 1000)
+                : null,
+              last_used_at: new Date(),
+            },
           })
-        }
+        })
 
-        // 记录登录信息（包括新用户和老用户）
-        await recordLogin(targetUser.id, "SUCCESS", provider.toUpperCase())
+        await AutomationEvents.userRegister({
+          userId: id,
+          email,
+          oauthProvider: provider,
+        })
+
+        await recordLogin(id, "SUCCESS", provider.toUpperCase())
 
         return true
       },
