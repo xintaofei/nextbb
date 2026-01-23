@@ -73,47 +73,89 @@ export default function LoginPage() {
     <div className="min-h-screen relative overflow-hidden bg-linear-to-br from-background via-background to-muted/20">
       <div className="relative min-h-screen grid lg:grid-cols-2 gap-8 lg:gap-0">
         {/* Left Panel - Branding */}
-        <div className="hidden lg:flex flex-col justify-between p-12 xl:p-16 border-r border-border/40 relative overflow-hidden bg-gray-100 dark:bg-gray-900">
+        <div className="hidden lg:flex flex-col justify-between p-12 xl:p-16 border-r border-border/40 relative overflow-hidden bg-gray-50 dark:bg-gray-950">
           {/* Wave Background - 波浪背景 */}
           <div className="absolute inset-0 pointer-events-none overflow-hidden">
-            {/* 波浪层 1 - 最慢最淡 */}
-            <svg
-              className="absolute top-[66%] left-0 w-full h-[34%] opacity-20 animate-wave1"
-              preserveAspectRatio="none"
-              viewBox="0 0 1200 400"
+            {/* Layer 1 - Slow */}
+            <div
+              className="absolute bottom-0 left-0 w-[200%] h-[45%] flex animate-wave-slow opacity-10 text-muted-foreground"
+              style={{ animationDelay: "0s" }}
             >
-              <path
-                d="M0,80 C300,40 600,120 900,80 C1050,60 1200,80 1200,80 L1200,400 L0,400 Z"
-                fill="currentColor"
-                className="text-gray-300 dark:text-gray-700"
-              />
-            </svg>
+              <svg
+                className="w-1/2 h-full"
+                viewBox="0 0 1440 320"
+                preserveAspectRatio="none"
+              >
+                <path
+                  fill="currentColor"
+                  d="M0,80 C240,110 480,110 720,80 C960,50 1200,50 1440,80 V320 H0 Z"
+                />
+              </svg>
+              <svg
+                className="w-1/2 h-full -ml-[1px]"
+                viewBox="0 0 1440 320"
+                preserveAspectRatio="none"
+              >
+                <path
+                  fill="currentColor"
+                  d="M0,80 C240,110 480,110 720,80 C960,50 1200,50 1440,80 V320 H0 Z"
+                />
+              </svg>
+            </div>
 
-            {/* 波浪层 2 - 中速中等 */}
-            <svg
-              className="absolute top-[66%] left-0 w-full h-[34%] opacity-15 animate-wave2"
-              preserveAspectRatio="none"
-              viewBox="0 0 1200 400"
+            {/* Layer 2 - Medium */}
+            <div
+              className="absolute bottom-0 left-0 w-[200%] h-[50%] flex animate-wave-medium opacity-10 text-muted-foreground"
+              style={{ animationDelay: "-5s" }}
             >
-              <path
-                d="M0,60 C400,100 800,20 1200,60 L1200,400 L0,400 Z"
-                fill="currentColor"
-                className="text-gray-400 dark:text-gray-600"
-              />
-            </svg>
+              <svg
+                className="w-1/2 h-full"
+                viewBox="0 0 1440 320"
+                preserveAspectRatio="none"
+              >
+                <path
+                  fill="currentColor"
+                  d="M0,100 C360,100 360,160 720,130 S1080,100 1440,100 V320 H0 Z"
+                />
+              </svg>
+              <svg
+                className="w-1/2 h-ful -ml-[1px]"
+                viewBox="0 0 1440 320"
+                preserveAspectRatio="none"
+              >
+                <path
+                  fill="currentColor"
+                  d="M0,100 C360,100 360,160 720,130 S1080,100 1440,100 V320 H0 Z"
+                />
+              </svg>
+            </div>
 
-            {/* 波浪层 3 - 最快最深 */}
-            <svg
-              className="absolute top-[66%] left-0 w-full h-[34%] opacity-10 animate-wave3"
-              preserveAspectRatio="none"
-              viewBox="0 0 1200 400"
+            {/* Layer 3 - Fast */}
+            <div
+              className="absolute bottom-0 left-0 w-[200%] h-[40%] flex animate-wave-fast opacity-10 text-muted-foreground"
+              style={{ animationDelay: "-2s" }}
             >
-              <path
-                d="M0,70 C500,30 700,110 1200,70 L1200,400 L0,400 Z"
-                fill="currentColor"
-                className="text-gray-500 dark:text-gray-500"
-              />
-            </svg>
+              <svg
+                className="w-1/2 h-full"
+                viewBox="0 0 1440 320"
+                preserveAspectRatio="none"
+              >
+                <path
+                  fill="currentColor"
+                  d="M0,60 C240,85 480,85 720,60 C960,35 1200,35 1440,60 V320 H0 Z"
+                />
+              </svg>
+              <svg
+                className="w-1/2 h-full -ml-[1px]"
+                viewBox="0 0 1440 320"
+                preserveAspectRatio="none"
+              >
+                <path
+                  fill="currentColor"
+                  d="M0,60 C240,85 480,85 720,60 C960,35 1200,35 1440,60 V320 H0 Z"
+                />
+              </svg>
+            </div>
           </div>
 
           <div className="space-y-8 animate-fadeIn relative z-10">
