@@ -1,3 +1,4 @@
+import { Suspense } from "react"
 import { Metadata } from "next"
 import { getSessionUser } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
@@ -8,6 +9,7 @@ import { getTranslations } from "next-intl/server"
 import { getTranslationsQuery, getTranslationFields } from "@/lib/locale"
 import { getLocale } from "next-intl/server"
 import { BadgeTranslation } from "@/lib/locale"
+import { Loader2 } from "lucide-react"
 
 type AccountPageProps = {
   params: Promise<{ username: string }>
@@ -122,7 +124,15 @@ export default async function AccountPage() {
       </div>
       <AccountForm user={processedUser} />
       <hr className="border-border" />
-      <SocialAccounts providers={providers} />
+      <Suspense
+        fallback={
+          <div className="flex items-center justify-center py-8">
+            <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+          </div>
+        }
+      >
+        <SocialAccounts providers={providers} />
+      </Suspense>
     </div>
   )
 }

@@ -65,15 +65,15 @@ export function SocialAccounts({ providers }: SocialAccountsProps) {
 
     if (error === "already_linked") {
       toast.info(t("alreadyLinked"))
+      router.replace(window.location.pathname)
     } else if (error === "account_linked_other") {
       toast.error(t("linkedToOther"))
+      router.replace(window.location.pathname)
     } else if (success === "linked") {
       toast.success(t("linkSuccess"))
-      mutate()
-    }
-
-    if (error || success) {
-      router.replace(window.location.pathname)
+      mutate().then(() => {
+        router.replace(window.location.pathname)
+      })
     }
   }, [searchParams, t, router, mutate])
 
