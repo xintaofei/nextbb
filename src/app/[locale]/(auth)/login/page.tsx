@@ -159,8 +159,8 @@ export default function LoginPage() {
           </div>
 
           <div className="space-y-8 animate-fadeIn relative z-10">
-            <div className="flex items-center gap-3">
-              <div className="relative w-12 h-12">
+            <div className="flex items-center">
+              <div className="relative w-32 h-32">
                 <Image
                   src="/nextbb-logo.png"
                   alt="NextBB"
@@ -169,17 +169,14 @@ export default function LoginPage() {
                   priority
                 />
               </div>
-              <div className="font-serif text-3xl font-bold tracking-tight">
-                NextBB
-              </div>
             </div>
 
-            <div className="space-y-4 max-w-md">
+            <div className="space-y-8 max-w-md">
               <h1 className="font-serif text-5xl xl:text-6xl font-bold leading-tight tracking-tight">
-                Modern forum,{" "}
+                Next bulletin board,{" "}
                 <span className="text-primary relative inline-block">
                   reimagined
-                  <div className="absolute -bottom-2 left-0 right-0 h-1 bg-primary/20" />
+                  <div className="absolute -bottom-4 left-0 right-0 h-1 bg-primary/20" />
                 </span>
               </h1>
               <p className="text-lg text-muted-foreground leading-relaxed">
@@ -208,11 +205,11 @@ export default function LoginPage() {
         </div>
 
         {/* Right Panel - Login Form */}
-        <div className="flex items-center justify-center p-6 sm:p-12">
-          <div className="w-full max-w-md space-y-8 animate-slideUp">
+        <div className="flex items-center justify-center p-4 sm:p-8">
+          <div className="w-full max-w-md space-y-4 animate-slideUp">
             {/* Mobile Logo */}
-            <div className="lg:hidden flex flex-col items-center gap-4 mb-8">
-              <div className="relative w-16 h-16">
+            <div className="lg:hidden flex flex-col items-center gap-4">
+              <div className="relative w-32 h-32">
                 <Image
                   src="/nextbb-logo.png"
                   alt="NextBB"
@@ -221,12 +218,9 @@ export default function LoginPage() {
                   priority
                 />
               </div>
-              <div className="font-serif text-3xl font-bold tracking-tight">
-                NextBB
-              </div>
             </div>
 
-            <div className="space-y-2">
+            <div className="space-y-4">
               <h2 className="font-serif text-4xl font-bold tracking-tight">
                 {t("title")}
               </h2>
@@ -238,7 +232,7 @@ export default function LoginPage() {
             <Form {...form}>
               <form
                 onSubmit={form.handleSubmit(onSubmit)}
-                className="space-y-5"
+                className="space-y-4"
               >
                 <FormField
                   control={form.control}
@@ -296,13 +290,13 @@ export default function LoginPage() {
                 <span className="w-full border-t border-border" />
               </div>
               <div className="relative flex justify-center text-xs uppercase">
-                <span className="bg-background px-3 text-muted-foreground font-medium tracking-wider">
+                <span className="bg-background px-4 text-muted-foreground font-medium tracking-wider">
                   {t("or")}
                 </span>
               </div>
             </div>
 
-            <div className="space-y-3">
+            <div className="space-y-4">
               <Button
                 variant="outline"
                 className="w-full h-11 gap-3 font-medium"
