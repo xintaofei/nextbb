@@ -697,6 +697,7 @@
       "categories": "Categories",
       "tags": "Tags",
       "badges": "Badges",
+      "socialProviders": "Social Login",
       "translationTasks": "Translation Tasks",
       "automationRules": "Automation Rules",
       "llmConfigs": "LLM Configs",
@@ -2405,6 +2406,57 @@
       "4": "Medium",
       "5": "Medium-Dark",
       "6": "Dark"
+    }
+  },
+  "AdminSocialProviders": {
+    "title": "Social Login Providers",
+    "description": "Configure OAuth social login providers like Google, GitHub, LinuxDo, etc.",
+    "createButton": "Add Provider",
+    "loading": "Loading...",
+    "empty": "No social login providers configured. Click the button above to add one.",
+    "card": {
+      "enabled": "Enabled",
+      "disabled": "Disabled",
+      "clientId": "Client ID",
+      "scope": "Scope",
+      "endpoints": "Endpoints",
+      "edit": "Edit",
+      "delete": "Delete"
+    },
+    "dialog": {
+      "createTitle": "Add Social Login Provider",
+      "editTitle": "Edit Social Login Provider",
+      "providerKey": "Provider Key",
+      "name": "Display Name",
+      "icon": "Icon",
+      "sort": "Sort Order",
+      "clientId": "Client ID",
+      "clientSecret": "Client Secret",
+      "secretPlaceholder": "Leave empty to keep unchanged",
+      "wellKnownUrl": "Well-Known URL",
+      "wellKnownHint": "If provided, authorization endpoints will be auto-discovered. Works with standard OIDC providers.",
+      "authorizeUrl": "Authorization URL",
+      "tokenUrl": "Token URL",
+      "userinfoUrl": "User Info URL",
+      "scope": "Scope",
+      "isEnabled": "Enable this provider",
+      "cancel": "Cancel",
+      "submit": "Save",
+      "submitting": "Saving..."
+    },
+    "deleteDialog": {
+      "title": "Confirm Delete",
+      "description": "Are you sure you want to delete this social login provider? Users will no longer be able to login using this provider.",
+      "cancel": "Cancel",
+      "confirm": "Delete"
+    },
+    "message": {
+      "createSuccess": "Provider created successfully",
+      "createError": "Failed to create provider",
+      "updateSuccess": "Provider updated successfully",
+      "updateError": "Failed to update provider",
+      "deleteSuccess": "Provider deleted successfully",
+      "deleteError": "Failed to delete provider"
     }
   }
 }

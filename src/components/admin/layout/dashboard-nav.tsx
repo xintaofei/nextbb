@@ -15,6 +15,7 @@ import {
   Bot,
   ChevronDown,
   Heart,
+  Link2,
 } from "lucide-react"
 import { useState } from "react"
 import Link from "next/link"
@@ -55,6 +56,11 @@ export function DashboardNav() {
         { label: t("categories"), icon: Folder, path: "/admin/categories" },
         { label: t("tags"), icon: Tag, path: "/admin/tags" },
         { label: t("badges"), icon: Award, path: "/admin/badges" },
+        {
+          label: t("socialProviders"),
+          icon: Link2,
+          path: "/admin/social-providers",
+        },
       ],
     },
     {
