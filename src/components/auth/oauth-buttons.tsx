@@ -5,7 +5,9 @@ import { signIn } from "next-auth/react"
 import { Loader2 } from "lucide-react"
 import useSWR from "swr"
 import Image from "next/image"
+import { useTranslations } from "next-intl"
 import { Button } from "@/components/ui/button"
+import { Skeleton } from "@/components/ui/skeleton"
 
 type SocialProvider = {
   providerKey: string
@@ -110,6 +112,7 @@ function ProviderIcon({
 }
 
 export function OAuthButtons({ callbackUrl }: OAuthButtonsProps) {
+  const t = useTranslations("Auth.Login")
   const [loadingProvider, setLoadingProvider] = useState<string | null>(null)
   const { data, isLoading } = useSWR<ProvidersResponse>(
     "/api/social-providers",
@@ -135,11 +138,8 @@ export function OAuthButtons({ callbackUrl }: OAuthButtonsProps) {
   if (isLoading) {
     return (
       <div className="space-y-4">
-        {[1, 2].map((i) => (
-          <div
-            key={i}
-            className="h-11 w-full animate-pulse rounded-md bg-muted"
-          />
+        {[1, 2, 3].map((i) => (
+          <Skeleton key={i} className="h-11 w-full" />
         ))}
       </div>
     )
@@ -166,7 +166,7 @@ export function OAuthButtons({ callbackUrl }: OAuthButtonsProps) {
           ) : (
             <ProviderIcon provider={provider} />
           )}
-          <span>{provider.name}</span>
+          <span>{t("signInWith", { provider: provider.name })}</span>
         </Button>
       ))}
     </div>

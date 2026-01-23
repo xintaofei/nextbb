@@ -528,6 +528,7 @@
       "title": "登录",
       "email": "邮箱",
       "emailPlaceholder": "name@example.com",
+      "signInWith": "使用 {provider} 登录",
       "password": "密码",
       "passwordPlaceholder": "请输入密码",
       "submit": "登录",

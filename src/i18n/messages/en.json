@@ -528,6 +528,7 @@
       "title": "Sign In",
       "email": "Email",
       "emailPlaceholder": "name@example.com",
+      "signInWith": "Sign in with {provider}",
       "password": "Password",
       "passwordPlaceholder": "Enter your password",
       "submit": "Sign In",
