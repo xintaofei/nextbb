@@ -183,6 +183,13 @@ export default function TopicPage() {
 
   const relatedTopics = relatedData?.relatedTopics ?? []
 
+  const replyDescription = useMemo(() => {
+    if (!replyToPostId) return undefined
+    const index = posts.findIndex((p) => p.id === replyToPostId)
+    if (index === -1) return undefined
+    return index === 0 ? t("floor.op") : "#" + index
+  }, [replyToPostId, posts, t])
+
   const postsRef = useRef<PostItem[]>([])
   useEffect(() => {
     postsRef.current = posts
@@ -1043,11 +1050,7 @@ export default function TopicPage() {
       <DrawerEditor
         key={`reply-${replyToPostId ?? "topic"}-${replyOpen ? replyContent : ""}`}
         title={t("reply")}
-        description={
-          replyToPostId
-            ? `#${posts.findIndex((p) => p.id === replyToPostId)}`
-            : undefined
-        }
+        description={replyDescription}
         open={replyOpen}
         onOpenChange={setReplyOpen}
         initialValue={replyContent}
