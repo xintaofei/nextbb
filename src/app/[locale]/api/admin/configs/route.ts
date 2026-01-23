@@ -38,7 +38,7 @@ function stringifyConfigValue(value: unknown): string {
 // 掩码敏感信息
 function maskSensitiveValue(value: string, isSensitive: boolean): string {
   if (!isSensitive || !value) return value
-  return "******"
+  return ""
 }
 
 // GET - 获取配置列表
