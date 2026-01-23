@@ -87,6 +87,16 @@ function createLinuxDoProvider(
         id = String(profile.sub)
       }
 
+      if (!id) {
+        console.error(
+          `[OAuthFactory] Provider ${config.providerKey} 返回的 profile 中缺少 id 或 sub`,
+          profile
+        )
+        throw new Error(
+          `OAuth provider ${config.providerKey} missing unique ID (id or sub) in profile`
+        )
+      }
+
       let name = ""
       if (typeof profile.name === "string" && profile.name.length > 0) {
         name = profile.name
@@ -148,6 +158,16 @@ function createCustomProvider(
         id = String(profile.id)
       } else if (profile.sub !== undefined) {
         id = String(profile.sub)
+      }
+
+      if (!id) {
+        console.error(
+          `[OAuthFactory] 自定义 Provider ${config.providerKey} 返回的 profile 中缺少 id 或 sub`,
+          profile
+        )
+        throw new Error(
+          `OAuth provider ${config.providerKey} missing unique ID (id or sub) in profile`
+        )
       }
 
       let name = ""

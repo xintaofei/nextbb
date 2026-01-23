@@ -4,6 +4,7 @@ import { useState } from "react"
 import { signIn } from "next-auth/react"
 import { Loader2 } from "lucide-react"
 import useSWR from "swr"
+import Image from "next/image"
 import { Button } from "@/components/ui/button"
 
 type SocialProvider = {
@@ -90,10 +91,13 @@ function ProviderIcon({
       )
     }
     return (
-      <img
+      <Image
         src={provider.icon}
         alt={provider.name}
+        width={20}
+        height={20}
         className="w-5 h-5 object-contain"
+        unoptimized
       />
     )
   }

@@ -65,11 +65,15 @@ interface DonationTableProps {
 }
 
 const STATUS_STYLES: Record<DonationStatus, string> = {
-  PENDING: "bg-amber-500/20 text-amber-600 dark:text-amber-400 border-amber-500/40",
-  CONFIRMED: "bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 border-emerald-500/40",
+  PENDING:
+    "bg-amber-500/20 text-amber-600 dark:text-amber-400 border-amber-500/40",
+  CONFIRMED:
+    "bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 border-emerald-500/40",
   FAILED: "bg-red-500/20 text-red-600 dark:text-red-400 border-red-500/40",
-  REFUNDED: "bg-purple-500/20 text-purple-600 dark:text-purple-400 border-purple-500/40",
-  CANCELLED: "bg-gray-500/20 text-gray-600 dark:text-gray-400 border-gray-500/40",
+  REFUNDED:
+    "bg-purple-500/20 text-purple-600 dark:text-purple-400 border-purple-500/40",
+  CANCELLED:
+    "bg-gray-500/20 text-gray-600 dark:text-gray-400 border-gray-500/40",
 }
 
 export function DonationTable({
@@ -133,7 +137,9 @@ export function DonationTable({
               <TableHead className="w-24">{t("table.status")}</TableHead>
               <TableHead className="max-w-xs">{t("table.message")}</TableHead>
               <TableHead className="w-36">{t("table.createdAt")}</TableHead>
-              <TableHead className="w-20 text-right">{t("table.actions")}</TableHead>
+              <TableHead className="w-20 text-right">
+                {t("table.actions")}
+              </TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
