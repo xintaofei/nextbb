@@ -838,6 +838,14 @@
     },
     "filter": {
       "title": "Filter",
+      "donorType": {
+        "all": "All Donors",
+        "guest": "Guest",
+        "registered": "Registered User"
+      },
+      "donorNamePlaceholder": "Search donor name",
+      "userSearchPlaceholder": "Search by name or email",
+      "noUserFound": "No user found",
       "status": {
         "all": "All Status",
         "pending": "Pending",

@@ -838,6 +838,14 @@
     },
     "filter": {
       "title": "筛选",
+      "donorType": {
+        "all": "全部捐赠者",
+        "guest": "非注册用户",
+        "registered": "注册用户"
+      },
+      "donorNamePlaceholder": "搜索捐赠者名称",
+      "userSearchPlaceholder": "搜索用户名或邮箱",
+      "noUserFound": "未找到用户",
       "status": {
         "all": "全部状态",
         "pending": "待确认",

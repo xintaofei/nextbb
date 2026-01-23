@@ -10,6 +10,9 @@ const QuerySchema = z.object({
   page: z.string().regex(/^\d+$/).optional(),
   pageSize: z.string().regex(/^\d+$/).optional(),
   q: z.string().optional(),
+  donor_type: z.enum(["guest", "registered"]).optional(),
+  donor_name: z.string().optional(),
+  user_id: z.string().regex(/^\d+$/).optional(),
   status: z.enum(DonationStatus).optional(),
   source: z.enum(DonationSource).optional(),
 })
@@ -74,6 +77,9 @@ export async function GET(req: Request) {
     page: url.searchParams.get("page") ?? undefined,
     pageSize: url.searchParams.get("pageSize") ?? undefined,
     q: url.searchParams.get("q") ?? undefined,
+    donor_type: url.searchParams.get("donor_type") ?? undefined,
+    donor_name: url.searchParams.get("donor_name") ?? undefined,
+    user_id: url.searchParams.get("user_id") ?? undefined,
     status: url.searchParams.get("status") ?? undefined,
     source: url.searchParams.get("source") ?? undefined,
   })
@@ -92,6 +98,8 @@ export async function GET(req: Request) {
       donor_name?: { contains: string }
       donor_email?: { contains: string }
     }[]
+    donor_name?: { contains: string }
+    user_id?: bigint | null
     status?: DonationStatus
     source?: DonationSource
     is_deleted?: boolean
@@ -104,6 +112,19 @@ export async function GET(req: Request) {
       { donor_email: { contains: q } },
     ]
   }
+
+  if (parsed.data.donor_type === "guest") {
+    where.user_id = null
+    const donorNameQuery = parsed.data.donor_name?.trim()
+    if (donorNameQuery && donorNameQuery.length > 0) {
+      where.donor_name = { contains: donorNameQuery }
+    }
+  } else if (parsed.data.donor_type === "registered") {
+    if (parsed.data.user_id) {
+      where.user_id = BigInt(parsed.data.user_id)
+    }
+  }
+
   if (parsed.data.status) {
     where.status = parsed.data.status
   }

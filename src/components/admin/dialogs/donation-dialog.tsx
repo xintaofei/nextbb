@@ -340,7 +340,7 @@ export function DonationDialog({
                     userSearchResult &&
                     userSearchResult.items.length > 0 && (
                       <div className="absolute z-50 w-full mt-1 border rounded-md bg-popover shadow-md">
-                        <ScrollArea className="max-h-48">
+                        <ScrollArea className="max-h-64 overflow-y-scroll">
                           {userSearchResult.items.map((user) => (
                             <div
                               key={user.id}
