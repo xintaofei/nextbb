@@ -18,6 +18,7 @@ import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
 import Image from "next/image"
+import { Loader2 } from "lucide-react"
 import { AuthBranding } from "@/components/auth/auth-branding"
 import { OAuthButtons } from "@/components/auth/oauth-buttons"
 
@@ -196,8 +197,16 @@ export default function RegisterPage() {
                     {serverError}
                   </div>
                 ) : null}
-                <Button type="submit" className="w-full h-11 font-medium">
-                  {t("submit")}
+                <Button
+                  type="submit"
+                  className="w-full h-11 font-medium"
+                  disabled={form.formState.isSubmitting}
+                >
+                  {form.formState.isSubmitting ? (
+                    <Loader2 className="w-5 h-5 animate-spin" />
+                  ) : (
+                    t("submit")
+                  )}
                 </Button>
               </form>
             </Form>
