@@ -311,9 +311,13 @@ export function CheckinSection() {
   const timezoneOffset = new Date().getTimezoneOffset()
 
   const { data: checkinStatus, isLoading: isStatusLoading } =
-    useSWR<CheckinStatus | null>("/api/checkin", statusFetcher, {
-      refreshInterval: 60000,
-    })
+    useSWR<CheckinStatus | null>(
+      `/api/checkin?timezoneOffset=${timezoneOffset}`,
+      statusFetcher,
+      {
+        refreshInterval: 60000,
+      }
+    )
 
   const {
     data: todayCheckins = [],
