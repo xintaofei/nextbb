@@ -702,6 +702,7 @@
       "llmConfigs": "LLM Configs",
       "contentStructure": "Content Structure",
       "intelligence": "Intelligence Services",
+      "donations": "Donations",
       "settings": "Settings"
     },
     "translationDialog": {
@@ -822,6 +823,130 @@
       "alreadyOwned": "Already owned",
       "selectAtLeastOne": "Please select at least one badge",
       "empty": "No badges"
+    }
+  },
+  "AdminDonations": {
+    "title": "Donation Management",
+    "description": "Manage and view all donation records, track donation statistics",
+    "searchPlaceholder": "Search donor name or email",
+    "createButton": "Add Donation",
+    "stats": {
+      "total": "Total Donations",
+      "totalAmount": "Total Amount",
+      "confirmed": "Confirmed",
+      "pending": "Pending"
+    },
+    "filter": {
+      "title": "Filter",
+      "status": {
+        "all": "All Status",
+        "pending": "Pending",
+        "confirmed": "Confirmed",
+        "failed": "Failed",
+        "refunded": "Refunded",
+        "cancelled": "Cancelled"
+      },
+      "source": {
+        "all": "All Sources",
+        "KOFI": "Ko-fi",
+        "PATREON": "Patreon",
+        "PAYPAL": "PayPal",
+        "ALIPAY": "Alipay",
+        "WECHAT_PAY": "WeChat Pay",
+        "BANK_TRANSFER": "Bank Transfer",
+        "CRYPTO": "Cryptocurrency",
+        "OTHER": "Other"
+      },
+      "apply": "Apply Filter"
+    },
+    "table": {
+      "donor": "Donor",
+      "amount": "Amount",
+      "source": "Source",
+      "status": "Status",
+      "message": "Message",
+      "createdAt": "Date",
+      "actions": "Actions"
+    },
+    "status": {
+      "PENDING": "Pending",
+      "CONFIRMED": "Confirmed",
+      "FAILED": "Failed",
+      "REFUNDED": "Refunded",
+      "CANCELLED": "Cancelled"
+    },
+    "source": {
+      "KOFI": "Ko-fi",
+      "PATREON": "Patreon",
+      "PAYPAL": "PayPal",
+      "ALIPAY": "Alipay",
+      "WECHAT_PAY": "WeChat Pay",
+      "BANK_TRANSFER": "Bank Transfer",
+      "CRYPTO": "Cryptocurrency",
+      "OTHER": "Other"
+    },
+    "loading": "Loading...",
+    "empty": "No donations yet",
+    "pagination": {
+      "total": "{count} records",
+      "page": "Page {page}",
+      "prev": "Previous",
+      "next": "Next"
+    },
+    "dialog": {
+      "createTitle": "Add Donation",
+      "editTitle": "Edit Donation",
+      "form": {
+        "donorName": "Donor Name",
+        "donorNamePlaceholder": "Enter donor name",
+        "donorEmail": "Donor Email",
+        "donorEmailPlaceholder": "Enter donor email",
+        "amount": "Amount",
+        "amountPlaceholder": "Enter donation amount",
+        "currency": "Currency",
+        "source": "Source",
+        "status": "Status",
+        "externalId": "External ID",
+        "externalIdPlaceholder": "Third-party transaction ID (optional)",
+        "isAnonymous": "Anonymous Donation",
+        "message": "Message",
+        "messagePlaceholder": "Donor message (optional)",
+        "adminNote": "Admin Note",
+        "adminNotePlaceholder": "Admin note (only visible to admins)",
+        "user": "Linked User",
+        "userPlaceholder": "Select linked user (optional)"
+      },
+      "cancel": "Cancel",
+      "save": "Save",
+      "saving": "Saving...",
+      "success": "Saved successfully",
+      "error": "Failed to save"
+    },
+    "actions": {
+      "edit": "Edit",
+      "confirm": "Confirm",
+      "delete": "Delete",
+      "confirmTitle": "Confirm Donation",
+      "confirmMessage": "Confirm this donation has been received?",
+      "deleteTitle": "Delete Donation",
+      "deleteMessage": "Are you sure you want to delete this donation record? This action cannot be undone.",
+      "confirmSuccess": "Confirmed successfully",
+      "deleteSuccess": "Deleted successfully",
+      "error": "Operation failed"
+    },
+    "anonymous": "Anonymous",
+    "error": {
+      "unauthorized": "Unauthorized",
+      "invalidQuery": "Invalid query parameters",
+      "invalidJson": "Invalid JSON",
+      "invalidBody": "Invalid request body",
+      "invalidId": "Invalid ID",
+      "notFound": "Donation not found"
+    },
+    "message": {
+      "createSuccess": "Donation created successfully",
+      "updateSuccess": "Donation updated successfully",
+      "deleteSuccess": "Donation deleted successfully"
     }
   },
   "AdminCategories": {

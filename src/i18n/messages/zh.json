@@ -702,6 +702,7 @@
       "llmConfigs": "大模型配置",
       "contentStructure": "内容结构",
       "intelligence": "智能服务",
+      "donations": "捐赠",
       "settings": "系统配置"
     },
     "translationDialog": {
@@ -822,6 +823,130 @@
       "alreadyOwned": "已拥有",
       "selectAtLeastOne": "请至少选择一个徽章",
       "empty": "暂无徽章"
+    }
+  },
+  "AdminDonations": {
+    "title": "捐赠管理",
+    "description": "管理和查看所有捐赠记录，统计捐赠数据",
+    "searchPlaceholder": "搜索捐赠者名称或邮箱",
+    "createButton": "添加捐赠",
+    "stats": {
+      "total": "总捐赠数",
+      "totalAmount": "总金额",
+      "confirmed": "已确认",
+      "pending": "待确认"
+    },
+    "filter": {
+      "title": "筛选",
+      "status": {
+        "all": "全部状态",
+        "pending": "待确认",
+        "confirmed": "已确认",
+        "failed": "失败",
+        "refunded": "已退款",
+        "cancelled": "已取消"
+      },
+      "source": {
+        "all": "全部来源",
+        "KOFI": "Ko-fi",
+        "PATREON": "Patreon",
+        "PAYPAL": "PayPal",
+        "ALIPAY": "支付宝",
+        "WECHAT_PAY": "微信支付",
+        "BANK_TRANSFER": "银行转账",
+        "CRYPTO": "加密货币",
+        "OTHER": "其它"
+      },
+      "apply": "应用筛选"
+    },
+    "table": {
+      "donor": "捐赠者",
+      "amount": "金额",
+      "source": "来源",
+      "status": "状态",
+      "message": "留言",
+      "createdAt": "捐赠时间",
+      "actions": "操作"
+    },
+    "status": {
+      "PENDING": "待确认",
+      "CONFIRMED": "已确认",
+      "FAILED": "失败",
+      "REFUNDED": "已退款",
+      "CANCELLED": "已取消"
+    },
+    "source": {
+      "KOFI": "Ko-fi",
+      "PATREON": "Patreon",
+      "PAYPAL": "PayPal",
+      "ALIPAY": "支付宝",
+      "WECHAT_PAY": "微信支付",
+      "BANK_TRANSFER": "银行转账",
+      "CRYPTO": "加密货币",
+      "OTHER": "其它"
+    },
+    "loading": "加载中...",
+    "empty": "暂无捐赠数据",
+    "pagination": {
+      "total": "共 {count} 条",
+      "page": "第 {page} 页",
+      "prev": "上一页",
+      "next": "下一页"
+    },
+    "dialog": {
+      "createTitle": "添加捐赠记录",
+      "editTitle": "编辑捐赠记录",
+      "form": {
+        "donorName": "捐赠者名称",
+        "donorNamePlaceholder": "请输入捐赠者名称",
+        "donorEmail": "捐赠者邮箱",
+        "donorEmailPlaceholder": "请输入捐赠者邮箱",
+        "amount": "金额",
+        "amountPlaceholder": "请输入捐赠金额",
+        "currency": "货币",
+        "source": "来源",
+        "status": "状态",
+        "externalId": "外部交易ID",
+        "externalIdPlaceholder": "第三方平台交易ID（可选）",
+        "isAnonymous": "匿名捐赠",
+        "message": "捐赠留言",
+        "messagePlaceholder": "捐赠者留言（可选）",
+        "adminNote": "管理员备注",
+        "adminNotePlaceholder": "管理员备注（仅管理员可见）",
+        "user": "关联用户",
+        "userPlaceholder": "选择关联用户（可选）"
+      },
+      "cancel": "取消",
+      "save": "保存",
+      "saving": "保存中...",
+      "success": "保存成功",
+      "error": "保存失败"
+    },
+    "actions": {
+      "edit": "编辑",
+      "confirm": "确认",
+      "delete": "删除",
+      "confirmTitle": "确认捐赠",
+      "confirmMessage": "确认此笔捐赠已收款？",
+      "deleteTitle": "删除捐赠",
+      "deleteMessage": "确定要删除此笔捐赠记录吗？此操作不可撤销。",
+      "confirmSuccess": "确认成功",
+      "deleteSuccess": "删除成功",
+      "error": "操作失败"
+    },
+    "anonymous": "匿名",
+    "error": {
+      "unauthorized": "未授权",
+      "invalidQuery": "无效的查询参数",
+      "invalidJson": "无效的 JSON 格式",
+      "invalidBody": "无效的请求体",
+      "invalidId": "无效的 ID",
+      "notFound": "捐赠记录不存在"
+    },
+    "message": {
+      "createSuccess": "捐赠记录创建成功",
+      "updateSuccess": "捐赠记录更新成功",
+      "deleteSuccess": "捐赠记录删除成功"
     }
   },
   "AdminCategories": {

@@ -14,6 +14,7 @@ import {
   Languages,
   Bot,
   ChevronDown,
+  Heart,
 } from "lucide-react"
 import { useState } from "react"
 import Link from "next/link"
@@ -77,6 +78,7 @@ export function DashboardNav() {
         },
       ],
     },
+    { label: t("donations"), icon: Heart, path: "/admin/donations" },
     { label: t("settings"), icon: Settings, path: "/admin/settings" },
   ]
 
