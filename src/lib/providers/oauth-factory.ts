@@ -186,9 +186,15 @@ function createCustomProvider(
   } as OAuthConfigWithHttp<GenericProfile>
 }
 
+export type SupportedOAuthConfig =
+  | ReturnType<typeof GitHubProvider>
+  | ReturnType<typeof GoogleProvider>
+  | OAuthConfigWithHttp<LinuxDoProfile>
+  | OAuthConfigWithHttp<GenericProfile>
+
 export function createOAuthProvider(
   config: SocialProviderConfig
-): OAuthConfig<unknown> | null {
+): SupportedOAuthConfig | null {
   if (!config.clientId || !config.clientSecret) {
     console.warn(
       `[OAuthFactory] Provider ${config.providerKey} 缺少 clientId 或 clientSecret`
