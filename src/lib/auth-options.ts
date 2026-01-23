@@ -7,6 +7,7 @@ import { AutomationEvents } from "@/lib/automation/event-bus"
 import { recordLogin } from "@/lib/auth"
 import { getSocialProviders } from "@/lib/services/social-provider-service"
 import { createOAuthProvider } from "@/lib/providers/oauth-factory"
+import { encodeUsername } from "@/lib/utils"
 
 export const SOCIAL_LINK_COOKIE = "social_link_user_id"
 
@@ -133,6 +134,18 @@ export async function createAuthOptions(): Promise<NextAuthOptions> {
           cookieStore.delete(SOCIAL_LINK_COOKIE)
           const linkUserId = BigInt(linkUserIdStr)
 
+          // 查询要链接的用户信息
+          const linkUser = await prisma.users.findUnique({
+            where: { id: linkUserId },
+            select: { name: true },
+          })
+
+          if (!linkUser) {
+            return false
+          }
+
+          const encodedLinkUsername = encodeUsername(linkUser.name)
+
           const existingLink = await prisma.user_social_accounts.findUnique({
             where: {
               provider_key_provider_uid: {
@@ -144,9 +157,9 @@ export async function createAuthOptions(): Promise<NextAuthOptions> {
 
           if (existingLink) {
             if (existingLink.user_id === linkUserId) {
-              return `/u/preferences/account?error=already_linked`
+              return `/u/${encodedLinkUsername}/preferences/account?error=already_linked`
             }
-            return `/u/preferences/account?error=account_linked_other`
+            return `/u/${encodedLinkUsername}/preferences/account?error=account_linked_other`
           }
 
           await prisma.user_social_accounts.create({
@@ -167,7 +180,7 @@ export async function createAuthOptions(): Promise<NextAuthOptions> {
             },
           })
 
-          return `/u/preferences/account?success=linked`
+          return `/u/${encodedLinkUsername}/preferences/account?success=linked`
         }
 
         const existingSocialAccount =
