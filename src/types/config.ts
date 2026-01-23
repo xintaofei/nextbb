@@ -10,9 +10,6 @@ export interface PublicConfigs {
   "basic.contact_email": string
   "basic.icp": string
   "basic.welcome_message": string
-  "oauth.github.enabled": boolean
-  "oauth.google.enabled": boolean
-  "oauth.linuxdo.enabled": boolean
 }
 
 /**

@@ -4,12 +4,8 @@ import { generateId } from "@/lib/id"
 import { uploadAvatarFromUrl } from "@/lib/blob"
 import { AutomationEvents } from "@/lib/automation/event-bus"
 import { recordLogin } from "@/lib/auth"
-import { getOAuthConfigs } from "@/lib/services/config-service"
-import {
-  createGitHubProvider,
-  createGoogleProvider,
-  createLinuxDoProvider,
-} from "@/lib/providers/oauth-factory"
+import { getSocialProviders } from "@/lib/services/social-provider-service"
+import { createOAuthProvider } from "@/lib/providers/oauth-factory"
 
 function getEnv(name: string): string {
   const v = process.env[name]
@@ -73,25 +69,23 @@ async function ensureUniqueName(name: string): Promise<string> {
 }
 
 export async function createAuthOptions(): Promise<NextAuthOptions> {
-  // 从数据库加载 OAuth 配置（带缓存）
-  const oauthConfigs = await getOAuthConfigs()
+  const socialProviders = await getSocialProviders()
 
   // 动态构建 providers 数组
   const providers: NextAuthOptions["providers"] = []
 
-  const githubProvider = createGitHubProvider(oauthConfigs.github)
-  if (githubProvider) providers.push(githubProvider)
+  for (const config of socialProviders) {
+    const provider = createOAuthProvider(config)
+    if (provider) {
+      providers.push(provider)
+    }
+  }
 
-  const googleProvider = createGoogleProvider(oauthConfigs.google)
-  if (googleProvider) providers.push(googleProvider)
-
-  const linuxdoProvider = createLinuxDoProvider(oauthConfigs.linuxdo)
-  if (linuxdoProvider) providers.push(linuxdoProvider)
-
-  // 如果没有启用任何 Provider，记录警告
   if (providers.length === 0) {
     console.warn("[Auth] 警告: 没有启用任何 OAuth Provider")
   }
+
+  const validProviderIds = new Set(socialProviders.map((p) => p.providerKey))
 
   return {
     debug: process.env.NODE_ENV !== "production",
@@ -103,12 +97,11 @@ export async function createAuthOptions(): Promise<NextAuthOptions> {
       async signIn({ user, account, profile }) {
         if (!account) return false
         const provider = account.provider
-        if (
-          provider !== "github" &&
-          provider !== "google" &&
-          provider !== "linuxdo"
-        )
+
+        if (!validProviderIds.has(provider)) {
           return false
+        }
+
         const email =
           user.email ??
           (typeof profile?.email === "string" ? profile.email : null) ??

@@ -227,12 +227,7 @@ export default function RegisterPage() {
               </div>
             </div>
 
-            <OAuthButtons
-              githubText={t("oauthGithub")}
-              googleText={t("oauthGoogle")}
-              linuxdoText={t("oauthLinuxDo")}
-              callbackUrl={`/api/auth/bridge`}
-            />
+            <OAuthButtons callbackUrl="/api/auth/bridge" />
 
             <div className="text-center text-sm text-muted-foreground">
               {t("questionHaveAccount")}{" "}

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
 import { getSessionUser } from "@/lib/auth"
 import { generateId } from "@/lib/id"
+import { invalidateSocialProviderCache } from "@/lib/services/social-provider-service"
 
 type SocialProviderDTO = {
   id: string
@@ -152,6 +153,8 @@ export async function POST(request: NextRequest) {
         is_enabled: true,
       },
     })
+
+    await invalidateSocialProviderCache()
 
     const dto: SocialProviderDTO = {
       id: String(provider.id),

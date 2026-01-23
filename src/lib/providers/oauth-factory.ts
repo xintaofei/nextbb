@@ -1,11 +1,8 @@
 import GitHubProvider from "next-auth/providers/github"
 import GoogleProvider from "next-auth/providers/google"
 import type { OAuthConfig } from "next-auth/providers/oauth"
-import type { OAuthProviderConfig } from "@/lib/services/config-service"
+import type { SocialProviderConfig } from "@/lib/services/social-provider-service"
 
-/**
- * LinuxDo Profile 类型
- */
 export type LinuxDoProfile = {
   id?: string | number
   sub?: string
@@ -23,66 +20,62 @@ export type LinuxDoProfile = {
   picture?: string | null
 }
 
-/**
- * 扩展的 OAuth 配置类型（支持自定义 HTTP 选项）
- */
+type GenericProfile = {
+  id?: string | number
+  sub?: string
+  name?: string
+  username?: string
+  preferred_username?: string
+  nickname?: string
+  login?: string
+  email?: string | null
+  picture?: string | null
+  avatar?: string | null
+  avatar_url?: string | null
+}
+
 type OAuthConfigWithHttp<T> = OAuthConfig<T> & {
   httpOptions?: {
     timeout?: number
   }
 }
 
-/**
- * 创建 GitHub OAuth Provider
- */
-export function createGitHubProvider(config: OAuthProviderConfig) {
-  if (!config.enabled || !config.clientId || !config.clientSecret) {
-    return null
-  }
-
+function createGitHubProvider(
+  config: SocialProviderConfig
+): ReturnType<typeof GitHubProvider> {
   return GitHubProvider({
     clientId: config.clientId,
     clientSecret: config.clientSecret,
   })
 }
 
-/**
- * 创建 Google OAuth Provider
- */
-export function createGoogleProvider(config: OAuthProviderConfig) {
-  if (!config.enabled || !config.clientId || !config.clientSecret) {
-    return null
-  }
-
+function createGoogleProvider(
+  config: SocialProviderConfig
+): ReturnType<typeof GoogleProvider> {
   return GoogleProvider({
     clientId: config.clientId,
     clientSecret: config.clientSecret,
   })
 }
 
-/**
- * 创建 LinuxDo OAuth Provider
- */
-export function createLinuxDoProvider(
-  config: OAuthProviderConfig
-): OAuthConfigWithHttp<LinuxDoProfile> | null {
-  if (!config.enabled || !config.clientId || !config.clientSecret) {
-    return null
-  }
-
+function createLinuxDoProvider(
+  config: SocialProviderConfig
+): OAuthConfigWithHttp<LinuxDoProfile> {
   return {
     id: "linuxdo",
-    name: "Linux.DO",
+    name: config.name,
     type: "oauth",
     clientId: config.clientId,
     clientSecret: config.clientSecret,
     authorization: {
-      url: "https://connect.linux.do/oauth2/authorize",
-      params: { scope: "openid email profile" },
+      url: config.authorizeUrl || "https://connect.linux.do/oauth2/authorize",
+      params: { scope: config.scope || "openid email profile" },
     },
-    token: "https://connect.linux.do/oauth2/token",
-    userinfo: "https://connect.linux.do/api/user",
-    wellKnown: "https://connect.linux.do/.well-known/openid-configuration",
+    token: config.tokenUrl || "https://connect.linux.do/oauth2/token",
+    userinfo: config.userinfoUrl || "https://connect.linux.do/api/user",
+    wellKnown:
+      config.wellKnownUrl ||
+      "https://connect.linux.do/.well-known/openid-configuration",
     checks: ["pkce", "state"],
     httpOptions: { timeout: 60000 },
     idToken: true,
@@ -122,4 +115,95 @@ export function createLinuxDoProvider(
       return { id, name, email, image }
     },
   } as OAuthConfigWithHttp<LinuxDoProfile>
+}
+
+function createCustomProvider(
+  config: SocialProviderConfig
+): OAuthConfigWithHttp<GenericProfile> | null {
+  if (!config.authorizeUrl || !config.tokenUrl) {
+    console.warn(
+      `[OAuthFactory] 自定义 Provider ${config.providerKey} 缺少必要的 URL 配置`
+    )
+    return null
+  }
+
+  return {
+    id: config.providerKey,
+    name: config.name,
+    type: "oauth",
+    clientId: config.clientId,
+    clientSecret: config.clientSecret,
+    authorization: {
+      url: config.authorizeUrl,
+      params: config.scope ? { scope: config.scope } : undefined,
+    },
+    token: config.tokenUrl,
+    userinfo: config.userinfoUrl || undefined,
+    wellKnown: config.wellKnownUrl || undefined,
+    checks: ["state"],
+    httpOptions: { timeout: 60000 },
+    profile(profile: GenericProfile) {
+      let id = ""
+      if (profile.id !== undefined) {
+        id = String(profile.id)
+      } else if (profile.sub !== undefined) {
+        id = String(profile.sub)
+      }
+
+      let name = ""
+      if (typeof profile.name === "string" && profile.name.length > 0) {
+        name = profile.name
+      } else if (
+        typeof profile.username === "string" &&
+        profile.username.length > 0
+      ) {
+        name = profile.username
+      } else if (
+        typeof profile.preferred_username === "string" &&
+        profile.preferred_username.length > 0
+      ) {
+        name = profile.preferred_username
+      } else if (
+        typeof profile.nickname === "string" &&
+        profile.nickname.length > 0
+      ) {
+        name = profile.nickname
+      }
+
+      const email = typeof profile.email === "string" ? profile.email : null
+
+      let image: string | null = null
+      if (typeof profile.picture === "string") {
+        image = profile.picture
+      } else if (typeof profile.avatar_url === "string") {
+        image = profile.avatar_url
+      } else if (typeof profile.avatar === "string") {
+        image = profile.avatar
+      }
+
+      return { id, name, email, image }
+    },
+  } as OAuthConfigWithHttp<GenericProfile>
+}
+
+export function createOAuthProvider(
+  config: SocialProviderConfig
+): OAuthConfig<unknown> | null {
+  if (!config.clientId || !config.clientSecret) {
+    console.warn(
+      `[OAuthFactory] Provider ${config.providerKey} 缺少 clientId 或 clientSecret`
+    )
+    return null
+  }
+
+  switch (config.providerKey) {
+    case "github":
+      return createGitHubProvider(config)
+    case "google":
+      return createGoogleProvider(config)
+    case "linuxdo":
+      return createLinuxDoProvider(config)
+    default:
+      return createCustomProvider(config)
+  }
 }

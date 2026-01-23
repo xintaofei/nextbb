@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
 import { getSessionUser } from "@/lib/auth"
+import { invalidateSocialProviderCache } from "@/lib/services/social-provider-service"
 
 type ReorderItem = {
   id: string
@@ -48,6 +49,8 @@ export async function POST(request: NextRequest) {
         })
       }
     })
+
+    await invalidateSocialProviderCache()
 
     return NextResponse.json({ success: true })
   } catch (error) {

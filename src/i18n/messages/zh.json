@@ -532,9 +532,6 @@
       "passwordPlaceholder": "请输入密码",
       "submit": "登录",
       "or": "或",
-      "oauthGithub": "使用 GitHub 登录",
-      "oauthGoogle": "使用 Google 登录",
-      "oauthLinuxDo": "使用 LINUX.DO 登录",
       "questionNoAccount": "还没有账号？",
       "toRegister": "去注册",
       "welcomeBack": "欢迎回来，登录以继续您的旅程。",
@@ -565,9 +562,6 @@
       "usernamePlaceholder": "请输入用户名",
       "submit": "注册",
       "hintTitle": "支持社交账号一键注册",
-      "oauthGithub": "使用 GitHub 登录",
-      "oauthGoogle": "使用 Google 登录",
-      "oauthLinuxDo": "使用 LINUX.DO 登录",
       "questionHaveAccount": "已有账号？",
       "toLogin": "去登录",
       "error": {
@@ -729,7 +723,6 @@
       "uploading": "上传中...",
       "basic": "基础信息",
       "registration": "用户注册",
-      "oauth": "OAuth 认证",
       "content": "内容管理",
       "system": "系统运行",
       "message": {
@@ -1456,50 +1449,6 @@
       "username_max_length": {
         "label": "用户名最大长度",
         "description": "用户名允许的最大字符数"
-      }
-    },
-    "oauth": {
-      "github": {
-        "enabled": {
-          "label": "启用 GitHub OAuth",
-          "description": "是否允许使用 GitHub 账号登录"
-        },
-        "client_id": {
-          "label": "GitHub Client ID",
-          "description": "GitHub OAuth 应用的 Client ID"
-        },
-        "client_secret": {
-          "label": "GitHub Client Secret",
-          "description": "GitHub OAuth 应用的 Client Secret"
-        }
-      },
-      "google": {
-        "enabled": {
-          "label": "启用 Google OAuth",
-          "description": "是否允许使用 Google 账号登录"
-        },
-        "client_id": {
-          "label": "Google Client ID",
-          "description": "Google OAuth 应用的 Client ID"
-        },
-        "client_secret": {
-          "label": "Google Client Secret",
-          "description": "Google OAuth 应用的 Client Secret"
-        }
-      },
-      "linuxdo": {
-        "enabled": {
-          "label": "启用 LinuxDo OAuth",
-          "description": "是否允许使用 LinuxDo 账号登录"
-        },
-        "client_id": {
-          "label": "LinuxDo Client ID",
-          "description": "LinuxDo OAuth 应用的 Client ID"
-        },
-        "client_secret": {
-          "label": "LinuxDo Client Secret",
-          "description": "LinuxDo OAuth 应用的 Client Secret"
-        }
       }
     },
     "content": {

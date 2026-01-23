@@ -532,9 +532,6 @@
       "passwordPlaceholder": "Enter your password",
       "submit": "Sign In",
       "or": "Or",
-      "oauthGithub": "Sign in with GitHub",
-      "oauthGoogle": "Sign in with Google",
-      "oauthLinuxDo": "Sign in with LINUX.DO",
       "questionNoAccount": "Don't have an account?",
       "toRegister": "Go to Sign Up",
       "welcomeBack": "Welcome back. Sign in to continue your journey.",
@@ -565,9 +562,6 @@
       "usernamePlaceholder": "Enter your username",
       "submit": "Sign Up",
       "hintTitle": "Sign up with social accounts",
-      "oauthGithub": "One-click sign up with GitHub",
-      "oauthGoogle": "One-click sign up with Google",
-      "oauthLinuxDo": "One-click sign up with LINUX.DO",
       "questionHaveAccount": "Already have an account?",
       "toLogin": "Go to Sign In",
       "error": {
@@ -729,7 +723,6 @@
       "uploading": "Uploading...",
       "basic": "Basic Info",
       "registration": "Registration",
-      "oauth": "OAuth",
       "content": "Content",
       "system": "System",
       "message": {
@@ -1456,50 +1449,6 @@
       "username_max_length": {
         "label": "Maximum Username Length",
         "description": "Maximum allowed username characters"
-      }
-    },
-    "oauth": {
-      "github": {
-        "enabled": {
-          "label": "Enable GitHub OAuth",
-          "description": "Whether GitHub account login is allowed"
-        },
-        "client_id": {
-          "label": "GitHub Client ID",
-          "description": "GitHub OAuth application Client ID"
-        },
-        "client_secret": {
-          "label": "GitHub Client Secret",
-          "description": "GitHub OAuth application Client Secret"
-        }
-      },
-      "google": {
-        "enabled": {
-          "label": "Enable Google OAuth",
-          "description": "Whether Google account login is allowed"
-        },
-        "client_id": {
-          "label": "Google Client ID",
-          "description": "Google OAuth application Client ID"
-        },
-        "client_secret": {
-          "label": "Google Client Secret",
-          "description": "Google OAuth application Client Secret"
-        }
-      },
-      "linuxdo": {
-        "enabled": {
-          "label": "Enable LinuxDo OAuth",
-          "description": "Whether LinuxDo account login is allowed"
-        },
-        "client_id": {
-          "label": "LinuxDo Client ID",
-          "description": "LinuxDo OAuth application Client ID"
-        },
-        "client_secret": {
-          "label": "LinuxDo Client Secret",
-          "description": "LinuxDo OAuth application Client Secret"
-        }
       }
     },
     "content": {

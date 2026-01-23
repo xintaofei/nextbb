@@ -169,7 +169,7 @@ export default function SettingsPage() {
   const renderConfigInput = (config: ConfigItem) => {
     const value = formValues[config.configKey] ?? config.configValue
     // configKey 现在统一为 2 层结构："category.subkey"
-    // 例如: "basic.name", "oauth.github.enabled", "system.pagination.page_size"
+    // 例如: "basic.name", "content.topic.publish_permission", "system.pagination.page_size"
     const labelKey = `${config.configKey}.label`
     const descKey = `${config.configKey}.description`
 
@@ -368,10 +368,9 @@ export default function SettingsPage() {
 
       <AdminPageSection delay={0.1}>
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="grid w-full grid-cols-5">
+          <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="basic">{t("basic")}</TabsTrigger>
             <TabsTrigger value="registration">{t("registration")}</TabsTrigger>
-            <TabsTrigger value="oauth">{t("oauth")}</TabsTrigger>
             <TabsTrigger value="content">{t("content")}</TabsTrigger>
             <TabsTrigger value="system">{t("system")}</TabsTrigger>
           </TabsList>
