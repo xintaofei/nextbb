@@ -8,22 +8,22 @@ datasource db {
 }
 
 model users {
-  id         BigInt    @id @db.BigInt
-  name       String    @db.VarChar(32)
-  avatar     String    @db.VarChar(256)
-  email      String    @db.VarChar(256)
-  password   String    @db.VarChar(255)
-  status     Int
-  is_deleted Boolean
-  is_admin   Boolean   @default(false)
-  credits    Int       @default(0)
-  bio        String    @default("") @db.VarChar(500)
-  website    String    @default("") @db.VarChar(256)
-  location   String    @default("") @db.VarChar(100)
-  birthday   DateTime?
+  id             BigInt    @id @db.BigInt
+  name           String    @db.VarChar(32)
+  avatar         String    @db.VarChar(256)
+  email          String    @db.VarChar(256)
+  password       String    @db.VarChar(255)
+  status         Int
+  is_deleted     Boolean
+  is_admin       Boolean   @default(false)
+  credits        Int       @default(0)
+  bio            String    @default("") @db.VarChar(500)
+  website        String    @default("") @db.VarChar(256)
+  location       String    @default("") @db.VarChar(100)
+  birthday       DateTime?
   title_badge_id BigInt?   @db.BigInt
-  created_at DateTime  @default(now())
-  updated_at DateTime  @updatedAt
+  created_at     DateTime  @default(now())
+  updated_at     DateTime  @updatedAt
 
   title_badge             badges?                @relation("user_title_badge", fields: [title_badge_id], references: [id])
   topics                  topics[]
@@ -51,10 +51,11 @@ model users {
   notifications      notifications[] @relation("notifications_user")
   sent_notifications notifications[] @relation("notifications_sender")
 
-  login_stats user_login_stats?
-  login_logs  user_login_logs[]
-  uploads     uploads[]
-  custom_status user_custom_statuses?
+  login_stats     user_login_stats?
+  login_logs      user_login_logs[]
+  uploads         uploads[]
+  custom_status   user_custom_statuses?
+  social_accounts user_social_accounts[] @relation("user_social_accounts_user")
 
   @@unique([email], map: "users_email_key")
   @@map("users")
@@ -289,9 +290,9 @@ model badges {
   created_at    DateTime @default(now())
   updated_at    DateTime @updatedAt
 
-  user_badges  user_badges[]        @relation("user_badges_badge")
-  users_with_title users[]            @relation("user_title_badge")
-  translations badge_translations[]
+  user_badges      user_badges[]        @relation("user_badges_badge")
+  users_with_title users[]              @relation("user_title_badge")
+  translations     badge_translations[]
 
   @@index([badge_type], map: "badges_type_index")
   @@index([is_deleted, is_enabled], map: "badges_status_index")
@@ -1012,13 +1013,13 @@ model llm_configs {
 
 // 用户自定义状态表
 model user_custom_statuses {
-  user_id       BigInt    @id @db.BigInt // 用户ID,作为主键保证一对一关系
-  emoji         String?   @db.VarChar(16) // emoji 表情(可为空,支持仅文本状态)
-  status_text   String    @db.VarChar(100) // 状态描述文本
-  expires_at    DateTime? // 自动移除状态的时间(可为空,表示永不过期)
-  is_deleted    Boolean   @default(false)
-  created_at    DateTime  @default(now())
-  updated_at    DateTime  @updatedAt
+  user_id     BigInt    @id @db.BigInt // 用户ID,作为主键保证一对一关系
+  emoji       String?   @db.VarChar(16) // emoji 表情(可为空,支持仅文本状态)
+  status_text String    @db.VarChar(100) // 状态描述文本
+  expires_at  DateTime? // 自动移除状态的时间(可为空,表示永不过期)
+  is_deleted  Boolean   @default(false)
+  created_at  DateTime  @default(now())
+  updated_at  DateTime  @updatedAt
 
   // 关联关系
   user users @relation(fields: [user_id], references: [id], onDelete: Cascade)
@@ -1026,4 +1027,52 @@ model user_custom_statuses {
   @@index([expires_at], map: "user_custom_statuses_expires_index") // 用于定时清理过期状态
   @@index([is_deleted], map: "user_custom_statuses_deleted_index")
   @@map("user_custom_statuses")
+}
+
+model social_providers {
+  id            BigInt   @id @db.BigInt
+  provider_key  String   @unique @db.VarChar(32)
+  name          String   @db.VarChar(64)
+  client_id     String   @db.VarChar(256)
+  client_secret String   @db.VarChar(256)
+  authorize_url String?  @db.VarChar(512)
+  token_url     String?  @db.VarChar(512)
+  userinfo_url  String?  @db.VarChar(512)
+  well_known    String?  @db.VarChar(512)
+  scope         String?  @db.VarChar(256)
+  icon          String?  @db.VarChar(64)
+  sort          Int      @default(0)
+  is_enabled    Boolean  @default(true)
+  created_at    DateTime @default(now())
+  updated_at    DateTime @updatedAt
+
+  user_accounts user_social_accounts[] @relation("user_social_accounts_provider")
+
+  @@index([is_enabled], map: "social_providers_enabled_index")
+  @@map("social_providers")
+}
+
+model user_social_accounts {
+  id                BigInt    @id @db.BigInt
+  user_id           BigInt    @db.BigInt
+  provider_key      String    @db.VarChar(32)
+  provider_uid      String    @db.VarChar(128)
+  provider_username String?   @db.VarChar(128)
+  provider_email    String?   @db.VarChar(256)
+  provider_avatar   String?   @db.VarChar(512)
+  access_token      String?   @db.VarChar(2048)
+  refresh_token     String?   @db.VarChar(2048)
+  token_expires_at  DateTime?
+  extra_data        Json?
+  last_used_at      DateTime?
+  created_at        DateTime  @default(now())
+  updated_at        DateTime  @updatedAt
+
+  user     users            @relation("user_social_accounts_user", fields: [user_id], references: [id])
+  provider social_providers @relation("user_social_accounts_provider", fields: [provider_key], references: [provider_key])
+
+  @@unique([provider_key, provider_uid], map: "user_social_accounts_provider_uid_unique")
+  @@index([user_id], map: "user_social_accounts_user_index")
+  @@index([provider_key], map: "user_social_accounts_provider_index")
+  @@map("user_social_accounts")
 }
