@@ -140,7 +140,7 @@ export default function DynamicRoutePage() {
                   </div>
                 ) : (
                   <div className="flex flex-col gap-2">
-                    <div className="flex items-center gap-2">
+                    <div className="flex justify-center items-center gap-2">
                       <span className="text-5xl leading-none">
                         {category?.icon ?? "📁"}
                       </span>
