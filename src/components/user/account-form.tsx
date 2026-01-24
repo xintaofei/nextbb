@@ -8,7 +8,6 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
 import {
   Select,
   SelectContent,
@@ -27,10 +26,6 @@ type UserData = {
   name: string
   email: string
   avatar: string
-  bio: string
-  website: string
-  location: string
-  birthday: Date | null
   title_badge_id: bigint | null
   custom_status: {
     emoji: string | null
@@ -64,10 +59,6 @@ export function AccountForm({ user }: AccountFormProps) {
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [formData, setFormData] = useState({
     username: user.name,
-    bio: user.bio,
-    website: user.website,
-    location: user.location,
-    birthday: user.birthday ? user.birthday.toISOString().split("T")[0] : "",
     titleBadgeId: user.title_badge_id?.toString() || "none",
     customStatus: {
       emoji: user.custom_status?.emoji || "",
@@ -98,10 +89,6 @@ export function AccountForm({ user }: AccountFormProps) {
         body: JSON.stringify({
           username:
             formData.username !== user.name ? formData.username : undefined,
-          bio: formData.bio,
-          website: formData.website,
-          location: formData.location,
-          birthday: formData.birthday || null,
           titleBadgeId:
             formData.titleBadgeId === "none" ? null : formData.titleBadgeId,
           customStatus: formData.customStatus.statusText
@@ -388,23 +375,6 @@ export function AccountForm({ user }: AccountFormProps) {
           <p className="text-sm text-muted-foreground">{t("emailHelper")}</p>
         </div>
 
-        {/* 个人简介 */}
-        <div className="space-y-2">
-          <Label htmlFor="bio">{t("bio")}</Label>
-          <Textarea
-            id="bio"
-            value={formData.bio}
-            onChange={(e) => handleInputChange("bio", e.target.value)}
-            placeholder={t("bioPlaceholder")}
-            rows={4}
-            maxLength={500}
-          />
-          <p className="flex flex-row justify-between text-sm text-muted-foreground">
-            <span>{t("bioHelper")}</span>
-            <span>{formData.bio.length}/500</span>
-          </p>
-        </div>
-
         {/* 头衔 */}
         <div className="space-y-2">
           <Label htmlFor="titleBadge">{t("titleBadge")}</Label>
@@ -493,40 +463,6 @@ export function AccountForm({ user }: AccountFormProps) {
           <p className="text-sm text-muted-foreground">
             {t("customStatusHelper")}
           </p>
-        </div>
-
-        {/* 个人网站 */}
-        <div className="space-y-2">
-          <Label htmlFor="website">{t("website")}</Label>
-          <Input
-            id="website"
-            type="url"
-            value={formData.website}
-            onChange={(e) => handleInputChange("website", e.target.value)}
-            placeholder={t("websitePlaceholder")}
-          />
-        </div>
-
-        {/* 所在地 */}
-        <div className="space-y-2">
-          <Label htmlFor="location">{t("location")}</Label>
-          <Input
-            id="location"
-            value={formData.location}
-            onChange={(e) => handleInputChange("location", e.target.value)}
-            placeholder={t("locationPlaceholder")}
-          />
-        </div>
-
-        {/* 生日 */}
-        <div className="space-y-2">
-          <Label htmlFor="birthday">{t("birthday")}</Label>
-          <Input
-            id="birthday"
-            type="date"
-            value={formData.birthday}
-            onChange={(e) => handleInputChange("birthday", e.target.value)}
-          />
         </div>
       </div>
 

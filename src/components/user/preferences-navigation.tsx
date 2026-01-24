@@ -3,7 +3,7 @@
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { encodeUsername } from "@/lib/utils"
-import { User, Shield, Palette, Bell, Lock } from "lucide-react"
+import { User, UserPen, Shield, Palette, Bell, Lock } from "lucide-react"
 import { useTranslations } from "next-intl"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 
@@ -31,6 +31,12 @@ export function PreferencesNavigation({
       href: `/u/${encodedUsername}/preferences/account`,
       icon: User,
       value: "account",
+    },
+    {
+      label: t("profile.title"),
+      href: `/u/${encodedUsername}/preferences/profile`,
+      icon: UserPen,
+      value: "profile",
     },
     {
       label: t("security.title"),
@@ -64,7 +70,7 @@ export function PreferencesNavigation({
 
   return (
     <Tabs value={activeValue} className="w-full">
-      <TabsList className="grid w-full grid-cols-5 max-sm:grid-cols-3 gap-2 h-auto">
+      <TabsList className="grid w-full grid-cols-6 max-sm:grid-cols-3 gap-2 h-auto">
         {navItems.map((item) => {
           const Icon = item.icon
           return (

@@ -1698,7 +1698,7 @@
       "title": "设置",
       "account": {
         "title": "账户设置",
-        "description": "管理你的账户信息和个人资料",
+        "description": "管理你的账户信息和关联账号",
         "basicInfo": "基本信息",
         "username": "用户名",
         "email": "邮箱",
@@ -1709,15 +1709,6 @@
         "uploadError": "头像上传失败，请重试",
         "fileTooLarge": "文件大小不能超过 5MB",
         "invalidFileType": "只支持 JPG、PNG、WEBP 和 GIF 格式",
-        "bio": "个人简介",
-        "bioPlaceholder": "介绍一下你自己...",
-        "bioHelper": "介绍一下自己",
-        "website": "个人网站",
-        "websitePlaceholder": "https://example.com",
-        "location": "所在地",
-        "locationPlaceholder": "你的城市或国家",
-        "birthday": "生日",
-        "birthdayPlaceholder": "选择日期",
         "titleBadge": "头衔",
         "titleBadgePlaceholder": "选择一个徽章作为头衔",
         "noTitleBadge": "使用默认头衔",
@@ -1773,6 +1764,23 @@
           "cancel": "取消",
           "confirmUnlink": "确认解除"
         }
+      },
+      "profile": {
+        "title": "个人资料",
+        "description": "管理你的个人资料信息",
+        "bio": "个人简介",
+        "bioPlaceholder": "介绍一下你自己...",
+        "bioHelper": "介绍一下自己",
+        "website": "个人网站",
+        "websitePlaceholder": "https://example.com",
+        "location": "所在地",
+        "locationPlaceholder": "你的城市或国家",
+        "birthday": "生日",
+        "birthdayPlaceholder": "选择日期",
+        "save": "保存更改",
+        "saving": "保存中...",
+        "saveSuccess": "保存成功",
+        "saveError": "保存失败，请重试"
       },
       "security": {
         "title": "安全设置"

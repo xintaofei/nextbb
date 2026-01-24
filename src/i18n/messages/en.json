@@ -1698,7 +1698,7 @@
       "title": "Settings",
       "account": {
         "title": "Account",
-        "description": "Manage your account information and profile",
+        "description": "Manage your account information and connected Accounts",
         "basicInfo": "Basic Information",
         "username": "Username",
         "email": "Email",
@@ -1709,15 +1709,6 @@
         "uploadError": "Failed to upload avatar, please try again",
         "fileTooLarge": "File size cannot exceed 5MB",
         "invalidFileType": "Only JPG, PNG, WEBP and GIF formats are supported",
-        "bio": "Bio",
-        "bioPlaceholder": "Tell us about yourself...",
-        "bioHelper": "Introduce yourself",
-        "website": "Website",
-        "websitePlaceholder": "https://example.com",
-        "location": "Location",
-        "locationPlaceholder": "Your city or country",
-        "birthday": "Birthday",
-        "birthdayPlaceholder": "Select date",
         "titleBadge": "Title",
         "titleBadgePlaceholder": "Select a badge as title",
         "noTitleBadge": "Use default title",
@@ -1773,6 +1764,23 @@
           "cancel": "Cancel",
           "confirmUnlink": "Disconnect"
         }
+      },
+      "profile": {
+        "title": "Profile",
+        "description": "Manage your profile information",
+        "bio": "Bio",
+        "bioPlaceholder": "Tell us about yourself...",
+        "bioHelper": "Introduce yourself",
+        "website": "Website",
+        "websitePlaceholder": "https://example.com",
+        "location": "Location",
+        "locationPlaceholder": "Your city or country",
+        "birthday": "Birthday",
+        "birthdayPlaceholder": "Select date",
+        "save": "Save Changes",
+        "saving": "Saving...",
+        "saveSuccess": "Saved successfully",
+        "saveError": "Failed to save, please try again"
       },
       "security": {
         "title": "Security"

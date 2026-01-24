@@ -79,21 +79,11 @@ export async function PATCH(req: Request) {
 
   const data: {
     name?: string
-    bio?: string
-    website?: string
-    location?: string
-    birthday?: Date | null
     title_badge_id?: bigint | null
     updated_at: Date
   } = { updated_at: new Date() }
 
   if (typeof body.username === "string") data.name = body.username
-  if (typeof body.bio === "string") data.bio = body.bio
-  if (typeof body.website === "string") data.website = body.website
-  if (typeof body.location === "string") data.location = body.location
-  if (body.birthday !== undefined) {
-    data.birthday = body.birthday ? new Date(body.birthday) : null
-  }
 
   if (body.titleBadgeId !== undefined) {
     if (body.titleBadgeId === null) {

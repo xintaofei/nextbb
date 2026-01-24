@@ -44,10 +44,6 @@ export default async function AccountPage() {
       name: true,
       email: true,
       avatar: true,
-      bio: true,
-      website: true,
-      location: true,
-      birthday: true,
       title_badge_id: true,
       custom_status: {
         select: {
@@ -123,7 +119,6 @@ export default async function AccountPage() {
         <p className="text-sm text-muted-foreground mt-1">{t("description")}</p>
       </div>
       <AccountForm user={processedUser} />
-      <hr className="border-border" />
       <Suspense
         fallback={
           <div className="flex items-center justify-center py-8">
