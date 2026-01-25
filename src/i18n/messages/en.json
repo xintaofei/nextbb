@@ -574,8 +574,8 @@
     "main": {
       "menu": "Menu",
       "topics": "Topics",
-      "myPosts": "My Posts",
-      "myMessages": "My Messages",
+      "myPosts": "Posts",
+      "myMessages": "Messages",
       "checkin": "Check-in",
       "donation": "Donation",
       "leaderboard": "Leaderboard",

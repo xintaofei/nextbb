@@ -40,14 +40,9 @@ const fetcher = async (url: string): Promise<MeResponse | null> => {
 interface NavMainProps {
   className?: string
   onLinkClick?: () => void
-  layout?: "sidebar" | "drawer" | "bottom"
 }
 
-export function NavMain({
-  className,
-  onLinkClick,
-  layout = "sidebar",
-}: NavMainProps) {
+export function NavMain({ className, onLinkClick }: NavMainProps) {
   const { data } = useSWR<MeResponse | null>("/api/auth/me", fetcher)
   const t = useTranslations("Nav.main")
   const pathname = usePathname()
@@ -108,46 +103,29 @@ export function NavMain({
     },
   ]
 
-  const isBottom = layout === "bottom"
-  const isSidebar = layout === "sidebar"
-
   return (
-    <nav
-      className={cn(
-        isBottom
-          ? "flex flex-row justify-around items-center w-full"
-          : "flex flex-col gap-2",
-        className
-      )}
-    >
+    <nav className={cn("flex flex-col", className)}>
       {items.map((item) => (
         <Link
           key={item.id}
           href={item.url}
           onClick={onLinkClick}
-          className={cn(
-            buttonVariants({
-              variant: "ghost",
-              size: isBottom ? "default" : "lg",
-            }),
-            isBottom && "flex-col gap-1 h-auto px-2 py-2 rounded-none flex-1",
-            isSidebar && "justify-center xl:justify-start px-2 xl:px-4",
-            !isBottom && !isSidebar && "justify-start px-4", // drawer
-            item.isActive && "bg-accent font-bold"
-            // X.com style active state: bold icon/text, maybe no bg? kept bg for now
-          )}
-          title={isSidebar ? item.title : undefined}
+          title={item.title}
+          className="p-2 hover:[&_div]:bg-accent dark:hover:[&_div]:bg-accent/50"
         >
-          <item.icon className={cn("h-6 w-6", isBottom && "h-5 w-5")} />
-          <span
+          <div
             className={cn(
-              "text-xl",
-              isSidebar && "hidden xl:inline",
-              isBottom && "text-[10px] font-normal leading-none"
+              buttonVariants({
+                variant: "ghost",
+                size: "lg",
+              }),
+              item.isActive && "bg-accent dark:bg-accent/50 font-bold",
+              "py-6 w-fit rounded-full gap-4"
             )}
           >
-            {item.title}
-          </span>
+            <item.icon className="size-6" />
+            <span className="text-xl">{item.title}</span>
+          </div>
         </Link>
       ))}
     </nav>

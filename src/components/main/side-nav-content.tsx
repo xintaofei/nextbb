@@ -39,7 +39,11 @@ export function SideNavContent({
       {/* Body */}
       <div className="flex-1 overflow-y-auto py-2 scrollbar-none">
         <NavMain
-          layout={mode === "desktop" ? "sidebar" : "drawer"}
+          className={cn(
+            mode === "desktop"
+              ? "[&_a]:justify-center [&_a]:xl:justify-start [&_a]:px-2 [&_a]:xl:px-4 [&_span]:hidden [&_span]:xl:inline"
+              : "[&_a]:justify-start [&_a]:px-4"
+          )}
           onLinkClick={onLinkClick}
         />
       </div>
