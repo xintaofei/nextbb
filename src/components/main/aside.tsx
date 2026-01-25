@@ -9,7 +9,7 @@ export function Aside() {
   const isTopicPage = pathname.includes("/topic/")
 
   return (
-    <aside className="hidden lg:flex w-72 flex-col gap-4 ml-8 py-8 sticky top-0 h-screen overflow-y-auto scrollbar-none">
+    <aside className="hidden lg:flex w-64 flex-col gap-4 ml-8 max-xl:mr-8 py-8 sticky top-0 h-screen overflow-y-auto scrollbar-none">
       {isTopicPage ? (
         <div id="topic-aside-portal" className="w-full h-full" />
       ) : (
@@ -26,7 +26,7 @@ export function Aside() {
           </div>
 
           {/* What's happening */}
-          <div className="rounded-xl bg-muted p-4 flex flex-col gap-4">
+          <div className="border rounded-xl p-4 flex flex-col gap-4">
             <h2 className="font-bold text-xl">What&apos;s happening</h2>
             <div className="flex flex-col gap-4">
               {[1, 2, 3, 4].map((i) => (
