@@ -92,7 +92,7 @@ export default function DynamicRoutePage() {
   const hasMore = topics.length < total
 
   return (
-    <div className="flex min-h-screen w-full flex-col max-sm:p-4 gap-4 max-sm:gap-2">
+    <div className="flex min-h-screen w-full flex-col max-sm:p-4">
       <div className={cn(routeParams.categoryId ? "max-sm:mb-4" : "")}>
         <TopicHeaderBar
           className="p-4 max-sm:p-0 max-sm:pb-4"
