@@ -28,7 +28,7 @@ export function Aside() {
                 <span>Trending in Technology</span>
                 <span>...</span>
               </div>
-              <div className="font-bold text-sm">#Nextjs15</div>
+              <div className="font-bold text-sm">#Nextjs16</div>
               <div className="text-xs text-muted-foreground">12.5K posts</div>
             </div>
           ))}
