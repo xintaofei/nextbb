@@ -572,6 +572,7 @@
   },
   "Nav": {
     "main": {
+      "menu": "菜单",
       "topics": "话题",
       "myPosts": "我的帖子",
       "myMessages": "我的消息",

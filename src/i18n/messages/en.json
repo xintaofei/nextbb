@@ -572,6 +572,7 @@
   },
   "Nav": {
     "main": {
+      "menu": "Menu",
       "topics": "Topics",
       "myPosts": "My Posts",
       "myMessages": "My Messages",

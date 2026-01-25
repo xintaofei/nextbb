@@ -3,16 +3,23 @@
 import { useState } from "react"
 import { Menu } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
+import {
+  Sheet,
+  SheetContent,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet"
 import { NavTop } from "@/components/main/nav-top"
 import { NavUser } from "@/components/main/nav-user"
 import { SideNavContent } from "@/components/main/side-nav-content"
+import { useTranslations } from "next-intl"
 
 export function MobileHeader() {
   const [open, setOpen] = useState(false)
+  const t = useTranslations("Nav.main")
 
   return (
-    <header className="sm:hidden sticky top-0 z-40 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+    <header className="sm:hidden sticky top-0 z-40 w-full border-b bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/60">
       <div className="flex h-14 items-center px-4 justify-between">
         {/* Left: Menu Trigger */}
         <div className="w-10 flex justify-start">
@@ -24,6 +31,7 @@ export function MobileHeader() {
               </Button>
             </SheetTrigger>
             <SheetContent side="left" className="p-0 w-[280px]">
+              <SheetTitle className="sr-only">{t("menu")}</SheetTitle>
               <SideNavContent
                 mode="mobile"
                 onLinkClick={() => setOpen(false)}
