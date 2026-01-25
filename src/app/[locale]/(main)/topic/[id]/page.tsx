@@ -23,6 +23,7 @@ import {
   ReactNode,
   useCallback,
 } from "react"
+import { createPortal } from "react-dom"
 import { toast } from "sonner"
 import { RelativeTime } from "@/components/common/relative-time"
 import { Skeleton } from "@/components/ui/skeleton"
@@ -116,6 +117,14 @@ export default function TopicPage() {
     remainingSlots: number
     singleAmount: number | null
   } | null>(null)
+  const [portalContainer, setPortalContainer] = useState<HTMLElement | null>(
+    null
+  )
+
+  useEffect(() => {
+    const el = document.getElementById("topic-aside-portal")
+    if (el) setPortalContainer(el)
+  }, [])
 
   const getKey = useCallback(
     (index: number, previousPageData: PostPage | null) => {
@@ -898,7 +907,7 @@ export default function TopicPage() {
         )}
       </div>
 
-      <div className="flex flex-row justify-between gap-16">
+      <div className="w-full">
         <div className="flex-1">
           {loadingInfo ? (
             <Skeleton className="h-10 w-full mb-8" />
@@ -1035,18 +1044,23 @@ export default function TopicPage() {
             <div ref={sentinelRef} className="h-1 w-full" />
           )}
         </div>
-        <TopicNavigator
-          total={totalPosts}
-          loadedCount={posts.length}
-          isAuthenticated={!!currentUserId}
-          onReplyTopic={() => {
-            setReplyToPostId(null)
-            setReplyOpen(true)
-          }}
-          topicLoading={loadingInfo}
-          repliesLoading={postListLoading}
-        />
       </div>
+      {portalContainer &&
+        createPortal(
+          <TopicNavigator
+            total={totalPosts}
+            loadedCount={posts.length}
+            isAuthenticated={!!currentUserId}
+            onReplyTopic={() => {
+              setReplyToPostId(null)
+              setReplyOpen(true)
+            }}
+            topicLoading={loadingInfo}
+            repliesLoading={postListLoading}
+            className="w-full h-auto static"
+          />,
+          portalContainer
+        )}
       <DrawerEditor
         key={`reply-${replyToPostId ?? "topic"}-${replyOpen ? replyContent : ""}`}
         title={t("reply")}

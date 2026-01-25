@@ -19,6 +19,7 @@ import {
   LogIn,
   Reply,
 } from "lucide-react"
+import { cn } from "@/lib/utils"
 
 type TopicNavigatorProps = {
   total: number // 服务器返回的总帖子数（用于显示）
@@ -36,7 +37,8 @@ export function TopicNavigator({
   onReplyTopic,
   topicLoading,
   repliesLoading,
-}: TopicNavigatorProps) {
+  className,
+}: TopicNavigatorProps & { className?: string }) {
   const t = useTranslations("Topic.Navigator")
   const router = useRouter()
   // 用于显示的总楼层数（基于服务器总数）
@@ -389,7 +391,12 @@ export function TopicNavigator({
   }
 
   return (
-    <div className="hidden lg:flex lg:flex-col sticky top-8 w-44 h-80 shrink-0 gap-3">
+    <div
+      className={cn(
+        "hidden lg:flex lg:flex-col sticky top-8 w-44 h-80 shrink-0 gap-3",
+        className
+      )}
+    >
       <div className="flex flex-col items-center gap-3">
         {topicLoading ? (
           <>

@@ -341,7 +341,7 @@ export default function LeaderboardPage() {
   const [activeTab, setActiveTab] = useState<LeaderboardType>("wealth")
 
   return (
-    <div className="container mx-auto max-w-4xl px-4 py-6">
+    <div className="container mx-auto max-w-4xl p-8">
       <div className="mb-6">
         <div className="flex items-center gap-2">
           <ChartColumn className="size-8" />
