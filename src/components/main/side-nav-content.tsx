@@ -33,7 +33,7 @@ export function SideNavContent({
             : "justify-start px-6"
         )}
       >
-        <NavTop width={32} onLinkClick={onLinkClick} />
+        <NavTop width={64} onLinkClick={onLinkClick} />
       </div>
 
       {/* Body */}

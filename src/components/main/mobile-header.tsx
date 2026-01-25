@@ -42,7 +42,7 @@ export function MobileHeader() {
 
         {/* Center: Logo */}
         <div className="flex-1 flex justify-center">
-          <NavTop width={28} />
+          <NavTop width={100} />
         </div>
 
         {/* Right: User Avatar Trigger */}
