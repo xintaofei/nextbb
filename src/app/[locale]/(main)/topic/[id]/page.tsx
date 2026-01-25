@@ -844,7 +844,7 @@ export default function TopicPage() {
       <div className="flex flex-col gap-2">
         {loadingInfo ? (
           <>
-            <Skeleton className="h-8 w-3/4" />
+            <Skeleton className="h-8 w-full" />
             <div className="flex max-w-full flex-wrap gap-2 overflow-hidden">
               <Skeleton className="h-6 w-24" />
               <Skeleton className="h-6 w-20" />
