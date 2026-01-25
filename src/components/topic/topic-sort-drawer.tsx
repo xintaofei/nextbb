@@ -75,7 +75,6 @@ export function TopicSortDrawer({
 
   const sortOptions: Array<{ value: TabValue; label: string }> = [
     { value: "latest", label: sortLabels.latest },
-    { value: "top", label: sortLabels.top },
     { value: "new", label: sortLabels.new },
     { value: "community", label: sortLabels.community },
     ...(isLoggedIn ? [{ value: "my" as const, label: sortLabels.my }] : []),

@@ -59,14 +59,6 @@ export function TopicSortTabs({
             {tc("Tabs.latest")}
           </Link>
         </TabsTrigger>
-        <TabsTrigger className="md:px-4" value="top" asChild>
-          <Link
-            href={getTabPath("top")}
-            onClick={(e) => handleTabClick(e, "top")}
-          >
-            {tc("Tabs.top")}
-          </Link>
-        </TabsTrigger>
         <TabsTrigger className="md:px-4" value="new" asChild>
           <Link
             href={getTabPath("new")}

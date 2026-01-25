@@ -11,7 +11,7 @@ export function Aside() {
   return (
     <aside className="hidden lg:flex w-64 flex-col gap-4 ml-8 max-xl:mr-8 py-8 sticky top-0 h-screen overflow-y-auto scrollbar-none">
       {isTopicPage ? (
-        <div id="topic-aside-portal" className="w-full h-full" />
+        <div id="topic-aside-portal" className="w-full p-4 border rounded-xl" />
       ) : (
         <>
           {/* Search */}
