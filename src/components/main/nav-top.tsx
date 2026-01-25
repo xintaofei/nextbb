@@ -2,23 +2,22 @@
 
 import Image from "next/image"
 import Link from "next/link"
-import { useSidebar } from "@/components/ui/sidebar"
 import { useConfig } from "@/components/providers/config-provider"
 
-export function NavTop({ width = 120 }: { width?: number }) {
-  const { isMobile, setOpenMobile } = useSidebar()
+export function NavTop({
+  width = 120,
+  onLinkClick,
+}: {
+  width?: number
+  onLinkClick?: () => void
+}) {
   const { configs } = useConfig()
 
   const logoSrc = configs?.["basic.logo"] || "/nextbb-logo.png"
   const siteName = configs?.["basic.name"] || "NextBB"
 
   return (
-    <Link
-      href="/"
-      onClick={() => {
-        if (isMobile) setOpenMobile(false)
-      }}
-    >
+    <Link href="/" onClick={onLinkClick}>
       <Image
         className="dark:invert"
         src={logoSrc}

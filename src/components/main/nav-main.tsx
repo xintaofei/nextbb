@@ -12,15 +12,9 @@ import {
   Inbox,
   Layers,
 } from "lucide-react"
-
-import {
-  SidebarGroup,
-  SidebarMenu,
-  SidebarMenuButton,
-  useSidebar,
-} from "@/components/ui/sidebar"
 import Link from "next/link"
-import { encodeUsername } from "@/lib/utils"
+import { cn, encodeUsername } from "@/lib/utils"
+import { buttonVariants } from "@/components/ui/button"
 
 type MeResponse = {
   user: {
@@ -43,11 +37,20 @@ const fetcher = async (url: string): Promise<MeResponse | null> => {
   return res.json()
 }
 
-export function NavMain() {
+interface NavMainProps {
+  className?: string
+  onLinkClick?: () => void
+  layout?: "sidebar" | "drawer" | "bottom"
+}
+
+export function NavMain({
+  className,
+  onLinkClick,
+  layout = "sidebar",
+}: NavMainProps) {
   const { data } = useSWR<MeResponse | null>("/api/auth/me", fetcher)
   const t = useTranslations("Nav.main")
   const pathname = usePathname()
-  const { isMobile, setOpenMobile } = useSidebar()
 
   const username = useMemo(() => {
     if (!data) return null
@@ -105,24 +108,48 @@ export function NavMain() {
     },
   ]
 
+  const isBottom = layout === "bottom"
+  const isSidebar = layout === "sidebar"
+
   return (
-    <SidebarGroup>
-      <SidebarMenu>
-        {items.map((item) => (
-          <Link
-            key={item.id}
-            href={item.url}
-            onClick={() => {
-              if (isMobile) setOpenMobile(false)
-            }}
+    <nav
+      className={cn(
+        isBottom
+          ? "flex flex-row justify-around items-center w-full"
+          : "flex flex-col gap-2",
+        className
+      )}
+    >
+      {items.map((item) => (
+        <Link
+          key={item.id}
+          href={item.url}
+          onClick={onLinkClick}
+          className={cn(
+            buttonVariants({
+              variant: "ghost",
+              size: isBottom ? "default" : "lg",
+            }),
+            isBottom && "flex-col gap-1 h-auto px-2 py-2 rounded-none flex-1",
+            isSidebar && "justify-center xl:justify-start px-2 xl:px-4",
+            !isBottom && !isSidebar && "justify-start px-4", // drawer
+            item.isActive && "bg-accent font-bold"
+            // X.com style active state: bold icon/text, maybe no bg? kept bg for now
+          )}
+          title={isSidebar ? item.title : undefined}
+        >
+          <item.icon className={cn("h-6 w-6", isBottom && "h-5 w-5")} />
+          <span
+            className={cn(
+              "text-xl",
+              isSidebar && "hidden xl:inline",
+              isBottom && "text-[10px] font-normal leading-none"
+            )}
           >
-            <SidebarMenuButton isActive={item.isActive}>
-              <item.icon />
-              <span>{item.title}</span>
-            </SidebarMenuButton>
-          </Link>
-        ))}
-      </SidebarMenu>
-    </SidebarGroup>
+            {item.title}
+          </span>
+        </Link>
+      ))}
+    </nav>
   )
 }

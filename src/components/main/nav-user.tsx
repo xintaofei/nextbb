@@ -6,12 +6,12 @@ import { useTranslations } from "next-intl"
 import useSWR from "swr"
 import {
   Bell,
-  ChevronsUpDown,
   LayoutDashboard,
   LogOut,
   Settings,
   User,
   Activity,
+  MoreHorizontal,
 } from "lucide-react"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import {
@@ -23,16 +23,11 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import {
-  SidebarMenu,
-  SidebarMenuButton,
-  SidebarMenuItem,
-  useSidebar,
-} from "@/components/ui/sidebar"
 import Link from "next/link"
 import { ThemeSwitcher } from "@/components/common/theme-switcher"
 import { LocaleSwitcher } from "@/components/common/locale-switcher"
-import { encodeUsername } from "@/lib/utils"
+import { cn, encodeUsername } from "@/lib/utils"
+import { Button } from "@/components/ui/button"
 
 type MeProfile = {
   id: string
@@ -59,8 +54,12 @@ const fetcher = async (url: string): Promise<MeResponse | null> => {
   return res.json()
 }
 
-export function NavUser() {
-  const { isMobile, setOpenMobile } = useSidebar()
+interface NavUserProps {
+  onLinkClick?: () => void
+  layout?: "sidebar" | "drawer" | "bottom" | "icon"
+}
+
+export function NavUser({ onLinkClick, layout = "sidebar" }: NavUserProps) {
   const tAdmin = useTranslations("Admin")
   const tNav = useTranslations("Nav.user")
   const tCommon = useTranslations("Common")
@@ -98,169 +97,170 @@ export function NavUser() {
     router.replace(`/`)
   }
 
+  const isSidebar = layout === "sidebar"
+  const isIcon = layout === "icon"
+
   return (
-    <SidebarMenu>
-      <SidebarMenuItem>
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <SidebarMenuButton
-              size="lg"
-              className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
-            >
-              <Avatar className="h-8 w-8 rounded-lg">
-                <AvatarImage src={displayAvatar} alt={displayName} />
-                <AvatarFallback className="rounded-lg">
-                  {displayName.slice(0, 1).toUpperCase()}
-                </AvatarFallback>
-              </Avatar>
-              <div className="grid flex-1 text-left text-sm leading-tight">
-                <span className="truncate font-medium">
-                  {isLoading ? tCommon("Loading.loading") : displayName}
-                </span>
-                <span className="truncate text-xs">{displayEmail}</span>
-              </div>
-              <ChevronsUpDown className="ml-auto size-4" />
-            </SidebarMenuButton>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent
-            className="w-(--radix-dropdown-menu-trigger-width) min-w-56 rounded-lg"
-            side={isMobile ? "bottom" : "right"}
-            align="end"
-            sideOffset={4}
-          >
-            <DropdownMenuLabel className="p-0 font-normal">
-              <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
-                <Avatar className="h-8 w-8 rounded-lg">
-                  <AvatarImage src={displayAvatar} alt={displayName} />
-                  <AvatarFallback className="rounded-lg">
-                    {displayName.slice(0, 1).toUpperCase()}
-                  </AvatarFallback>
-                </Avatar>
-                <div className="grid flex-1 text-left text-sm leading-tight">
-                  <span className="truncate font-medium">{displayName}</span>
-                  <span className="truncate text-xs">{displayEmail}</span>
-                </div>
-              </div>
-            </DropdownMenuLabel>
-            <DropdownMenuSeparator />
-            {data && (
-              <>
-                <DropdownMenuGroup>
-                  <DropdownMenuItem asChild>
-                    <Link
-                      href={
-                        encodedUsername ? `/u/${encodedUsername}` : "/login"
-                      }
-                      onClick={() => {
-                        if (isMobile) setOpenMobile(false)
-                      }}
-                    >
-                      <User />
-                      {tNav("profile")}
-                    </Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem asChild>
-                    <Link
-                      href={
-                        encodedUsername
-                          ? `/u/${encodedUsername}/activity`
-                          : "/login"
-                      }
-                      onClick={() => {
-                        if (isMobile) setOpenMobile(false)
-                      }}
-                    >
-                      <Activity />
-                      {tNav("activity")}
-                    </Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem asChild>
-                    <Link
-                      href={
-                        encodedUsername
-                          ? `/u/${encodedUsername}/notifications`
-                          : "/login"
-                      }
-                      onClick={() => {
-                        if (isMobile) setOpenMobile(false)
-                      }}
-                    >
-                      <Bell />
-                      {tNav("notifications")}
-                    </Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem asChild>
-                    <Link
-                      href={
-                        encodedUsername
-                          ? `/u/${encodedUsername}/preferences`
-                          : "/login"
-                      }
-                      onClick={() => {
-                        if (isMobile) setOpenMobile(false)
-                      }}
-                    >
-                      <Settings />
-                      {tNav("settings")}
-                    </Link>
-                  </DropdownMenuItem>
-                  {data?.user?.isAdmin ? (
-                    <DropdownMenuItem asChild>
-                      <Link
-                        href="/admin"
-                        target="_blank"
-                        onClick={() => {
-                          if (isMobile) setOpenMobile(false)
-                        }}
-                      >
-                        <LayoutDashboard />
-                        {tAdmin("entry")}
-                      </Link>
-                    </DropdownMenuItem>
-                  ) : null}
-                </DropdownMenuGroup>
-                <DropdownMenuSeparator />
-              </>
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        {isIcon ? (
+          <Button variant="ghost" size="icon" className="rounded-full">
+            <Avatar className="h-8 w-8 rounded-full">
+              <AvatarImage src={displayAvatar} alt={displayName} />
+              <AvatarFallback className="rounded-full">
+                {displayName.slice(0, 1).toUpperCase()}
+              </AvatarFallback>
+            </Avatar>
+          </Button>
+        ) : (
+          <Button
+            variant="ghost"
+            className={cn(
+              "h-auto w-full gap-2 px-2 py-2",
+              isSidebar && "justify-center xl:justify-start",
+              !isSidebar && "justify-start"
             )}
-            <div className="flex items-center gap-2 px-2 py-2">
-              <ThemeSwitcher />
-              <LocaleSwitcher />
-            </div>
-            <DropdownMenuSeparator />
-            <DropdownMenuGroup>
-              {!data ? (
-                <>
-                  <DropdownMenuItem asChild>
-                    <Link
-                      href="/login"
-                      onClick={() => {
-                        if (isMobile) setOpenMobile(false)
-                      }}
-                    >
-                      {tAuth("Login.title")}
-                    </Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem asChild>
-                    <Link
-                      href="/register"
-                      onClick={() => {
-                        if (isMobile) setOpenMobile(false)
-                      }}
-                    >
-                      {tAuth("Register.title")}
-                    </Link>
-                  </DropdownMenuItem>
-                </>
-              ) : (
-                <DropdownMenuItem onSelect={onLogout}>
-                  <LogOut />
-                  {tNav("logout")}
-                </DropdownMenuItem>
+          >
+            <Avatar className="h-8 w-8 rounded-full">
+              <AvatarImage src={displayAvatar} alt={displayName} />
+              <AvatarFallback className="rounded-full">
+                {displayName.slice(0, 1).toUpperCase()}
+              </AvatarFallback>
+            </Avatar>
+            {/* Show text only in full sidebar or drawer */}
+            <div
+              className={cn(
+                "grid flex-1 text-left text-sm leading-tight",
+                isSidebar ? "hidden xl:grid" : "grid"
               )}
+            >
+              <span className="truncate font-bold">
+                {isLoading ? tCommon("Loading.loading") : displayName}
+              </span>
+              <span className="truncate text-xs text-muted-foreground">
+                {displayEmail}
+              </span>
+            </div>
+            <MoreHorizontal
+              className={cn(
+                "ml-auto size-4",
+                isSidebar ? "hidden xl:block" : "block"
+              )}
+            />
+          </Button>
+        )}
+      </DropdownMenuTrigger>
+      <DropdownMenuContent
+        className="w-56 rounded-xl"
+        side={layout === "bottom" ? "bottom" : "top"}
+        align={layout === "bottom" || layout === "icon" ? "end" : "center"}
+        sideOffset={4}
+      >
+        <DropdownMenuLabel className="p-0 font-normal">
+          <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
+            <Avatar className="h-8 w-8 rounded-full">
+              <AvatarImage src={displayAvatar} alt={displayName} />
+              <AvatarFallback className="rounded-full">
+                {displayName.slice(0, 1).toUpperCase()}
+              </AvatarFallback>
+            </Avatar>
+            <div className="grid flex-1 text-left text-sm leading-tight">
+              <span className="truncate font-medium">{displayName}</span>
+              <span className="truncate text-xs">{displayEmail}</span>
+            </div>
+          </div>
+        </DropdownMenuLabel>
+        <DropdownMenuSeparator />
+        {data && (
+          <>
+            <DropdownMenuGroup>
+              <DropdownMenuItem asChild>
+                <Link
+                  href={encodedUsername ? `/u/${encodedUsername}` : "/login"}
+                  onClick={onLinkClick}
+                >
+                  <User className="mr-2 h-4 w-4" />
+                  {tNav("profile")}
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild>
+                <Link
+                  href={
+                    encodedUsername
+                      ? `/u/${encodedUsername}/activity`
+                      : "/login"
+                  }
+                  onClick={onLinkClick}
+                >
+                  <Activity className="mr-2 h-4 w-4" />
+                  {tNav("activity")}
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild>
+                <Link
+                  href={
+                    encodedUsername
+                      ? `/u/${encodedUsername}/notifications`
+                      : "/login"
+                  }
+                  onClick={onLinkClick}
+                >
+                  <Bell className="mr-2 h-4 w-4" />
+                  {tNav("notifications")}
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild>
+                <Link
+                  href={
+                    encodedUsername
+                      ? `/u/${encodedUsername}/preferences`
+                      : "/login"
+                  }
+                  onClick={onLinkClick}
+                >
+                  <Settings className="mr-2 h-4 w-4" />
+                  {tNav("settings")}
+                </Link>
+              </DropdownMenuItem>
+              {data?.user?.isAdmin ? (
+                <DropdownMenuItem asChild>
+                  <Link href="/admin" target="_blank" onClick={onLinkClick}>
+                    <LayoutDashboard className="mr-2 h-4 w-4" />
+                    {tAdmin("entry")}
+                  </Link>
+                </DropdownMenuItem>
+              ) : null}
             </DropdownMenuGroup>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      </SidebarMenuItem>
-    </SidebarMenu>
+            <DropdownMenuSeparator />
+          </>
+        )}
+        <div className="flex items-center gap-2 px-2 py-2">
+          <ThemeSwitcher />
+          <LocaleSwitcher />
+        </div>
+        <DropdownMenuSeparator />
+        <DropdownMenuGroup>
+          {!data ? (
+            <>
+              <DropdownMenuItem asChild>
+                <Link href="/login" onClick={onLinkClick}>
+                  {tAuth("Login.title")}
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild>
+                <Link href="/register" onClick={onLinkClick}>
+                  {tAuth("Register.title")}
+                </Link>
+              </DropdownMenuItem>
+            </>
+          ) : (
+            <DropdownMenuItem onSelect={onLogout}>
+              <LogOut className="mr-2 h-4 w-4" />
+              {tNav("logout")}
+            </DropdownMenuItem>
+          )}
+        </DropdownMenuGroup>
+      </DropdownMenuContent>
+    </DropdownMenu>
   )
 }

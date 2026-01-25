@@ -1,7 +1,6 @@
 import { ReactNode } from "react"
-import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar"
-import { AppSidebar } from "@/components/main/app-sidebar"
-import { MobileSidebarTrigger } from "@/components/main/mobile-sidebar-trigger"
+import { SideNav } from "@/components/main/side-nav"
+import { MobileHeader } from "@/components/main/mobile-header"
 
 export default function MainLayout({
   children,
@@ -9,14 +8,12 @@ export default function MainLayout({
   children: ReactNode
 }>) {
   return (
-    <div className="max-w-5xl mx-auto">
-      <SidebarProvider>
-        <AppSidebar />
-        <SidebarInset>
-          <MobileSidebarTrigger />
-          {children}
-        </SidebarInset>
-      </SidebarProvider>
+    <div className="flex min-h-screen w-full max-w-7xl mx-auto flex-col sm:flex-row">
+      <SideNav />
+      <main className="flex-1 w-full min-w-0 border-x flex flex-col">
+        <MobileHeader />
+        <div className="flex-1">{children}</div>
+      </main>
     </div>
   )
 }
