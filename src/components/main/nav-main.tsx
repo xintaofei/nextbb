@@ -111,7 +111,7 @@ export function NavMain({ className, onLinkClick }: NavMainProps) {
           href={item.url}
           onClick={onLinkClick}
           title={item.title}
-          className="hover:[&_div]:bg-accent dark:hover:[&_div]:bg-accent/50"
+          className="inline-flex hover:[&_div]:bg-accent dark:hover:[&_div]:bg-accent/50"
         >
           <div
             className={cn(
