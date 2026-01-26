@@ -105,7 +105,7 @@ NextBB 是一个使用最新技术栈（Next.js 16, TypeScript, Tailwind CSS 4�
 ### Vercel 部署
 
 <p align="center">
-  <a href="https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fxintaofei%2Fnextbb&env=JWT_AUTH_SECRET,NEXTAUTH_SECRET,IS_SERVERLESS,NODE_TLS_REJECT_UNAUTHORIZED&project-name=nextbb&repository-name=nextbb&demo-title=NextBB&demo-description=Next%20bulletin%20board%20system&demo-url=https%3A%2F%2Fdiscover.nextbb.org&integration-ids=oac_VmvSUnSuoifAKUTlyS7Lr3HZ,oac_7p0L2iQvEAsV5uO2rB02L7R9,oac_ivL9WpG0I5I3I5I5I5I5I5I5">
+  <a target="_blank" href="https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fxintaofei%2Fnextbb&env=JWT_AUTH_SECRET,NEXTAUTH_SECRET,IS_SERVERLESS,NODE_TLS_REJECT_UNAUTHORIZED&project-name=nextbb&repository-name=nextbb&demo-title=NextBB&demo-description=Next%20bulletin%20board%20system&demo-url=https%3A%2F%2Fdiscover.nextbb.org&integration-ids=oac_VmvSUnSuoifAKUTlyS7Lr3HZ,oac_7p0L2iQvEAsV5uO2rB02L7R9,oac_ivL9WpG0I5I3I5I5I5I5I5I5">
     <img src="https://vercel.com/button" alt="Deploy with Vercel" height="32" />
   </a>
 </p>
