@@ -66,7 +66,7 @@ const TopicListQuery = z.object({
   pageSize: z.string().regex(/^\d+$/).optional(),
 })
 
-type TopicParticipant = {
+type TopicAuthor = {
   id: string
   name: string
   avatar: string
@@ -92,7 +92,7 @@ type TopicListItem = {
     bgColor?: string | null
     textColor?: string | null
   }[]
-  participants: TopicParticipant[]
+  author: TopicAuthor
   replies: number
   views: number
   activity: string
@@ -173,6 +173,13 @@ export async function GET(req: Request) {
       views: true,
       is_pinned: true,
       is_community: true,
+      user: {
+        select: {
+          id: true,
+          name: true,
+          avatar: true,
+        },
+      },
       category: {
         select: {
           id: true,
@@ -220,6 +227,11 @@ export async function GET(req: Request) {
     views: number
     is_pinned: boolean
     is_community: boolean
+    user: {
+      id: bigint
+      name: string
+      avatar: string
+    }
     category: {
       id: bigint
       icon: string
@@ -297,28 +309,15 @@ export async function GET(req: Request) {
   const byTopic: Record<
     string,
     {
-      participants: TopicParticipant[]
       replies: number
       activity: Date | null
     }
   > = {}
   for (const t of topicIds) {
-    byTopic[String(t)] = { participants: [], replies: 0, activity: null }
+    byTopic[String(t)] = { replies: 0, activity: null }
   }
-  const seen: Record<string, Set<string>> = {}
   for (const p of posts) {
     const key = String(p.topic_id)
-    if (!seen[key]) seen[key] = new Set<string>()
-    if (!seen[key].has(String(p.user.id))) {
-      if (byTopic[key].participants.length < 5) {
-        byTopic[key].participants.push({
-          id: String(p.user.id),
-          name: p.user.name,
-          avatar: p.user.avatar,
-        })
-      }
-      seen[key].add(String(p.user.id))
-    }
     byTopic[key].replies += 1
     const t = byTopic[key].activity
     const when = p.updated_at ?? p.created_at
@@ -378,7 +377,11 @@ export async function GET(req: Request) {
         textColor: t.category.text_color,
       },
       tags,
-      participants: agg.participants,
+      author: {
+        id: String(t.user.id),
+        name: t.user.name,
+        avatar: t.user.avatar,
+      },
       replies: Math.max(agg.replies - 1, 0),
       views: t.views ?? 0,
       activity: agg.activity ? agg.activity.toISOString() : "",

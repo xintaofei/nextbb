@@ -22,7 +22,7 @@ import { UserInfoCard } from "@/components/common/user-info-card"
 import { type TopicTypeValue } from "@/types/topic-type"
 import { stripHtmlAndTruncate } from "@/lib/utils"
 
-export type TopicParticipant = {
+export type TopicAuthor = {
   id: string
   name: string
   avatar: string
@@ -52,7 +52,7 @@ export type TopicListItem = {
   type: string
   category: TopicCategory
   tags: TopicTag[]
-  participants: TopicParticipant[]
+  author: TopicAuthor
   replies: number
   views: number
   activity: string
@@ -144,16 +144,14 @@ export function TopicList({
     <Table className={className ?? "w-full table-fixed max-lg:table-auto"}>
       <colgroup>
         <col />
-        <col className="w-32 max-lg:w-16" />
-        <col className="w-20 max-lg:w-16 max-sm:hidden" />
-        <col className="w-20 max-lg:hidden" />
-        <col className="w-20 max-lg:w-16 max-sm:hidden" />
+        <col className="w-16 max-sm:hidden" />
+        <col className="w-16 max-lg:hidden" />
+        <col className="w-16 max-sm:hidden" />
         <col className="w-16 hidden max-sm:table-cell" />
       </colgroup>
       <TableHeader className="max-sm:hidden py-4 h-14">
         <TableRow>
           <TableHead>{tc("Table.topic")}</TableHead>
-          <TableHead className="max-sm:hidden"></TableHead>
           <TableHead className="text-center max-sm:hidden">
             {tc("Table.replies")}
           </TableHead>
@@ -173,24 +171,12 @@ export function TopicList({
           ? Array.from({ length: 15 }).map((_, i) => (
               <TableRow key={`skeleton-${i}`}>
                 <TableCell className="flex flex-col gap-2 max-sm:px-0">
-                  <Skeleton className="h-7 w-72 xl:w-96 max-sm:w-64" />
+                  <Skeleton className="h-7 w-72 xl:w-80 max-sm:w-64" />
                   <div className="flex max-w-full flex-wrap gap-2 overflow-hidden">
-                    <Skeleton className="size-5 rounded-full hidden max-sm:block" />
+                    <Skeleton className="size-5 rounded-full" />
                     <Skeleton className="h-5 w-20 max-sm:w-16" />
                     <Skeleton className="h-5 w-16 max-sm:w-10" />
                     <Skeleton className="h-5 w-16 max-sm:w-10" />
-                  </div>
-                </TableCell>
-                <TableCell className="max-lg:text-center max-sm:hidden">
-                  <div className="flex lg:-space-x-2 max-lg:justify-center">
-                    {Array.from({ length: 5 }).map((_, j) => (
-                      <Skeleton
-                        key={j}
-                        className={`size-7 rounded-full ring-2 ring-background ${
-                          j > 0 ? "max-lg:hidden" : ""
-                        }`}
-                      />
-                    ))}
                   </div>
                 </TableCell>
                 <TableCell className="text-center max-sm:hidden">
@@ -245,18 +231,18 @@ export function TopicList({
                   </div>
                   <div className="flex max-w-full flex-wrap items-center gap-2 overflow-hidden mt-2">
                     <UserInfoCard
-                      userId={t.participants[0].id}
-                      userName={t.participants[0].name}
-                      userAvatar={t.participants[0].avatar}
+                      userId={t.author.id}
+                      userName={t.author.name}
+                      userAvatar={t.author.avatar}
                       side="right"
                     >
-                      <Avatar className="hidden max-sm:flex size-5 cursor-pointer">
+                      <Avatar className="size-5 cursor-pointer">
                         <AvatarImage
-                          src={t.participants[0].avatar}
-                          alt={t.participants[0].name}
+                          src={t.author.avatar}
+                          alt={t.author.name}
                         />
                         <AvatarFallback>
-                          {t.participants[0].name.slice(0, 2).toUpperCase()}
+                          {t.author.name.slice(0, 2).toUpperCase()}
                         </AvatarFallback>
                       </Avatar>
                     </UserInfoCard>
@@ -291,29 +277,6 @@ export function TopicList({
                     </Link>
                   )}
                 </TableCell>
-                <TableCell className="max-sm:hidden">
-                  <div className="*:data-[slot=avatar]:ring-background flex lg:-space-x-2 *:data-[slot=avatar]:ring-2 max-lg:justify-center">
-                    {dedupeAndLimit(t.participants, 5).map((u, idx) => (
-                      <UserInfoCard
-                        key={u.id}
-                        userId={u.id}
-                        userName={u.name}
-                        userAvatar={u.avatar}
-                        side="top"
-                        align="center"
-                      >
-                        <Avatar
-                          className={`size-7 relative cursor-pointer ${idx === 0 ? "z-5" : idx === 1 ? "z-4" : idx === 2 ? "z-3" : idx === 3 ? "z-2" : "z-1"} ${idx > 0 ? "max-lg:hidden" : ""}`}
-                        >
-                          <AvatarImage src={u.avatar} alt={u.name} />
-                          <AvatarFallback>
-                            {u.name.slice(0, 2).toUpperCase()}
-                          </AvatarFallback>
-                        </Avatar>
-                      </UserInfoCard>
-                    ))}
-                  </div>
-                </TableCell>
                 <TableCell className="text-center text-muted-foreground max-sm:hidden">
                   {t.replies}
                 </TableCell>
@@ -336,7 +299,7 @@ export function TopicList({
         {!loading && items.length === 0 && (
           <TableRow>
             <TableCell
-              colSpan={5}
+              colSpan={4}
               className="text-center text-muted-foreground"
             >
               {tc("Table.empty")}
@@ -345,7 +308,7 @@ export function TopicList({
         )}
         {!loading && (
           <TableRow>
-            <TableCell colSpan={5}>
+            <TableCell colSpan={4}>
               <div className="flex w-full items-center justify-center py-4">
                 {loadingMore ? (
                   <div className="flex items-center gap-2 text-muted-foreground">
@@ -366,20 +329,4 @@ export function TopicList({
       </TableBody>
     </Table>
   )
-}
-
-function dedupeAndLimit<T extends { id: string }>(
-  arr: T[],
-  limit: number
-): T[] {
-  const seen = new Set<string>()
-  const result: T[] = []
-  for (const item of arr) {
-    if (!seen.has(item.id)) {
-      seen.add(item.id)
-      result.push(item)
-      if (result.length >= limit) break
-    }
-  }
-  return result
 }
