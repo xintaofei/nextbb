@@ -111,7 +111,7 @@ export function NavMain({ className, onLinkClick }: NavMainProps) {
           href={item.url}
           onClick={onLinkClick}
           title={item.title}
-          className="p-2 hover:[&_div]:bg-accent dark:hover:[&_div]:bg-accent/50"
+          className="hover:[&_div]:bg-accent dark:hover:[&_div]:bg-accent/50"
         >
           <div
             className={cn(
@@ -123,8 +123,8 @@ export function NavMain({ className, onLinkClick }: NavMainProps) {
               "py-6 w-fit rounded-full gap-4"
             )}
           >
-            <item.icon className="size-6" />
-            <span className="text-xl">{item.title}</span>
+            <item.icon className="size-5" />
+            <span className="text-lg">{item.title}</span>
           </div>
         </Link>
       ))}
