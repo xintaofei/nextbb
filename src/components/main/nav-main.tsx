@@ -119,7 +119,7 @@ export function NavMain({ className, onLinkClick }: NavMainProps) {
                 variant: "ghost",
                 size: "lg",
               }),
-              item.isActive && "bg-accent dark:bg-accent/50 font-bold",
+              item.isActive && "font-bold",
               "py-6 w-fit rounded-full gap-4"
             )}
           >
