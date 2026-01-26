@@ -9,12 +9,6 @@
 </p>
 
 <p align="center">
-  <a href="https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fxintaofei%2Fnextbb&env=POSTGRES_URL,POSTGRES_URL_NON_POOLING,POSTGRES_PRISMA_URL,NEXTAUTH_URL,NEXTAUTH_SECRET,IS_SERVERLESS,REDIS_URL,BLOB_READ_WRITE_TOKEN&project-name=nextbb&repository-name=nextbb&demo-title=NextBB&demo-description=Modern%20Forum%20System&demo-url=https%3A%2F%2Fnextbb.vercel.app">
-    <img src="https://vercel.com/button" alt="Deploy with Vercel" height="32" />
-  </a>
-</p>
-
-<p align="center">
   <a href="#特性">特性</a> •
   <a href="#技术栈">技术栈</a> •
   <a href="#快速开始">快速开始</a> •
@@ -90,7 +84,7 @@ NextBB 是一个使用最新技术栈（Next.js 16, TypeScript, Tailwind CSS 4�
    cp .env.example .env
    ```
 
-   *确保填写 `DATABASE_URL`, `NEXTAUTH_SECRET` 以及相关的 OAuth 和 LLM 配置。*
+   *确保相关配置正确。*
 
 4. **初始化数据库**
 
@@ -110,15 +104,26 @@ NextBB 是一个使用最新技术栈（Next.js 16, TypeScript, Tailwind CSS 4�
 
 ### Vercel 部署
 
-1. **环境变量**：在 Vercel 项目设置中添加以下环境变量：
-   - `DATABASE_URL`: 数据库连接字符串（支持 Vercel Postgres）。
-   - `NEXTAUTH_URL`: 你的应用域名（如 `https://nextbb.vercel.app`）。
-   - `NEXTAUTH_SECRET`: NextAuth 密钥。
-   - `IS_SERVERLESS`: 设置为 `true`。
-   - `REDIS_URL`:（可选）Redis 连接字符串。
-   - `BLOB_READ_WRITE_TOKEN`:（可选）用于 Vercel Blob 图片上传。
+<p align="center">
+  <a href="https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fxintaofei%2Fnextbb&env=JWT_AUTH_SECRET,NEXTAUTH_SECRET,IS_SERVERLESS,NODE_TLS_REJECT_UNAUTHORIZED&project-name=nextbb&repository-name=nextbb&demo-title=NextBB&demo-description=Next%20bulletin%20board%20system&demo-url=https%3A%2F%2Fdiscover.nextbb.org&integration-ids=oac_VmvSUnSuoifAKUTlyS7Lr3HZ,oac_7p0L2iQvEAsV5uO2rB02L7R9,oac_ivL9WpG0I5I3I5I5I5I5I5I5">
+    <img src="https://vercel.com/button" alt="Deploy with Vercel" height="32" />
+  </a>
+</p>
 
-2. **Cron Jobs**：Vercel 会自动识别 `vercel.json` 中的定时任务。
+1. **一键集成**：点击上方的“Deploy with Vercel”按钮，部署流程会自动引导你集成以下核心服务：
+   - **Supabase**：提供 PostgreSQL 数据库支持。
+   - **Upstash Redis**：提供高性能缓存与事件总线。
+   - **Vercel Blob**：提供云端图片存储服务。
+
+   *集成完成后，相关的环境变量（如 `POSTGRES_URL_NON_POOLING`、`REDIS_URL`、`BLOB_READ_WRITE_TOKEN`）将自动注入。*
+
+2. **手动配置环境变量**：在部署过程中，你仍需手动填写以下变量：
+   - `JWT_AUTH_SECRET`: 用于 JWT 认证的密钥（可运行 `openssl rand -base64 32` 生成，或随机字符串）。
+   - `NEXTAUTH_SECRET`: 用于加密 Session 的随机字符串（可运行 `openssl rand -base64 32` 生成，或随机字符串）。
+   - `IS_SERVERLESS`: 必须设置为 `true`。
+   - `NODE_TLS_REJECT_UNAUTHORIZED`: 目前必须设置为 `0`，用于忽略 SSL 证书验证错误。
+
+3. **Cron Jobs**：Vercel 会自动根据 `vercel.json` 启用定时任务。
 
 ## 📂 项目结构
 
