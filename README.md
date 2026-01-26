@@ -9,6 +9,12 @@
 </p>
 
 <p align="center">
+  <a href="https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fxintaofei%2Fnextbb&env=POSTGRES_URL,POSTGRES_URL_NON_POOLING,POSTGRES_PRISMA_URL,NEXTAUTH_URL,NEXTAUTH_SECRET,IS_SERVERLESS,REDIS_URL,BLOB_READ_WRITE_TOKEN&project-name=nextbb&repository-name=nextbb&demo-title=NextBB&demo-description=Modern%20Forum%20System&demo-url=https%3A%2F%2Fnextbb.vercel.app">
+    <img src="https://vercel.com/button" alt="Deploy with Vercel" height="32" />
+  </a>
+</p>
+
+<p align="center">
   <a href="#特性">特性</a> •
   <a href="#技术栈">技术栈</a> •
   <a href="#快速开始">快速开始</a> •
@@ -101,6 +107,18 @@ NextBB 是一个使用最新技术栈（Next.js 16, TypeScript, Tailwind CSS 4�
    ```
 
    打开 [http://localhost:3000](http://localhost:3000) 即可访问。
+
+### Vercel 部署
+
+1. **环境变量**：在 Vercel 项目设置中添加以下环境变量：
+   - `DATABASE_URL`: 数据库连接字符串（支持 Vercel Postgres）。
+   - `NEXTAUTH_URL`: 你的应用域名（如 `https://nextbb.vercel.app`）。
+   - `NEXTAUTH_SECRET`: NextAuth 密钥。
+   - `IS_SERVERLESS`: 设置为 `true`。
+   - `REDIS_URL`:（可选）Redis 连接字符串。
+   - `BLOB_READ_WRITE_TOKEN`:（可选）用于 Vercel Blob 图片上传。
+
+2. **Cron Jobs**：Vercel 会自动识别 `vercel.json` 中的定时任务。
 
 ## 📂 项目结构
 

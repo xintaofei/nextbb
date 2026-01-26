@@ -11,9 +11,9 @@ const ISS = "nextbb"
 const AUD = "nextbb-web"
 
 function getSecret(): Uint8Array {
-  const secret = process.env.AUTH_SECRET
+  const secret = process.env.JWT_AUTH_SECRET
   if (!secret) {
-    throw new Error("AUTH_SECRET is not set")
+    throw new Error("JWT_AUTH_SECRET is not set")
   }
   return new TextEncoder().encode(secret)
 }
