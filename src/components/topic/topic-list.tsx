@@ -281,13 +281,14 @@ export function TopicList({
                     ))}
                   </div>
                   {t.firstPost && (
-                    <div className="mt-2 text-base text-muted-foreground max-w-full">
-                      <Link href={`/topic/${t.id}`}>
-                        <span className="line-clamp-3 whitespace-normal wrap-break-word">
-                          {stripHtmlAndTruncate(t.firstPost.content)}
-                        </span>
-                      </Link>
-                    </div>
+                    <Link
+                      href={`/topic/${t.id}`}
+                      className="inline-flex mt-2 text-base text-muted-foreground max-w-full"
+                    >
+                      <span className="line-clamp-3 whitespace-normal wrap-break-word">
+                        {stripHtmlAndTruncate(t.firstPost.content)}
+                      </span>
+                    </Link>
                   )}
                 </TableCell>
                 <TableCell className="max-sm:hidden">
