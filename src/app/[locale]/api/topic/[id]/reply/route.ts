@@ -165,6 +165,12 @@ export async function POST(
       select: { id: true, floor_number: true },
     })
 
+    // Update topic updated_at
+    await tx.topics.update({
+      where: { id: topicId },
+      data: { updated_at: new Date() },
+    })
+
     let isWinner = false
     let message: string | undefined
 

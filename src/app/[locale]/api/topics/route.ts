@@ -60,7 +60,7 @@ interface TxClient {
 const TopicListQuery = z.object({
   categoryId: z.string().regex(/^\d+$/).optional(),
   tagId: z.string().regex(/^\d+$/).optional(),
-  sort: z.enum(["latest", "hot", "new"]).optional(),
+  sort: z.enum(["latest", "new"]).optional(),
   filter: z.enum(["community", "my"]).optional(),
   page: z.string().regex(/^\d+$/).optional(),
   pageSize: z.string().regex(/^\d+$/).optional(),
@@ -173,6 +173,7 @@ export async function GET(req: Request) {
       views: true,
       is_pinned: true,
       is_community: true,
+      updated_at: true,
       user: {
         select: {
           id: true,
@@ -208,14 +209,20 @@ export async function GET(req: Request) {
           },
         },
       },
+      _count: {
+        select: {
+          posts: true,
+        },
+      },
     },
     skip: (page - 1) * pageSize,
     take: pageSize,
     orderBy:
       sortMode === "latest"
-        ? [{ is_pinned: "desc" }, { id: "desc" }]
+        ? [{ is_pinned: "desc" }, { updated_at: "desc" }, { id: "desc" }]
         : { id: "desc" },
   })
+
   type TopicRow = {
     id: bigint
     translations: {
@@ -258,9 +265,12 @@ export async function GET(req: Request) {
         }[]
       }
     }[]
+    _count: {
+      posts: number
+    }
+    updated_at: Date
   }
   const topicsX = topics as unknown as TopicRow[]
-  const topicIds = topicsX.map((t) => t.id)
 
   // 查询所有置顶话题的第一个 post（楼主 post），用于渲染三行预览
   const firstPosts: Record<
@@ -296,35 +306,8 @@ export async function GET(req: Request) {
       }
     }
   }
-  const posts = await prisma.posts.findMany({
-    where: { topic_id: { in: topicIds }, is_deleted: false },
-    select: {
-      topic_id: true,
-      user: { select: { id: true, name: true, avatar: true } },
-      created_at: true,
-      updated_at: true,
-    },
-    orderBy: { created_at: "asc" },
-  })
-  const byTopic: Record<
-    string,
-    {
-      replies: number
-      activity: Date | null
-    }
-  > = {}
-  for (const t of topicIds) {
-    byTopic[String(t)] = { replies: 0, activity: null }
-  }
-  for (const p of posts) {
-    const key = String(p.topic_id)
-    byTopic[key].replies += 1
-    const t = byTopic[key].activity
-    const when = p.updated_at ?? p.created_at
-    if (!t || when > t) byTopic[key].activity = when
-  }
+
   const items: TopicListItem[] = topicsX.map((t) => {
-    const agg = byTopic[String(t.id)]
     // 使用通用工具函数获取翻译字段
     const categoryFields = getTranslationFields(
       t.category.translations,
@@ -364,6 +347,8 @@ export async function GET(req: Request) {
       }
     )
     const firstPost = firstPosts[String(t.id)]
+    const lastActive = t.updated_at
+
     return {
       id: String(t.id),
       title: getTopicTitle(t.translations, locale),
@@ -382,9 +367,9 @@ export async function GET(req: Request) {
         name: t.user.name,
         avatar: t.user.avatar,
       },
-      replies: Math.max(agg.replies - 1, 0),
+      replies: Math.max(t._count.posts - 1, 0),
       views: t.views ?? 0,
-      activity: agg.activity ? agg.activity.toISOString() : "",
+      activity: lastActive ? lastActive.toISOString() : "",
       isPinned: Boolean(t.is_pinned),
       isCommunity: Boolean(t.is_community),
       ...(firstPost && {
@@ -396,13 +381,10 @@ export async function GET(req: Request) {
       }),
     }
   })
-  let sorted = items
-  if (sortMode === "hot") {
-    sorted = [...items].sort((a, b) => b.replies - a.replies)
-  }
+
   // latest模式下数据库已经按置顶+ID排序，不需要额外排序
   const result: TopicListResult = {
-    items: sorted,
+    items: items,
     page,
     pageSize,
     total,
