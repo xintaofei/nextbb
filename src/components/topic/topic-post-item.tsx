@@ -40,9 +40,17 @@ const SubReplyItem = memo(function SubReplyItem({
 }) {
   return (
     <TimelineStepsItem size="sm">
-      <TimelineStepsConnector size="sm" className="max-sm:hidden" />
+      <TimelineStepsConnector
+        variant="dashed"
+        size="sm"
+        className="max-sm:hidden"
+      />
       {idx == 0 && (
-        <TimelineStepsConnector size="top" className="max-sm:hidden" />
+        <TimelineStepsConnector
+          variant="dashed"
+          size="top"
+          className="max-sm:hidden"
+        />
       )}
       <TimelineStepsIcon
         size="sm"
@@ -220,7 +228,7 @@ export const TopicPostItem = memo(function TopicPostItem({
       data-post-anchor
       className={highlight ? "animate-(--animate-highlight-fade)" : ""}
     >
-      <TimelineStepsConnector className="max-sm:hidden" />
+      <TimelineStepsConnector variant="dashed" className="max-sm:hidden" />
       <TimelineStepsIcon
         size="lg"
         className="sticky top-18 md:top-4 overflow-hidden p-0.5 max-sm:hidden"
@@ -294,8 +302,10 @@ export const TopicPostItem = memo(function TopicPostItem({
                 {loadingSubReplies ? (
                   Array.from({ length: 2 }).map((_, i) => (
                     <TimelineStepsItem key={i} size="sm">
-                      <TimelineStepsConnector size="sm" />
-                      {i == 0 && <TimelineStepsConnector size="top" />}
+                      <TimelineStepsConnector variant="dashed" size="sm" />
+                      {i == 0 && (
+                        <TimelineStepsConnector variant="dashed" size="top" />
+                      )}
                       <TimelineStepsIcon
                         size="sm"
                         className="border-none bg-muted"

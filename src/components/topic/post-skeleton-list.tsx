@@ -26,7 +26,7 @@ export function PostSkeletonList({
           key={`post-skeleton-${i}`}
           id={lastIsSentinel && i === count - 1 ? sentinelId : undefined}
         >
-          <TimelineStepsConnector className="max-sm:hidden" />
+          <TimelineStepsConnector variant="dashed" className="max-sm:hidden" />
           <TimelineStepsIcon
             size="lg"
             className="overflow-hidden p-0 max-sm:hidden"

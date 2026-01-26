@@ -170,7 +170,7 @@ export function TopicList({
       </TableHeader>
       <TableBody className="[&_tr:first-child]:border-t-3">
         {loading
-          ? Array.from({ length: 15 }).map((_, i) => (
+          ? Array.from({ length: 20 }).map((_, i) => (
               <TableRow key={`skeleton-${i}`}>
                 <TableCell className="flex flex-col gap-2 pl-4 max-sm:px-0">
                   <Skeleton className="h-7 w-72 xl:w-80 max-sm:w-64" />

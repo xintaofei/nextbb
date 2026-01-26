@@ -122,9 +122,9 @@ const timelineStepsConnectorVariants = cva("", {
         "absolute top-3 left-[calc(50%+0.75rem)] h-px w-[calc(100%-1.5rem)]",
     },
     variant: {
-      default: "bg-border",
-      dashed: "border-l border-dashed border-border bg-transparent",
-      dotted: "border-l border-dotted border-border bg-transparent",
+      default: "bg-border/80",
+      dashed: "border-l border-dashed border-border/80 bg-transparent",
+      dotted: "border-l border-dotted border-border/80 bg-transparent",
     },
     status: {
       default: "",
