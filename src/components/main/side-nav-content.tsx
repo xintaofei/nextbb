@@ -41,7 +41,7 @@ export function SideNavContent({
         <NavMain
           className={cn(
             mode === "desktop"
-              ? "[&_a]:justify-center [&_a]:xl:justify-start [&_a]:px-2 [&_a]:xl:px-4 [&_span]:hidden [&_span]:xl:inline"
+              ? "[&_a]:justify-center [&_a]:xl:justify-start [&_span]:hidden [&_span]:xl:inline"
               : "[&_a]:justify-start [&_a]:px-4"
           )}
           onLinkClick={onLinkClick}
@@ -49,7 +49,7 @@ export function SideNavContent({
       </div>
 
       {/* Footer */}
-      <div className={cn("mt-auto", mode === "desktop" ? "p-2 xl:p-4" : "p-4")}>
+      <div className={cn("mt-auto", mode === "desktop" ? "p-2" : "p-4")}>
         {mode === "desktop" ? (
           <NavUser layout="sidebar" onLinkClick={onLinkClick} />
         ) : (

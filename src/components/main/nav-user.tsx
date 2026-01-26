@@ -116,7 +116,7 @@ export function NavUser({ onLinkClick, layout = "sidebar" }: NavUserProps) {
           <Button
             variant="ghost"
             className={cn(
-              "h-auto w-full gap-2 px-2 py-2 rounded-full",
+              "h-auto w-full gap-2 p-4 rounded-full",
               isSidebar && "justify-center xl:justify-start",
               !isSidebar && "justify-start"
             )}
@@ -135,10 +135,7 @@ export function NavUser({ onLinkClick, layout = "sidebar" }: NavUserProps) {
               )}
             >
               <span className="truncate font-bold">
-                {isLoading ? tCommon("Loading.loading") : displayName}
-              </span>
-              <span className="truncate text-xs text-muted-foreground">
-                {displayEmail}
+                {isLoading ? tCommon("Loading.loading") : "@" + displayName}
               </span>
             </div>
             <MoreHorizontal
