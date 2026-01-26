@@ -1076,3 +1076,11 @@ model user_social_accounts {
   @@index([provider_key], map: "user_social_accounts_provider_index")
   @@map("user_social_accounts")
 }
+
+model seed_migrations {
+  version    Int      @id
+  name       String   @db.VarChar(128)
+  applied_at DateTime @default(now())
+
+  @@map("seed_migrations")
+}

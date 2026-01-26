@@ -26,7 +26,10 @@ if (pooled) {
 }
 const pool = new Pool({
   connectionString: url,
-  ssl: true,
+  ssl:
+    process.env.NODE_ENV === "production"
+      ? { rejectUnauthorized: false }
+      : false,
   max: parseInt(process.env.POSTGRES_POOL_MAX ?? "1", 10),
   idleTimeoutMillis: 10000,
 })

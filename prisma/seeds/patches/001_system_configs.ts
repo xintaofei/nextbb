@@ -1,39 +1,5 @@
-import { config } from "dotenv"
-import { PrismaClient } from "@prisma/client"
-import { PrismaPg } from "@prisma/adapter-pg"
-import { Pool } from "pg"
+import type { SeedPatch } from "../types"
 import { generateId } from "@/lib/id"
-import process from "node:process"
-
-// 加载环境变量
-config()
-
-// 使用与应用相同的配置方式
-const pooled =
-  process.env.POSTGRES_PRISMA_URL ?? process.env.POSTGRES_URL ?? null
-let url = pooled ?? process.env.POSTGRES_URL_NON_POOLING ?? ""
-if (!url || url.length === 0) {
-  throw new Error(
-    "Database connection string is empty: set POSTGRES_URL_NON_POOLING or POSTGRES_URL or POSTGRES_PRISMA_URL"
-  )
-}
-if (pooled) {
-  try {
-    const u = new URL(url)
-    if (!u.searchParams.has("pgbouncer")) {
-      u.searchParams.set("pgbouncer", "true")
-      url = u.toString()
-    }
-  } catch {}
-}
-const pool = new Pool({
-  connectionString: url,
-  ssl: true,
-  max: parseInt(process.env.POSTGRES_POOL_MAX ?? "1", 10),
-  idleTimeoutMillis: 10000,
-})
-const adapter = new PrismaPg(pool)
-const prisma = new PrismaClient({ adapter })
 
 type ConfigItem = {
   configKey: string
@@ -47,7 +13,6 @@ type ConfigItem = {
 }
 
 const defaultConfigs: ConfigItem[] = [
-  // 基础信息配置
   {
     configKey: "basic.name",
     configValue: "NextBB",
@@ -108,8 +73,6 @@ const defaultConfigs: ConfigItem[] = [
     isSensitive: false,
     defaultValue: "",
   },
-
-  // 用户注册配置
   {
     configKey: "registration.enabled",
     configValue: "true",
@@ -150,8 +113,6 @@ const defaultConfigs: ConfigItem[] = [
     isSensitive: false,
     defaultValue: "32",
   },
-
-  // 内容管理配置
   {
     configKey: "content.topic.publish_permission",
     configValue: "all",
@@ -202,8 +163,6 @@ const defaultConfigs: ConfigItem[] = [
     isSensitive: false,
     defaultValue: "10",
   },
-
-  // 系统运行配置
   {
     configKey: "system.pagination.page_size",
     configValue: "20",
@@ -256,42 +215,31 @@ const defaultConfigs: ConfigItem[] = [
   },
 ]
 
-async function seedConfigs() {
-  console.log("开始初始化系统配置...")
-
-  for (const config of defaultConfigs) {
-    const existing = await prisma.system_configs.findUnique({
-      where: { config_key: config.configKey },
-    })
-
-    if (!existing) {
-      await prisma.system_configs.create({
-        data: {
-          id: generateId(),
-          config_key: config.configKey,
-          config_value: config.configValue,
-          config_type: config.configType,
-          category: config.category,
-          description: config.description,
-          is_public: config.isPublic,
-          is_sensitive: config.isSensitive,
-          default_value: config.defaultValue,
-        },
+const patch: SeedPatch = {
+  version: 1,
+  name: "system_configs",
+  async up(prisma) {
+    for (const config of defaultConfigs) {
+      const existing = await prisma.system_configs.findUnique({
+        where: { config_key: config.configKey },
       })
-      console.log(`✓ 创建配置: ${config.configKey}`)
-    } else {
-      console.log(`- 跳过已存在配置: ${config.configKey}`)
+      if (!existing) {
+        await prisma.system_configs.create({
+          data: {
+            id: generateId(),
+            config_key: config.configKey,
+            config_value: config.configValue,
+            config_type: config.configType,
+            category: config.category,
+            description: config.description,
+            is_public: config.isPublic,
+            is_sensitive: config.isSensitive,
+            default_value: config.defaultValue,
+          },
+        })
+      }
     }
-  }
-
-  console.log("系统配置初始化完成！")
+  },
 }
 
-seedConfigs()
-  .catch((e) => {
-    console.error(e)
-    process.exit(1)
-  })
-  .finally(async () => {
-    await prisma.$disconnect()
-  })
+export default patch
