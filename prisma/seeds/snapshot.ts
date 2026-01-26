@@ -39,7 +39,7 @@ async function seedSystemConfigs(tx: TxClient): Promise<void> {
     },
     {
       key: "basic.logo",
-      value: "/logo.png",
+      value: "",
       type: "string",
       cat: "basic",
       desc: "论坛 Logo",
@@ -203,7 +203,7 @@ async function seedSystemConfigs(tx: TxClient): Promise<void> {
 async function seedCategories(tx: TxClient): Promise<void> {
   const categories = [
     {
-      icon: "MessageSquare",
+      icon: "🍵",
       sort: 1,
       bg: "#3B82F6",
       text: "#FFFFFF",
@@ -211,7 +211,7 @@ async function seedCategories(tx: TxClient): Promise<void> {
       en: { name: "General", desc: "Open discussion area" },
     },
     {
-      icon: "HelpCircle",
+      icon: "❓",
       sort: 2,
       bg: "#10B981",
       text: "#FFFFFF",
@@ -219,7 +219,7 @@ async function seedCategories(tx: TxClient): Promise<void> {
       en: { name: "Q&A", desc: "Questions and answers" },
     },
     {
-      icon: "Megaphone",
+      icon: "✨",
       sort: 3,
       bg: "#F59E0B",
       text: "#FFFFFF",
@@ -227,7 +227,7 @@ async function seedCategories(tx: TxClient): Promise<void> {
       en: { name: "Announcements", desc: "Official announcements" },
     },
     {
-      icon: "Lightbulb",
+      icon: "💡",
       sort: 4,
       bg: "#8B5CF6",
       text: "#FFFFFF",
@@ -273,7 +273,7 @@ async function seedCategories(tx: TxClient): Promise<void> {
 async function seedTags(tx: TxClient): Promise<void> {
   const tags = [
     {
-      icon: "Star",
+      icon: "💎",
       sort: 1,
       bg: "#EF4444",
       text: "#FFFFFF",
@@ -281,7 +281,7 @@ async function seedTags(tx: TxClient): Promise<void> {
       en: { name: "Featured", desc: "Featured content" },
     },
     {
-      icon: "Flame",
+      icon: "🔥",
       sort: 2,
       bg: "#F97316",
       text: "#FFFFFF",
@@ -289,7 +289,7 @@ async function seedTags(tx: TxClient): Promise<void> {
       en: { name: "Hot", desc: "Trending topics" },
     },
     {
-      icon: "CheckCircle",
+      icon: "✅",
       sort: 3,
       bg: "#22C55E",
       text: "#FFFFFF",
@@ -297,7 +297,7 @@ async function seedTags(tx: TxClient): Promise<void> {
       en: { name: "Solved", desc: "Problem solved" },
     },
     {
-      icon: "BookOpen",
+      icon: "📖",
       sort: 4,
       bg: "#6366F1",
       text: "#FFFFFF",

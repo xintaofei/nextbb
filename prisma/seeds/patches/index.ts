@@ -1,9 +1,7 @@
 import type { SeedPatch } from "../types"
-import patch001 from "./001_system_configs"
-import patch002 from "./002_default_categories"
-import patch003 from "./003_default_tags"
+import patch001 from "./001_default_badges"
 
-export const patches: SeedPatch[] = [patch001, patch002, patch003].sort(
+export const patches: SeedPatch[] = [patch001].sort(
   (a, b) => a.version - b.version
 )
 
