@@ -151,7 +151,9 @@ export function TopicList({
       </colgroup>
       <TableHeader className="max-sm:hidden py-4 h-14">
         <TableRow>
-          <TableHead>{tc("Table.topic")}</TableHead>
+          <TableHead className="pl-4 max-sm:px-0">
+            {tc("Table.topic")}
+          </TableHead>
           <TableHead className="text-center max-sm:hidden">
             {tc("Table.replies")}
           </TableHead>
@@ -170,7 +172,7 @@ export function TopicList({
         {loading
           ? Array.from({ length: 15 }).map((_, i) => (
               <TableRow key={`skeleton-${i}`}>
-                <TableCell className="flex flex-col gap-2 max-sm:px-0">
+                <TableCell className="flex flex-col gap-2 pl-4 max-sm:px-0">
                   <Skeleton className="h-7 w-72 xl:w-80 max-sm:w-64" />
                   <div className="flex max-w-full flex-wrap gap-2 overflow-hidden">
                     <Skeleton className="size-5 rounded-full" />
@@ -204,7 +206,7 @@ export function TopicList({
                   }
                 }}
               >
-                <TableCell className="max-w-full max-sm:px-0 relative">
+                <TableCell className="max-w-full pl-4 max-sm:px-0 relative">
                   {clickedTopicId === t.id && (
                     <div className="absolute left-0 max-sm:-left-[3px] top-0 bottom-0 w-[3px] bg-primary rounded-r-sm" />
                   )}
