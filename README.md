@@ -105,15 +105,15 @@ NextBB 是一个使用最新技术栈（Next.js 16, TypeScript, Tailwind CSS 4�
 ### Vercel 部署
 
 <p align="center">
-  <a target="_blank" href="https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fxintaofei%2Fnextbb&env=JWT_AUTH_SECRET,NEXTAUTH_SECRET,IS_SERVERLESS,NODE_TLS_REJECT_UNAUTHORIZED&project-name=nextbb&repository-name=nextbb&demo-title=NextBB&demo-description=Next%20bulletin%20board%20system&demo-url=https%3A%2F%2Fdiscover.nextbb.org&integration-ids=oac_VmvSUnSuoifAKUTlyS7Lr3HZ,oac_7p0L2iQvEAsV5uO2rB02L7R9,oac_ivL9WpG0I5I3I5I5I5I5I5I5">
+  <a target="_blank" href="https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fxintaofei%2Fnextbb&env=JWT_AUTH_SECRET,NEXTAUTH_SECRET,IS_SERVERLESS,NODE_TLS_REJECT_UNAUTHORIZED&project-name=nextbb&repository-name=nextbb&demo-title=NextBB&demo-description=Next%20bulletin%20board%20system&demo-url=https%3A%2F%2Fdiscover.nextbb.org&stores=%5B%7B%22type%22%3A%22blob%22%7D%2C%7B%22type%22%3A%22kv%22%7D%2C%7B%22type%22%3A%22postgres%22%7D%5D">
     <img src="https://vercel.com/button" alt="Deploy with Vercel" height="32" />
   </a>
 </p>
 
 1. **一键集成**：点击上方的“Deploy with Vercel”按钮，部署流程会自动引导你集成以下核心服务：
-   - **Supabase**：提供 PostgreSQL 数据库支持。
-   - **Upstash Redis**：提供高性能缓存与事件总线。
-   - **Vercel Blob**：提供云端图片存储服务。
+   - **Neon**：提供 PostgreSQL 数据库支持。
+   - **Upstash for Redis**：提供高性能缓存与事件总线。
+   - **Blob**：提供云端图片存储服务。
 
    *集成完成后，相关的环境变量（如 `POSTGRES_URL_NON_POOLING`、`REDIS_URL`、`BLOB_READ_WRITE_TOKEN`）将自动注入。*
 
