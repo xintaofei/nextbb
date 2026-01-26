@@ -62,6 +62,10 @@ export async function POST(request: Request) {
     .digest("hex")
   const avatarUrl = `https://www.gravatar.com/avatar/${emailHash}`
 
+  // 检查是否是第一个用户
+  const userCount = await prisma.users.count()
+  const isFirstUser = userCount === 0
+
   const user = await prisma.users.create({
     data: {
       id,
@@ -71,6 +75,7 @@ export async function POST(request: Request) {
       password: hash,
       status: 1,
       is_deleted: false,
+      is_admin: isFirstUser,
     },
   })
 

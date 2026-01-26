@@ -299,6 +299,10 @@ export async function createAuthOptions(): Promise<NextAuthOptions> {
           }
         }
 
+        // 检查是否是第一个用户
+        const userCount = await prisma.users.count()
+        const isFirstUser = userCount === 0
+
         await prisma.$transaction(async (tx) => {
           await tx.users.create({
             data: {
@@ -309,6 +313,7 @@ export async function createAuthOptions(): Promise<NextAuthOptions> {
               password: "oauth",
               status: 1,
               is_deleted: false,
+              is_admin: isFirstUser,
             },
           })
 
