@@ -94,7 +94,7 @@ export default function DynamicRoutePage() {
   return (
     <div className="flex min-h-screen w-full flex-col max-sm:p-4">
       <TopicHeaderBar
-        className="p-4 max-sm:p-0 max-sm:pb-4 sm:sticky sm:top-0 sm:z-10 bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/60"
+        className="p-4 max-sm:p-0 max-sm:pb-4 sm:sticky sm:top-0 sm:z-1 bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/60"
         onSortStart={() => {}}
         onNewTopicClick={() => setIsNewTopicDialogOpen(true)}
       />
