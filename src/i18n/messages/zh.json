@@ -39,6 +39,15 @@
       "empty": "暂无数据",
       "related": "相关话题"
     },
+    "Title": {
+      "latestComments": "最新评论"
+    },
+    "Footer": {
+      "terms": "服务条款",
+      "privacy": "隐私政策",
+      "cookie": "Cookie 政策",
+      "copyright": "© 2026 NextBB"
+    },
     "Loading": {
       "loading": "加载中...",
       "noMore": "没有更多了"

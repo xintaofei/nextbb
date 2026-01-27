@@ -39,6 +39,15 @@
       "empty": "No data",
       "related": "Related Topics"
     },
+    "Title": {
+      "latestComments": "Latest Comments"
+    },
+    "Footer": {
+      "terms": "Terms of Service",
+      "privacy": "Privacy Policy",
+      "cookie": "Cookie Policy",
+      "copyright": "© 2026 NextBB"
+    },
     "Loading": {
       "loading": "Loading...",
       "noMore": "No more"

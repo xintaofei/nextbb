@@ -59,7 +59,7 @@ NextBB 是一个使用最新技术栈（Next.js 16, TypeScript, Tailwind CSS 4�
 - Node.js 20+
 - pnpm 9+
 - PostgreSQL 数据库
-- Redis 服务（可选，用于增强事件处理性能）
+- Redis 服务
 
 ### 安装与运行
 
