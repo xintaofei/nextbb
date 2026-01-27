@@ -37,23 +37,11 @@
   <img src="https://img.shields.io/badge/PostgreSQL-16-4169E1?style=flat-square&logo=postgresql&logoColor=white" alt="PostgreSQL" />
 </p>
 
-<br/>
-
-<p align="center">
-  <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="public/screenshots/preview-dark.png" />
-    <source media="(prefers-color-scheme: light)" srcset="public/screenshots/preview-light.png" />
-    <img alt="NextBB Preview" src="public/screenshots/preview-light.png" width="100%" />
-  </picture>
-</p>
-
 ---
 
 ## 📖 关于 NextBB
 
 NextBB 是一个使用最新技术栈开发的**开源论坛应用**。它不仅提供了完整的社区功能，还深度集成了 **AI 自动翻译**、**自动化规则引擎**和**丰富的互动组件**，旨在为用户提供流畅、现代且智能的交流体验。
-
-<br/>
 
 ## ✨ 核心特性
 
