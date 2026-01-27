@@ -91,7 +91,8 @@
     "winners": "中奖名单",
     "won": "中奖",
     "notWon": "未中奖",
-    "noWinners": "暂无中奖者"
+    "noWinners": "暂无中奖者",
+    "welcome": "欢迎"
   },
   "Checkin": {
     "pageTitle": "签到",

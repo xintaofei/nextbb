@@ -91,7 +91,8 @@
     "winners": "Winners",
     "won": "Won",
     "notWon": "Not won",
-    "noWinners": "No winners yet"
+    "noWinners": "No winners yet",
+    "welcome": "Welcome"
   },
   "Checkin": {
     "pageTitle": "Check-in",

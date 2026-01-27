@@ -64,8 +64,11 @@ export function Aside() {
           </InputGroup>
 
           {/* Welcome */}
-          <div className="p-4 border rounded-xl text-lg break-all">
-            {welcomeMessage || t("title")}
+          <div className="w-full border rounded-xl flex flex-col overflow-hidden bg-card">
+            <div className="p-3 border-b bg-muted/30 font-medium text-sm flex items-center gap-2">
+              <span>{tc("welcome")}</span>
+            </div>
+            <span className="p-3 text-lg break-all">{welcomeMessage || t("title")}</span>
           </div>
 
           {/* Latest Comments */}
@@ -79,8 +82,9 @@ export function Aside() {
                 {[1, 2, 3, 4, 5].map((i) => (
                   <div key={i} className="flex gap-3">
                     <Skeleton className="h-8 w-8 rounded-full shrink-0" />
-                    <div className="space-y-1.5 w-full">
+                    <div className="space-y-2 w-full">
                       <Skeleton className="h-3 w-3/4" />
+                      <Skeleton className="h-3 w-full" />
                       <Skeleton className="h-3 w-full" />
                     </div>
                   </div>
