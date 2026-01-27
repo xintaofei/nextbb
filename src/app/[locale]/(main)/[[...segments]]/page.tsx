@@ -96,7 +96,6 @@ export default function DynamicRoutePage() {
       <TopicHeaderBar
         className="p-4 max-sm:p-0 max-sm:pb-4 sm:sticky sm:top-0 sm:z-1 bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/60"
         onSortStart={() => {}}
-        onNewTopicClick={() => setIsNewTopicDialogOpen(true)}
       />
       <div className={cn(routeParams.categoryId ? "max-sm:mb-4" : "")}>
         {routeParams.categoryId && (

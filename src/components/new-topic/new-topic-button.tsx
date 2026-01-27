@@ -49,12 +49,12 @@ export function NewTopicButton({ onClick, className }: NewTopicButtonProps) {
     onClick()
   }
   if (isLoading) {
-    return <Skeleton className={`h-8 w-24 rounded-md ${className || ""}`} />
+    return <Skeleton className={`h-8 w-full rounded-full ${className || ""}`} />
   }
   return (
-    <Button size="sm" onClick={handleClick} className={`${className}`}>
-      <Icon className="mr-2" />
-      {label}
+    <Button size="lg" onClick={handleClick} className={`${className}`}>
+      <Icon className="mr-2 size-6" />
+      <span className="text-xl">{label}</span>
     </Button>
   )
 }

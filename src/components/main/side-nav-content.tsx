@@ -6,6 +6,7 @@ import { NavTop } from "@/components/main/nav-top"
 import { NavUser } from "@/components/main/nav-user"
 import { cn } from "@/lib/utils"
 import { useConfig } from "@/components/providers/config-provider"
+import { NewTopicButton } from "@/components/new-topic"
 
 interface SideNavContentProps {
   mode?: "desktop" | "mobile"
@@ -37,7 +38,7 @@ export function SideNavContent({
       </div>
 
       {/* Body */}
-      <div className="flex-1 overflow-y-auto py-2 scrollbar-none">
+      <div className="flex-1 overflow-y-auto py-2 pr-8 scrollbar-none">
         <NavMain
           className={cn(
             mode === "desktop"
@@ -45,6 +46,10 @@ export function SideNavContent({
               : "[&_a]:justify-start [&_a]:px-4"
           )}
           onLinkClick={onLinkClick}
+        />
+        <NewTopicButton
+          className="w-full py-6 mt-4 rounded-full justify-start"
+          onClick={() => {}}
         />
       </div>
 
