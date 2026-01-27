@@ -1,12 +1,12 @@
 "use client"
 
 import { useTranslations } from "next-intl"
-import { useState, useMemo } from "react"
+import { useMemo, useEffect } from "react"
 import useSWR from "swr"
 import useSWRInfinite from "swr/infinite"
 import { useParams } from "next/navigation"
 import { TopicList, TopicListItem } from "@/components/topic/topic-list"
-import { NewTopicDialog } from "@/components/new-topic/new-topic-dialog"
+import { useNewTopic } from "@/components/providers/new-topic-provider"
 import { TopicHeaderBar } from "@/components/topic/topic-header-bar"
 import {
   parseRouteSegments,
@@ -40,7 +40,7 @@ const fetcher = async (url: string) => {
 export default function DynamicRoutePage() {
   const tCat = useTranslations("Category")
   const params = useParams<{ segments?: string[] }>()
-  const [isNewTopicDialogOpen, setIsNewTopicDialogOpen] = useState(false)
+  const { registerOnPublished } = useNewTopic()
 
   // 解析路由参数
   const routeParams = useMemo(() => {
@@ -80,6 +80,12 @@ export default function DynamicRoutePage() {
     revalidateFirstPage: true, // 始终重新验证第一页以获取最新数据
     revalidateOnFocus: true, // 窗口聚焦时自动刷新
   })
+
+  useEffect(() => {
+    return registerOnPublished(() => {
+      mutate()
+    })
+  }, [registerOnPublished, mutate])
 
   const topics = useMemo(() => {
     return topicPages ? topicPages.flatMap((page) => page.items) : []
@@ -138,13 +144,6 @@ export default function DynamicRoutePage() {
         loadingMore={isLoadingMore}
         onLoadMore={() => {
           setSize(size + 1)
-        }}
-      />
-      <NewTopicDialog
-        open={isNewTopicDialogOpen}
-        onOpenChange={setIsNewTopicDialogOpen}
-        onPublished={() => {
-          mutate()
         }}
       />
     </div>

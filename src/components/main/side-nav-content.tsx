@@ -6,6 +6,7 @@ import { NavTop } from "@/components/main/nav-top"
 import { NavUser } from "@/components/main/nav-user"
 import { cn } from "@/lib/utils"
 import { useConfig } from "@/components/providers/config-provider"
+import { useNewTopic } from "@/components/providers/new-topic-provider"
 import { NewTopicButton } from "@/components/new-topic"
 
 interface SideNavContentProps {
@@ -19,6 +20,7 @@ export function SideNavContent({
 }: SideNavContentProps) {
   const t = useTranslations("Index")
   const { configs } = useConfig()
+  const { openDialog } = useNewTopic()
   const welcomeMessage = configs?.["basic.welcome_message"] as
     | string
     | undefined
@@ -49,7 +51,7 @@ export function SideNavContent({
         />
         <NewTopicButton
           className="w-full py-6 mt-4 rounded-full justify-start"
-          onClick={() => {}}
+          onClick={openDialog}
         />
       </div>
 

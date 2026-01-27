@@ -10,6 +10,7 @@ import { SWRProvider } from "@/components/providers/swr-provider"
 import NextTopLoader from "nextjs-toploader"
 import { getPublicConfigs } from "@/lib/config"
 import { ConfigProvider } from "@/components/providers/config-provider"
+import { NewTopicProvider } from "@/components/providers/new-topic-provider"
 
 export async function generateMetadata(): Promise<Metadata> {
   const configs = await getPublicConfigs()
@@ -49,7 +50,9 @@ export default async function RootLayout({
             disableTransitionOnChange
           >
             <ConfigProvider initialConfigs={configs}>
-              <SWRProvider>{children}</SWRProvider>
+              <SWRProvider>
+                <NewTopicProvider>{children}</NewTopicProvider>
+              </SWRProvider>
             </ConfigProvider>
             <Toaster richColors closeButton />
             <Analytics />
