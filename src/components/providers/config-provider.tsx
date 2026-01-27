@@ -1,6 +1,6 @@
 "use client"
 
-import { createContext, useContext, type ReactNode } from "react"
+import { createContext, useContext, useMemo, type ReactNode } from "react"
 import { usePublicConfigs } from "@/hooks/use-public-configs"
 import type { PublicConfigs } from "@/types/config"
 
@@ -30,14 +30,17 @@ export function ConfigProvider({
 }: ConfigProviderProps) {
   const { configs, isLoading, error } = usePublicConfigs(initialConfigs)
 
+  const contextValue = useMemo(
+    () => ({
+      configs: configs || initialConfigs,
+      isLoading,
+      error,
+    }),
+    [configs, initialConfigs, isLoading, error]
+  )
+
   return (
-    <ConfigContext.Provider
-      value={{
-        configs: configs || initialConfigs,
-        isLoading,
-        error,
-      }}
-    >
+    <ConfigContext.Provider value={contextValue}>
       {children}
     </ConfigContext.Provider>
   )

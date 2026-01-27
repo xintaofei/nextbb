@@ -6,6 +6,7 @@ import {
   useState,
   useCallback,
   useRef,
+  useMemo,
   type ReactNode,
 } from "react"
 import { NewTopicDialog } from "@/components/new-topic/new-topic-dialog"
@@ -49,8 +50,13 @@ export function NewTopicProvider({ children }: NewTopicProviderProps) {
     callbacksRef.current.forEach((callback) => callback())
   }, [])
 
+  const contextValue = useMemo(
+    () => ({ openDialog, registerOnPublished }),
+    [openDialog, registerOnPublished]
+  )
+
   return (
-    <NewTopicContext.Provider value={{ openDialog, registerOnPublished }}>
+    <NewTopicContext.Provider value={contextValue}>
       {children}
       <NewTopicDialog
         open={isDialogOpen}

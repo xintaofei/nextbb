@@ -1,5 +1,6 @@
 "use client"
 
+import { memo } from "react"
 import { useTranslations } from "next-intl"
 import { NavMain } from "@/components/main/nav-main"
 import { NavTop } from "@/components/main/nav-top"
@@ -14,7 +15,7 @@ interface SideNavContentProps {
   onLinkClick?: () => void
 }
 
-export function SideNavContent({
+export const SideNavContent = memo(function SideNavContent({
   mode = "desktop",
   onLinkClick,
 }: SideNavContentProps) {
@@ -67,4 +68,4 @@ export function SideNavContent({
       </div>
     </div>
   )
-}
+})
