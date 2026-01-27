@@ -53,7 +53,7 @@ export function NewTopicButton({ onClick, className }: NewTopicButtonProps) {
   }
   return (
     <Button size="lg" onClick={handleClick} className={`${className}`}>
-      <Icon className="mr-2 size-6" />
+      <Icon className="mr-0 xl:mr-2 size-6" />
       <span className="text-xl">{label}</span>
     </Button>
   )

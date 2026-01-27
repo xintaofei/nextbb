@@ -41,7 +41,7 @@ export const SideNavContent = memo(function SideNavContent({
       </div>
 
       {/* Body */}
-      <div className="flex-1 overflow-y-auto py-2 pr-8 scrollbar-none">
+      <div className="flex-1 overflow-y-auto py-2 xl:pr-8 scrollbar-none">
         <NavMain
           className={cn(
             mode === "desktop"
@@ -50,10 +50,12 @@ export const SideNavContent = memo(function SideNavContent({
           )}
           onLinkClick={onLinkClick}
         />
-        <NewTopicButton
-          className="w-full py-6 mt-4 rounded-full justify-start"
-          onClick={openDialog}
-        />
+        <div className="max-xl:px-2">
+          <NewTopicButton
+            className="w-full py-6 mt-4 rounded-full inline-flex justify-center xl:justify-start [&_span]:hidden [&_span]:xl:inline"
+            onClick={openDialog}
+          />
+        </div>
       </div>
 
       {/* Footer */}
