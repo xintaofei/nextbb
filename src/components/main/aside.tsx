@@ -40,7 +40,7 @@ export function Aside() {
     }[]
   >(
     !isTopicPage ? ["/api/comments/latest", locale] : null,
-    async (arg: any) => {
+    async (arg: [string, string]) => {
       const url = Array.isArray(arg) ? arg[0] : arg
       const res = await fetch(url, { cache: "no-store" })
       return await res.json()
