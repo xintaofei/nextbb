@@ -116,7 +116,7 @@ export function NavUser({ onLinkClick, layout = "sidebar" }: NavUserProps) {
           <Button
             variant="ghost"
             className={cn(
-              "h-auto w-full gap-2 p-4 rounded-full",
+              "h-auto w-full gap-2 p-3 rounded-full",
               isSidebar && "justify-center xl:justify-start",
               !isSidebar && "justify-start"
             )}
