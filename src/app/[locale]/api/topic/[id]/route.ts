@@ -3,7 +3,7 @@ import { prisma } from "@/lib/prisma"
 import { Prisma } from "@prisma/client"
 import { getSessionUser } from "@/lib/auth"
 import { getLocale } from "next-intl/server"
-import { getTranslationsQuery, getTranslationField } from "@/lib/locale"
+import { getTranslationsQuery, getTranslationField, CategoryTranslation } from "@/lib/locale"
 import {
   getTopicTitle,
   getPostHtmlWithLocale,
@@ -53,7 +53,7 @@ type TopicDetailResult = {
 }
 
 export async function GET(
-  req: Request,
+  _req: Request,
   ctx: { params: Promise<{ id: string }> }
 ) {
   const auth = await getSessionUser()
@@ -314,7 +314,7 @@ export async function GET(
       category: {
         id: String(topic.category.id),
         name: getTranslationField(
-          topic.category.translations,
+          topic.category.translations as CategoryTranslation[],
           locale,
           "name",
           ""
