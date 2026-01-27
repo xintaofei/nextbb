@@ -77,7 +77,7 @@ export default function TopicOverviewClient() {
   const tEditor = useTranslations("Editor")
 
   const { data: infoData, isLoading: loadingInfo } = useSWR<TopicInfoResult>(
-    `/api/topic/${id}/info`,
+    `/api/topic/${id}`,
     fetcherInfo,
     {
       revalidateOnFocus: false,
