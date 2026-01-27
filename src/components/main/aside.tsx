@@ -69,7 +69,9 @@ export function Aside() {
             <div className="p-3 border-b bg-muted/30 font-medium text-sm flex items-center gap-2">
               <span>{tc("welcome")}</span>
             </div>
-            <span className="p-3 text-lg break-all">{welcomeMessage || t("title")}</span>
+            <span className="p-3 text-lg break-all">
+              {welcomeMessage || t("title")}
+            </span>
           </div>
 
           {/* Latest Comments */}
@@ -116,16 +118,16 @@ export function Aside() {
                       </UserInfoCard>
                       <div className="flex flex-col gap-1 min-w-0 flex-1">
                         <div className="flex items-center justify-between gap-2">
-                          <span className="text-xs font-medium text-foreground truncate">
+                          <span className="text-sm font-medium text-muted-foreground truncate">
                             {comment.user.name}
                           </span>
-                          <span className="text-[10px] text-muted-foreground shrink-0">
+                          <span className="text-sm text-muted-foreground shrink-0">
                             <RelativeTime date={comment.createdAt} />
                           </span>
                         </div>
                         <Link
                           href={`/topic/${comment.topic.id}#post-${comment.id}`}
-                          className="text-xs text-muted-foreground line-clamp-2 hover:text-foreground transition-colors break-all"
+                          className="text-sm text-foreground line-clamp-2 hover:text-foreground transition-colors break-all"
                         >
                           {stripHtmlAndTruncate(
                             comment.contentHtml || comment.content,
@@ -134,7 +136,7 @@ export function Aside() {
                         </Link>
                         <Link
                           href={`/topic/${comment.topic.id}`}
-                          className="text-[10px] text-primary/80 hover:text-primary truncate mt-0.5"
+                          className="text-xs text-primary/80 hover:text-primary truncate mt-0.5"
                         >
                           In: {comment.topic.title}
                         </Link>
