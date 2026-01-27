@@ -17,6 +17,9 @@ export async function generateMetadata(): Promise<Metadata> {
   return {
     title: configs["basic.name"],
     description: configs["basic.description"],
+    other: {
+      generator: `NextBB 0.0.1 - https://github.com/xintaofei/nextbb`,
+    },
   }
 }
 
