@@ -1708,7 +1708,7 @@
     "preferences": {
       "title": "设置",
       "account": {
-        "title": "账户设置",
+        "title": "账户",
         "description": "管理你的账户信息和关联账号",
         "basicInfo": "基本信息",
         "username": "用户名",
@@ -1794,16 +1794,16 @@
         "saveError": "保存失败，请重试"
       },
       "security": {
-        "title": "安全设置"
+        "title": "安全"
       },
       "interface": {
-        "title": "界面设置"
+        "title": "界面"
       },
       "notifications": {
         "title": "通知偏好"
       },
       "privacy": {
-        "title": "隐私设置"
+        "title": "隐私"
       }
     }
   },
