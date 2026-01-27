@@ -10,6 +10,7 @@ import { stripHtmlAndTruncate } from "@/lib/utils"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { RelativeTime } from "@/components/common/relative-time"
 import { Skeleton } from "@/components/ui/skeleton"
+import { UserInfoCard } from "@/components/common/user-info-card"
 import {
   InputGroup,
   InputGroupAddon,
@@ -98,15 +99,21 @@ export function Aside() {
                     className="p-3 border-b last:border-0 hover:bg-muted/50 transition-colors"
                   >
                     <div className="flex gap-3">
-                      <Avatar className="h-8 w-8 shrink-0">
-                        <AvatarImage
-                          src={comment.user.avatar}
-                          alt={comment.user.name}
-                        />
-                        <AvatarFallback>
-                          {comment.user.name.slice(0, 2).toUpperCase()}
-                        </AvatarFallback>
-                      </Avatar>
+                      <UserInfoCard
+                        userId={comment.user.id}
+                        userName={comment.user.name}
+                        userAvatar={comment.user.avatar}
+                      >
+                        <Avatar className="h-8 w-8 shrink-0 cursor-pointer hover:opacity-80 transition-opacity">
+                          <AvatarImage
+                            src={comment.user.avatar}
+                            alt={comment.user.name}
+                          />
+                          <AvatarFallback>
+                            {comment.user.name.slice(0, 2).toUpperCase()}
+                          </AvatarFallback>
+                        </Avatar>
+                      </UserInfoCard>
                       <div className="flex flex-col gap-1 min-w-0 flex-1">
                         <div className="flex items-center justify-between gap-2">
                           <span className="text-xs font-medium text-foreground truncate">
