@@ -245,7 +245,10 @@ function TimelineStepsContent({
   return (
     <div
       data-slot="timeline-steps-content"
-      className={cn(" w-full flex flex-col gap-4", className)}
+      className={cn(
+        " w-full flex flex-col gap-4 max-w-full overflow-hidden",
+        className
+      )}
       {...props}
     />
   )
