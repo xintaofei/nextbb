@@ -66,7 +66,7 @@ export default function DynamicRoutePage() {
     if (apiQuery.sort) qs.set("sort", apiQuery.sort)
     if (apiQuery.filter) qs.set("filter", apiQuery.filter)
     qs.set("page", String(pageIndex + 1))
-    qs.set("pageSize", "20")
+    qs.set("pageSize", "2")
     return `/api/topics?${qs.toString()}`
   }
 
@@ -77,8 +77,8 @@ export default function DynamicRoutePage() {
     isLoading: isTopicLoading,
     mutate,
   } = useSWRInfinite<TopicListResult>(getKey, fetcher, {
-    revalidateFirstPage: true, // 始终重新验证第一页以获取最新数据
-    revalidateOnFocus: true, // 窗口聚焦时自动刷新
+    revalidateFirstPage: false, // 避免不必要的重新验证
+    revalidateOnFocus: false, // 避免焦点变化时触发请求
   })
 
   useEffect(() => {
