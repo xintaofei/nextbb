@@ -1815,6 +1815,7 @@
     "message": "Message",
     "admin": "Admin",
     "badges": "Badges",
+    "allBadges": "All Badges",
     "joinedAt": "Joined",
     "statistics": {
       "topics": "Topics",
