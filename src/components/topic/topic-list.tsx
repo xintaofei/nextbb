@@ -144,15 +144,19 @@ export function TopicList({
     <Table className={className ?? "w-full table-fixed max-lg:table-auto"}>
       <colgroup>
         <col />
-        <col className="w-16 max-sm:hidden" />
-        <col className="w-16 max-lg:hidden" />
-        <col className="w-16 max-sm:hidden" />
-        <col className="w-16 hidden max-sm:table-cell" />
+        <col className="w-24 max-sm:hidden" />
+        <col className="w-20 max-sm:hidden" />
+        <col className="w-20 max-lg:hidden" />
+        <col className="w-20 max-sm:hidden" />
+        <col className="w-20 hidden max-sm:table-cell" />
       </colgroup>
       <TableHeader className="max-sm:hidden py-4 h-14">
         <TableRow>
           <TableHead className="pl-4 max-sm:px-0">
             {tc("Table.topic")}
+          </TableHead>
+          <TableHead className="text-center max-sm:hidden">
+            {tc("Table.author")}
           </TableHead>
           <TableHead className="text-center max-sm:hidden">
             {tc("Table.replies")}
@@ -173,12 +177,18 @@ export function TopicList({
           ? Array.from({ length: 20 }).map((_, i) => (
               <TableRow key={`skeleton-${i}`}>
                 <TableCell className="flex flex-col gap-2 pl-4 max-sm:px-0">
-                  <Skeleton className="h-7 w-72 xl:w-80 max-sm:w-64" />
+                  <Skeleton className="h-7 w-72 lg:w-80 xl:w-96 max-sm:w-64" />
                   <div className="flex max-w-full flex-wrap gap-2 overflow-hidden">
                     <Skeleton className="size-5 rounded-full" />
                     <Skeleton className="h-5 w-20 max-sm:w-16" />
                     <Skeleton className="h-5 w-16 max-sm:w-10" />
                     <Skeleton className="h-5 w-16 max-sm:w-10" />
+                  </div>
+                </TableCell>
+                <TableCell className="text-center max-sm:hidden">
+                  <div className="flex flex-col gap-1 items-center justify-center">
+                    <Skeleton className="size-6 rounded-full" />
+                    <Skeleton className="h-4 w-10 mx-auto" />
                   </div>
                 </TableCell>
                 <TableCell className="text-center max-sm:hidden">
@@ -238,7 +248,7 @@ export function TopicList({
                       userAvatar={t.author.avatar}
                       side="right"
                     >
-                      <Avatar className="size-5 cursor-pointer">
+                      <Avatar className="size-5 cursor-pointer sm:hidden">
                         <AvatarImage
                           src={t.author.avatar}
                           alt={t.author.name}
@@ -278,6 +288,29 @@ export function TopicList({
                       </span>
                     </Link>
                   )}
+                </TableCell>
+                <TableCell className="text-center max-sm:hidden">
+                  <div className="flex flex-col gap-1 items-center justify-center">
+                    <UserInfoCard
+                      userId={t.author.id}
+                      userName={t.author.name}
+                      userAvatar={t.author.avatar}
+                      side="right"
+                    >
+                      <Avatar className="size-6 cursor-pointer max-sm:hidden">
+                        <AvatarImage
+                          src={t.author.avatar}
+                          alt={t.author.name}
+                        />
+                        <AvatarFallback>
+                          {t.author.name.slice(0, 2).toUpperCase()}
+                        </AvatarFallback>
+                      </Avatar>
+                    </UserInfoCard>
+                    <span className="text-muted-foreground">
+                      {t.author.name}
+                    </span>
+                  </div>
                 </TableCell>
                 <TableCell className="text-center text-muted-foreground max-sm:hidden">
                   {t.replies}

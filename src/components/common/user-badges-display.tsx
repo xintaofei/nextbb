@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, memo } from "react"
+import { useTranslations } from "next-intl"
 import { UserBadge } from "./user-badge"
 import {
   Popover,
@@ -33,6 +34,7 @@ function UserBadgesDisplayBase({
   size = "sm",
 }: UserBadgesDisplayProps) {
   const [open, setOpen] = useState(false)
+  const t = useTranslations("UserCard")
 
   if (!badges || badges.length === 0) {
     return null
@@ -69,7 +71,7 @@ function UserBadgesDisplayBase({
             <div className="space-y-3">
               {" "}
               <Highlighter action="box" color="var(--primary)">
-                <h4 className="font-medium text-sm">所有徽章</h4>
+                <h4 className="font-medium text-sm">{t("allBadges")}</h4>
               </Highlighter>{" "}
               <div className="flex flex-wrap gap-4 mt-2">
                 {badges.map((badge) => (

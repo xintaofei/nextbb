@@ -32,6 +32,7 @@
     },
     "Table": {
       "topic": "话题",
+      "author": "作者",
       "replies": "回复",
       "views": "浏览量",
       "participants": "参与者",
@@ -1814,6 +1815,7 @@
     "message": "私信",
     "admin": "管理员",
     "badges": "徽章",
+    "allBadges": "所有徽章",
     "joinedAt": "加入于",
     "statistics": {
       "topics": "主题",
