@@ -77,8 +77,8 @@ export default function DynamicRoutePage() {
     isLoading: isTopicLoading,
     mutate,
   } = useSWRInfinite<TopicListResult>(getKey, fetcher, {
-    revalidateFirstPage: false, // 避免不必要的重新验证
-    revalidateOnFocus: false, // 避免焦点变化时触发请求
+    revalidateFirstPage: true, // 始终重新验证第一页以获取最新数据
+    revalidateOnFocus: true, // 窗口聚焦时自动刷新
   })
 
   useEffect(() => {
