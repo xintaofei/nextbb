@@ -144,7 +144,7 @@ export function TopicList({
     <Table className={className ?? "w-full table-fixed max-lg:table-auto"}>
       <colgroup>
         <col />
-        <col className="w-28 max-sm:hidden" />
+        <col className="w-24 max-sm:hidden" />
         <col className="w-20 max-sm:hidden" />
         <col className="w-20 max-lg:hidden" />
         <col className="w-20 max-sm:hidden" />
