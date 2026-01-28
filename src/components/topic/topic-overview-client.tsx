@@ -67,7 +67,15 @@ const fetcherRelated = async (url: string): Promise<RelatedResult> => {
   return (await res.json()) as RelatedResult
 }
 
-export default function TopicOverviewClient() {
+type TopicOverviewClientProps = {
+  initialTopicInfo?: TopicInfoResult["topic"]
+  initialPosts?: PostPage
+}
+
+export default function TopicOverviewClient({
+  initialTopicInfo,
+  initialPosts,
+}: TopicOverviewClientProps) {
   const { id, locale } = useParams() as { id: string; locale: string }
   const tc = useTranslations("Common")
   const t = useTranslations("Topic")
@@ -81,6 +89,7 @@ export default function TopicOverviewClient() {
     fetcherInfo,
     {
       revalidateOnFocus: false,
+      fallbackData: initialTopicInfo ? { topic: initialTopicInfo } : undefined,
     }
   )
   const topic = useMemo(
@@ -151,6 +160,7 @@ export default function TopicOverviewClient() {
     {
       revalidateOnFocus: false,
       revalidateFirstPage: false,
+      fallbackData: initialPosts ? [initialPosts] : undefined,
     }
   )
   const posts = useMemo(

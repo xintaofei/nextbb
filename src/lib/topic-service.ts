@@ -1,3 +1,4 @@
+import { cache } from "react"
 import { prisma } from "@/lib/prisma"
 import { Prisma } from "@prisma/client"
 import {
@@ -6,48 +7,18 @@ import {
   getTranslationsQuery,
 } from "@/lib/locale"
 import { getPostHtmlWithLocale, getTopicTitle } from "@/lib/topic-translation"
-import { BadgeItem, PostItem, PostPage } from "@/types/topic"
+import {
+  BadgeItem,
+  PostItem,
+  PostPage,
+  TopicInfo as TopicInfoType,
+} from "@/types/topic"
 import { SessionUser } from "@/lib/auth"
 
-export type TopicInfo = {
-  id: string
-  title: string
-  type: string
-  isPinned: boolean
-  isCommunity: boolean
-  status?: string | null
-  endTime?: string | null
-  isSettled?: boolean
-  category: {
-    id: string
-    name: string
-    icon?: string
-    description?: string | null
-    bgColor?: string | null
-    textColor?: string | null
-  }
-  tags: {
-    id: string
-    name: string
-    icon: string
-    description?: string | null
-    bgColor?: string | null
-    textColor?: string | null
-  }[]
-  views: number
-  participantCount: number
-  participants: {
-    id: string
-    name: string
-    avatar: string
-  }[]
-  lastActiveTime?: string
-}
-
-export async function getTopicInfo(
+export const getTopicInfo = cache(async function getTopicInfo(
   topicId: bigint,
   locale: string
-): Promise<TopicInfo | null> {
+): Promise<TopicInfoType | null> {
   const topic = await prisma.topics.findFirst({
     where: { id: topicId, is_deleted: false },
     select: {
@@ -158,9 +129,9 @@ export async function getTopicInfo(
       name: p.user.name,
       avatar: p.user.avatar,
     })),
-    lastActiveTime: lastPost?.created_at.toISOString(),
+    lastActiveTime: lastPost?.created_at.toISOString() ?? null,
   }
-}
+})
 
 export async function incrementTopicViews(topicId: bigint): Promise<void> {
   await prisma.$executeRaw(
@@ -168,7 +139,7 @@ export async function incrementTopicViews(topicId: bigint): Promise<void> {
   )
 }
 
-export async function getTopicPosts(
+export const getTopicPosts = cache(async function getTopicPosts(
   topicId: bigint,
   locale: string,
   auth: SessionUser | null,
@@ -514,4 +485,4 @@ export async function getTopicPosts(
     total,
     hasMore,
   }
-}
+})
