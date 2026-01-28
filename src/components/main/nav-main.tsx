@@ -17,18 +17,12 @@ import { cn, encodeUsername } from "@/lib/utils"
 import { buttonVariants } from "@/components/ui/button"
 
 type MeResponse = {
-  user: {
-    id: string
-    email?: string | null
-    isAdmin: boolean
-    credits: number
-  }
-  profile?: {
-    id: string
-    email: string
-    username: string
-    avatar?: string | null
-  } | null
+  id: string
+  email: string
+  name: string
+  avatar: string
+  isAdmin: boolean
+  credits: number
 }
 
 const fetcher = async (url: string): Promise<MeResponse | null> => {
@@ -49,7 +43,7 @@ export function NavMain({ className, onLinkClick }: NavMainProps) {
 
   const username = useMemo(() => {
     if (!data) return null
-    return data.profile?.username || null
+    return data.name || null
   }, [data])
 
   const encodedUsername = username ? encodeUsername(username) : null

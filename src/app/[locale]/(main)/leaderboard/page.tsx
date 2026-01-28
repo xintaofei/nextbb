@@ -227,7 +227,14 @@ function LeaderboardList({
   )
 
   // 获取当前用户信息
-  const { data: currentUser } = useSWR<{ user: { id: string } } | null>(
+  const { data: currentUser } = useSWR<{
+    id: string
+    email: string
+    name: string
+    avatar: string
+    isAdmin: boolean
+    credits: number
+  } | null>(
     "/api/auth/me",
     async (url: string) => {
       const res = await fetch(url)
@@ -282,8 +289,8 @@ function LeaderboardList({
   const restRankings = data.rankings.slice(3)
 
   // 查找当前用户的排名（如果不在前三名中）
-  const currentUserRanking = currentUser?.user?.id
-    ? data.rankings.find((r) => r.user.id === currentUser.user.id)
+  const currentUserRanking = currentUser?.id
+    ? data.rankings.find((r) => r.user.id === currentUser.id)
     : null
 
   const showCurrentUserRanking =
@@ -320,7 +327,7 @@ function LeaderboardList({
                 key={ranking.user.id}
                 ranking={ranking}
                 valueLabel={valueLabel}
-                highlight={currentUser?.user?.id === ranking.user.id}
+                highlight={currentUser?.id === ranking.user.id}
               />
             ))}
           </div>

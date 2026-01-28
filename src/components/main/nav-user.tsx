@@ -29,23 +29,13 @@ import { LocaleSwitcher } from "@/components/common/locale-switcher"
 import { cn, encodeUsername } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 
-type MeProfile = {
+type MeResponse = {
   id: string
   email: string
-  username: string
-  avatar?: string | null
-}
-
-type MeUser = {
-  id: string
-  email?: string | null
+  name: string
+  avatar: string
   isAdmin: boolean
   credits: number
-}
-
-type MeResponse = {
-  user: MeUser
-  profile?: MeProfile | null
 }
 
 const fetcher = async (url: string): Promise<MeResponse | null> => {
@@ -73,27 +63,27 @@ export function NavUser({ onLinkClick, layout = "sidebar" }: NavUserProps) {
 
   const displayName = useMemo(() => {
     if (!data) return tNav("notLoggedIn")
-    return data.profile?.username || data.user.email || tNav("notLoggedIn")
+    return data.name || data.email || tNav("notLoggedIn")
   }, [data, tNav])
 
   const displayEmail = useMemo(() => {
     if (!data) return ""
-    return data.user.email || ""
+    return data.email || ""
   }, [data])
 
   const displayAvatar = useMemo(() => {
     if (!data) return undefined
-    return data.profile?.avatar || undefined
+    return data.avatar || undefined
   }, [data])
 
   const encodedUsername = useMemo(() => {
-    if (!data?.profile?.username) return null
-    return encodeUsername(data.profile.username)
+    if (!data?.name) return null
+    return encodeUsername(data.name)
   }, [data])
 
   const onLogout = async () => {
     await fetch("/api/auth/logout", { method: "POST" })
-    await mutate()
+    mutate()
     router.replace(`/`)
   }
 
@@ -219,7 +209,7 @@ export function NavUser({ onLinkClick, layout = "sidebar" }: NavUserProps) {
                   {tNav("settings")}
                 </Link>
               </DropdownMenuItem>
-              {data?.user?.isAdmin ? (
+              {data?.isAdmin ? (
                 <DropdownMenuItem asChild>
                   <Link href="/admin" target="_blank" onClick={onLinkClick}>
                     <LayoutDashboard className="mr-2 h-4 w-4" />
