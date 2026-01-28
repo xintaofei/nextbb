@@ -2,7 +2,11 @@ import TopicOverviewClient from "@/components/topic/topic-overview-client"
 import type { Metadata } from "next"
 import { getPublicConfigs } from "@/lib/config"
 import { getLocale } from "next-intl/server"
-import { getTopicInfo, getTopicPosts } from "@/lib/topic-service"
+import {
+  getTopicInfo,
+  getTopicPosts,
+  incrementTopicViewsOnce,
+} from "@/lib/topic-service"
 import { getSessionUser } from "@/lib/auth"
 import { stripHtmlAndTruncate } from "@/lib/utils"
 
@@ -105,6 +109,9 @@ export default async function TopicPage({ params }: TopicPageProps) {
   if (!topicInfo) {
     return null
   }
+
+  // 增加话题浏览量（使用 cache 确保同一请求中只执行一次）
+  await incrementTopicViewsOnce(topicId)
 
   return (
     <TopicOverviewClient
