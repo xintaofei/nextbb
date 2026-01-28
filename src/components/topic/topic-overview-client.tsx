@@ -120,6 +120,12 @@ export default function TopicOverviewClient({
   const initialPostsRef = useRef(initialPosts)
   const firstPageFetchedRef = useRef(false)
 
+  // 当 id 或 initialPosts 改变时，重置 ref（话题切换场景）
+  useEffect(() => {
+    initialPostsRef.current = initialPosts
+    firstPageFetchedRef.current = false
+  }, [id, initialPosts])
+
   const [currentUserId, setCurrentUserId] = useState<string | null>(null)
   const [currentUserProfile, setCurrentUserProfile] = useState<{
     id: string
@@ -156,34 +162,34 @@ export default function TopicOverviewClient({
     },
     [id, pageSize, locale]
   )
+
+  // 使用 useCallback 包装 fetcher，避免每次渲染都创建新函数
+  const postsFetcher = useCallback((args: string | [string, string]) => {
+    const url = Array.isArray(args) ? args[0] : args
+    // 拦截第一页请求：如果有初始数据且还没被使用过，直接返回
+    if (
+      url.includes("page=1") &&
+      initialPostsRef.current &&
+      !firstPageFetchedRef.current
+    ) {
+      firstPageFetchedRef.current = true
+      return Promise.resolve(initialPostsRef.current)
+    }
+    return fetcherPosts(url)
+  }, [])
+
   const {
     data: postsPages,
     mutate: mutatePosts,
     setSize,
     isLoading: loadingPosts,
     isValidating: validatingPosts,
-  } = useSWRInfinite<PostPage>(
-    getKey,
-    (args: string | [string, string]) => {
-      const url = Array.isArray(args) ? args[0] : args
-      // 拦截第一页请求：如果有初始数据且还没被使用过，直接返回
-      if (
-        url.includes("page=1") &&
-        initialPostsRef.current &&
-        !firstPageFetchedRef.current
-      ) {
-        firstPageFetchedRef.current = true
-        return Promise.resolve(initialPostsRef.current)
-      }
-      return fetcherPosts(url)
-    },
-    {
-      revalidateOnFocus: false,
-      revalidateOnMount: false,
-      revalidateFirstPage: false,
-      fallbackData: initialPosts ? [initialPosts] : undefined,
-    }
-  )
+  } = useSWRInfinite<PostPage>(getKey, postsFetcher, {
+    revalidateOnFocus: false,
+    revalidateOnMount: false,
+    revalidateFirstPage: false,
+    fallbackData: initialPosts ? [initialPosts] : undefined,
+  })
   const posts = useMemo(
     () => (postsPages ? postsPages.flatMap((p) => p.items) : []),
     [postsPages]
@@ -513,14 +519,18 @@ export default function TopicOverviewClient({
       revalidateOnFocus: false,
     }
   )
-  const bountyConfig = bountyData
-    ? {
-        bountyTotal: bountyData.bountyTotal,
-        bountyType: bountyData.bountyType,
-        remainingSlots: bountyData.remainingSlots,
-        singleAmount: bountyData.singleAmount,
-      }
-    : null
+  const bountyConfig = useMemo(
+    () =>
+      bountyData
+        ? {
+            bountyTotal: bountyData.bountyTotal,
+            bountyType: bountyData.bountyType,
+            remainingSlots: bountyData.remainingSlots,
+            singleAmount: bountyData.singleAmount,
+          }
+        : null,
+    [bountyData]
+  )
 
   const onClickReply = useCallback((postId: string, authorName: string) => {
     setReplyToPostId(postId)
@@ -537,10 +547,6 @@ export default function TopicOverviewClient({
       }
       setSubmitting(true)
       try {
-        if (!postsPages) {
-          toast.error(tc("Error.requestFailed"))
-          return
-        }
         const tempId = `temp-${Date.now()}`
         const optimistic: PostItem = {
           id: tempId,
@@ -591,9 +597,8 @@ export default function TopicOverviewClient({
           parentId: replyToPostId ?? undefined,
         })
         await mutatePosts((pages) => pages, true)
-        const nextPosts = postsPages ? postsPages.flatMap((p) => p.items) : []
         toast.success(tc("Action.success"))
-        const newIndex = nextPosts.length
+        const newIndex = postsRef.current.length
         const el = document.getElementById(`post-${newIndex}`)
         if (el) el.scrollIntoView({ behavior: "smooth", block: "center" })
       } catch (e) {
@@ -608,7 +613,6 @@ export default function TopicOverviewClient({
     [
       replyContent,
       tc,
-      postsPages,
       currentUserId,
       currentUserProfile,
       replyToPostId,
@@ -648,9 +652,8 @@ export default function TopicOverviewClient({
         await triggerEdit({ postId: editPostId, content: value, contentHtml })
         setEditOpen(false)
         await mutatePosts((pages) => pages, true)
-        const nextFlat = postsPages ? postsPages.flatMap((p) => p.items) : []
         toast.success(tc("Action.success"))
-        const idx = nextFlat.findIndex((p) => p.id === editPostId)
+        const idx = postsRef.current.findIndex((p) => p.id === editPostId)
         const el = document.getElementById(`post-${idx + 1}`)
         if (el) el.scrollIntoView({ behavior: "smooth", block: "center" })
       } catch (e) {
@@ -664,7 +667,7 @@ export default function TopicOverviewClient({
         setMutatingPostId(null)
       }
     },
-    [editPostId, tc, mutatePosts, triggerEdit, postsPages]
+    [editPostId, tc, mutatePosts, triggerEdit]
   )
   const onClickDelete = useCallback(
     async (postId: string) => {
