@@ -66,7 +66,7 @@ export default function DynamicRoutePage() {
     if (apiQuery.sort) qs.set("sort", apiQuery.sort)
     if (apiQuery.filter) qs.set("filter", apiQuery.filter)
     qs.set("page", String(pageIndex + 1))
-    qs.set("pageSize", "2")
+    qs.set("pageSize", "20")
     return `/api/topics?${qs.toString()}`
   }
 
