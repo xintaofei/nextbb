@@ -32,6 +32,7 @@
     },
     "Table": {
       "topic": "Topic",
+      "author": "Author",
       "replies": "Replies",
       "views": "Views",
       "participants": "Participants",

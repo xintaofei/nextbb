@@ -32,6 +32,7 @@
     },
     "Table": {
       "topic": "话题",
+      "author": "作者",
       "replies": "回复",
       "views": "浏览量",
       "participants": "参与者",
