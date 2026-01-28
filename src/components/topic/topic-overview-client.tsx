@@ -61,6 +61,17 @@ const fetcherPosts = async (url: string): Promise<PostPage> => {
   return (await res.json()) as PostPage
 }
 
+const fetcherBounty = async (url: string) => {
+  const res = await fetch(url, { cache: "no-store" })
+  if (!res.ok) throw new Error("Failed to load")
+  return (await res.json()) as {
+    bountyTotal: number
+    bountyType: string
+    remainingSlots: number
+    singleAmount: number | null
+  }
+}
+
 const fetcherRelated = async (url: string): Promise<RelatedResult> => {
   const res = await fetch(url, { cache: "no-store" })
   if (!res.ok) throw new Error("Failed to load")
@@ -89,6 +100,7 @@ export default function TopicOverviewClient({
     fetcherInfo,
     {
       revalidateOnFocus: false,
+      revalidateOnMount: false,
       fallbackData: initialTopicInfo ? { topic: initialTopicInfo } : undefined,
     }
   )
@@ -103,6 +115,11 @@ export default function TopicOverviewClient({
   const topicInfo = infoData?.topic
 
   const pageSize = 15
+
+  // 使用 ref 存储初始数据，避免第一页重复请求
+  const initialPostsRef = useRef(initialPosts)
+  const firstPageFetchedRef = useRef(false)
+
   const [currentUserId, setCurrentUserId] = useState<string | null>(null)
   const [currentUserProfile, setCurrentUserProfile] = useState<{
     id: string
@@ -120,12 +137,6 @@ export default function TopicOverviewClient({
   const [mutatingPostId, setMutatingPostId] = useState<string | null>(null)
   const [highlightIndex, setHighlightIndex] = useState<number | null>(null)
   const previousPostsLengthRef = useRef(0)
-  const [bountyConfig, setBountyConfig] = useState<{
-    bountyTotal: number
-    bountyType: string
-    remainingSlots: number
-    singleAmount: number | null
-  } | null>(null)
   const [portalContainer, setPortalContainer] = useState<HTMLElement | null>(
     null
   )
@@ -155,10 +166,20 @@ export default function TopicOverviewClient({
     getKey,
     (args: string | [string, string]) => {
       const url = Array.isArray(args) ? args[0] : args
+      // 拦截第一页请求：如果有初始数据且还没被使用过，直接返回
+      if (
+        url.includes("page=1") &&
+        initialPostsRef.current &&
+        !firstPageFetchedRef.current
+      ) {
+        firstPageFetchedRef.current = true
+        return Promise.resolve(initialPostsRef.current)
+      }
       return fetcherPosts(url)
     },
     {
       revalidateOnFocus: false,
+      revalidateOnMount: false,
       revalidateFirstPage: false,
       fallbackData: initialPosts ? [initialPosts] : undefined,
     }
@@ -485,26 +506,21 @@ export default function TopicOverviewClient({
 
   // 获取悬赏配置
   const topicType = topicInfo?.type
-  useEffect(() => {
-    if (topicType !== TopicType.BOUNTY) return
-    const fetchBountyConfig = async () => {
-      try {
-        const res = await fetch(`/api/topic/${id}/bounty`, {
-          cache: "no-store",
-        })
-        if (res.ok) {
-          const data = await res.json()
-          setBountyConfig({
-            bountyTotal: data.bountyTotal,
-            bountyType: data.bountyType,
-            remainingSlots: data.remainingSlots,
-            singleAmount: data.singleAmount,
-          })
-        }
-      } catch {}
+  const { data: bountyData, mutate: mutateBounty } = useSWR(
+    topicType === TopicType.BOUNTY ? `/api/topic/${id}/bounty` : null,
+    fetcherBounty,
+    {
+      revalidateOnFocus: false,
     }
-    fetchBountyConfig()
-  }, [id, topicType])
+  )
+  const bountyConfig = bountyData
+    ? {
+        bountyTotal: bountyData.bountyTotal,
+        bountyType: bountyData.bountyType,
+        remainingSlots: bountyData.remainingSlots,
+        singleAmount: bountyData.singleAmount,
+      }
+    : null
 
   const onClickReply = useCallback((postId: string, authorName: string) => {
     setReplyToPostId(postId)
@@ -702,12 +718,16 @@ export default function TopicOverviewClient({
           tb("success.rewarded", { remaining: result.remainingSlots })
         )
         // 更新悬赏配置
-        if (bountyConfig) {
-          setBountyConfig({
-            ...bountyConfig,
-            remainingSlots: result.remainingSlots,
-          })
-        }
+        await mutateBounty(
+          (data) =>
+            data
+              ? {
+                  ...data,
+                  remainingSlots: result.remainingSlots,
+                }
+              : data,
+          false
+        )
       } catch (e) {
         const status = Number((e as Error).message)
         if (status === 401) toast.error(te("unauthorized"))
@@ -720,7 +740,7 @@ export default function TopicOverviewClient({
         setMutatingPostId(null)
       }
     },
-    [tb, bountyConfig, triggerReward, mutatePosts, te]
+    [tb, triggerReward, mutatePosts, te, mutateBounty]
   )
 
   const onAccept = useCallback(
