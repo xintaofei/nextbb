@@ -16,12 +16,12 @@ import {
 } from "@/components/ui/table"
 import { useTranslations } from "next-intl"
 import {
+  ReactNode,
+  useCallback,
   useEffect,
   useMemo,
   useRef,
   useState,
-  ReactNode,
-  useCallback,
 } from "react"
 import { createPortal } from "react-dom"
 import { toast } from "sonner"
@@ -34,9 +34,9 @@ import { PostSkeletonList } from "@/components/topic/post-skeleton-list"
 import { TopicPostItem } from "@/components/topic/topic-post-item"
 import {
   PostItem,
-  TopicInfoResult,
   PostPage,
   RelatedResult,
+  TopicInfoResult,
 } from "@/types/topic"
 import { CategoryBadge } from "@/components/common/category-badge"
 import { TagBadge } from "@/components/common/tag-badge"
@@ -45,8 +45,8 @@ import { PollDisplay } from "@/components/topic/poll-display"
 import { BountyDisplay } from "@/components/topic/bounty-display"
 import { QuestionAcceptanceDisplay } from "@/components/topic/question-acceptance-display"
 import { LotteryDisplay } from "@/components/topic/lottery-display"
-import { type TopicTypeValue, TopicType, BountyType } from "@/types/topic-type"
-import { Eye, Users, Clock } from "lucide-react"
+import { BountyType, TopicType, type TopicTypeValue } from "@/types/topic-type"
+import { Clock, Eye, Users } from "lucide-react"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 
 const fetcherInfo = async (url: string): Promise<TopicInfoResult> => {
@@ -537,8 +537,7 @@ export default function TopicOverviewClient({
       }
       setSubmitting(true)
       try {
-        const prevPages = postsPages
-        if (!prevPages) {
+        if (!postsPages) {
           toast.error(tc("Error.requestFailed"))
           return
         }
