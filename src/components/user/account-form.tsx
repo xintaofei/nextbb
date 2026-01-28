@@ -49,7 +49,14 @@ export function AccountForm({ user }: AccountFormProps) {
   const t = useTranslations("User.preferences.account")
   const router = useRouter()
   const pathname = usePathname()
-  const { mutate: mutateMe } = useSWR("/api/auth/me")
+  const { mutate: mutateMe } = useSWR<{
+    id: string
+    email: string
+    name: string
+    avatar: string
+    isAdmin: boolean
+    credits: number
+  } | null>("/api/auth/me")
   const [saving, setSaving] = useState(false)
   const [uploading, setUploading] = useState(false)
   const [avatarPreview, setAvatarPreview] = useState(user.avatar)

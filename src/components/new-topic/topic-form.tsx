@@ -40,18 +40,12 @@ import { AdminOptions } from "./admin-options"
 import { MilkdownEditorWrapper } from "@/components/editor/content-editor"
 
 type MeResponse = {
-  user: {
-    id: string
-    email?: string | null
-    isAdmin?: boolean
-    credits?: number
-  }
-  profile?: {
-    id: string
-    email: string
-    username: string
-    avatar?: string | null
-  } | null
+  id: string
+  email: string
+  name: string
+  avatar: string
+  isAdmin: boolean
+  credits: number
 } | null
 
 interface TopicFormProps {
@@ -78,8 +72,8 @@ export function TopicForm({
     return (await res.json()) as MeResponse
   }
   const { data: me } = useSWR<MeResponse>("/api/auth/me", fetcher)
-  const isAdmin = me?.user?.isAdmin === true
-  const userCredits = me?.user?.credits ?? 0
+  const isAdmin = me?.isAdmin === true
+  const userCredits = me?.credits ?? 0
 
   const topicFormSchema = createTopicFormSchemaWithCredits(
     userCredits,

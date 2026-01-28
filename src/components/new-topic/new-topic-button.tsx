@@ -18,20 +18,13 @@ export function NewTopicButton({ onClick, className }: NewTopicButtonProps) {
   const t = useTranslations("Topic.New")
   const locale = useLocale()
   const router = useRouter()
-  type MeProfile = {
+  type MeResponse = {
     id: string
     email: string
-    username: string
-    avatar?: string | null
-  }
-  type MeUser = {
-    id: string
-    email?: string | null
+    name: string
+    avatar: string
+    isAdmin: boolean
     credits: number
-  }
-  type MeResponse = {
-    user: MeUser
-    profile?: MeProfile | null
   } | null
   const fetcher = async (url: string): Promise<MeResponse> => {
     const res = await fetch(url, { cache: "no-store" })

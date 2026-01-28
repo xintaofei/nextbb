@@ -129,7 +129,7 @@ export default function TopicOverviewClient({
   const [currentUserId, setCurrentUserId] = useState<string | null>(null)
   const [currentUserProfile, setCurrentUserProfile] = useState<{
     id: string
-    username: string
+    name: string
     avatar: string
   } | null>(null)
   const [replyContent, setReplyContent] = useState<string>("")
@@ -481,25 +481,19 @@ export default function TopicOverviewClient({
         const res = await fetch("/api/auth/me", { cache: "no-store" })
         if (res.ok) {
           const json = (await res.json()) as {
-            user: {
-              id: string
-              email: string
-              isAdmin: boolean
-              credits: number
-            }
-            profile: {
-              id: string
-              email: string
-              username: string
-              avatar: string
-            }
+            id: string
+            email: string
+            name: string
+            avatar: string
+            isAdmin: boolean
+            credits: number
           }
-          if (mounted) setCurrentUserId(json.user.id)
+          if (mounted) setCurrentUserId(json.id)
           if (mounted)
             setCurrentUserProfile({
-              id: json.profile.id,
-              username: json.profile.username,
-              avatar: json.profile.avatar,
+              id: json.id,
+              name: json.name,
+              avatar: json.avatar,
             })
         }
       } catch {}
@@ -552,7 +546,7 @@ export default function TopicOverviewClient({
           id: tempId,
           author: {
             id: currentUserId ?? "0",
-            name: currentUserProfile?.username ?? "",
+            name: currentUserProfile?.name ?? "",
             avatar: currentUserProfile?.avatar ?? "",
           },
           content,
@@ -776,7 +770,7 @@ export default function TopicOverviewClient({
                         ? {
                             acceptedBy: {
                               id: currentUserId_,
-                              name: currentUserProfile_.username,
+                              name: currentUserProfile_.name,
                               avatar: currentUserProfile_.avatar,
                             },
                             acceptedAt: new Date().toISOString(),
