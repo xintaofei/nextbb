@@ -139,6 +139,13 @@ export async function incrementTopicViews(topicId: bigint): Promise<void> {
   )
 }
 
+// 使用 cache 包装，确保在同一次请求中只执行一次
+export const incrementTopicViewsOnce = cache(
+  async (topicId: bigint): Promise<void> => {
+    await incrementTopicViews(topicId)
+  }
+)
+
 export const getTopicPosts = cache(async function getTopicPosts(
   topicId: bigint,
   locale: string,
