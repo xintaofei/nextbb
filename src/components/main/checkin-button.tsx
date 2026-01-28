@@ -52,9 +52,8 @@ export function CheckinButton() {
 
       if (res.ok) {
         toast.success(t("success", { credits: result.creditsEarned }))
-        // 刷新签到状态和用户信息
+        // 刷新签到状态
         mutate("/api/checkin")
-        mutate("/api/auth/me")
       } else {
         if (result.alreadyCheckedIn) {
           toast.info(t("alreadyCheckedIn"))

@@ -3,7 +3,7 @@
 import { useMemo } from "react"
 import { useRouter } from "next/navigation"
 import { useTranslations } from "next-intl"
-import useSWR from "swr"
+import { signOut } from "next-auth/react"
 import {
   Bell,
   LayoutDashboard,
@@ -28,21 +28,7 @@ import { ThemeSwitcher } from "@/components/common/theme-switcher"
 import { LocaleSwitcher } from "@/components/common/locale-switcher"
 import { cn, encodeUsername } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
-
-type MeResponse = {
-  id: string
-  email: string
-  name: string
-  avatar: string
-  isAdmin: boolean
-  credits: number
-}
-
-const fetcher = async (url: string): Promise<MeResponse | null> => {
-  const res = await fetch(url, { cache: "no-store" })
-  if (!res.ok) return null
-  return res.json()
-}
+import { useCurrentUser } from "@/hooks/use-current-user"
 
 interface NavUserProps {
   onLinkClick?: () => void
@@ -56,34 +42,30 @@ export function NavUser({ onLinkClick, layout = "sidebar" }: NavUserProps) {
   const tAuth = useTranslations("Auth")
   const router = useRouter()
 
-  const { data, isLoading, mutate } = useSWR<MeResponse | null>(
-    "/api/auth/me",
-    fetcher
-  )
+  const { user, isLoading } = useCurrentUser()
 
   const displayName = useMemo(() => {
-    if (!data) return tNav("notLoggedIn")
-    return data.name || data.email || tNav("notLoggedIn")
-  }, [data, tNav])
+    if (!user) return tNav("notLoggedIn")
+    return user.name || user.email || tNav("notLoggedIn")
+  }, [user, tNav])
 
   const displayEmail = useMemo(() => {
-    if (!data) return ""
-    return data.email || ""
-  }, [data])
+    if (!user) return ""
+    return user.email || ""
+  }, [user])
 
   const displayAvatar = useMemo(() => {
-    if (!data) return undefined
-    return data.avatar || undefined
-  }, [data])
+    if (!user) return undefined
+    return user.avatar || undefined
+  }, [user])
 
   const encodedUsername = useMemo(() => {
-    if (!data?.name) return null
-    return encodeUsername(data.name)
-  }, [data])
+    if (!user?.name) return null
+    return encodeUsername(user.name)
+  }, [user])
 
   const onLogout = async () => {
-    await fetch("/api/auth/logout", { method: "POST" })
-    mutate()
+    await signOut({ redirect: false })
     router.replace(`/`)
   }
 
@@ -158,7 +140,7 @@ export function NavUser({ onLinkClick, layout = "sidebar" }: NavUserProps) {
           </div>
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
-        {data && (
+        {user && (
           <>
             <DropdownMenuGroup>
               <DropdownMenuItem asChild>
@@ -209,7 +191,7 @@ export function NavUser({ onLinkClick, layout = "sidebar" }: NavUserProps) {
                   {tNav("settings")}
                 </Link>
               </DropdownMenuItem>
-              {data?.isAdmin ? (
+              {user?.isAdmin ? (
                 <DropdownMenuItem asChild>
                   <Link href="/admin" target="_blank" onClick={onLinkClick}>
                     <LayoutDashboard className="mr-2 h-4 w-4" />
@@ -227,7 +209,7 @@ export function NavUser({ onLinkClick, layout = "sidebar" }: NavUserProps) {
         </div>
         <DropdownMenuSeparator />
         <DropdownMenuGroup>
-          {!data ? (
+          {!user ? (
             <>
               <DropdownMenuItem asChild>
                 <Link href="/login" onClick={onLinkClick}>

@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
-import { getSessionUser } from "@/lib/auth"
+import { getServerSessionUser } from "@/lib/server-auth"
 import { TopicType } from "@/types/topic-type"
 import { z } from "zod"
 
@@ -53,7 +53,7 @@ export async function POST(
 ) {
   try {
     // 验证用户登录
-    const auth = await getSessionUser()
+    const auth = await getServerSessionUser()
     if (!auth) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }

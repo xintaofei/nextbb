@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server"
-import { getSessionUser } from "@/lib/auth"
+import { getServerSessionUser } from "@/lib/server-auth"
 
 /**
  * 获取当前用户会话信息
@@ -7,7 +7,7 @@ import { getSessionUser } from "@/lib/auth"
  */
 export async function GET() {
   try {
-    const sessionUser = await getSessionUser()
+    const sessionUser = await getServerSessionUser()
 
     if (!sessionUser) {
       return NextResponse.json({ userId: null }, { status: 200 })

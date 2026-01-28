@@ -48,6 +48,7 @@ import { LotteryDisplay } from "@/components/topic/lottery-display"
 import { BountyType, TopicType, type TopicTypeValue } from "@/types/topic-type"
 import { Clock, Eye, Users } from "lucide-react"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { useCurrentUser } from "@/hooks/use-current-user"
 
 const fetcherInfo = async (url: string): Promise<TopicInfoResult> => {
   const res = await fetch(url, { cache: "no-store" })
@@ -126,12 +127,6 @@ export default function TopicOverviewClient({
     firstPageFetchedRef.current = false
   }, [id, initialPosts])
 
-  const [currentUserId, setCurrentUserId] = useState<string | null>(null)
-  const [currentUserProfile, setCurrentUserProfile] = useState<{
-    id: string
-    name: string
-    avatar: string
-  } | null>(null)
   const [replyContent, setReplyContent] = useState<string>("")
   const [replyToPostId, setReplyToPostId] = useState<string | null>(null)
   const [submitting, setSubmitting] = useState<boolean>(false)
@@ -474,35 +469,19 @@ export default function TopicOverviewClient({
     [mutatePosts, tc, triggerBookmark]
   )
 
-  useEffect(() => {
-    let mounted = true
-    const run = async () => {
-      try {
-        const res = await fetch("/api/auth/me", { cache: "no-store" })
-        if (res.ok) {
-          const json = (await res.json()) as {
-            id: string
-            email: string
-            name: string
-            avatar: string
-            isAdmin: boolean
-            credits: number
+  const { user: currentUserData } = useCurrentUser()
+  const currentUserId = currentUserData?.id ?? null
+  const currentUserProfile = useMemo(
+    () =>
+      currentUserData
+        ? {
+            id: currentUserData.id,
+            name: currentUserData.name,
+            avatar: currentUserData.avatar,
           }
-          if (mounted) setCurrentUserId(json.id)
-          if (mounted)
-            setCurrentUserProfile({
-              id: json.id,
-              name: json.name,
-              avatar: json.avatar,
-            })
-        }
-      } catch {}
-    }
-    run()
-    return () => {
-      mounted = false
-    }
-  }, [])
+        : null,
+    [currentUserData]
+  )
 
   // 获取悬赏配置
   const topicType = topicInfo?.type

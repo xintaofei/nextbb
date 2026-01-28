@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server"
-import { getSessionUser } from "@/lib/auth"
+import { getServerSessionUser } from "@/lib/server-auth"
 import { prisma } from "@/lib/prisma"
 import { NotificationType, Prisma } from "@prisma/client"
 import { getTranslationsQuery } from "@/lib/locale"
@@ -9,7 +9,7 @@ export async function GET(
   req: NextRequest,
   { params }: { params: Promise<{ locale: string }> }
 ) {
-  const session = await getSessionUser()
+  const session = await getServerSessionUser()
   const { locale } = await params
   if (!session) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
@@ -106,7 +106,7 @@ export async function GET(
 }
 
 export async function POST() {
-  const session = await getSessionUser()
+  const session = await getServerSessionUser()
   if (!session) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
   }

@@ -1,7 +1,6 @@
 "use client"
 
 import { useMemo } from "react"
-import useSWR from "swr"
 import { useTranslations } from "next-intl"
 import { usePathname } from "next/navigation"
 import {
@@ -15,21 +14,7 @@ import {
 import Link from "next/link"
 import { cn, encodeUsername } from "@/lib/utils"
 import { buttonVariants } from "@/components/ui/button"
-
-type MeResponse = {
-  id: string
-  email: string
-  name: string
-  avatar: string
-  isAdmin: boolean
-  credits: number
-}
-
-const fetcher = async (url: string): Promise<MeResponse | null> => {
-  const res = await fetch(url, { cache: "no-store" })
-  if (!res.ok) return null
-  return res.json()
-}
+import { useCurrentUser } from "@/hooks/use-current-user"
 
 interface NavMainProps {
   className?: string
@@ -37,14 +22,14 @@ interface NavMainProps {
 }
 
 export function NavMain({ className, onLinkClick }: NavMainProps) {
-  const { data } = useSWR<MeResponse | null>("/api/auth/me", fetcher)
+  const { user } = useCurrentUser()
   const t = useTranslations("Nav.main")
   const pathname = usePathname()
 
   const username = useMemo(() => {
-    if (!data) return null
-    return data.name || null
-  }, [data])
+    if (!user) return null
+    return user.name || null
+  }, [user])
 
   const encodedUsername = username ? encodeUsername(username) : null
 

@@ -13,13 +13,32 @@ declare global {
 declare module "next-auth" {
   interface Session {
     user: {
-      id?: string
-    } & DefaultSession["user"]
+      id: string
+      email: string
+      name: string
+      avatar: string
+      isAdmin: boolean
+      credits: number
+    }
+  }
+
+  interface User {
+    id: string
+    email: string
+    name: string
+    image: string
+    isAdmin?: boolean
+    credits?: number
   }
 }
 
 declare module "next-auth/jwt" {
   interface JWT {
-    id?: string
+    id: string
+    email: string
+    name: string
+    picture: string
+    isAdmin: boolean
+    credits: number
   }
 }

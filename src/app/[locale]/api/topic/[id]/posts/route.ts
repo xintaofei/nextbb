@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server"
-import { getSessionUser } from "@/lib/auth"
+import { getServerSessionUser } from "@/lib/server-auth"
 import { getLocale } from "next-intl/server"
 import { getTopicPosts } from "@/lib/topic-service"
 import { PostPage } from "@/types/topic"
@@ -9,7 +9,7 @@ export async function GET(
   ctx: { params: Promise<{ id: string }> }
 ) {
   const locale = await getLocale()
-  const auth = await getSessionUser()
+  const auth = await getServerSessionUser()
   const { id: idStr } = await ctx.params
   let topicId: bigint
   try {

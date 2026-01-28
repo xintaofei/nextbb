@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
-import { getSessionUser } from "@/lib/auth"
+import { getServerSessionUser } from "@/lib/server-auth"
 import { getLocale } from "next-intl/server"
 import { getTranslationsQuery, getTranslationField } from "@/lib/locale"
 import { getTopicTitle } from "@/lib/topic-translation"
@@ -49,7 +49,7 @@ type TopicListResult = {
 export async function GET(request: NextRequest) {
   try {
     const locale = await getLocale()
-    const auth = await getSessionUser()
+    const auth = await getServerSessionUser()
     if (!auth) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }

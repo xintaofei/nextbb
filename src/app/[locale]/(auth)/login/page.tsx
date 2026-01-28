@@ -6,6 +6,7 @@ import { useTranslations } from "next-intl"
 import { z } from "zod"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
+import { signIn } from "next-auth/react"
 import {
   Form,
   FormControl,
@@ -27,22 +28,6 @@ type LoginValues = {
   email: string
   password: string
 }
-
-type ApiUser = {
-  id: string
-  email?: string | null
-}
-
-type ApiProfile = {
-  id: string
-  email: string
-  username: string
-  avatar?: string | null
-}
-
-type ApiResponse =
-  | { user: ApiUser; profile?: ApiProfile | null }
-  | { error: string }
 
 export default function LoginPage() {
   const router = useRouter()
@@ -66,16 +51,18 @@ export default function LoginPage() {
 
   const onSubmit = async (values: LoginValues) => {
     setServerError(null)
-    const res = await fetch("/api/auth/login", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(values),
+
+    const result = await signIn("credentials", {
+      email: values.email,
+      password: values.password,
+      redirect: false,
     })
-    const data: ApiResponse = await res.json()
-    if (!res.ok || "error" in data) {
-      setServerError("error" in data ? data.error : t("error.failed"))
+
+    if (result?.error) {
+      setServerError(t("error.failed"))
       return
     }
+
     router.replace(`/`)
   }
 
@@ -182,7 +169,7 @@ export default function LoginPage() {
               </div>
             </div>
 
-            <OAuthButtons callbackUrl="/api/auth/bridge" />
+            <OAuthButtons />
 
             <div className="text-center text-sm text-muted-foreground">
               {t("questionNoAccount")}{" "}

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
-import { getSessionUser } from "@/lib/auth"
+import { getServerSessionUser } from "@/lib/server-auth"
 import {
   TranslationTaskStatus,
   TranslationEntityType,
@@ -34,7 +34,7 @@ interface TranslationTaskListResult {
 export async function GET(request: NextRequest) {
   try {
     const t = await getTranslations("AdminTranslationTasks.error")
-    const auth = await getSessionUser()
+    const auth = await getServerSessionUser()
     if (!auth || !auth.isAdmin) {
       return NextResponse.json({ error: t("unauthorized") }, { status: 401 })
     }

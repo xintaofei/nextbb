@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
-import { getSessionUser } from "@/lib/auth"
+import { getServerSessionUser } from "@/lib/server-auth"
 
 type BookmarkToggleResult = {
   bookmarked: boolean
@@ -11,7 +11,7 @@ export async function POST(
   _req: Request,
   ctx: { params: Promise<{ id: string }> }
 ): Promise<NextResponse> {
-  const auth = await getSessionUser()
+  const auth = await getServerSessionUser()
   if (!auth) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
   }

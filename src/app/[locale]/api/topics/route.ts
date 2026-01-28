@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
 import { z } from "zod"
-import { getSessionUser } from "@/lib/auth"
+import { getServerSessionUser } from "@/lib/server-auth"
 import { generateId } from "@/lib/id"
 import { TopicType, BountyType } from "@/types/topic-type"
 import { topicFormSchema } from "@/lib/topic-validation"
@@ -129,7 +129,7 @@ export async function GET(req: Request) {
   const pageSize = q.data.pageSize ? Number(q.data.pageSize) : 20
 
   // 获取当前用户（用于 my 过滤）
-  const auth = await getSessionUser()
+  const auth = await getServerSessionUser()
 
   const where: {
     is_deleted: boolean
@@ -400,7 +400,7 @@ type TopicCreateResult = {
 
 export async function POST(req: Request) {
   const locale = await getLocale()
-  const auth = await getSessionUser()
+  const auth = await getServerSessionUser()
   if (!auth) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
   }

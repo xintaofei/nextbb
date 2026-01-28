@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
-import { getSessionUser } from "@/lib/auth"
+import { getServerSessionUser } from "@/lib/server-auth"
 import { generateId } from "@/lib/id"
 import { getLocale } from "next-intl/server"
 
@@ -40,7 +40,7 @@ function validateColor(color: string | null): boolean {
 // GET - 获取分类列表
 export async function GET(request: NextRequest) {
   try {
-    const auth = await getSessionUser()
+    const auth = await getServerSessionUser()
     if (!auth || !auth.isAdmin) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
@@ -160,7 +160,7 @@ export async function GET(request: NextRequest) {
 // POST - 创建分类
 export async function POST(request: NextRequest) {
   try {
-    const auth = await getSessionUser()
+    const auth = await getServerSessionUser()
     if (!auth || !auth.isAdmin) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }

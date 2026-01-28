@@ -1,24 +1,21 @@
 import { NextResponse } from "next/server"
-import { getSessionUser } from "@/lib/auth"
-import { prisma } from "@/lib/prisma"
+import { getServerSession } from "next-auth"
+import { createAuthOptions } from "@/lib/auth-options"
 
 export async function GET() {
-  const auth = await getSessionUser()
-  if (!auth) return NextResponse.json(null, { status: 401 })
+  const authOptions = await createAuthOptions()
+  const session = await getServerSession(authOptions)
 
-  const user = await prisma.users.findUnique({
-    where: { id: auth.userId },
-  })
-  if (!user || user.is_deleted || user.status !== 1) {
+  if (!session?.user) {
     return NextResponse.json(null, { status: 401 })
   }
 
   return NextResponse.json({
-    id: String(user.id),
-    email: user.email,
-    name: user.name,
-    avatar: user.avatar,
-    isAdmin: user.is_admin,
-    credits: user.credits,
+    id: session.user.id,
+    email: session.user.email,
+    name: session.user.name,
+    avatar: session.user.avatar,
+    isAdmin: session.user.isAdmin,
+    credits: session.user.credits,
   })
 }

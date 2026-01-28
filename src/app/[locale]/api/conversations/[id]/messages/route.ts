@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
-import { getSessionUser } from "@/lib/auth"
+import { getServerSessionUser } from "@/lib/server-auth"
 import { generateId } from "@/lib/id"
 
 type Params = Promise<{ id: string }>
@@ -14,7 +14,7 @@ export async function GET(req: Request, props: { params: Params }) {
   const conversationId = BigInt(params.id)
 
   try {
-    const sessionUser = await getSessionUser()
+    const sessionUser = await getServerSessionUser()
     if (!sessionUser) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
@@ -124,7 +124,7 @@ export async function POST(req: Request, props: { params: Params }) {
   const conversationId = BigInt(params.id)
 
   try {
-    const sessionUser = await getSessionUser()
+    const sessionUser = await getServerSessionUser()
     if (!sessionUser) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }

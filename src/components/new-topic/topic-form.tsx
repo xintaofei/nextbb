@@ -19,7 +19,6 @@ import { CategorySelect } from "@/components/filters/category-select"
 import { TagsMultiSelect } from "./tags-multi-select"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { useTranslations } from "next-intl"
-import useSWR from "swr"
 import { TopicType, type TopicTypeValue } from "@/types/topic-type"
 import {
   createTopicFormSchemaWithCredits,
@@ -38,15 +37,7 @@ import { PollConfig } from "./poll-config"
 import { LotteryConfig } from "./lottery-config"
 import { AdminOptions } from "./admin-options"
 import { MilkdownEditorWrapper } from "@/components/editor/content-editor"
-
-type MeResponse = {
-  id: string
-  email: string
-  name: string
-  avatar: string
-  isAdmin: boolean
-  credits: number
-} | null
+import { useCurrentUser } from "@/hooks/use-current-user"
 
 interface TopicFormProps {
   onSubmit: (data: TopicFormData) => void
@@ -66,14 +57,9 @@ export function TopicForm({
     TopicType.GENERAL
   )
 
-  const fetcher = async (url: string): Promise<MeResponse> => {
-    const res = await fetch(url, { cache: "no-store" })
-    if (!res.ok) return null
-    return (await res.json()) as MeResponse
-  }
-  const { data: me } = useSWR<MeResponse>("/api/auth/me", fetcher)
-  const isAdmin = me?.isAdmin === true
-  const userCredits = me?.credits ?? 0
+  const { user } = useCurrentUser()
+  const isAdmin = user?.isAdmin === true
+  const userCredits = user?.credits ?? 0
 
   const topicFormSchema = createTopicFormSchemaWithCredits(
     userCredits,

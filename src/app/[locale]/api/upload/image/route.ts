@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server"
 import { put } from "@vercel/blob"
-import { getSessionUser } from "@/lib/auth"
+import { getServerSessionUser } from "@/lib/server-auth"
 import { prisma } from "@/lib/prisma"
 import { generateId } from "@/lib/id"
 
@@ -23,7 +23,7 @@ function getExtFromContentType(ct: string): string {
 
 export async function POST(req: Request) {
   // Verify user authentication
-  const session = await getSessionUser()
+  const session = await getServerSessionUser()
   if (!session) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
   }

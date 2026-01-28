@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
-import { getSessionUser } from "@/lib/auth"
+import { getServerSessionUser } from "@/lib/server-auth"
 
 export const GET = async (request: NextRequest) => {
-  const session = await getSessionUser()
+  const session = await getServerSessionUser()
   if (!session) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
   }

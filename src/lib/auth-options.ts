@@ -1,4 +1,6 @@
 import type { NextAuthOptions } from "next-auth"
+import CredentialsProvider from "next-auth/providers/credentials"
+import bcrypt from "bcryptjs"
 import { cookies } from "next/headers"
 import { prisma } from "@/lib/prisma"
 import { generateId } from "@/lib/id"
@@ -85,6 +87,47 @@ export async function createAuthOptions(): Promise<NextAuthOptions> {
     }
   }
 
+  // 添加 Credentials Provider 用于邮箱密码登录
+  providers.push(
+    CredentialsProvider({
+      id: "credentials",
+      name: "Credentials",
+      credentials: {
+        email: { label: "Email", type: "email" },
+        password: { label: "Password", type: "password" },
+      },
+      async authorize(credentials) {
+        if (!credentials?.email || !credentials?.password) {
+          return null
+        }
+
+        const user = await prisma.users.findUnique({
+          where: { email: credentials.email },
+        })
+
+        if (!user || user.is_deleted || user.status !== 1) {
+          await recordLogin(user?.id || null, "FAILED", "CREDENTIALS")
+          return null
+        }
+
+        const ok = await bcrypt.compare(credentials.password, user.password)
+        if (!ok) {
+          await recordLogin(user.id, "FAILED", "CREDENTIALS")
+          return null
+        }
+
+        await recordLogin(user.id, "SUCCESS", "CREDENTIALS")
+
+        return {
+          id: user.id.toString(),
+          email: user.email,
+          name: user.name,
+          image: user.avatar,
+        }
+      },
+    })
+  )
+
   if (providers.length === 0) {
     console.warn("[Auth] 警告: 没有启用任何 OAuth Provider")
   }
@@ -101,6 +144,11 @@ export async function createAuthOptions(): Promise<NextAuthOptions> {
       async signIn({ user, account, profile }) {
         if (!account) return false
         const provider = account.provider
+
+        // 对于 credentials provider，直接返回 true
+        if (provider === "credentials") {
+          return true
+        }
 
         if (!validProviderIds.has(provider)) {
           return false
@@ -271,18 +319,18 @@ export async function createAuthOptions(): Promise<NextAuthOptions> {
         }
 
         const id = generateId()
-        let name =
+        let name: string =
           user.name ??
           (typeof profile?.name === "string" && profile.name.length > 0
             ? profile.name
-            : null)
+            : "")
         if (!name && provider === "linuxdo") {
           const p = profile as { username?: string; login?: string }
           name =
             (typeof p.username === "string" && p.username.length > 0
               ? p.username
-              : null) ??
-            (typeof p.login === "string" && p.login.length > 0 ? p.login : null)
+              : "") ||
+            (typeof p.login === "string" && p.login.length > 0 ? p.login : "")
         }
         if (!name) {
           name = email.split("@")[0]
@@ -346,24 +394,58 @@ export async function createAuthOptions(): Promise<NextAuthOptions> {
 
         return true
       },
-      async jwt({ token, user }) {
-        if (user?.email) {
-          const u = await prisma.users.findUnique({
-            where: { email: user.email },
-            select: { id: true, email: true, name: true, avatar: true },
+      async jwt({ token, user, trigger }) {
+        // 初始登录或强制刷新
+        if (user || trigger === "update") {
+          const email = user?.email || token.email
+          if (!email) return token
+
+          const dbUser = await prisma.users.findUnique({
+            where: { email },
+            select: {
+              id: true,
+              email: true,
+              name: true,
+              avatar: true,
+              is_admin: true,
+              credits: true,
+              is_deleted: true,
+              status: true,
+            },
           })
-          if (u) {
-            token.id = u.id.toString()
-            token.email = u.email
-            token.name = u.name
-            token.picture = u.avatar
+
+          if (!dbUser || dbUser.is_deleted || dbUser.status !== 1) {
+            return token
           }
+
+          token.id = dbUser.id.toString()
+          token.email = dbUser.email
+          token.name = dbUser.name
+          token.picture = dbUser.avatar
+          token.isAdmin = dbUser.is_admin
+          token.credits = dbUser.credits
         }
+
         return token
       },
       async session({ session, token }) {
-        if (session.user && token) {
-          session.user.id = typeof token.id === "string" ? token.id : undefined
+        if (
+          token &&
+          token.id &&
+          token.email &&
+          token.name &&
+          token.picture &&
+          typeof token.isAdmin === "boolean" &&
+          typeof token.credits === "number"
+        ) {
+          session.user = {
+            id: token.id,
+            email: token.email,
+            name: token.name,
+            avatar: token.picture,
+            isAdmin: token.isAdmin,
+            credits: token.credits,
+          }
         }
         return session
       },

@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
-import { getSessionUser } from "@/lib/auth"
+import { getServerSessionUser } from "@/lib/server-auth"
 import { TopicType } from "@/types/topic-type"
 
 type PollVoter = {
@@ -41,7 +41,7 @@ export async function GET(
   ctx: { params: Promise<{ id: string }> }
 ) {
   try {
-    const auth = await getSessionUser()
+    const auth = await getServerSessionUser()
     const { id: idStr } = await ctx.params
 
     // 验证主题ID
