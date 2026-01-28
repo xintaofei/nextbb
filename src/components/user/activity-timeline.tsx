@@ -278,7 +278,7 @@ function ActivityTimeline({
               {/* 卡片骨架 */}
               <div
                 className={`ml-16 w-full md:ml-0 md:w-5/12 min-w-0 ${
-                  isEven ? "md:pr-12" : "md:pl-12"
+                  isEven ? "md:pr-8" : "md:pl-8"
                 }`}
               >
                 <Card className="relative overflow-hidden border-border/50 bg-card p-4 shadow-none md:p-6">
@@ -324,7 +324,7 @@ function ActivityTimeline({
   // 初始加载骨架屏
   if (isLoading) {
     return (
-      <section className="w-full bg-background px-4 py-8 max-sm:py-4">
+      <section className="w-full bg-background py-8 max-sm:py-4">
         <div className="mx-auto max-w-5xl">
           {/* Header */}
           <div className="mb-8 text-center md:mb-12">
@@ -365,7 +365,7 @@ function ActivityTimeline({
   }
 
   return (
-    <section ref={ref} className="w-full bg-background px-4 py-8 max-md:py-4">
+    <section ref={ref} className="w-full bg-background py-8 max-md:py-4">
       <div className="mx-auto max-w-5xl">
         {/* Header */}
         <motion.div
@@ -465,7 +465,7 @@ function ActivityTimeline({
                       {/* Content card */}
                       <div
                         className={`ml-16 w-full md:ml-0 md:w-5/12 min-w-0 ${
-                          isEven ? "md:pr-12" : "md:pl-12"
+                          isEven ? "md:pr-8" : "md:pl-8"
                         }`}
                       >
                         <motion.div

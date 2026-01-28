@@ -21,7 +21,7 @@ function BadgesTimeline({ badges }: BadgesTimelineProps) {
   const locale = useLocale()
 
   return (
-    <section ref={ref} className="w-full bg-background px-4 py-8 max-md:py-4">
+    <section ref={ref} className="w-full bg-background py-8 max-md:py-4">
       <div className="mx-auto max-w-5xl">
         {/* Header */}
         <motion.div
@@ -111,7 +111,7 @@ function BadgesTimeline({ badges }: BadgesTimelineProps) {
                   {/* Content card */}
                   <div
                     className={`ml-16 w-full md:ml-0 md:w-5/12 ${
-                      isEven ? "md:pr-12" : "md:pl-12"
+                      isEven ? "md:pr-8" : "md:pl-8"
                     }`}
                   >
                     <motion.div
