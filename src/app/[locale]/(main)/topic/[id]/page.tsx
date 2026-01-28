@@ -4,6 +4,7 @@ import { getPublicConfigs } from "@/lib/config"
 import { getLocale } from "next-intl/server"
 import { getTopicInfo, getTopicPosts } from "@/lib/topic-service"
 import { getSessionUser } from "@/lib/auth"
+import { stripHtmlAndTruncate } from "@/lib/utils"
 
 type TopicPageProps = {
   params: Promise<{ id: string }>
@@ -43,10 +44,12 @@ export async function generateMetadata({
 
   // 从第一页的第一个帖子获取内容作为描述
   const firstPost = postsData.items[0]
-  const description = firstPost
-    ? firstPost.content.slice(0, 160).replace(/\n/g, " ").trim() +
-      (firstPost.content.length > 160 ? "..." : "")
+  let description = firstPost
+    ? stripHtmlAndTruncate(firstPost.content || "")
     : ""
+  if (description.length > 100) {
+    description = description.slice(0, 100).replace(/\n/g, " ").trim() + "..."
+  }
 
   const authorName = firstPost?.author.name || ""
 
