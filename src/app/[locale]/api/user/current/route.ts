@@ -3,7 +3,7 @@ import { getServerSessionUser } from "@/lib/server-auth"
 
 /**
  * 获取当前用户会话信息
- * GET /api/auth/session
+ * GET /api/user/current
  */
 export async function GET() {
   try {

@@ -95,7 +95,7 @@ export function UserInfoCard({
 
   // 获取当前用户ID
   const { data: sessionData } = useSWR<{ userId: string }>(
-    open ? "/api/auth/session" : null,
+    open ? "/api/user/current" : null,
     {
       revalidateOnFocus: false,
       dedupingInterval: 300000, // 5分钟缓存

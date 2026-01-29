@@ -10,5 +10,15 @@ interface AuthProviderProps {
 }
 
 export function AuthProvider({ children, session }: AuthProviderProps) {
-  return <SessionProvider session={session}>{children}</SessionProvider>
+  return (
+    <SessionProvider
+      session={session}
+      // 传递服务端初始 session 避免首次加载闪烁
+      // 禁用自动轮询，使用按需更新
+      refetchInterval={0}
+      refetchOnWindowFocus={true}
+    >
+      {children}
+    </SessionProvider>
+  )
 }

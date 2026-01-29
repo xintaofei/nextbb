@@ -25,7 +25,7 @@ export function TopicSortTabs({
 
   // 获取当前用户信息
   const { data: sessionData } = useSWR<{ userId: string }>(
-    "/api/auth/session",
+    "/api/user/current",
     {
       revalidateOnFocus: false,
       dedupingInterval: 300000, // 5分钟缓存
