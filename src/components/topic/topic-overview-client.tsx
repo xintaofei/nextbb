@@ -190,6 +190,16 @@ export default function TopicOverviewClient({
     [postsPages]
   )
 
+  // 初始化 SWR 缓存并确保挂载后允许重新验证
+  useEffect(() => {
+    // 注入初始数据到全局缓存，确保乐观更新有数据基础
+    if (initialPosts) {
+      mutatePosts([initialPosts], false)
+    }
+    // 组件挂载完成后，标记首页已“获取”，后续 mutate(..., true) 将触发真实请求
+    firstPageFetchedRef.current = true
+  }, [id, initialPosts, mutatePosts])
+
   // 当 ID 变化时重置，避免不同话题切换时的高亮残留
   useEffect(() => {
     previousPostsLengthRef.current = 0
@@ -545,23 +555,14 @@ export default function TopicOverviewClient({
         setReplyOpen(false)
         setReplyContent("")
         setReplyToPostId(null)
-        await mutatePosts((pages) => {
-          if (!pages || pages.length === 0) {
-            return [
-              {
-                items: [optimistic],
-                page: 1,
-                pageSize,
-                total: 1,
-                hasMore: false,
-              },
-            ]
-          }
+        const updatedPages = await mutatePosts((pages) => {
+          if (!pages || pages.length === 0) return pages
           const next = [...pages]
-          const last = { ...next[next.length - 1] }
+          const lastIndex = next.length - 1
+          const last = { ...next[lastIndex] }
           last.items = [...last.items, optimistic]
           last.total = (last.total ?? postsRef.current.length) + 1
-          next[next.length - 1] = last
+          next[lastIndex] = last
           return next
         }, false)
         await triggerReply({
@@ -571,8 +572,9 @@ export default function TopicOverviewClient({
         })
         await mutatePosts((pages) => pages, true)
         toast.success(tc("Action.success"))
-        const newIndex = postsRef.current.length
-        const el = document.getElementById(`post-${newIndex}`)
+        const totalCount =
+          updatedPages?.reduce((acc, p) => acc + p.items.length, 0) || 0
+        const el = document.getElementById(`post-${totalCount}`)
         if (el) el.scrollIntoView({ behavior: "smooth", block: "center" })
       } catch (e) {
         const status = Number((e as Error).message)

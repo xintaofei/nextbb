@@ -56,6 +56,7 @@ export function TopicForm({
   const [selectedType, setSelectedType] = useState<TopicTypeValue>(
     TopicType.GENERAL
   )
+  const [isSyncing, setIsSyncing] = useState(false)
 
   const { user } = useCurrentUser()
   const isAdmin = user?.isAdmin === true
@@ -305,6 +306,7 @@ export function TopicForm({
                       form.setValue("content_html", html)
                     }
                   }}
+                  onPendingChange={setIsSyncing}
                 />
               </FormControl>
               <FormDescription>
@@ -338,7 +340,7 @@ export function TopicForm({
               {t("form.actions.cancel")}
             </Button>
           )}
-          <Button type="submit" disabled={isSubmitting}>
+          <Button type="submit" disabled={isSubmitting || isSyncing}>
             {isSubmitting
               ? t("form.actions.publishing")
               : t("form.actions.publish")}

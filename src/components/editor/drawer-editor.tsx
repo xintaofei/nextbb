@@ -39,11 +39,13 @@ export function DrawerEditor({
 }: DrawerEditorProps) {
   const [value, setValue] = useState<string>(initialValue)
   const [html, setHtml] = useState<string>("")
+  const [isSyncing, setIsSyncing] = useState(false)
 
   const handleOpenChange = (o: boolean) => {
     if (o) {
       setValue(initialValue)
       setHtml("")
+      setIsSyncing(false)
     }
     onOpenChange(o)
   }
@@ -68,6 +70,7 @@ export function DrawerEditor({
               setValue(val)
               setHtml(h || "")
             }}
+            onPendingChange={setIsSyncing}
           />
         </div>
         <DrawerFooter>
@@ -79,7 +82,7 @@ export function DrawerEditor({
             >
               {cancelText}
             </Button>
-            <Button onClick={handleSubmit} disabled={submitting}>
+            <Button onClick={handleSubmit} disabled={submitting || isSyncing}>
               {submitText}
             </Button>
           </div>
