@@ -150,7 +150,7 @@ const MilkdownEditor: React.FC<MilkdownEditorProps> = ({
     (jsonString: string, json: Record<string, unknown>, html: string) => {
       onChange?.(jsonString, json, html)
     },
-    500
+    300
   )
 
   // 记录上一次同步给编辑器的外部 value，用于区分“外部修改”和“防抖期间的旧值回流”
