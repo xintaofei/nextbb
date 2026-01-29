@@ -256,14 +256,63 @@ export async function createAuthOptions(): Promise<NextAuthOptions> {
           profile
         )
       },
-      async jwt({ token, user, trigger }) {
-        // 初始登录：user 对象存在，直接使用
+      async jwt({ token, user, account, trigger }) {
+        // 初始登录：user 对象存在
         if (user) {
           token.id = user.id
           token.email = user.email
           token.name = user.name
           token.picture = user.image
           token.isAdmin = user.isAdmin ?? false
+
+          // 如果是 OAuth 登录，需要从数据库获取真实的用户 ID 和 isAdmin 状态
+          if (account && account.provider !== "credentials") {
+            // 1. 优先尝试通过 social_accounts 查找（最准确）
+            const socialAccount = await prisma.user_social_accounts.findUnique({
+              where: {
+                provider_key_provider_uid: {
+                  provider_key: account.provider,
+                  provider_uid: account.providerAccountId,
+                },
+              },
+              include: {
+                user: {
+                  select: {
+                    id: true,
+                    is_admin: true,
+                    name: true,
+                    avatar: true,
+                  },
+                },
+              },
+            })
+
+            if (socialAccount?.user) {
+              token.id = socialAccount.user.id.toString()
+              token.isAdmin = socialAccount.user.is_admin
+              token.name = socialAccount.user.name
+              token.picture = socialAccount.user.avatar
+            } else if (user.email) {
+              // 2. 如果找不到社交账号记录（极端情况），尝试用邮箱兜底
+              const dbUser = await prisma.users.findUnique({
+                where: { email: user.email },
+                select: {
+                  id: true,
+                  is_admin: true,
+                  name: true,
+                  avatar: true,
+                },
+              })
+
+              if (dbUser) {
+                token.id = dbUser.id.toString()
+                token.isAdmin = dbUser.is_admin
+                token.name = dbUser.name
+                token.picture = dbUser.avatar
+              }
+            }
+          }
+
           return token
         }
 

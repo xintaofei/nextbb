@@ -43,17 +43,11 @@ export default async function UserProfileLayout({
 
   // 获取当前登录用户
   const session = await getServerSessionUser()
-  const currentUser = session
-    ? await prisma.users.findUnique({
-        where: { id: session.userId },
-        select: { id: true, name: true, is_admin: true },
-      })
-    : null
 
   // 判断是否为本人
-  const isOwnProfile = currentUser?.id === user.id
+  const isOwnProfile = session?.userId === user.id
   // 判断是否为管理员
-  const isAdmin = currentUser?.is_admin || false
+  const isAdmin = session?.isAdmin || false
 
   // 获取用户统计数据
   const [topicsCount, postsCount, likesReceived, bookmarksCount, badgesCount] =
