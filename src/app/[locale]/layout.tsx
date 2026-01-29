@@ -11,9 +11,9 @@ import NextTopLoader from "nextjs-toploader"
 import { getPublicConfigs } from "@/lib/config"
 import { ConfigProvider } from "@/components/providers/config-provider"
 import { NewTopicProvider } from "@/components/providers/new-topic-provider"
-import { SessionProvider } from "next-auth/react"
 import { getServerSession } from "next-auth"
 import { createAuthOptions } from "@/lib/auth-options"
+import { AuthProvider } from "@/components/providers/auth-provider"
 
 export async function generateMetadata(): Promise<Metadata> {
   const configs = await getPublicConfigs()
@@ -57,13 +57,13 @@ export default async function RootLayout({
             enableSystem
             disableTransitionOnChange
           >
-            <SessionProvider session={session}>
+            <AuthProvider session={session}>
               <ConfigProvider initialConfigs={configs}>
                 <SWRProvider>
                   <NewTopicProvider>{children}</NewTopicProvider>
                 </SWRProvider>
               </ConfigProvider>
-            </SessionProvider>
+            </AuthProvider>
             <Toaster richColors closeButton />
             <Analytics />
           </ThemeProvider>
