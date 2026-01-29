@@ -19,7 +19,6 @@ import {
   createNewOAuthUser,
 } from "@/lib/auth-helpers"
 import { logSecurityEvent } from "@/lib/security-logger"
-import { isUserForcedLogout } from "@/lib/session-blacklist"
 
 export const SOCIAL_LINK_COOKIE = "social_link_user_id"
 
@@ -258,27 +257,6 @@ export async function createAuthOptions(): Promise<NextAuthOptions> {
         )
       },
       async jwt({ token, user, trigger }) {
-        // 检查用户是否被强制登出
-        if (token.id) {
-          const isBlacklisted = await isUserForcedLogout(token.id)
-          if (isBlacklisted) {
-            logSecurityEvent({
-              event: "UNAUTHORIZED_ACCESS",
-              userId: token.id,
-              email: token.email,
-              details: "用户已被强制登出",
-            })
-            // 返回无效 token，强制用户重新登录
-            return {
-              id: "",
-              email: "",
-              name: "",
-              picture: "",
-              isAdmin: false,
-            }
-          }
-        }
-
         // 初始登录：user 对象存在，直接使用
         if (user) {
           token.id = user.id

@@ -90,3 +90,15 @@ export async function clearForceLogout(userId: string): Promise<void> {
     throw error
   }
 }
+
+/**
+ * 检查用户会话是否有效（用于敏感操作）
+ * @param userId 用户 ID (bigint)
+ * @throws Error 如果用户被强制登出
+ */
+export async function requireActiveSession(userId: bigint): Promise<void> {
+  const isForced = await isUserForcedLogout(userId.toString())
+  if (isForced) {
+    throw new Error("Session invalidated - user has been forced to logout")
+  }
+}
