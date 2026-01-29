@@ -6,6 +6,7 @@ import { useTranslations } from "next-intl"
 import { z } from "zod"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
+import { signIn } from "next-auth/react"
 import {
   Form,
   FormControl,
@@ -53,21 +54,7 @@ const schema = z.object({
 
 type RegisterValues = z.infer<typeof schema>
 
-type ApiUser = {
-  id: string
-  email?: string | null
-}
-
-type ApiProfile = {
-  id: string
-  email: string
-  username: string
-  avatar?: string | null
-}
-
-type ApiResponse =
-  | { user: ApiUser; profile?: ApiProfile | null }
-  | { error: string }
+type ApiResponse = { success: true; email: string } | { error: string }
 
 export default function RegisterPage() {
   const router = useRouter()
@@ -102,6 +89,19 @@ export default function RegisterPage() {
       setServerError("error" in data ? data.error : t("error.failed"))
       return
     }
+
+    // 注册成功后自动登录
+    const result = await signIn("credentials", {
+      email: values.email,
+      password: values.password,
+      redirect: false,
+    })
+
+    if (result?.error) {
+      setServerError(t("error.failed"))
+      return
+    }
+
     router.replace(`/`)
   }
 
@@ -227,7 +227,7 @@ export default function RegisterPage() {
               </div>
             </div>
 
-            <OAuthButtons callbackUrl="/api/auth/bridge" />
+            <OAuthButtons />
 
             <div className="text-center text-sm text-muted-foreground">
               {t("questionHaveAccount")}{" "}

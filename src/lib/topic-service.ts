@@ -13,7 +13,7 @@ import {
   PostPage,
   TopicInfo as TopicInfoType,
 } from "@/types/topic"
-import { SessionUser } from "@/lib/auth"
+import { ServerSessionUser } from "@/lib/server-auth"
 
 export const getTopicInfo = cache(async function getTopicInfo(
   topicId: bigint,
@@ -149,7 +149,7 @@ export const incrementTopicViewsOnce = cache(
 export const getTopicPosts = cache(async function getTopicPosts(
   topicId: bigint,
   locale: string,
-  auth: SessionUser | null,
+  auth: ServerSessionUser | null,
   page: number = 1,
   pageSize: number = 15
 ): Promise<PostPage> {

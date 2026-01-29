@@ -55,7 +55,7 @@ export const PostBadges = memo(function PostBadges({
   size?: "xs" | "sm" | "md" | "lg"
 }) {
   const tCommon = useTranslations("Common")
-  const tQuestion = useTranslations("Question")
+  const tQuestion = useTranslations("Topic.Question")
 
   return (
     <>

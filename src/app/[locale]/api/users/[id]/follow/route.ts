@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
-import { getSessionUser } from "@/lib/auth"
+import { getServerSessionUser } from "@/lib/server-auth"
 
 type Params = Promise<{ id: string }>
 
@@ -14,7 +14,7 @@ export async function POST(_req: Request, props: { params: Params }) {
 
   try {
     // 获取当前登录用户
-    const sessionUser = await getSessionUser()
+    const sessionUser = await getServerSessionUser()
     if (!sessionUser) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }

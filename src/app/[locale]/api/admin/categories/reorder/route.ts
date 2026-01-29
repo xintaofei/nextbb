@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
-import { getSessionUser } from "@/lib/auth"
 
 type ReorderItem = {
   id: string
@@ -13,11 +12,6 @@ type ReorderRequest = {
 
 export async function POST(request: NextRequest) {
   try {
-    const auth = await getSessionUser()
-    if (!auth) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
-    }
-
     const body = await request.json()
     const { items }: ReorderRequest = body
 

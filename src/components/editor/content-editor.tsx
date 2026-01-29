@@ -51,6 +51,7 @@ interface MilkdownEditorProps {
     json?: Record<string, unknown>,
     html?: string
   ) => void
+  onPendingChange?: (isPending: boolean) => void
 }
 
 const parseContent = (value: string | undefined) => {
@@ -116,10 +117,11 @@ const imageNode = $node("image", () => ({
 const MilkdownEditor: React.FC<MilkdownEditorProps> = ({
   value,
   onChange,
+  onPendingChange,
   placeholder,
   slashPlaceholder,
 }) => {
-  const valueRef = useRef<string | undefined>(undefined)
+  const valueRef = useRef<string | undefined>(value)
   const mentionListRef = useRef<MentionListRef>(null)
   const [mentionState, setMentionState] = useState<PluginState>({
     open: false,
@@ -138,6 +140,26 @@ const MilkdownEditor: React.FC<MilkdownEditorProps> = ({
 
   const { uploader, uploadWidgetFactory } = useEditorUpload()
   const nodeViewFactory = useNodeViewFactory()
+
+  // 包装 onChange 以支持防抖
+  const {
+    debounced: debouncedOnChange,
+    isPending,
+    cancel: cancelDebounce,
+  } = useDebouncedCallback(
+    (jsonString: string, json: Record<string, unknown>, html: string) => {
+      onChange?.(jsonString, json, html)
+    },
+    300
+  )
+
+  // 记录上一次同步给编辑器的外部 value，用于区分“外部修改”和“防抖期间的旧值回流”
+  const lastSyncedValueRef = useRef(value)
+
+  // 同步 pending 状态给父组件
+  useEffect(() => {
+    onPendingChange?.(isPending)
+  }, [isPending, onPendingChange])
 
   const handleUpdate = useCallback(
     (ctx: Ctx, doc: Node) => {
@@ -161,19 +183,13 @@ const MilkdownEditor: React.FC<MilkdownEditorProps> = ({
       tmp.appendChild(fragment)
       const html = tmp.innerHTML
 
+      // 立即更新 Ref，防止光标跳动
       valueRef.current = jsonString
-      onChange(jsonString, json, html)
+      // 防抖通知父组件
+      debouncedOnChange(jsonString, json, html)
     },
-    [onChange]
+    [onChange, debouncedOnChange]
   )
-
-  // Debounce the update to avoid performance issues on every keystroke
-  const debouncedUpdate = useDebouncedCallback(handleUpdate, 500)
-  const onUpdateRef = useRef(debouncedUpdate)
-
-  useEffect(() => {
-    onUpdateRef.current = debouncedUpdate
-  }, [debouncedUpdate])
 
   const { get, loading } = useEditor(
     (root) =>
@@ -188,7 +204,7 @@ const MilkdownEditor: React.FC<MilkdownEditorProps> = ({
           }
 
           ctx.get(listenerCtx).updated((ctx, doc) => {
-            onUpdateRef.current?.(ctx, doc)
+            handleUpdate(ctx, doc)
           })
 
           ctx.set(uploadConfig.key, {
@@ -255,7 +271,18 @@ const MilkdownEditor: React.FC<MilkdownEditorProps> = ({
 
   useEffect(() => {
     if (loading || value === undefined) return
-    if (value === valueRef.current) return
+
+    // 如果当前 value 和上一次同步的值一样，说明不是外部的主动修改（如重置或加载新内容）
+    // 此时即使 value !== valueRef.current，也只是因为防抖还没结束，不应该同步回编辑器
+    if (value === lastSyncedValueRef.current) return
+
+    // 走到这里说明外部真正改变了内容（例如点击了重置按钮），需要取消当前的防抖并同步
+    cancelDebounce()
+
+    if (value === valueRef.current) {
+      lastSyncedValueRef.current = value
+      return
+    }
 
     const editor = get()
     if (!editor) return
@@ -278,7 +305,8 @@ const MilkdownEditor: React.FC<MilkdownEditorProps> = ({
       })
     }
     valueRef.current = value
-  }, [value, get, loading])
+    lastSyncedValueRef.current = value
+  }, [value, get, loading, cancelDebounce])
 
   const calculatePopoverStyle = useCallback(
     (x: number, y: number, isOpen: boolean) => {

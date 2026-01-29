@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
-import { getSessionUser } from "@/lib/auth"
+import { getServerSessionUser } from "@/lib/server-auth"
 import { generateId } from "@/lib/id"
 import { CreditService } from "@/lib/credit-service"
 import { CreditLogType } from "@prisma/client"
@@ -13,7 +13,7 @@ import { CreditLogType } from "@prisma/client"
 export async function POST(request: Request) {
   try {
     // 验证用户登录
-    const sessionUser = await getSessionUser()
+    const sessionUser = await getServerSessionUser()
     if (!sessionUser) {
       return NextResponse.json({ error: "请先登录" }, { status: 401 })
     }
@@ -210,7 +210,7 @@ export async function GET(request: Request) {
     }
 
     // 之前的逻辑：获取用户签到状态
-    const sessionUser = await getSessionUser()
+    const sessionUser = await getServerSessionUser()
     if (!sessionUser) {
       return NextResponse.json({ error: "请先登录" }, { status: 401 })
     }

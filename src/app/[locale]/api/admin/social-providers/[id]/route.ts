@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
-import { getSessionUser } from "@/lib/auth"
 import { invalidateSocialProviderCache } from "@/lib/services/social-provider-service"
+import { invalidateAuthOptionsCache } from "@/lib/auth-options-cache"
 
 type SocialProviderDTO = {
   id: string
@@ -26,11 +26,6 @@ export async function PATCH(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const auth = await getSessionUser()
-    if (!auth || !auth.isAdmin) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
-    }
-
     const { id } = await params
     const providerId = BigInt(id)
 
@@ -130,6 +125,7 @@ export async function PATCH(
     })
 
     await invalidateSocialProviderCache()
+    await invalidateAuthOptionsCache()
 
     const dto: SocialProviderDTO = {
       id: String(provider.id),
@@ -164,11 +160,6 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const auth = await getSessionUser()
-    if (!auth || !auth.isAdmin) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
-    }
-
     const { id } = await params
     const providerId = BigInt(id)
 
@@ -201,6 +192,7 @@ export async function DELETE(
     })
 
     await invalidateSocialProviderCache()
+    await invalidateAuthOptionsCache()
 
     return NextResponse.json({ success: true })
   } catch (error) {

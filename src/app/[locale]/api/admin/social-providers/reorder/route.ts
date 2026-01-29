@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
-import { getSessionUser } from "@/lib/auth"
 import { invalidateSocialProviderCache } from "@/lib/services/social-provider-service"
+import { invalidateAuthOptionsCache } from "@/lib/auth-options-cache"
 
 type ReorderItem = {
   id: string
@@ -14,11 +14,6 @@ type ReorderRequest = {
 
 export async function POST(request: NextRequest) {
   try {
-    const auth = await getSessionUser()
-    if (!auth || !auth.isAdmin) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
-    }
-
     const body = await request.json()
     const { items }: ReorderRequest = body
 
@@ -51,6 +46,7 @@ export async function POST(request: NextRequest) {
     })
 
     await invalidateSocialProviderCache()
+    invalidateAuthOptionsCache()
 
     return NextResponse.json({ success: true })
   } catch (error) {

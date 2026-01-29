@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 import { Prisma } from "@prisma/client"
 import { prisma } from "@/lib/prisma"
-import { requireAdmin } from "@/lib/guard"
+import { getAdminUser } from "@/lib/server-auth"
 import { generateId } from "@/lib/id"
 import { CronManager } from "@/lib/automation/cron-manager"
 import { RuleActionType, RuleAction } from "@/lib/automation/types"
@@ -70,11 +70,6 @@ function validateActions(actions: unknown): boolean {
 // GET - 获取规则列表
 export async function GET(request: NextRequest) {
   try {
-    const admin = await requireAdmin()
-    if (!admin) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
-    }
-
     const searchParams = request.nextUrl.searchParams
     const page = parseInt(searchParams.get("page") || "1")
     const pageSize = parseInt(searchParams.get("pageSize") || "20")
@@ -189,10 +184,7 @@ export async function GET(request: NextRequest) {
 // POST - 创建规则
 export async function POST(request: NextRequest) {
   try {
-    const admin = await requireAdmin()
-    if (!admin) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
-    }
+    const user = await getAdminUser()
 
     const body = await request.json()
     const {
@@ -285,8 +277,8 @@ export async function POST(request: NextRequest) {
         cooldown_seconds: cooldownSeconds || null,
         start_time: startTime ? new Date(startTime) : null,
         end_time: endTime ? new Date(endTime) : null,
-        created_by: admin.userId,
-        updated_by: admin.userId,
+        created_by: user.userId,
+        updated_by: user.userId,
         is_deleted: false,
       },
       select: {

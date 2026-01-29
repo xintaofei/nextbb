@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server"
 import { z } from "zod"
 import { prisma } from "@/lib/prisma"
-import { getSessionUser } from "@/lib/auth"
+import { getServerSessionUser } from "@/lib/server-auth"
 
 const UpdateAccountSchema = z.object({
   username: z
@@ -46,7 +46,7 @@ const UpdateAccountSchema = z.object({
 type UpdateAccountDTO = z.infer<typeof UpdateAccountSchema>
 
 export async function PATCH(req: Request) {
-  const session = await getSessionUser()
+  const session = await getServerSessionUser()
   if (!session) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
   }

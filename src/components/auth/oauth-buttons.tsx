@@ -21,7 +21,7 @@ type ProvidersResponse = {
 }
 
 interface OAuthButtonsProps {
-  callbackUrl: string
+  callbackUrl?: string
 }
 
 const fetcher = async (url: string): Promise<ProvidersResponse> => {
@@ -111,7 +111,7 @@ function ProviderIcon({
   )
 }
 
-export function OAuthButtons({ callbackUrl }: OAuthButtonsProps) {
+export function OAuthButtons({ callbackUrl = "/" }: OAuthButtonsProps) {
   const t = useTranslations("Auth.Login")
   const [loadingProvider, setLoadingProvider] = useState<string | null>(null)
   const { data, isLoading } = useSWR<ProvidersResponse>(

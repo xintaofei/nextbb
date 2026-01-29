@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
-import { getSessionUser } from "@/lib/auth"
 import { revalidateConfigs } from "@/lib/config"
 
 type ConfigDTO = {
@@ -44,11 +43,6 @@ function maskSensitiveValue(value: string, isSensitive: boolean): string {
 // GET - 获取配置列表
 export async function GET(request: NextRequest) {
   try {
-    const auth = await getSessionUser()
-    if (!auth) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
-    }
-
     const searchParams = request.nextUrl.searchParams
     const category = searchParams.get("category")
     const page = Number(searchParams.get("page")) || 1
@@ -97,11 +91,6 @@ export async function GET(request: NextRequest) {
 // PUT - 批量更新配置
 export async function PUT(request: NextRequest) {
   try {
-    const auth = await getSessionUser()
-    if (!auth) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
-    }
-
     const body = await request.json()
     const configs = body.configs as Array<{
       configKey: string

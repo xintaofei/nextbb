@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 import { Prisma } from "@prisma/client"
 import { prisma } from "@/lib/prisma"
-import { requireAdmin } from "@/lib/guard"
+import { getAdminUser } from "@/lib/server-auth"
 import { CronManager } from "@/lib/automation/cron-manager"
 import { RuleActionType, RuleAction } from "@/lib/automation/types"
 import { getTranslations } from "next-intl/server"
@@ -67,10 +67,7 @@ export async function PATCH(
 ) {
   try {
     const t = await getTranslations("AdminAutomationRules.error")
-    const admin = await requireAdmin()
-    if (!admin) {
-      return NextResponse.json({ error: t("unauthorized") }, { status: 401 })
-    }
+    const user = await getAdminUser()
 
     const params = await props.params
     const ruleId = BigInt(params.id)
@@ -168,7 +165,7 @@ export async function PATCH(
 
     // 构建更新数据
     const updateData: Prisma.automation_rulesUpdateInput = {
-      updated_by: admin.userId,
+      updated_by: user.userId,
     }
 
     if (name !== undefined) updateData.name = name
@@ -255,8 +252,8 @@ export async function PATCH(
 
     return NextResponse.json(result)
   } catch (error) {
-    console.error("Update automation rule error:", error)
     const t = await getTranslations("AdminAutomationRules.error")
+    console.error("Update automation rule error:", error)
     return NextResponse.json(
       { error: t("internalServerError") },
       { status: 500 }

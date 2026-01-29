@@ -3,7 +3,7 @@ import { z } from "zod"
 import bcrypt from "bcryptjs"
 import { prisma } from "@/lib/prisma"
 import { generateId } from "@/lib/id"
-import { signAuthToken, setAuthCookie, recordLogin } from "@/lib/auth"
+import { recordLogin } from "@/lib/auth"
 import { createHash } from "crypto"
 import { AutomationEvents } from "@/lib/automation/event-bus"
 
@@ -85,28 +85,13 @@ export async function POST(request: Request) {
     email: user.email,
   })
 
-  const token = await signAuthToken({
-    sub: user.id.toString(),
-    email: user.email,
-    isAdmin: user.is_admin,
-  })
-
-  await setAuthCookie(token)
   await recordLogin(user.id, "SUCCESS", "FORM")
 
+  // 返回成功，让客户端调用 signIn
   return NextResponse.json(
     {
-      user: {
-        id: user.id.toString(),
-        email: user.email,
-        isAdmin: user.is_admin,
-      },
-      profile: {
-        id: user.id.toString(),
-        email: user.email,
-        username: user.name,
-        avatar: user.avatar,
-      },
+      success: true,
+      email: user.email,
     },
     { status: 201 }
   )

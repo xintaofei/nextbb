@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
-import { getSessionUser } from "@/lib/auth"
 import { Locale, routing } from "@/i18n/routing"
 import { createTranslationTasks } from "@/lib/services/translation-task"
 import { TranslationEntityType } from "@prisma/client"
@@ -11,11 +10,6 @@ export async function GET(
   context: { params: Promise<{ id: string }> }
 ) {
   try {
-    const auth = await getSessionUser()
-    if (!auth) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
-    }
-
     const params = await context.params
     const tagId = BigInt(params.id)
 
@@ -94,11 +88,6 @@ export async function PUT(
   context: { params: Promise<{ id: string }> }
 ) {
   try {
-    const auth = await getSessionUser()
-    if (!auth) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
-    }
-
     const params = await context.params
     const tagId = BigInt(params.id)
 

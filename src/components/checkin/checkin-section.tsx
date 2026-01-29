@@ -351,10 +351,9 @@ export function CheckinSection() {
 
       if (res.ok) {
         toast.success(t("success", { credits: result.creditsEarned }))
-        // 刷新签到状态、签到列表和用户信息
+        // 刷新签到状态和签到列表
         mutate(`/api/checkin?timezoneOffset=${timezoneOffset}`)
         mutateList()
-        mutate("/api/auth/me")
 
         confetti({
           origin: {

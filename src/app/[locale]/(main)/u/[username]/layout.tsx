@@ -1,6 +1,6 @@
 import { ReactNode } from "react"
 import { prisma } from "@/lib/prisma"
-import { getSessionUser } from "@/lib/auth"
+import { getServerSessionUser } from "@/lib/server-auth"
 import { UserInfoHeader } from "@/components/user/user-info-header"
 import { UserNavigation } from "@/components/user/user-navigation"
 import { decodeUsername } from "@/lib/utils"
@@ -42,18 +42,12 @@ export default async function UserProfileLayout({
   }
 
   // 获取当前登录用户
-  const session = await getSessionUser()
-  const currentUser = session
-    ? await prisma.users.findUnique({
-        where: { id: session.userId },
-        select: { id: true, name: true, is_admin: true },
-      })
-    : null
+  const session = await getServerSessionUser()
 
   // 判断是否为本人
-  const isOwnProfile = currentUser?.id === user.id
+  const isOwnProfile = session?.userId === user.id
   // 判断是否为管理员
-  const isAdmin = currentUser?.is_admin || false
+  const isAdmin = session?.isAdmin || false
 
   // 获取用户统计数据
   const [topicsCount, postsCount, likesReceived, bookmarksCount, badgesCount] =

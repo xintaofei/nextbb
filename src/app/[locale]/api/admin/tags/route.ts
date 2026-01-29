@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
-import { getSessionUser } from "@/lib/auth"
 import { generateId } from "@/lib/id"
 import { getLocale } from "next-intl/server"
 import { createTranslationTasks } from "@/lib/services/translation-task"
@@ -44,11 +43,6 @@ function validateColor(color: string | null): boolean {
 // GET - 获取标签列表
 export async function GET(request: NextRequest) {
   try {
-    const auth = await getSessionUser()
-    if (!auth) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
-    }
-
     const searchParams = request.nextUrl.searchParams
     const locale = (request.nextUrl.pathname.split("/")[1] || "zh") as string
     const page = parseInt(searchParams.get("page") || "1")
@@ -182,11 +176,6 @@ export async function GET(request: NextRequest) {
 // POST - 创建标签
 export async function POST(request: NextRequest) {
   try {
-    const auth = await getSessionUser()
-    if (!auth) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
-    }
-
     const body = await request.json()
     const { name, icon, description, sort, bgColor, textColor } = body
 

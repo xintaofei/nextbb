@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
-import { requireAdmin } from "@/lib/guard"
+import { getAdminUser } from "@/lib/server-auth"
 import { BadgeListResponse, BadgeItem } from "@/types/badge"
 import { getTranslationsQuery, getTranslationField } from "@/lib/locale"
 
@@ -11,11 +11,6 @@ type RouteContext = {
 }
 
 export async function GET(req: NextRequest, context: RouteContext) {
-  const actor = await requireAdmin()
-  if (!actor) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
-  }
-
   const { id } = await context.params
   const userIdBigInt = BigInt(id)
   const locale = (req.nextUrl.pathname.split("/")[1] || "zh") as string
@@ -73,10 +68,7 @@ export async function GET(req: NextRequest, context: RouteContext) {
 }
 
 export async function POST(req: NextRequest, context: RouteContext) {
-  const actor = await requireAdmin()
-  if (!actor) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
-  }
+  const actor = await getAdminUser()
 
   const { id } = await context.params
   const userIdBigInt = BigInt(id)
@@ -170,11 +162,6 @@ export async function POST(req: NextRequest, context: RouteContext) {
 }
 
 export async function DELETE(req: NextRequest, context: RouteContext) {
-  const actor = await requireAdmin()
-  if (!actor) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
-  }
-
   const { id } = await context.params
   const userIdBigInt = BigInt(id)
 

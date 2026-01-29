@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
-import { getSessionUser } from "@/lib/auth"
 import { revalidateConfigs } from "@/lib/config"
 
 // 格式化配置值为字符串
@@ -21,11 +20,6 @@ export async function GET(
   context: { params: Promise<{ key: string }> }
 ) {
   try {
-    const auth = await getSessionUser()
-    if (!auth) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
-    }
-
     const params = await context.params
     const configKey = decodeURIComponent(params.key)
 
@@ -64,11 +58,6 @@ export async function PATCH(
   context: { params: Promise<{ key: string }> }
 ) {
   try {
-    const auth = await getSessionUser()
-    if (!auth) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
-    }
-
     const params = await context.params
     const configKey = decodeURIComponent(params.key)
 

@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
 import { z } from "zod"
-import { getSessionUser } from "@/lib/auth"
+import { getServerSessionUser } from "@/lib/server-auth"
 import { getLocale } from "next-intl/server"
 import { generateId } from "@/lib/id"
 import { TopicType } from "@/types/topic-type"
@@ -22,7 +22,7 @@ export async function POST(
   req: Request,
   ctx: { params: Promise<{ id: string }> }
 ) {
-  const auth = await getSessionUser()
+  const auth = await getServerSessionUser()
   if (!auth) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
   }

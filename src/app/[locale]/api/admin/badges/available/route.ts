@@ -1,15 +1,9 @@
 import { NextRequest, NextResponse } from "next/server"
 import { Prisma } from "@prisma/client"
 import { prisma } from "@/lib/prisma"
-import { requireAdmin } from "@/lib/guard"
 import { BadgeListResponse, BadgeItem } from "@/types/badge"
 
 export async function GET(req: NextRequest) {
-  const actor = await requireAdmin()
-  if (!actor) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
-  }
-
   const { searchParams } = new URL(req.url)
   const q = searchParams.get("q") || ""
   const badgeType = searchParams.get("badgeType") || ""

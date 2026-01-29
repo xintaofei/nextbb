@@ -2,7 +2,7 @@ import { Metadata } from "next"
 import { decodeUsername } from "@/lib/utils"
 import { prisma } from "@/lib/prisma"
 import { notFound } from "next/navigation"
-import { getSessionUser } from "@/lib/auth"
+import { getServerSessionUser } from "@/lib/server-auth"
 import { ActivityClient } from "@/components/user/activity-client"
 import { getTranslations } from "next-intl/server"
 
@@ -43,7 +43,7 @@ export default async function ActivityPage({ params }: ActivityPageProps) {
   }
 
   // 获取当前用户会话
-  const session = await getSessionUser()
+  const session = await getServerSessionUser()
   const currentUser = session
     ? await prisma.users.findUnique({
         where: { id: session.userId },

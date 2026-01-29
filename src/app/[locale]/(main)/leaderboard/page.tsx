@@ -11,6 +11,7 @@ import { UserInfoCard } from "@/components/common/user-info-card"
 import { MagicCard } from "@/components/ui/magic-card"
 import { useTheme } from "next-themes"
 import { BorderBeam } from "@/components/ui/border-beam"
+import { useCurrentUser } from "@/hooks/use-current-user"
 
 type LeaderboardType = "wealth" | "pioneer" | "expert" | "reputation"
 
@@ -227,25 +228,7 @@ function LeaderboardList({
   )
 
   // 获取当前用户信息
-  const { data: currentUser } = useSWR<{
-    id: string
-    email: string
-    name: string
-    avatar: string
-    isAdmin: boolean
-    credits: number
-  } | null>(
-    "/api/auth/me",
-    async (url: string) => {
-      const res = await fetch(url)
-      if (!res.ok) return null
-      return res.json()
-    },
-    {
-      revalidateOnFocus: false,
-      shouldRetryOnError: false,
-    }
-  )
+  const { user: currentUser } = useCurrentUser()
 
   if (isLoading) {
     return (

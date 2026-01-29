@@ -1,6 +1,6 @@
 import { Suspense } from "react"
 import { Metadata } from "next"
-import { getSessionUser } from "@/lib/auth"
+import { getServerSessionUser } from "@/lib/server-auth"
 import { prisma } from "@/lib/prisma"
 import { decodeUsername } from "@/lib/utils"
 import { AccountForm } from "@/components/user/account-form"
@@ -30,7 +30,7 @@ export default async function AccountPage() {
   const t = await getTranslations("User.preferences.account")
 
   // 获取当前用户信息
-  const session = await getSessionUser()
+  const session = await getServerSessionUser()
   if (!session) {
     return null
   }

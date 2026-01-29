@@ -1,6 +1,5 @@
 // 导入默认语言的 JSON 结构作为类型源
 import zh from "../i18n/messages/zh.json"
-import type { DefaultSession } from "next-auth"
 
 // 推断类型
 type Messages = typeof zh
@@ -13,13 +12,29 @@ declare global {
 declare module "next-auth" {
   interface Session {
     user: {
-      id?: string
-    } & DefaultSession["user"]
+      id: string
+      email: string
+      name: string
+      avatar: string
+      isAdmin: boolean
+    }
+  }
+
+  interface User {
+    id: string
+    email: string
+    name: string
+    image: string
+    isAdmin?: boolean
   }
 }
 
 declare module "next-auth/jwt" {
   interface JWT {
-    id?: string
+    id: string
+    email: string
+    name: string
+    picture: string
+    isAdmin: boolean
   }
 }

@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from "next/server"
 import { Prisma } from "@prisma/client"
 import { prisma } from "@/lib/prisma"
-import { requireAdmin } from "@/lib/guard"
 
 type LogDTO = {
   id: string
@@ -27,11 +26,6 @@ export async function GET(
   props: { params: Promise<{ id: string }> }
 ) {
   try {
-    const admin = await requireAdmin()
-    if (!admin) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
-    }
-
     const params = await props.params
     const ruleId = BigInt(params.id)
 

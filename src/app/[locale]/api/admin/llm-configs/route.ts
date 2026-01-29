@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
-import { getSessionUser } from "@/lib/auth"
 import { generateId } from "@/lib/id"
 import { z } from "zod"
 import { LLMInterfaceMode, LLMUsage } from "@prisma/client"
@@ -31,11 +30,6 @@ const createLLMConfigSchema = z.object({
 
 export async function GET() {
   try {
-    const auth = await getSessionUser()
-    if (!auth || !auth.isAdmin) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
-    }
-
     const configs = await prisma.llm_configs.findMany({
       orderBy: { created_at: "desc" },
     })
@@ -67,11 +61,6 @@ export async function GET() {
 
 export async function POST(request: NextRequest) {
   try {
-    const auth = await getSessionUser()
-    if (!auth || !auth.isAdmin) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
-    }
-
     const body = await request.json()
     const validation = createLLMConfigSchema.safeParse(body)
 

@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server"
 import { z } from "zod"
 import { prisma } from "@/lib/prisma"
-import { getSessionUser } from "@/lib/auth"
+import { getServerSessionUser } from "@/lib/server-auth"
 
 const UpdateProfileSchema = z.object({
   bio: z.string().max(500).optional(),
@@ -13,7 +13,7 @@ const UpdateProfileSchema = z.object({
 type UpdateProfileDTO = z.infer<typeof UpdateProfileSchema>
 
 export async function PATCH(req: Request) {
-  const session = await getSessionUser()
+  const session = await getServerSessionUser()
   if (!session) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
   }

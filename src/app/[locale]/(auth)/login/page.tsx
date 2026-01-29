@@ -6,6 +6,7 @@ import { useTranslations } from "next-intl"
 import { z } from "zod"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
+import { signIn, useSession } from "next-auth/react"
 import {
   Form,
   FormControl,
@@ -28,27 +29,12 @@ type LoginValues = {
   password: string
 }
 
-type ApiUser = {
-  id: string
-  email?: string | null
-}
-
-type ApiProfile = {
-  id: string
-  email: string
-  username: string
-  avatar?: string | null
-}
-
-type ApiResponse =
-  | { user: ApiUser; profile?: ApiProfile | null }
-  | { error: string }
-
 export default function LoginPage() {
   const router = useRouter()
   const t = useTranslations("Auth.Login")
   const [serverError, setServerError] = useState<string | null>(null)
   const { configs } = useConfig()
+  const { update } = useSession()
 
   const logoSrc = configs?.["basic.logo"] || "/nextbb-logo.png"
   const siteName = configs?.["basic.name"] || "NextBB"
@@ -66,17 +52,25 @@ export default function LoginPage() {
 
   const onSubmit = async (values: LoginValues) => {
     setServerError(null)
-    const res = await fetch("/api/auth/login", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(values),
+
+    const result = await signIn("credentials", {
+      email: values.email,
+      password: values.password,
+      redirect: false,
     })
-    const data: ApiResponse = await res.json()
-    if (!res.ok || "error" in data) {
-      setServerError("error" in data ? data.error : t("error.failed"))
+
+    if (result?.error) {
+      setServerError(t("error.failed"))
       return
     }
-    router.replace(`/`)
+
+    // 强制更新 NextAuth session，确保客户端立即获取最新状态
+    await update()
+
+    // 使用客户端路由跳转，提供流畅的用户体验
+    router.push("/")
+    // 触发服务端组件刷新，确保服务端也能获取最新 session
+    router.refresh()
   }
 
   return (
@@ -182,7 +176,7 @@ export default function LoginPage() {
               </div>
             </div>
 
-            <OAuthButtons callbackUrl="/api/auth/bridge" />
+            <OAuthButtons />
 
             <div className="text-center text-sm text-muted-foreground">
               {t("questionNoAccount")}{" "}

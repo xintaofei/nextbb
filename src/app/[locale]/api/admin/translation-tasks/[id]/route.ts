@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
-import { getSessionUser } from "@/lib/auth"
 import { TranslationTaskStatus, Prisma } from "@prisma/client"
 import { TranslationEvents } from "@/lib/translation/event-bus"
 
@@ -18,10 +17,6 @@ interface PatchBody {
 export async function DELETE(request: NextRequest, { params }: RouteParams) {
   try {
     const t = await getTranslations("AdminTranslationTasks.error")
-    const auth = await getSessionUser()
-    if (!auth || !auth.isAdmin) {
-      return NextResponse.json({ error: t("unauthorized") }, { status: 401 })
-    }
 
     const { id } = await params
 
@@ -60,10 +55,6 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
 export async function PATCH(request: NextRequest, { params }: RouteParams) {
   try {
     const t = await getTranslations("AdminTranslationTasks.error")
-    const auth = await getSessionUser()
-    if (!auth || !auth.isAdmin) {
-      return NextResponse.json({ error: t("unauthorized") }, { status: 401 })
-    }
 
     const { id } = await params
 

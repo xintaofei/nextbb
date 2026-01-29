@@ -48,6 +48,7 @@ import { LotteryDisplay } from "@/components/topic/lottery-display"
 import { BountyType, TopicType, type TopicTypeValue } from "@/types/topic-type"
 import { Clock, Eye, Users } from "lucide-react"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { useCurrentUser } from "@/hooks/use-current-user"
 
 const fetcherInfo = async (url: string): Promise<TopicInfoResult> => {
   const res = await fetch(url, { cache: "no-store" })
@@ -126,12 +127,6 @@ export default function TopicOverviewClient({
     firstPageFetchedRef.current = false
   }, [id, initialPosts])
 
-  const [currentUserId, setCurrentUserId] = useState<string | null>(null)
-  const [currentUserProfile, setCurrentUserProfile] = useState<{
-    id: string
-    name: string
-    avatar: string
-  } | null>(null)
   const [replyContent, setReplyContent] = useState<string>("")
   const [replyToPostId, setReplyToPostId] = useState<string | null>(null)
   const [submitting, setSubmitting] = useState<boolean>(false)
@@ -194,6 +189,16 @@ export default function TopicOverviewClient({
     () => (postsPages ? postsPages.flatMap((p) => p.items) : []),
     [postsPages]
   )
+
+  // 初始化 SWR 缓存并确保挂载后允许重新验证
+  useEffect(() => {
+    // 注入初始数据到全局缓存，确保乐观更新有数据基础
+    if (initialPosts) {
+      mutatePosts([initialPosts], false)
+    }
+    // 组件挂载完成后，标记首页已“获取”，后续 mutate(..., true) 将触发真实请求
+    firstPageFetchedRef.current = true
+  }, [id, initialPosts, mutatePosts])
 
   // 当 ID 变化时重置，避免不同话题切换时的高亮残留
   useEffect(() => {
@@ -474,35 +479,19 @@ export default function TopicOverviewClient({
     [mutatePosts, tc, triggerBookmark]
   )
 
-  useEffect(() => {
-    let mounted = true
-    const run = async () => {
-      try {
-        const res = await fetch("/api/auth/me", { cache: "no-store" })
-        if (res.ok) {
-          const json = (await res.json()) as {
-            id: string
-            email: string
-            name: string
-            avatar: string
-            isAdmin: boolean
-            credits: number
+  const { user: currentUserData } = useCurrentUser()
+  const currentUserId = currentUserData?.id ?? null
+  const currentUserProfile = useMemo(
+    () =>
+      currentUserData
+        ? {
+            id: currentUserData.id,
+            name: currentUserData.name,
+            avatar: currentUserData.avatar,
           }
-          if (mounted) setCurrentUserId(json.id)
-          if (mounted)
-            setCurrentUserProfile({
-              id: json.id,
-              name: json.name,
-              avatar: json.avatar,
-            })
-        }
-      } catch {}
-    }
-    run()
-    return () => {
-      mounted = false
-    }
-  }, [])
+        : null,
+    [currentUserData]
+  )
 
   // 获取悬赏配置
   const topicType = topicInfo?.type
@@ -566,23 +555,14 @@ export default function TopicOverviewClient({
         setReplyOpen(false)
         setReplyContent("")
         setReplyToPostId(null)
-        await mutatePosts((pages) => {
-          if (!pages || pages.length === 0) {
-            return [
-              {
-                items: [optimistic],
-                page: 1,
-                pageSize,
-                total: 1,
-                hasMore: false,
-              },
-            ]
-          }
+        const updatedPages = await mutatePosts((pages) => {
+          if (!pages || pages.length === 0) return pages
           const next = [...pages]
-          const last = { ...next[next.length - 1] }
+          const lastIndex = next.length - 1
+          const last = { ...next[lastIndex] }
           last.items = [...last.items, optimistic]
           last.total = (last.total ?? postsRef.current.length) + 1
-          next[next.length - 1] = last
+          next[lastIndex] = last
           return next
         }, false)
         await triggerReply({
@@ -592,8 +572,9 @@ export default function TopicOverviewClient({
         })
         await mutatePosts((pages) => pages, true)
         toast.success(tc("Action.success"))
-        const newIndex = postsRef.current.length
-        const el = document.getElementById(`post-${newIndex}`)
+        const totalCount =
+          updatedPages?.reduce((acc, p) => acc + p.items.length, 0) || 0
+        const el = document.getElementById(`post-${totalCount}`)
         if (el) el.scrollIntoView({ behavior: "smooth", block: "center" })
       } catch (e) {
         const status = Number((e as Error).message)
@@ -611,7 +592,6 @@ export default function TopicOverviewClient({
       currentUserProfile,
       replyToPostId,
       mutatePosts,
-      pageSize,
       triggerReply,
       locale,
     ]

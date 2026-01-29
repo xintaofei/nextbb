@@ -1,10 +1,10 @@
 import { NextResponse } from "next/server"
 import { cookies } from "next/headers"
-import { getSessionUser } from "@/lib/auth"
+import { getServerSessionUser } from "@/lib/server-auth"
 import { SOCIAL_LINK_COOKIE } from "@/lib/auth-options"
 
 export async function POST() {
-  const session = await getSessionUser()
+  const session = await getServerSessionUser()
   if (!session) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
   }

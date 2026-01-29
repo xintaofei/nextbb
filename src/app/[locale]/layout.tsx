@@ -11,6 +11,9 @@ import NextTopLoader from "nextjs-toploader"
 import { getPublicConfigs } from "@/lib/config"
 import { ConfigProvider } from "@/components/providers/config-provider"
 import { NewTopicProvider } from "@/components/providers/new-topic-provider"
+import { getServerSession } from "next-auth"
+import { getAuthOptions } from "@/lib/auth-options-cache"
+import { AuthProvider } from "@/components/providers/auth-provider"
 
 export async function generateMetadata(): Promise<Metadata> {
   const configs = await getPublicConfigs()
@@ -31,6 +34,8 @@ export default async function RootLayout({
   const messages = await getMessages()
   const locale = await getLocale()
   const configs = await getPublicConfigs()
+  const authOptions = await getAuthOptions()
+  const session = await getServerSession(authOptions)
 
   return (
     <html lang={locale} suppressHydrationWarning>
@@ -52,11 +57,13 @@ export default async function RootLayout({
             enableSystem
             disableTransitionOnChange
           >
-            <ConfigProvider initialConfigs={configs}>
-              <SWRProvider>
-                <NewTopicProvider>{children}</NewTopicProvider>
-              </SWRProvider>
-            </ConfigProvider>
+            <AuthProvider session={session}>
+              <ConfigProvider initialConfigs={configs}>
+                <SWRProvider>
+                  <NewTopicProvider>{children}</NewTopicProvider>
+                </SWRProvider>
+              </ConfigProvider>
+            </AuthProvider>
             <Toaster richColors closeButton />
             <Analytics />
           </ThemeProvider>
