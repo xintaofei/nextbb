@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
-import { getServerSessionUser } from "@/lib/server-auth"
 import { z } from "zod"
 import { LLMInterfaceMode, LLMUsage, Prisma } from "@prisma/client"
 
@@ -37,11 +36,6 @@ export async function PUT(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const auth = await getServerSessionUser()
-    if (!auth || !auth.isAdmin) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
-    }
-
     const { id } = await params
     const body = await request.json()
     const validation = updateLLMConfigSchema.safeParse(body)
@@ -110,11 +104,6 @@ export async function PATCH(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const auth = await getServerSessionUser()
-    if (!auth || !auth.isAdmin) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
-    }
-
     const { id } = await params
     const body = await request.json()
     const validation = patchLLMConfigSchema.safeParse(body)

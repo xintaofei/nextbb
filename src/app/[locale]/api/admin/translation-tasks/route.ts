@@ -1,13 +1,11 @@
 import { NextRequest, NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
-import { getServerSessionUser } from "@/lib/server-auth"
 import {
   TranslationTaskStatus,
   TranslationEntityType,
   TranslationTaskPriority,
   Prisma,
 } from "@prisma/client"
-import { getTranslations } from "next-intl/server"
 
 interface TranslationTaskItem {
   id: string
@@ -33,12 +31,6 @@ interface TranslationTaskListResult {
 // GET - 获取翻译任务列表
 export async function GET(request: NextRequest) {
   try {
-    const t = await getTranslations("AdminTranslationTasks.error")
-    const auth = await getServerSessionUser()
-    if (!auth || !auth.isAdmin) {
-      return NextResponse.json({ error: t("unauthorized") }, { status: 401 })
-    }
-
     const searchParams = request.nextUrl.searchParams
     const status = searchParams.get("status")
     const entityType = searchParams.get("entityType")

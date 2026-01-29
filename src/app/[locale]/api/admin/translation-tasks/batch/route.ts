@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
-import { getServerSessionUser } from "@/lib/server-auth"
 import { TranslationTaskStatus } from "@prisma/client"
 import { getTranslations } from "next-intl/server"
 
@@ -12,10 +11,6 @@ interface BatchBody {
 export async function DELETE(request: NextRequest) {
   try {
     const t = await getTranslations("AdminTranslationTasks.error")
-    const auth = await getServerSessionUser()
-    if (!auth || !auth.isAdmin) {
-      return NextResponse.json({ error: t("unauthorized") }, { status: 401 })
-    }
 
     const body: BatchBody = await request.json()
     const { ids } = body
@@ -44,10 +39,6 @@ export async function DELETE(request: NextRequest) {
 export async function PATCH(request: NextRequest) {
   try {
     const t = await getTranslations("AdminTranslationTasks.error")
-    const auth = await getServerSessionUser()
-    if (!auth || !auth.isAdmin) {
-      return NextResponse.json({ error: t("unauthorized") }, { status: 401 })
-    }
 
     const body: BatchBody = await request.json()
     const { ids, action } = body

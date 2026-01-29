@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 import { Prisma } from "@prisma/client"
 import { prisma } from "@/lib/prisma"
-import { getServerSessionUser } from "@/lib/server-auth"
+import { getAdminUser } from "@/lib/server-auth"
 import { generateId } from "@/lib/id"
 import { CronManager } from "@/lib/automation/cron-manager"
 import { RuleActionType, RuleAction } from "@/lib/automation/types"
@@ -184,10 +184,7 @@ export async function GET(request: NextRequest) {
 // POST - 创建规则
 export async function POST(request: NextRequest) {
   try {
-    const user = await getServerSessionUser()
-    if (!user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
-    }
+    const user = await getAdminUser()
 
     const body = await request.json()
     const {

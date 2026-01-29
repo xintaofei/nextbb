@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server"
 import { z } from "zod"
 import { prisma } from "@/lib/prisma"
-import { getServerSessionUser } from "@/lib/server-auth"
+import { getAdminUser } from "@/lib/server-auth"
 import { DonationSource, DonationStatus } from "@prisma/client"
 import { getTranslations } from "next-intl/server"
 
@@ -77,12 +77,7 @@ export async function PATCH(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const t = await getTranslations("AdminDonations")
-  const user = await getServerSessionUser()
-  if (!user)
-    return NextResponse.json(
-      { error: t("error.unauthorized") },
-      { status: 401 }
-    )
+  const user = await getAdminUser()
 
   const { id } = await params
   let donationId: bigint

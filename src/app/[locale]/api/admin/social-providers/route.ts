@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
-import { getServerSessionUser } from "@/lib/server-auth"
 import { generateId } from "@/lib/id"
 import { invalidateSocialProviderCache } from "@/lib/services/social-provider-service"
 import { invalidateAuthOptionsCache } from "@/lib/auth-options-cache"
@@ -25,11 +24,6 @@ type SocialProviderDTO = {
 
 export async function GET() {
   try {
-    const auth = await getServerSessionUser()
-    if (!auth || !auth.isAdmin) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
-    }
-
     const providers = await prisma.social_providers.findMany({
       orderBy: { sort: "asc" },
     })
@@ -64,11 +58,6 @@ export async function GET() {
 
 export async function POST(request: NextRequest) {
   try {
-    const auth = await getServerSessionUser()
-    if (!auth || !auth.isAdmin) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
-    }
-
     const body = await request.json()
     const {
       providerKey,

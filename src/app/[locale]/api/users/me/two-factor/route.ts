@@ -43,12 +43,18 @@ const SetupSchema = z.object({
 
 const EnableSchema = z.object({
   action: z.literal("enable"),
-  token: z.string().length(6).regex(/^\d{6}$/),
+  token: z
+    .string()
+    .length(6)
+    .regex(/^\d{6}$/),
 })
 
 const DisableSchema = z.object({
   action: z.literal("disable"),
-  token: z.string().length(6).regex(/^\d{6}$/),
+  token: z
+    .string()
+    .length(6)
+    .regex(/^\d{6}$/),
 })
 
 const TwoFactorSchema = z.discriminatedUnion("action", [
@@ -121,10 +127,7 @@ export async function POST(request: NextRequest) {
       })
 
       if (!twoFactor) {
-        return NextResponse.json(
-          { error: "请先设置 2FA" },
-          { status: 400 }
-        )
+        return NextResponse.json({ error: "请先设置 2FA" }, { status: 400 })
       }
 
       if (twoFactor.is_enabled) {

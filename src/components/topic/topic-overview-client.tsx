@@ -592,7 +592,6 @@ export default function TopicOverviewClient({
       currentUserProfile,
       replyToPostId,
       mutatePosts,
-      pageSize,
       triggerReply,
       locale,
     ]

@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server"
 import { z } from "zod"
 import { prisma } from "@/lib/prisma"
-import { getServerSessionUser } from "@/lib/server-auth"
+import { getAdminUser } from "@/lib/server-auth"
 import { generateId } from "@/lib/id"
 import { DonationSource, DonationStatus } from "@prisma/client"
 import { getTranslations } from "next-intl/server"
@@ -194,12 +194,7 @@ export async function GET(req: Request) {
 
 export async function POST(req: Request) {
   const t = await getTranslations("AdminDonations")
-  const user = await getServerSessionUser()
-  if (!user)
-    return NextResponse.json(
-      { error: t("error.unauthorized") },
-      { status: 401 }
-    )
+  const user = await getAdminUser()
 
   let body: unknown
   try {

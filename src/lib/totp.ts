@@ -45,10 +45,7 @@ function base32Decode(base32: string): Uint8Array {
 /**
  * 生成 HOTP 值
  */
-async function generateHOTP(
-  secret: string,
-  counter: number
-): Promise<string> {
+async function generateHOTP(secret: string, counter: number): Promise<string> {
   const key = base32Decode(secret)
   const counterBuffer = new ArrayBuffer(8)
   const dataView = new DataView(counterBuffer)
@@ -62,11 +59,7 @@ async function generateHOTP(
     ["sign"]
   )
 
-  const signature = await crypto.subtle.sign(
-    "HMAC",
-    keyBuffer,
-    counterBuffer
-  )
+  const signature = await crypto.subtle.sign("HMAC", keyBuffer, counterBuffer)
 
   const hmac = new Uint8Array(signature)
   const offset = hmac[hmac.length - 1] & 0x0f

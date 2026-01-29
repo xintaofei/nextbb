@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
-import { getServerSessionUser } from "@/lib/server-auth"
 import { generateId } from "@/lib/id"
 import { getLocale } from "next-intl/server"
 import { createTranslationTasks } from "@/lib/services/translation-task"
@@ -58,11 +57,6 @@ function validateLevel(level: number): boolean {
 // GET - 获取徽章列表
 export async function GET(request: NextRequest) {
   try {
-    const auth = await getServerSessionUser()
-    if (!auth || !auth.isAdmin) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
-    }
-
     const searchParams = request.nextUrl.searchParams
     const locale = (request.nextUrl.pathname.split("/")[1] || "zh") as string
     const page = parseInt(searchParams.get("page") || "1")
@@ -226,11 +220,6 @@ export async function GET(request: NextRequest) {
 // POST - 创建徽章
 export async function POST(request: NextRequest) {
   try {
-    const auth = await getServerSessionUser()
-    if (!auth || !auth.isAdmin) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
-    }
-
     const body = await request.json()
     const {
       name,

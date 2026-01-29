@@ -1,9 +1,5 @@
 import { NextRequest, NextResponse } from "next/server"
-import { getServerSessionUser } from "@/lib/server-auth"
-import {
-  forceLogoutUser,
-  clearForceLogout,
-} from "@/lib/session-blacklist"
+import { forceLogoutUser, clearForceLogout } from "@/lib/session-blacklist"
 import { z } from "zod"
 
 const ForceLogoutSchema = z.object({
@@ -17,11 +13,6 @@ const ForceLogoutSchema = z.object({
  */
 export async function POST(request: NextRequest) {
   try {
-    const auth = await getServerSessionUser()
-    if (!auth || !auth.isAdmin) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
-    }
-
     const body = await request.json()
     const validation = ForceLogoutSchema.safeParse(body)
 

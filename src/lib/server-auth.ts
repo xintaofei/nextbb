@@ -43,3 +43,8 @@ export async function getServerSessionUser(): Promise<ServerSessionUser | null> 
     isAdmin: session.user.isAdmin,
   }
 }
+
+export async function getAdminUser(): Promise<ServerSessionUser> {
+  const user = await getServerSessionUser()
+  return user as ServerSessionUser
+}
