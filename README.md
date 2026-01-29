@@ -6,7 +6,7 @@
 </p>
 
 <p align="center">
-  <a href="https://discover.nextbb.org" target="_blank">🌐 在线演示</a>
+  <a href="https://nextbb.org" target="_blank">🌐 在线演示</a>
   ·
   <a href="#-快速开始">📦 快速开始</a>
   ·
@@ -85,7 +85,7 @@ Milkdown Markdown 编辑器，斜杠命令、实时预览
 
 ### 🔒 安全可靠
 
-NextAuth.js 认证 + RBAC 权限控制
+NextAuth.js 认证
 
 </td>
   </tr>
@@ -179,7 +179,7 @@ pnpm dev
 ### 一键部署到 Vercel
 
 <p>
-  <a target="_blank" href="https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fxintaofei%2Fnextbb&env=JWT_AUTH_SECRET,NEXTAUTH_SECRET,IS_SERVERLESS,NODE_TLS_REJECT_UNAUTHORIZED&project-name=nextbb&repository-name=nextbb&demo-title=NextBB&demo-description=Next%20bulletin%20board%20system&demo-url=https%3A%2F%2Fdiscover.nextbb.org&stores=%5B%7B%22type%22%3A%22blob%22%7D%2C%7B%22type%22%3A%22kv%22%7D%2C%7B%22type%22%3A%22postgres%22%7D%5D">
+  <a target="_blank" href="https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fxintaofei%2Fnextbb&env=JWT_AUTH_SECRET,NEXTAUTH_SECRET,NEXTAUTH_URL,IS_SERVERLESS,NODE_TLS_REJECT_UNAUTHORIZED&project-name=nextbb&repository-name=nextbb&demo-title=NextBB&demo-description=Next%20bulletin%20board%20system&demo-url=https%3A%2F%2Fnextbb.org&stores=%5B%7B%22type%22%3A%22blob%22%7D%2C%7B%22type%22%3A%22kv%22%7D%2C%7B%22type%22%3A%22postgres%22%7D%5D">
     <img src="https://vercel.com/button" alt="Deploy with Vercel" height="36" />
   </a>
 </p>
@@ -195,8 +195,9 @@ pnpm dev
 
 | 变量名                         | 说明             | 生成方式                  |
 | ------------------------------ | ---------------- | ------------------------- |
-| `JWT_AUTH_SECRET`              | JWT 认证密钥     | `openssl rand -base64 32` |
-| `NEXTAUTH_SECRET`              | Session 加密密钥 | `openssl rand -base64 32` |
+| `JWT_AUTH_SECRET`              | JWT 认证密钥     | `openssl rand -base64 32` 或随机字符串 |
+| `NEXTAUTH_SECRET`              | Session 加密密钥 | `openssl rand -base64 32` 或随机字符串 |
+| `NEXTAUTH_URL`                 | 认证回调 URL     | `https://nextbb.org` （替换为实际部署的域名访问地址）   |
 | `IS_SERVERLESS`                | Serverless 模式  | 设置为 `true`             |
 | `NODE_TLS_REJECT_UNAUTHORIZED` | SSL 验证         | 设置为 `0`                |
 
