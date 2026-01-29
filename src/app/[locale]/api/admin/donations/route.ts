@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server"
 import { z } from "zod"
 import { prisma } from "@/lib/prisma"
-import { requireAdmin } from "@/lib/guard"
+import { getServerSessionUser } from "@/lib/server-auth"
 import { generateId } from "@/lib/id"
 import { DonationSource, DonationStatus } from "@prisma/client"
 import { getTranslations } from "next-intl/server"
@@ -65,12 +65,6 @@ type DonationListResult = {
 
 export async function GET(req: Request) {
   const t = await getTranslations("AdminDonations")
-  const actor = await requireAdmin()
-  if (!actor)
-    return NextResponse.json(
-      { error: t("error.unauthorized") },
-      { status: 401 }
-    )
 
   const url = new URL(req.url)
   const parsed = QuerySchema.safeParse({
@@ -200,8 +194,8 @@ export async function GET(req: Request) {
 
 export async function POST(req: Request) {
   const t = await getTranslations("AdminDonations")
-  const actor = await requireAdmin()
-  if (!actor)
+  const user = await getServerSessionUser()
+  if (!user)
     return NextResponse.json(
       { error: t("error.unauthorized") },
       { status: 401 }
@@ -240,7 +234,7 @@ export async function POST(req: Request) {
       message: data.message,
       admin_note: data.admin_note,
       confirmed_by:
-        data.status === DonationStatus.CONFIRMED ? actor.userId : null,
+        data.status === DonationStatus.CONFIRMED ? user.userId : null,
       confirmed_at:
         data.status === DonationStatus.CONFIRMED ? new Date() : null,
     },

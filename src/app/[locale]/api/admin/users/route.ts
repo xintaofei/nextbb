@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server"
 import { z } from "zod"
 import { prisma } from "@/lib/prisma"
-import { requireAdmin } from "@/lib/guard"
 
 const QuerySchema = z.object({
   page: z.string().regex(/^\d+$/).optional(),
@@ -30,10 +29,6 @@ type UserListResult = {
 }
 
 export async function GET(req: Request) {
-  const actor = await requireAdmin()
-  if (!actor)
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
-
   const url = new URL(req.url)
   const parsed = QuerySchema.safeParse({
     page: url.searchParams.get("page") ?? undefined,

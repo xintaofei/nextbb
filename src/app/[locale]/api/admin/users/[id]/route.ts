@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server"
 import { z } from "zod"
 import { prisma } from "@/lib/prisma"
-import { requireAdmin } from "@/lib/guard"
+import { getServerSessionUser } from "@/lib/server-auth"
 
 const PatchSchema = z.object({
   is_admin: z.boolean().optional(),
@@ -17,7 +17,7 @@ export async function PATCH(
   props: { params: Promise<{ id: string }> }
 ) {
   const params = await props.params
-  const actor = await requireAdmin()
+  const actor = await getServerSessionUser()
   if (!actor)
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
 

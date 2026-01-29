@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server"
 import { z } from "zod"
 import { prisma } from "@/lib/prisma"
-import { requireAdmin } from "@/lib/guard"
+import { getServerSessionUser } from "@/lib/server-auth"
 import { DonationSource, DonationStatus } from "@prisma/client"
 import { getTranslations } from "next-intl/server"
 
@@ -24,12 +24,6 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const t = await getTranslations("AdminDonations")
-  const actor = await requireAdmin()
-  if (!actor)
-    return NextResponse.json(
-      { error: t("error.unauthorized") },
-      { status: 401 }
-    )
 
   const { id } = await params
   let donationId: bigint
@@ -83,8 +77,8 @@ export async function PATCH(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const t = await getTranslations("AdminDonations")
-  const actor = await requireAdmin()
-  if (!actor)
+  const user = await getServerSessionUser()
+  if (!user)
     return NextResponse.json(
       { error: t("error.unauthorized") },
       { status: 401 }
@@ -144,7 +138,7 @@ export async function PATCH(
       data.status === DonationStatus.CONFIRMED &&
       existing.status !== DonationStatus.CONFIRMED
     ) {
-      updateData.confirmed_by = actor.userId
+      updateData.confirmed_by = user.userId
       updateData.confirmed_at = new Date()
     }
   }
@@ -162,12 +156,6 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const t = await getTranslations("AdminDonations")
-  const actor = await requireAdmin()
-  if (!actor)
-    return NextResponse.json(
-      { error: t("error.unauthorized") },
-      { status: 401 }
-    )
 
   const { id } = await params
   let donationId: bigint
