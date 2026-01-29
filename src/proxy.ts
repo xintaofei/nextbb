@@ -68,48 +68,47 @@ function matchesSensitiveRoute(pathname: string, method: string): boolean {
 }
 
 export default async function middleware(request: NextRequest) {
-  const { pathname } = request.nextUrl
-
-  // 1. 检查敏感操作路由的用户黑名单
-  if (matchesSensitiveRoute(pathname, request.method)) {
-    try {
-      const token = await getToken({
-        req: request,
-        secret: process.env.NEXTAUTH_SECRET,
-      })
-
-      // 如果用户已登录，检查是否被强制登出
-      if (token && token.id) {
-        const isBlacklisted = await isUserForcedLogout(token.id as string)
-        if (isBlacklisted) {
-          logSecurityEvent({
-            event: "UNAUTHORIZED_ACCESS",
-            userId: token.id as string,
-            email: token.email,
-            ip: request.headers.get("x-forwarded-for") || "unknown",
-            details: `用户已被强制登出，尝试访问: ${pathname}`,
-          })
-          return NextResponse.json(
-            { error: "Session invalidated" },
-            { status: 401 }
-          )
-        }
-      }
-    } catch (error) {
-      console.error("[Middleware] 黑名单检查失败:", error)
-      // 黑名单检查失败时不阻止请求，让 API 路由自行处理
-    }
+  let token = null
+  try {
+    token = await getToken({
+      req: request,
+      secret: process.env.NEXTAUTH_SECRET,
+    })
+  } catch (error) {
+    console.error("[Middleware] Token获取失败:", error)
   }
 
-  // 2. Check if the path is an admin API route
-  // Matches /api/admin or /[locale]/api/admin
-  if (pathname.includes("/api/admin")) {
-    try {
-      const token = await getToken({
-        req: request,
-        secret: process.env.NEXTAUTH_SECRET,
-      })
+  const { pathname } = request.nextUrl
+  // 统一处理 API 请求
+  if (pathname.includes("/api/")) {
+    // 1. 检查敏感操作路由的用户黑名单
+    if (matchesSensitiveRoute(pathname, request.method)) {
+      try {
+        // 如果用户已登录，检查是否被强制登出
+        if (token && token.id) {
+          const isBlacklisted = await isUserForcedLogout(token.id as string)
+          if (isBlacklisted) {
+            logSecurityEvent({
+              event: "UNAUTHORIZED_ACCESS",
+              userId: token.id as string,
+              email: token.email,
+              ip: request.headers.get("x-forwarded-for") || "unknown",
+              details: `用户已被强制登出，尝试访问: ${pathname}`,
+            })
+            return NextResponse.json(
+              { error: "Session invalidated" },
+              { status: 401 }
+            )
+          }
+        }
+      } catch (error) {
+        console.error("[Middleware] 黑名单检查失败:", error)
+        // 黑名单检查失败时不阻止请求，让 API 路由自行处理
+      }
+    }
 
+    // 2. Check if the path is an admin API route
+    if (pathname.includes("/api/admin")) {
       if (!token) {
         logSecurityEvent({
           event: "UNAUTHORIZED_ACCESS",
@@ -129,17 +128,28 @@ export default async function middleware(request: NextRequest) {
         })
         return NextResponse.json({ error: "Forbidden" }, { status: 403 })
       }
-    } catch (error) {
-      logSecurityEvent({
-        event: "TOKEN_VERIFICATION_FAILED",
-        ip: request.headers.get("x-forwarded-for") || "unknown",
-        details: `Token 验证失败: ${error}`,
-      })
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
   }
 
-  return intlMiddleware(request)
+  // 为请求注入用户信息到 Header (优化 server-auth 获取性能)
+  const requestHeaders = new Headers(request.headers)
+  if (token && token.id) {
+    requestHeaders.set("x-user-id", token.id as string)
+    requestHeaders.set("x-user-email", token.email || "")
+    requestHeaders.set("x-user-is-admin", String(!!token.isAdmin))
+  } else {
+    // 强制清除用户身份相关的 Header，防止客户端伪造
+    requestHeaders.delete("x-user-id")
+    requestHeaders.delete("x-user-email")
+    requestHeaders.delete("x-user-is-admin")
+  }
+
+  // 使用带有净化/注入后 Header 的请求对象传递给下一个中间件
+  return intlMiddleware(
+    new NextRequest(request, {
+      headers: requestHeaders,
+    })
+  )
 }
 
 export const config = {
