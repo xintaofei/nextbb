@@ -4,6 +4,7 @@ import { ReactNode, useState } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useTranslations } from "next-intl"
+import { useSession } from "next-auth/react"
 import useSWR, { mutate } from "swr"
 import { toast } from "sonner"
 import {
@@ -91,21 +92,10 @@ export function UserInfoCard({
   const isMobile = useIsMobile()
   const [open, setOpen] = useState(false)
   const [isFollowLoading, setIsFollowLoading] = useState(false)
-  const [currentUserId, setCurrentUserId] = useState<string | null>(null)
 
-  // 获取当前用户ID
-  const { data: sessionData } = useSWR<{ userId: string }>(
-    open ? "/api/user/current" : null,
-    {
-      revalidateOnFocus: false,
-      dedupingInterval: 300000, // 5分钟缓存
-    }
-  )
-
-  // 更新当前用户ID
-  if (sessionData?.userId && currentUserId !== sessionData.userId) {
-    setCurrentUserId(sessionData.userId)
-  }
+  // 获取当前用户信息
+  const { data: session } = useSession()
+  const currentUserId = session?.user?.id
 
   // 判断是否是自己的卡片
   const isOwnCard = currentUserId === userId

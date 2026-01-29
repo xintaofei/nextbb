@@ -3,7 +3,7 @@
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { useTranslations } from "next-intl"
 import Link from "next/link"
-import useSWR from "swr"
+import { useSession } from "next-auth/react"
 import {
   useTopicSortFilter,
   type TabValue,
@@ -23,15 +23,9 @@ export function TopicSortTabs({
 }: TopicSortTabsProps) {
   const tc = useTranslations("Common")
 
-  // 获取当前用户信息
-  const { data: sessionData } = useSWR<{ userId: string }>(
-    "/api/user/current",
-    {
-      revalidateOnFocus: false,
-      dedupingInterval: 300000, // 5分钟缓存
-    }
-  )
-  const isLoggedIn = Boolean(sessionData?.userId)
+  // 获取当前用户登录状态
+  const { data: session } = useSession()
+  const isLoggedIn = session?.user?.id !== undefined
 
   // 使用共享hook管理排序和过滤
   const { selectedTab, getTabPath, setTab } = useTopicSortFilter({

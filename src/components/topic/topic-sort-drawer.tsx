@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/drawer"
 import { ChevronsUpDown, Check } from "lucide-react"
 import { useTranslations } from "next-intl"
-import useSWR from "swr"
+import { useSession } from "next-auth/react"
 import { Label } from "../ui/label"
 import { cn } from "@/lib/utils"
 import {
@@ -35,15 +35,9 @@ export function TopicSortDrawer({
   const tc = useTranslations("Common")
   const [open, setOpen] = useState(false)
 
-  // 获取当前用户信息
-  const { data: sessionData } = useSWR<{ userId: string }>(
-    "/api/user/current",
-    {
-      revalidateOnFocus: false,
-      dedupingInterval: 300000, // 5分钟缓存
-    }
-  )
-  const isLoggedIn = Boolean(sessionData?.userId)
+  // 获取当前用户登录状态
+  const { data: session } = useSession()
+  const isLoggedIn = session?.user?.id !== undefined
 
   // 使用共享hook管理排序和过滤
   const { selectedTab, setTab } = useTopicSortFilter({
