@@ -1,6 +1,6 @@
 import { ReactNode } from "react"
 import { DashboardNav } from "@/components/admin/layout/dashboard-nav"
-import { getSessionUser } from "@/lib/auth"
+import { getServerSessionUser } from "@/lib/server-auth"
 import { redirect } from "next/navigation"
 import { prisma } from "@/lib/prisma"
 import { Metadata } from "next"
@@ -20,7 +20,7 @@ export default async function AdminLayout({
   children: ReactNode
 }>) {
   // 获取当前用户
-  const auth = await getSessionUser()
+  const auth = await getServerSessionUser()
   if (!auth) {
     // 如果用户未登录，重定向到登录页面
     redirect(`/login`)

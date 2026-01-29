@@ -1,5 +1,5 @@
 import { Metadata } from "next"
-import { getSessionUser } from "@/lib/auth"
+import { getServerSessionUser } from "@/lib/server-auth"
 import { prisma } from "@/lib/prisma"
 import { decodeUsername } from "@/lib/utils"
 import { ProfileForm } from "@/components/user/profile-form"
@@ -23,7 +23,7 @@ export async function generateMetadata({
 export default async function ProfilePage() {
   const t = await getTranslations("User.preferences.profile")
 
-  const session = await getSessionUser()
+  const session = await getServerSessionUser()
   if (!session) {
     return null
   }

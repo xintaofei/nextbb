@@ -54,9 +54,7 @@ const schema = z.object({
 
 type RegisterValues = z.infer<typeof schema>
 
-type ApiResponse =
-  | { success: true; email: string }
-  | { error: string }
+type ApiResponse = { success: true; email: string } | { error: string }
 
 export default function RegisterPage() {
   const router = useRouter()

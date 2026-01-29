@@ -7,7 +7,7 @@ import {
   getTopicPosts,
   incrementTopicViewsOnce,
 } from "@/lib/topic-service"
-import { getSessionUser } from "@/lib/auth"
+import { getServerSessionUser } from "@/lib/server-auth"
 import { stripHtmlAndTruncate } from "@/lib/utils"
 
 type TopicPageProps = {
@@ -21,7 +21,7 @@ export async function generateMetadata({
   const siteName = configs["basic.name"]
   const { id: idStr } = await params
   const locale = await getLocale()
-  const auth = await getSessionUser()
+  const auth = await getServerSessionUser()
 
   let topicId: bigint
   try {
@@ -91,7 +91,7 @@ export async function generateMetadata({
 export default async function TopicPage({ params }: TopicPageProps) {
   const { id: idStr } = await params
   const locale = await getLocale()
-  const auth = await getSessionUser()
+  const auth = await getServerSessionUser()
 
   let topicId: bigint
   try {

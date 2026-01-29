@@ -1,6 +1,5 @@
 // 导入默认语言的 JSON 结构作为类型源
 import zh from "../i18n/messages/zh.json"
-import type { DefaultSession } from "next-auth"
 
 // 推断类型
 type Messages = typeof zh

@@ -1,6 +1,6 @@
 import { ReactNode } from "react"
 import { redirect } from "next/navigation"
-import { getSessionUser } from "@/lib/auth"
+import { getServerSessionUser } from "@/lib/server-auth"
 import { prisma } from "@/lib/prisma"
 import { decodeUsername, encodeUsername } from "@/lib/utils"
 import { PreferencesNavigation } from "@/components/user/preferences-navigation"
@@ -18,7 +18,7 @@ export default async function PreferencesLayout({
   const decodedUsername = decodeUsername(username)
 
   // 权限验证：仅本人可访问偏好设置
-  const session = await getSessionUser()
+  const session = await getServerSessionUser()
   if (!session) {
     redirect("/login")
   }

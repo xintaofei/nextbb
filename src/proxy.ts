@@ -1,7 +1,7 @@
 import createMiddleware from "next-intl/middleware"
 import { routing } from "./i18n/routing"
 import { NextRequest, NextResponse } from "next/server"
-import { verifyAuthToken, AUTH_COOKIE_NAME } from "@/lib/auth"
+import { getToken } from "next-auth/jwt"
 
 const intlMiddleware = createMiddleware(routing)
 
@@ -11,15 +11,16 @@ export default async function middleware(request: NextRequest) {
   // Check if the path is an admin API route
   // Matches /api/admin or /[locale]/api/admin
   if (pathname.includes("/api/admin")) {
-    const token = request.cookies.get(AUTH_COOKIE_NAME)?.value
+    const token = await getToken({
+      req: request,
+      secret: process.env.NEXTAUTH_SECRET,
+    })
 
     if (!token) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
-    const payload = await verifyAuthToken(token)
-
-    if (!payload || !payload.isAdmin) {
+    if (!token.isAdmin) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 })
     }
   }
