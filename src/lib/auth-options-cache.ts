@@ -1,5 +1,6 @@
 import { createAuthOptions } from "./auth-options"
 import type { NextAuthOptions } from "next-auth"
+import { cache as reactCache } from "react"
 
 type AuthOptionsCache = {
   options: NextAuthOptions
@@ -11,16 +12,16 @@ const globalForAuth = globalThis as unknown as {
   authOptionsCache: AuthOptionsCache | null
 }
 
-// 缓存有效期: 10 分钟 (作为兜底,防止 serverless 不同实例间配置不一致)
-const CACHE_TTL = 10 * 60 * 1000
+// 缓存有效期: 5 分钟 (作为兜底,防止 serverless 不同实例间配置不一致)
+const CACHE_TTL = 5 * 60 * 1000
 
 /**
- * 获取 authOptions（带缓存）
+ * 内部实现：获取 authOptions（带全局内存缓存）
  * - 优先使用缓存,减少数据库查询
  * - 30 分钟有效期作为兜底,防止 serverless 环境下配置长期不同步
  * - 可通过 invalidateAuthOptionsCache() 主动失效当前实例缓存
  */
-export async function getAuthOptions(): Promise<NextAuthOptions> {
+async function _getAuthOptions(): Promise<NextAuthOptions> {
   const now = Date.now()
   const cache = globalForAuth.authOptionsCache
 
@@ -38,6 +39,12 @@ export async function getAuthOptions(): Promise<NextAuthOptions> {
 
   return options
 }
+
+/**
+ * 获取 authOptions
+ * 使用 React cache 包装，确保在同一次请求生命周期内只执行一次
+ */
+export const getAuthOptions = reactCache(_getAuthOptions)
 
 /**
  * 主动失效缓存
