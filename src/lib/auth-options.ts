@@ -318,11 +318,11 @@ export async function createAuthOptions(): Promise<NextAuthOptions> {
 
         // 仅在显式调用 update() 时才刷新用户信息
         if (trigger === "update") {
-          const email = token.email
-          if (!email) return token
+          const userId = token.id
+          if (!userId) return token
 
           const dbUser = await prisma.users.findUnique({
-            where: { email },
+            where: { id: BigInt(userId) },
             select: {
               id: true,
               email: true,
