@@ -155,6 +155,7 @@ export async function createAuthOptions(): Promise<NextAuthOptions> {
           email: user.email,
           name: user.name,
           image: user.avatar,
+          isAdmin: user.is_admin,
         }
       },
     })
