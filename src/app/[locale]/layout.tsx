@@ -12,7 +12,7 @@ import { getPublicConfigs } from "@/lib/config"
 import { ConfigProvider } from "@/components/providers/config-provider"
 import { NewTopicProvider } from "@/components/providers/new-topic-provider"
 import { getServerSession } from "next-auth"
-import { createAuthOptions } from "@/lib/auth-options"
+import { getAuthOptions } from "@/lib/auth-options-cache"
 import { AuthProvider } from "@/components/providers/auth-provider"
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -34,7 +34,7 @@ export default async function RootLayout({
   const messages = await getMessages()
   const locale = await getLocale()
   const configs = await getPublicConfigs()
-  const authOptions = await createAuthOptions()
+  const authOptions = await getAuthOptions()
   const session = await getServerSession(authOptions)
 
   return (

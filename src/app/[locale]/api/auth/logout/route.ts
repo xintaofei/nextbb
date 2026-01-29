@@ -1,9 +1,9 @@
 import { NextResponse } from "next/server"
 import { getServerSession } from "next-auth"
-import { createAuthOptions } from "@/lib/auth-options"
+import { getAuthOptions } from "@/lib/auth-options-cache"
 
 export async function POST() {
-  const authOptions = await createAuthOptions()
+  const authOptions = await getAuthOptions()
   const session = await getServerSession(authOptions)
 
   // 可以在这里记录登出日志

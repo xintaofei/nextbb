@@ -12,7 +12,7 @@ model users {
   name           String    @db.VarChar(32)
   avatar         String    @db.VarChar(256)
   email          String    @db.VarChar(256)
-  password       String    @db.VarChar(255)
+  password       String?   @db.VarChar(255)
   status         Int
   is_deleted     Boolean
   is_admin       Boolean   @default(false)
@@ -56,6 +56,7 @@ model users {
   uploads         uploads[]
   custom_status   user_custom_statuses?
   social_accounts user_social_accounts[] @relation("user_social_accounts_user")
+  two_factor      user_two_factor?
 
   @@unique([email], map: "users_email_key")
   @@map("users")
@@ -597,7 +598,7 @@ model user_login_stats {
 
 model user_login_logs {
   id            BigInt   @id @db.BigInt
-  user_id       BigInt   @db.BigInt
+  user_id       BigInt?  @db.BigInt
   ip            String   @db.VarChar(64)
   user_agent    String?  @db.VarChar(512)
   location_lat  String?  @db.VarChar(32)
@@ -606,7 +607,7 @@ model user_login_logs {
   login_method  String   @db.VarChar(32) // FORM, GITHUB, GOOGLE, LINUXDO, etc.
   login_at      DateTime @default(now())
 
-  user users @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  user users? @relation(fields: [user_id], references: [id], onDelete: Cascade)
 
   @@index([user_id], map: "user_login_logs_user_index")
   @@index([login_at], map: "user_login_logs_time_index")
@@ -1083,4 +1084,19 @@ model seed_migrations {
   applied_at DateTime @default(now())
 
   @@map("seed_migrations")
+}
+
+model user_two_factor {
+  user_id       BigInt    @id @db.BigInt
+  secret        String    @db.VarChar(256)  // Base32 encoded secret
+  is_enabled    Boolean   @default(false)
+  backup_codes  Json?                        // Encrypted backup codes
+  enabled_at    DateTime?
+  last_used_at  DateTime?
+  created_at    DateTime  @default(now())
+  updated_at    DateTime  @updatedAt
+
+  user users @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@map("user_two_factor")
 }

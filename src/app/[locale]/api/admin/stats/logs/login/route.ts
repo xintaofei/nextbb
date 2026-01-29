@@ -36,11 +36,13 @@ export async function GET(
 
     const items = logsRaw.map((log) => ({
       id: log.id.toString(),
-      user: {
-        id: log.user.id.toString(),
-        name: log.user.name,
-        avatar: log.user.avatar,
-      },
+      user: log.user
+        ? {
+            id: log.user.id.toString(),
+            name: log.user.name,
+            avatar: log.user.avatar,
+          }
+        : null,
       ip: log.ip,
       userAgent: log.user_agent,
       location:

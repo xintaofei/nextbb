@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma"
 import { getServerSessionUser } from "@/lib/server-auth"
 import { generateId } from "@/lib/id"
 import { invalidateSocialProviderCache } from "@/lib/services/social-provider-service"
+import { invalidateAuthOptionsCache } from "@/lib/auth-options-cache"
 
 type SocialProviderDTO = {
   id: string
@@ -155,6 +156,7 @@ export async function POST(request: NextRequest) {
     })
 
     await invalidateSocialProviderCache()
+    invalidateAuthOptionsCache()
 
     const dto: SocialProviderDTO = {
       id: String(provider.id),

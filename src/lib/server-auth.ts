@@ -1,5 +1,5 @@
 import { getServerSession } from "next-auth"
-import { createAuthOptions } from "@/lib/auth-options"
+import { getAuthOptions } from "@/lib/auth-options-cache"
 
 export type ServerSessionUser = {
   userId: bigint
@@ -8,7 +8,7 @@ export type ServerSessionUser = {
 }
 
 export async function getServerSessionUser(): Promise<ServerSessionUser | null> {
-  const authOptions = await createAuthOptions()
+  const authOptions = await getAuthOptions()
   const session = await getServerSession(authOptions)
 
   if (!session?.user?.id) {

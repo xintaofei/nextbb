@@ -1,14 +1,21 @@
 import { NextResponse } from "next/server"
 import { getServerSession } from "next-auth"
-import { createAuthOptions } from "@/lib/auth-options"
+import { getAuthOptions } from "@/lib/auth-options-cache"
+import { prisma } from "@/lib/prisma"
 
 export async function GET() {
-  const authOptions = await createAuthOptions()
+  const authOptions = await getAuthOptions()
   const session = await getServerSession(authOptions)
 
   if (!session?.user) {
     return NextResponse.json(null, { status: 401 })
   }
+
+  // 实时查询 credits（不从 session 中获取）
+  const user = await prisma.users.findUnique({
+    where: { id: BigInt(session.user.id) },
+    select: { credits: true },
+  })
 
   return NextResponse.json({
     id: session.user.id,
@@ -16,6 +23,6 @@ export async function GET() {
     name: session.user.name,
     avatar: session.user.avatar,
     isAdmin: session.user.isAdmin,
-    credits: session.user.credits,
+    credits: user?.credits ?? 0,
   })
 }

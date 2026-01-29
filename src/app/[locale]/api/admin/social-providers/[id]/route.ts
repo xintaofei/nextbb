@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
 import { getServerSessionUser } from "@/lib/server-auth"
 import { invalidateSocialProviderCache } from "@/lib/services/social-provider-service"
+import { invalidateAuthOptionsCache } from "@/lib/auth-options-cache"
 
 type SocialProviderDTO = {
   id: string
@@ -130,6 +131,7 @@ export async function PATCH(
     })
 
     await invalidateSocialProviderCache()
+    await invalidateAuthOptionsCache()
 
     const dto: SocialProviderDTO = {
       id: String(provider.id),
@@ -201,6 +203,7 @@ export async function DELETE(
     })
 
     await invalidateSocialProviderCache()
+    await invalidateAuthOptionsCache()
 
     return NextResponse.json({ success: true })
   } catch (error) {

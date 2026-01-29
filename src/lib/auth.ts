@@ -4,6 +4,7 @@ import { getGeoInfo } from "@/lib/geo"
 import { differenceInCalendarDays } from "date-fns"
 import { generateId } from "@/lib/id"
 import { AutomationEvents } from "@/lib/automation/event-bus"
+import { getClientIp } from "@/lib/get-client-ip"
 
 /**
  * 记录用户登录信息
@@ -14,8 +15,8 @@ export async function recordLogin(
   loginMethod: string = "UNKNOWN"
 ) {
   try {
+    const ip = await getClientIp()
     const headersList = await headers()
-    const ip = headersList.get("x-forwarded-for") || "unknown"
     const userAgent = headersList.get("user-agent")
     const geo = await getGeoInfo()
     const now = new Date()
@@ -80,7 +81,7 @@ export async function recordLogin(
     await prisma.user_login_logs.create({
       data: {
         id: generateId(),
-        user_id: userId || BigInt(0), // Use 0 for unknown user
+        user_id: userId, // null for unknown user
         ip: ip,
         user_agent: userAgent,
         location_lat: geo.latitude,

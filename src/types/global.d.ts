@@ -17,7 +17,6 @@ declare module "next-auth" {
       name: string
       avatar: string
       isAdmin: boolean
-      credits: number
     }
   }
 
@@ -27,7 +26,6 @@ declare module "next-auth" {
     name: string
     image: string
     isAdmin?: boolean
-    credits?: number
   }
 }
 
@@ -38,6 +36,5 @@ declare module "next-auth/jwt" {
     name: string
     picture: string
     isAdmin: boolean
-    credits: number
   }
 }
