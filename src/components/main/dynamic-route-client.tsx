@@ -1,9 +1,9 @@
 "use client"
 
 import { useTranslations } from "next-intl"
-import { useMemo, useEffect } from "react"
+import { useMemo, useEffect, useRef, useCallback } from "react"
 import useSWRInfinite from "swr/infinite"
-import { TopicList, TopicListItem } from "@/components/topic/topic-list"
+import { TopicList } from "@/components/topic/topic-list"
 import { useNewTopic } from "@/components/providers/new-topic-provider"
 import { TopicHeaderBar } from "@/components/topic/topic-header-bar"
 import { routeParamsToApiQuery, type RouteParams } from "@/lib/route-utils"
@@ -11,16 +11,11 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { cn } from "@/lib/utils"
 import { useCategories } from "@/components/providers/taxonomy-provider"
 import type { CategoryWithCount } from "@/types/taxonomy"
-
-type TopicListResult = {
-  items: TopicListItem[]
-  page: number
-  pageSize: number
-  total: number
-}
+import type { TopicListResult } from "@/lib/services/topic-service"
 
 type DynamicRouteClientProps = {
   routeParams: RouteParams
+  initialData?: TopicListResult
 }
 
 const fetcher = async (url: string) => {
@@ -29,10 +24,29 @@ const fetcher = async (url: string) => {
   return res.json()
 }
 
-export function DynamicRouteClient({ routeParams }: DynamicRouteClientProps) {
+export function DynamicRouteClient({
+  routeParams,
+  initialData,
+}: DynamicRouteClientProps) {
   const tCat = useTranslations("Category")
   const { registerOnPublished } = useNewTopic()
   const categories = useCategories()
+
+  // 存储初始数据，避免重复请求第一页
+  const initialDataRef = useRef(initialData)
+  const firstPageFetchedRef = useRef(false)
+
+  // 路由参数变化时重置 refs（导航场景）
+  useEffect(() => {
+    initialDataRef.current = initialData
+    firstPageFetchedRef.current = false
+  }, [
+    routeParams.categoryId,
+    routeParams.tagId,
+    routeParams.sort,
+    routeParams.filter,
+    initialData,
+  ])
 
   // 从分类列表中查找当前分类
   const category = useMemo(() => {
@@ -49,9 +63,23 @@ export function DynamicRouteClient({ routeParams }: DynamicRouteClientProps) {
     if (apiQuery.sort) qs.set("sort", apiQuery.sort)
     if (apiQuery.filter) qs.set("filter", apiQuery.filter)
     qs.set("page", String(pageIndex + 1))
-    qs.set("pageSize", "20")
+    qs.set("pageSize", "3")
     return `/api/topics?${qs.toString()}`
   }
+
+  // 自定义 fetcher：拦截第一页请求，使用预取数据
+  const topicFetcher = useCallback((url: string) => {
+    // 拦截第一页请求：如果有初始数据且还没使用过，直接返回
+    if (
+      url.includes("page=1") &&
+      initialDataRef.current &&
+      !firstPageFetchedRef.current
+    ) {
+      firstPageFetchedRef.current = true
+      return Promise.resolve(initialDataRef.current)
+    }
+    return fetcher(url)
+  }, [])
 
   const {
     data: topicPages,
@@ -59,10 +87,27 @@ export function DynamicRouteClient({ routeParams }: DynamicRouteClientProps) {
     setSize,
     isLoading: isTopicLoading,
     mutate,
-  } = useSWRInfinite<TopicListResult>(getKey, fetcher, {
-    revalidateFirstPage: true,
+  } = useSWRInfinite<TopicListResult>(getKey, topicFetcher, {
+    revalidateFirstPage: false, // 不重新验证第一页
     revalidateOnFocus: true,
+    revalidateOnMount: false, // 挂载时不请求（使用 fallback）
+    fallbackData: initialData ? [initialData] : undefined,
   })
+
+  // 初始化 SWR 缓存，确保后续 mutate 能正常工作
+  useEffect(() => {
+    if (initialData) {
+      mutate([initialData], false)
+    }
+    firstPageFetchedRef.current = true
+  }, [
+    routeParams.categoryId,
+    routeParams.tagId,
+    routeParams.sort,
+    routeParams.filter,
+    initialData,
+    mutate,
+  ])
 
   useEffect(() => {
     return registerOnPublished(() => {
