@@ -61,7 +61,7 @@ export function CategorySelect({
   }
 
   return (
-    <Popover open={open} onOpenChange={setOpen}>
+    <Popover open={open} onOpenChange={setOpen} modal={true}>
       <PopoverTrigger asChild>
         <Button
           variant="outline"
@@ -112,10 +112,10 @@ export function CategorySelect({
           </div>
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-[320px] p-0" align="start">
+      <PopoverContent className="w-xs p-0" align="start">
         <Command shouldFilter={false}>
           <CommandInput placeholder={searchPlaceholder} />
-          <CommandList className="flex-1 min-h-0">
+          <CommandList>
             <CommandEmpty>{noResultsText}</CommandEmpty>
             <CommandGroup>
               {categories.map((category) => (
@@ -129,21 +129,18 @@ export function CategorySelect({
                       "bg-primary/10 font-semibold border-l-2 border-primary"
                   )}
                 >
-                  <div className="flex items-start gap-2 flex-1 min-w-0">
-                    <span className="text-base">{category.icon}</span>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2">
-                        <span>{category.name}</span>
-                        <span className="text-xs text-muted-foreground">
-                          {category.topicCount}
-                        </span>
-                      </div>
-                      {category.description && (
-                        <p className="text-xs text-muted-foreground truncate mt-0.5">
-                          {category.description}
-                        </p>
-                      )}
+                  <div className="flex flex-col min-w-0">
+                    <div className="flex items-center gap-2">
+                      <span>{category.icon + " " + category.name}</span>
+                      <span className="text-muted-foreground">
+                        {`* ${category.topicCount}`}
+                      </span>
                     </div>
+                    {category.description && (
+                      <p className="text-xs text-muted-foreground mt-0.5">
+                        {category.description}
+                      </p>
+                    )}
                   </div>
                 </CommandItem>
               ))}
