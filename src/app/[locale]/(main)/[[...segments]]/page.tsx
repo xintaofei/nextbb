@@ -1,4 +1,4 @@
-import { notFound } from "next/navigation"
+import { notFound, redirect } from "next/navigation"
 import { getLocale } from "next-intl/server"
 import {
   parseRouteSegments,
@@ -10,6 +10,7 @@ import {
   getTopicList,
   type TopicListResult,
 } from "@/lib/services/topic-service"
+import { getServerSessionUser } from "@/lib/server-auth"
 
 type PageProps = {
   params: Promise<{ segments?: string[] }>
@@ -32,26 +33,32 @@ export default async function DynamicRoutePage({ params }: PageProps) {
     tagId: parsed.tagId,
   }
 
+  // 获取用户会话（用于 'my' 过滤器）
+  const auth = await getServerSessionUser()
+
   // 预取第一页数据
   const apiQuery = routeParamsToApiQuery(routeParams)
+
+  // 如果是 'my' 过滤器但用户未登录，重定向到登录页面
+  if (apiQuery.filter === "my" && !auth) {
+    redirect("/login")
+  }
+
   let initialData: TopicListResult | undefined
 
   try {
-    // 跳过 'my' 过滤器（需要认证，服务端组件无法获取用户会话）
-    if (apiQuery.filter !== "my") {
-      initialData = await getTopicList(
-        {
-          categoryId: apiQuery.categoryId,
-          tagId: apiQuery.tagId,
-          sort: apiQuery.sort as "latest" | "new" | undefined,
-          filter: apiQuery.filter as "community" | undefined,
-          userId: undefined,
-        },
-        1, // 第一页
-        20, // pageSize 与客户端一致
-        locale
-      )
-    }
+    initialData = await getTopicList(
+      {
+        categoryId: apiQuery.categoryId,
+        tagId: apiQuery.tagId,
+        sort: apiQuery.sort as "latest" | "new" | undefined,
+        filter: apiQuery.filter as "community" | "my" | undefined,
+        userId: apiQuery.filter === "my" ? auth?.userId : undefined,
+      },
+      1, // 第一页
+      20, // pageSize 与客户端一致
+      locale
+    )
   } catch (error) {
     console.error("Failed to pre-fetch topics:", error)
     // 优雅降级：失败时继续渲染，由客户端处理

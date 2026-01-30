@@ -35,12 +35,20 @@ export function parseRouteSegments(
   const result: RouteParams = {}
   const seen = new Set<string>()
 
-  // 特殊处理：如果第一个段是排序值（不带前缀），且只有一个段
+  // 特殊处理：如果只有一个段，检查是否为排序值或过滤值（不带前缀）
   if (segments.length === 1) {
     const value = segments[0]
+    // 检查是否为排序值
     if (value === "top" || value === "new" || value === "latest") {
       return {
         sort: value as SortValue,
+        valid: true,
+      }
+    }
+    // 检查是否为过滤值
+    if (value === "community" || value === "my") {
+      return {
+        filter: value as FilterValue,
         valid: true,
       }
     }
@@ -134,13 +142,20 @@ export function parseRouteSegments(
 export function buildRoutePath(params: RouteParams): string {
   const segments: string[] = []
 
-  // 判断是否只有排序参数（没有分类、标签和过滤）
+  // 判断是否只有单个参数（没有其他参数）
   const onlySort =
     params.sort && !params.categoryId && !params.tagId && !params.filter
+  const onlyFilter =
+    params.filter && !params.categoryId && !params.tagId && !params.sort
 
   // 如果只有排序，使用简化格式 /latest、/new、/top
   if (onlySort) {
     return `/${params.sort}`
+  }
+
+  // 如果只有过滤，使用简化格式 /my、/community
+  if (onlyFilter) {
+    return `/${params.filter}`
   }
 
   // 如果有分类、标签或过滤，使用完整格式
