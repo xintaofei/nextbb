@@ -18,7 +18,7 @@ import { AuthProvider } from "@/components/providers/auth-provider"
 export async function generateMetadata(): Promise<Metadata> {
   const configs = await getPublicConfigs()
   return {
-    title: configs["basic.name"],
+    title: `${configs["basic.name"]} - ${configs["basic.description"]}`,
     description: configs["basic.description"],
     other: {
       generator: `NextBB 0.0.1 - https://github.com/xintaofei/nextbb`,
