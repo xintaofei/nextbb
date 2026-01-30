@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server"
 import { getServerSessionUser } from "@/lib/server-auth"
 import { getLocale } from "next-intl/server"
-import { getTopicInfo, incrementTopicViews } from "@/lib/topic-service"
+import { getTopicInfo } from "@/lib/topic-service"
 
 export async function GET(
   _req: Request,
@@ -22,8 +22,6 @@ export async function GET(
   if (!topic) {
     return NextResponse.json({ error: "Not found" }, { status: 404 })
   }
-
-  await incrementTopicViews(topicId)
 
   return NextResponse.json({ topic })
 }
