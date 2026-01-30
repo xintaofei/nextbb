@@ -85,7 +85,7 @@ export function CategorySelect({
           ) : (
             <span className="text-muted-foreground">{placeholder}</span>
           )}
-          <div className="flex items-center gap-1 ml-2">
+          <div className="flex items-center gap-1">
             {clearable && value && (
               <div
                 data-clear-button
@@ -103,7 +103,7 @@ export function CategorySelect({
                     handleClear()
                   }
                 }}
-                className="h-4 w-4 shrink-0 opacity-50 hover:opacity-100 hover:bg-accent rounded-sm flex items-center justify-center cursor-pointer transition-all"
+                className="h-4 w-4 shrink-0 opacity-50 hover:opacity-100 hover:text-destructive flex items-center justify-center cursor-pointer transition-all"
               >
                 <X className="h-3.5 w-3.5" />
               </div>
@@ -126,7 +126,7 @@ export function CategorySelect({
                   className={cn(
                     "cursor-pointer mb-1",
                     value === category.id &&
-                      "bg-primary/10 font-semibold border-l-2 border-primary"
+                      "bg-accent text-accent-foreground font-semibold"
                   )}
                 >
                   <div className="flex flex-col min-w-0">

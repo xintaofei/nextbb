@@ -254,7 +254,7 @@ export function TopicForm({
                 <FormLabel>{t("form.category.label")}</FormLabel>
                 <FormControl>
                   <CategorySelect
-                    className="w-36"
+                    className="min-w-36"
                     value={field.value}
                     onChange={(v) => field.onChange(v ?? "")}
                   />
