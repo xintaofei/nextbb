@@ -15,6 +15,7 @@
     "Filters": {
       "category": "Category",
       "tag": "Tag",
+      "tags": "Tags",
       "all": "☑️ All"
     },
     "Tabs": {
