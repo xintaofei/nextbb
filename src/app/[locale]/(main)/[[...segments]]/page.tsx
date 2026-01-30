@@ -48,7 +48,7 @@ export default async function DynamicRoutePage({ params }: PageProps) {
           userId: undefined,
         },
         1, // 第一页
-        3, // pageSize 与客户端一致
+        20, // pageSize 与客户端一致
         locale
       )
     }
