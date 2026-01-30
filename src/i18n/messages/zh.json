@@ -9,11 +9,13 @@
   },
   "Common": {
     "Search": {
-      "placeholder": "搜索..."
+      "placeholder": "搜索...",
+      "noResults": "无结果"
     },
     "Filters": {
       "category": "分类",
       "tag": "标签",
+      "tags": "标签",
       "all": "☑️ 全部"
     },
     "Tabs": {

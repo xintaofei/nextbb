@@ -1,7 +1,7 @@
 "use client"
 
 import { useMemo, useState, useTransition } from "react"
-import { ChevronsUpDown, X } from "lucide-react"
+import { Check, ChevronsUpDown, X } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import {
@@ -18,47 +18,61 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover"
 import { useTranslations } from "next-intl"
-import { useCategories } from "@/components/providers/taxonomy-provider"
+import { useTags } from "@/components/providers/taxonomy-provider"
 
 type Props = {
-  value?: string
-  onChange?: (value: string | undefined) => void
+  value?: string[]
+  onChange?: (value: string[]) => void
   className?: string
-  clearable?: boolean
+  placeholder?: string
 }
 
-export function CategorySelect({
-  value,
+export function TagsMultiSelect({
+  value = [],
   onChange,
   className,
-  clearable = true,
+  placeholder,
 }: Props) {
-  const tc = useTranslations("Common")
-  const categories = useCategories()
+  const t = useTranslations("Common")
+  const tags = useTags()
   const [open, setOpen] = useState(false)
   const [, startTransition] = useTransition()
 
-  const selectedCategory = useMemo(
-    () => categories.find((cat) => cat.id === value),
-    [categories, value]
+  const selectedTags = useMemo(
+    () => tags.filter((tag) => value.includes(tag.name)),
+    [tags, value]
   )
 
-  const placeholder = useMemo(() => tc("Filters.category"), [tc])
-  const searchPlaceholder = useMemo(() => tc("Search.placeholder"), [tc])
-  const noResultsText = useMemo(() => tc("Search.noResults"), [tc])
+  const defaultPlaceholder = useMemo(() => t("Filters.tags"), [t])
+  const searchPlaceholder = useMemo(() => t("Search.placeholder"), [t])
+  const noResultsText = useMemo(() => t("Search.noResults"), [t])
 
-  const handleSelect = (categoryId: string) => {
-    setOpen(false)
+  const handleSelect = (tagName: string) => {
+    const next = new Set(value)
+    if (next.has(tagName)) {
+      next.delete(tagName)
+    } else {
+      if (next.size < 5) {
+        next.add(tagName)
+      }
+    }
     startTransition(() => {
-      onChange?.(categoryId)
+      onChange?.(Array.from(next))
     })
   }
 
   const handleClear = () => {
     startTransition(() => {
-      onChange?.(undefined)
+      onChange?.([])
     })
   }
+
+  const labelText = useMemo(() => {
+    if (selectedTags.length === 0) return placeholder || defaultPlaceholder
+    const names = selectedTags.map((t) => t.name)
+    const joined = names.join(", ")
+    return joined.length > 24 ? `${joined.slice(0, 24)}…` : joined
+  }, [selectedTags, placeholder, defaultPlaceholder])
 
   return (
     <Popover open={open} onOpenChange={setOpen} modal={true}>
@@ -69,7 +83,6 @@ export function CategorySelect({
           aria-expanded={open}
           className={cn("justify-between", className)}
           onClick={(e) => {
-            // 如果点击的是清除按钮，阻止 popover 打开
             const target = e.target as HTMLElement
             if (target.closest("[data-clear-button]")) {
               e.preventDefault()
@@ -77,16 +90,16 @@ export function CategorySelect({
             }
           }}
         >
-          {selectedCategory ? (
-            <span className="flex items-center gap-1.5">
-              <span>{selectedCategory.icon}</span>
-              <span>{selectedCategory.name}</span>
-            </span>
-          ) : (
-            <span className="text-muted-foreground">{placeholder}</span>
-          )}
+          <span
+            className={cn(
+              "truncate",
+              selectedTags.length === 0 && "text-muted-foreground"
+            )}
+          >
+            {labelText}
+          </span>
           <div className="flex items-center gap-1">
-            {clearable && value && (
+            {value.length > 0 && (
               <div
                 data-clear-button
                 role="button"
@@ -112,38 +125,35 @@ export function CategorySelect({
           </div>
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-xs p-0" align="start">
+      <PopoverContent className="w-64 p-0" align="start">
         <Command>
           <CommandInput placeholder={searchPlaceholder} />
           <CommandList>
             <CommandEmpty>{noResultsText}</CommandEmpty>
             <CommandGroup>
-              {categories.map((category) => (
-                <CommandItem
-                  key={category.id}
-                  value={`${category.name} ${category.description ?? ""}`}
-                  onSelect={() => handleSelect(category.id)}
-                  className={cn(
-                    "cursor-pointer mb-1",
-                    value === category.id &&
-                      "bg-accent text-accent-foreground font-semibold"
-                  )}
-                >
-                  <div className="flex flex-col min-w-0">
-                    <div className="flex items-center gap-2">
-                      <span>{category.icon + " " + category.name}</span>
-                      <span className="text-muted-foreground">
-                        {`* ${category.topicCount}`}
+              {tags.map((tag) => {
+                const isSelected = value.includes(tag.name)
+                return (
+                  <CommandItem
+                    key={tag.id}
+                    value={`${tag.name} ${tag.description ?? ""}`}
+                    onSelect={() => handleSelect(tag.name)}
+                    className={cn(
+                      "cursor-pointer mb-1",
+                      isSelected &&
+                        "bg-accent text-accent-foreground font-semibold"
+                    )}
+                  >
+                    <div className="flex items-center gap-2 min-w-0 flex-1">
+                      <span>{tag.icon + " " + tag.name}</span>
+                      <span className="text-muted-foreground text-xs">
+                        {`* ${tag.topicCount}`}
                       </span>
                     </div>
-                    {category.description && (
-                      <p className="text-xs text-muted-foreground mt-0.5">
-                        {category.description}
-                      </p>
-                    )}
-                  </div>
-                </CommandItem>
-              ))}
+                    {isSelected && <Check className="h-4 w-4 ml-2 shrink-0" />}
+                  </CommandItem>
+                )
+              })}
             </CommandGroup>
           </CommandList>
         </Command>

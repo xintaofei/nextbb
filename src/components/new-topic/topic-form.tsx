@@ -16,7 +16,7 @@ import {
 } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
 import { CategorySelect } from "@/components/filters/category-select"
-import { TagsMultiSelect } from "./tags-multi-select"
+import { TagsMultiSelect } from "@/components/filters/tags-multi-select"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { useTranslations } from "next-intl"
 import { TopicType, type TopicTypeValue } from "@/types/topic-type"
@@ -245,7 +245,7 @@ export function TopicForm({
           )}
         />
 
-        <div className="flex flex-row justify-between gap-4">
+        <div className="grid grid-cols-2 gap-4">
           <FormField
             control={form.control}
             name="categoryId"
@@ -254,7 +254,7 @@ export function TopicForm({
                 <FormLabel>{t("form.category.label")}</FormLabel>
                 <FormControl>
                   <CategorySelect
-                    className="w-36"
+                    className="min-w-36"
                     value={field.value}
                     onChange={(v) => field.onChange(v ?? "")}
                   />
@@ -272,7 +272,7 @@ export function TopicForm({
                 <FormLabel>{t("form.tags.label")}</FormLabel>
                 <FormControl>
                   <TagsMultiSelect
-                    className="w-36"
+                    className="min-w-36"
                     value={field.value}
                     onChange={field.onChange}
                     placeholder={t("form.tags.placeholder")}

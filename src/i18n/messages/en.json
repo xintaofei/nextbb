@@ -9,11 +9,13 @@
   },
   "Common": {
     "Search": {
-      "placeholder": "Search..."
+      "placeholder": "Search...",
+      "noResults": "No results found"
     },
     "Filters": {
       "category": "Category",
       "tag": "Tag",
+      "tags": "Tags",
       "all": "☑️ All"
     },
     "Tabs": {
