@@ -10,7 +10,6 @@ import { SWRProvider } from "@/components/providers/swr-provider"
 import NextTopLoader from "nextjs-toploader"
 import { getPublicConfigs } from "@/lib/config"
 import { ConfigProvider } from "@/components/providers/config-provider"
-import { NewTopicProvider } from "@/components/providers/new-topic-provider"
 import { getServerSession } from "next-auth"
 import { getAuthOptions } from "@/lib/auth-options-cache"
 import { AuthProvider } from "@/components/providers/auth-provider"
@@ -59,9 +58,7 @@ export default async function RootLayout({
           >
             <AuthProvider session={session}>
               <ConfigProvider initialConfigs={configs}>
-                <SWRProvider>
-                  <NewTopicProvider>{children}</NewTopicProvider>
-                </SWRProvider>
+                <SWRProvider>{children}</SWRProvider>
               </ConfigProvider>
             </AuthProvider>
             <Toaster richColors closeButton />
