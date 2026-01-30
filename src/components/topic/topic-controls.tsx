@@ -92,11 +92,13 @@ export function TopicControls({
   return (
     <div className={cn("flex flex-row gap-2 items-center", className)}>
       <CategorySelect
+        className="min-w-36"
         value={categoryId}
         onChange={(v) => navigateToCategory(v)}
         clearable
       />
       <TagSelect
+        className="min-w-36"
         value={tagId}
         onChange={(v) => updateQuery({ categoryId, tagId: v })}
         clearable
