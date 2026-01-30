@@ -37,7 +37,7 @@ import { PollConfig } from "./poll-config"
 import { LotteryConfig } from "./lottery-config"
 import { AdminOptions } from "./admin-options"
 import { MilkdownEditorWrapper } from "@/components/editor/content-editor"
-import { useCurrentUser } from "@/hooks/use-current-user"
+import { useCurrentUserProfile } from "@/hooks/use-current-user-profile"
 
 interface TopicFormProps {
   onSubmit: (data: TopicFormData) => void
@@ -58,9 +58,10 @@ export function TopicForm({
   )
   const [isSyncing, setIsSyncing] = useState(false)
 
-  const { user } = useCurrentUser()
-  const isAdmin = user?.isAdmin === true
-  const userCredits = user?.credits ?? 0
+  const { userProfile } = useCurrentUserProfile()
+  const isAdmin = userProfile?.isAdmin === true
+  // 使用实时的用户积分，而不是从 auth session 中获取
+  const userCredits = userProfile?.credits ?? 0
 
   const topicFormSchema = createTopicFormSchemaWithCredits(
     userCredits,
@@ -300,7 +301,7 @@ export function TopicForm({
                   value={field.value}
                   placeholder={t("form.content.placeholder")}
                   slashPlaceholder={tv("Editor.SlashCommand.slashPlaceholder")}
-                  onChange={(val, json, html) => {
+                  onChange={(val, _json, html) => {
                     field.onChange(val)
                     if (html) {
                       form.setValue("content_html", html)

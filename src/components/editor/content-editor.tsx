@@ -493,7 +493,7 @@ export const MilkdownEditorWrapper: React.FC<MilkdownEditorProps> = (props) => {
   return (
     <MilkdownProvider>
       <ProsemirrorAdapterProvider>
-        <div className="w-full prose dark:prose-invert border rounded-lg focus-within:ring-[3px] focus-within:ring-ring/50 focus-within:border-ring transition-all">
+        <div className="w-full overflow-hidden prose dark:prose-invert border rounded-lg focus-within:ring-[3px] focus-within:ring-ring/50 focus-within:border-ring transition-all">
           <MilkdownEditor {...props} />
         </div>
       </ProsemirrorAdapterProvider>
