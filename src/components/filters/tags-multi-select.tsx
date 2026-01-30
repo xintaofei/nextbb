@@ -98,7 +98,7 @@ export function TagsMultiSelect({
           >
             {labelText}
           </span>
-          <div className="flex items-center gap-1 ml-2">
+          <div className="flex items-center gap-1">
             {value.length > 0 && (
               <div
                 data-clear-button
