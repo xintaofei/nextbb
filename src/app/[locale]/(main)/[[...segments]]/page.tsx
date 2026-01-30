@@ -33,15 +33,17 @@ export default async function DynamicRoutePage({ params }: PageProps) {
     tagId: parsed.tagId,
   }
 
-  // 获取用户会话（用于 'my' 过滤器）
-  const auth = await getServerSessionUser()
-
   // 预取第一页数据
   const apiQuery = routeParamsToApiQuery(routeParams)
 
-  // 如果是 'my' 过滤器但用户未登录，重定向到登录页面
-  if (apiQuery.filter === "my" && !auth) {
-    redirect("/login")
+  // 只在需要时获取用户会话（用于 'my' 过滤器）
+  let auth = null
+  if (apiQuery.filter === "my") {
+    auth = await getServerSessionUser()
+    // 如果用户未登录，重定向到登录页面
+    if (!auth) {
+      redirect("/login")
+    }
   }
 
   let initialData: TopicListResult | undefined
@@ -53,7 +55,7 @@ export default async function DynamicRoutePage({ params }: PageProps) {
         tagId: apiQuery.tagId,
         sort: apiQuery.sort as "latest" | "new" | undefined,
         filter: apiQuery.filter as "community" | "my" | undefined,
-        userId: apiQuery.filter === "my" ? auth?.userId : undefined,
+        userId: auth?.userId,
       },
       1, // 第一页
       20, // pageSize 与客户端一致
