@@ -113,7 +113,7 @@ export function CategorySelect({
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-xs p-0" align="start">
-        <Command shouldFilter={false}>
+        <Command>
           <CommandInput placeholder={searchPlaceholder} />
           <CommandList>
             <CommandEmpty>{noResultsText}</CommandEmpty>
