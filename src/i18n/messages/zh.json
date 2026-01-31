@@ -13,19 +13,20 @@
       "noResults": "无结果"
     },
     "Filters": {
+      "title": "话题筛选",
       "category": "分类",
       "tag": "标签",
       "tags": "标签",
       "all": "☑️ 全部"
     },
     "Tabs": {
-      "latest": "最新",
-      "new": "新帖",
+      "latest": "最新动态",
+      "new": "最新发布",
       "hot": "热门",
       "top": "排行",
-      "community": "社区",
+      "community": "社区推荐",
       "follow": "关注",
-      "my": "我的",
+      "my": "我的话题",
       "leaderboard": "排行榜",
       "categories": "分类",
       "myPosts": "我的帖子",
@@ -40,7 +41,8 @@
       "participants": "参与者",
       "activity": "活动",
       "empty": "暂无数据",
-      "related": "相关话题"
+      "related": "相关话题",
+      "inTopic": "来自话题: {topic}"
     },
     "Title": {
       "latestComments": "最新评论"
@@ -136,6 +138,7 @@
     "edit": "编辑",
     "delete": "删除",
     "deleted": "该楼层已被删除",
+    "notFound": "话题不存在",
     "deleteConfirm": "确认删除当前楼层？",
     "reply": "回复",
     "replies": "个回复",

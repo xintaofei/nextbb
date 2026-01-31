@@ -7,6 +7,7 @@ import { useTranslations, useLocale } from "next-intl"
 import Link from "next/link"
 import useSWR from "swr"
 import { stripHtmlAndTruncate } from "@/lib/utils"
+import { parseRouteSegments } from "@/lib/route-utils"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { RelativeTime } from "@/components/common/relative-time"
 import { Skeleton } from "@/components/ui/skeleton"
@@ -16,9 +17,12 @@ import {
   InputGroupAddon,
   InputGroupInput,
 } from "@/components/ui/input-group"
+import { TopicControls } from "../topic/topic-controls"
 
 export function Aside() {
   const pathname = usePathname()
+  const segments = pathname.split("/").filter(Boolean)
+  const isMainListPage = parseRouteSegments(segments).valid
   const isTopicPage = pathname.includes("/topic/")
   const t = useTranslations("Index")
   const tc = useTranslations("Common")
@@ -69,10 +73,22 @@ export function Aside() {
             <div className="p-3 border-b bg-muted/30 font-medium text-sm flex items-center gap-2">
               <span>{tc("welcome")}</span>
             </div>
-            <span className="p-3 text-lg break-all">
+            <span className="p-3 text-sm text-muted-foreground break-all">
               {welcomeMessage || t("title")}
             </span>
           </div>
+
+          {/* Topic Filter */}
+          {isMainListPage && (
+            <div className="w-full border rounded-xl flex flex-col overflow-hidden bg-card">
+              <div className="p-3 border-b bg-muted/30 font-medium text-sm flex items-center gap-2">
+                <span>{tc("Filters.title")}</span>
+              </div>
+              <div className="p-3 text-sm text-muted-foreground break-all">
+                <TopicControls />
+              </div>
+            </div>
+          )}
 
           {/* Latest Comments */}
           <div className="w-full border rounded-xl flex flex-col overflow-hidden bg-card">
@@ -98,9 +114,9 @@ export function Aside() {
                 {comments?.map((comment) => (
                   <div
                     key={comment.id}
-                    className="p-3 border-b last:border-0 hover:bg-muted/50 transition-colors"
+                    className="px-3 py-2 border-b last:border-0 hover:bg-muted/50 transition-colors"
                   >
-                    <div className="flex gap-3">
+                    <div className="flex gap-2">
                       <UserInfoCard
                         userId={comment.user.id}
                         userName={comment.user.name}
@@ -117,17 +133,17 @@ export function Aside() {
                         </Avatar>
                       </UserInfoCard>
                       <div className="flex flex-col gap-1 min-w-0 flex-1">
-                        <div className="flex items-center justify-between gap-2">
+                        <div className="flex items-center justify-between">
                           <span className="text-sm font-medium text-muted-foreground truncate">
                             {comment.user.name}
                           </span>
-                          <span className="text-sm text-muted-foreground shrink-0">
+                          <span className="text-xs text-muted-foreground shrink-0">
                             <RelativeTime date={comment.createdAt} />
                           </span>
                         </div>
                         <Link
                           href={`/topic/${comment.topic.id}#post-${comment.id}`}
-                          className="text-sm text-foreground line-clamp-2 hover:text-foreground transition-colors break-all"
+                          className="text-xs text-foreground line-clamp-2 hover:text-foreground transition-colors break-all"
                         >
                           {stripHtmlAndTruncate(
                             comment.contentHtml || comment.content,
@@ -136,9 +152,9 @@ export function Aside() {
                         </Link>
                         <Link
                           href={`/topic/${comment.topic.id}`}
-                          className="text-xs text-primary/80 hover:text-primary truncate mt-0.5"
+                          className="text-[10px] text-muted-foreground hover:text-primary truncate"
                         >
-                          In: {comment.topic.title}
+                          {tc("Table.inTopic", { topic: comment.topic.title })}
                         </Link>
                       </div>
                     </div>

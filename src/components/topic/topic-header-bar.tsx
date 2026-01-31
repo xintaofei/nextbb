@@ -1,6 +1,5 @@
 "use client"
 
-import { TopicControls } from "@/components/topic/topic-controls"
 import { TopicSortTabs } from "@/components/topic/topic-sort-tabs"
 import { TopicSortDrawer } from "@/components/topic/topic-sort-drawer"
 import { type SortValue } from "@/lib/route-utils"
@@ -13,7 +12,6 @@ type TopicHeaderBarProps = {
 }
 
 export function TopicHeaderBar({
-  categoryId,
   className,
   onSortStart,
 }: TopicHeaderBarProps) {
@@ -24,7 +22,6 @@ export function TopicHeaderBar({
         className
       )}
     >
-      <TopicControls initialCategoryId={categoryId} />
       <TopicSortTabs
         className="max-sm:hidden"
         onSortStart={(next) => {

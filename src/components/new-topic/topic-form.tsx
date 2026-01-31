@@ -36,7 +36,19 @@ import { BountyConfig } from "./bounty-config"
 import { PollConfig } from "./poll-config"
 import { LotteryConfig } from "./lottery-config"
 import { AdminOptions } from "./admin-options"
-import { MilkdownEditorWrapper } from "@/components/editor/content-editor"
+import dynamic from "next/dynamic"
+import { Skeleton } from "@/components/ui/skeleton"
+
+const MilkdownEditorWrapper = dynamic(
+  () =>
+    import("@/components/editor/content-editor").then(
+      (mod) => mod.MilkdownEditorWrapper
+    ),
+  {
+    ssr: false,
+    loading: () => <Skeleton className="h-[200px] w-full rounded-md" />,
+  }
+)
 import { useCurrentUserProfile } from "@/hooks/use-current-user-profile"
 
 interface TopicFormProps {

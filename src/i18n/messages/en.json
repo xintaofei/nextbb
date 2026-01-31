@@ -13,19 +13,20 @@
       "noResults": "No results found"
     },
     "Filters": {
+      "title": "Topic Filters",
       "category": "Category",
       "tag": "Tag",
       "tags": "Tags",
       "all": "☑️ All"
     },
     "Tabs": {
-      "latest": "Latest",
-      "new": "New",
+      "latest": "Recent",
+      "new": "New Posts",
       "hot": "Hot",
       "top": "Top",
-      "community": "Community",
+      "community": "Top Picks",
       "follow": "Follow",
-      "my": "My",
+      "my": "My Topics",
       "leaderboard": "Leaderboard",
       "categories": "Categories",
       "myPosts": "My Posts",
@@ -40,7 +41,8 @@
       "participants": "Participants",
       "activity": "Activity",
       "empty": "No data",
-      "related": "Related Topics"
+      "related": "Related Topics",
+      "inTopic": "In: {topic}"
     },
     "Title": {
       "latestComments": "Latest Comments"
@@ -136,6 +138,7 @@
     "edit": "Edit",
     "delete": "Delete",
     "deleted": "This floor has been deleted",
+    "notFound": "Topic not found",
     "deleteConfirm": "Are you sure to delete this floor?",
     "reply": "Reply",
     "replies": "replies",

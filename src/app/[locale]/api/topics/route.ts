@@ -8,12 +8,11 @@ import { topicFormSchema } from "@/lib/topic-validation"
 import { CreditService } from "@/lib/credit-service"
 import { CreditLogType } from "@prisma/client"
 import { getLocale } from "next-intl/server"
-import { getTranslationsQuery, getTranslationFields } from "@/lib/locale"
-import { getTopicTitle, getPostHtml } from "@/lib/topic-translation"
 import { notifyMentions } from "@/lib/notification-service"
 import { AutomationEvents } from "@/lib/automation/event-bus"
 import { createTranslationTasks } from "@/lib/services/translation-task"
 import { TranslationEntityType } from "@prisma/client"
+import { getTopicList } from "@/lib/services/topic-service"
 
 interface TopicsDelegate {
   create(args: unknown): Promise<{ id: bigint }>
@@ -66,51 +65,6 @@ const TopicListQuery = z.object({
   pageSize: z.string().regex(/^\d+$/).optional(),
 })
 
-type TopicAuthor = {
-  id: string
-  name: string
-  avatar: string
-}
-
-type TopicListItem = {
-  id: string
-  title: string
-  type: string
-  category: {
-    id: string
-    name: string
-    icon?: string
-    description?: string | null
-    bgColor?: string | null
-    textColor?: string | null
-  }
-  tags: {
-    id: string
-    name: string
-    icon: string
-    description?: string | null
-    bgColor?: string | null
-    textColor?: string | null
-  }[]
-  author: TopicAuthor
-  replies: number
-  views: number
-  activity: string
-  isPinned: boolean
-  firstPost?: {
-    id: string
-    content: string
-    createdAt: string
-  }
-}
-
-type TopicListResult = {
-  items: TopicListItem[]
-  page: number
-  pageSize: number
-  total: number
-}
-
 export async function GET(req: Request) {
   const locale = await getLocale()
   const url = new URL(req.url)
@@ -131,264 +85,28 @@ export async function GET(req: Request) {
   // 获取当前用户（用于 my 过滤）
   const auth = await getServerSessionUser()
 
-  const where: {
-    is_deleted: boolean
-    category_id?: bigint
-    tag_links?: { some: { tag_id: bigint } }
-    is_community?: boolean
-    user_id?: bigint
-  } = {
-    is_deleted: false,
-    ...(q.data.categoryId
-      ? { category_id: BigInt(q.data.categoryId) }
-      : undefined),
-    ...(q.data.tagId
-      ? { tag_links: { some: { tag_id: BigInt(q.data.tagId) } } }
-      : undefined),
+  // 处理 my 过滤需要认证
+  if (q.data.filter === "my" && !auth) {
+    return NextResponse.json(
+      { error: "Unauthorized - login required for my filter" },
+      { status: 401 }
+    )
   }
 
-  // 处理过滤参数
-  if (q.data.filter === "community") {
-    where.is_community = true
-  } else if (q.data.filter === "my") {
-    if (!auth) {
-      return NextResponse.json(
-        { error: "Unauthorized - login required for my filter" },
-        { status: 401 }
-      )
-    }
-    where.user_id = auth.userId
-  }
-
-  const sortMode = q.success && q.data.sort ? q.data.sort : "latest"
-  const total = await prisma.topics.count({
-    where,
-  })
-  const topics = await prisma.topics.findMany({
-    where,
-    select: {
-      id: true,
-      translations: getTranslationsQuery(locale, { title: true }),
-      type: true,
-      views: true,
-      is_pinned: true,
-      is_community: true,
-      updated_at: true,
-      user: {
-        select: {
-          id: true,
-          name: true,
-          avatar: true,
-        },
-      },
-      category: {
-        select: {
-          id: true,
-          icon: true,
-          bg_color: true,
-          text_color: true,
-          translations: getTranslationsQuery(locale, {
-            name: true,
-            description: true,
-          }),
-        },
-      },
-      tag_links: {
-        select: {
-          tag: {
-            select: {
-              id: true,
-              icon: true,
-              bg_color: true,
-              text_color: true,
-              translations: getTranslationsQuery(locale, {
-                name: true,
-                description: true,
-              }),
-            },
-          },
-        },
-      },
-      _count: {
-        select: {
-          posts: true,
-        },
-      },
+  // 使用共享服务查询话题列表
+  const result = await getTopicList(
+    {
+      categoryId: q.data.categoryId,
+      tagId: q.data.tagId,
+      sort: q.data.sort,
+      filter: q.data.filter,
+      userId: q.data.filter === "my" ? auth?.userId : undefined,
     },
-    skip: (page - 1) * pageSize,
-    take: pageSize,
-    orderBy:
-      sortMode === "latest"
-        ? [{ is_pinned: "desc" }, { updated_at: "desc" }, { id: "desc" }]
-        : { id: "desc" },
-  })
-
-  type TopicRow = {
-    id: bigint
-    translations: {
-      locale: string
-      title: string
-      is_source: boolean
-    }[]
-    type: string
-    views: number
-    is_pinned: boolean
-    is_community: boolean
-    user: {
-      id: bigint
-      name: string
-      avatar: string
-    }
-    category: {
-      id: bigint
-      icon: string
-      bg_color: string | null
-      text_color: string | null
-      translations: {
-        locale: string
-        name: string
-        description: string | null
-        is_source: boolean
-      }[]
-    }
-    tag_links: {
-      tag: {
-        id: bigint
-        icon: string
-        bg_color: string | null
-        text_color: string | null
-        translations: {
-          locale: string
-          name: string
-          description: string | null
-          is_source: boolean
-        }[]
-      }
-    }[]
-    _count: {
-      posts: number
-    }
-    updated_at: Date
-  }
-  const topicsX = topics as unknown as TopicRow[]
-
-  // 查询所有置顶话题的第一个 post（楼主 post），用于渲染三行预览
-  const firstPosts: Record<
-    string,
-    { id: bigint; content: string; created_at: Date }
-  > = {}
-  const pinnedTopicIds = topicsX.filter((t) => t.is_pinned).map((t) => t.id)
-  if (pinnedTopicIds.length > 0) {
-    const firstPostsData = await prisma.posts.findMany({
-      where: {
-        topic_id: { in: pinnedTopicIds },
-        floor_number: 1,
-        is_deleted: false,
-      },
-      select: {
-        id: true,
-        topic_id: true,
-        content: true,
-        created_at: true,
-        translations: getTranslationsQuery(locale, { content_html: true }),
-      },
-    })
-    for (const post of firstPostsData) {
-      // 优先使用当前语言的翻译，如果不存在则回退到 content (原内容)
-      const translatedContent = getPostHtml(
-        post.translations as unknown as Parameters<typeof getPostHtml>[0],
-        locale
-      )
-      firstPosts[String(post.topic_id)] = {
-        id: post.id,
-        content: translatedContent || post.content,
-        created_at: post.created_at,
-      }
-    }
-  }
-
-  const items: TopicListItem[] = topicsX.map((t) => {
-    // 使用通用工具函数获取翻译字段
-    const categoryFields = getTranslationFields(
-      t.category.translations,
-      locale,
-      {
-        name: "",
-        description: null as string | null,
-      }
-    )
-    const tags = t.tag_links.map(
-      (l: {
-        tag: {
-          id: bigint
-          icon: string
-          bg_color: string | null
-          text_color: string | null
-          translations: {
-            locale: string
-            name: string
-            description: string | null
-            is_source: boolean
-          }[]
-        }
-      }) => {
-        const tagFields = getTranslationFields(l.tag.translations, locale, {
-          name: "",
-          description: null as string | null,
-        })
-        return {
-          id: String(l.tag.id),
-          name: tagFields.name,
-          icon: l.tag.icon,
-          description: tagFields.description,
-          bgColor: l.tag.bg_color,
-          textColor: l.tag.text_color,
-        }
-      }
-    )
-    const firstPost = firstPosts[String(t.id)]
-    const lastActive = t.updated_at
-
-    return {
-      id: String(t.id),
-      title: getTopicTitle(t.translations, locale),
-      type: t.type || "GENERAL",
-      category: {
-        id: String(t.category.id),
-        name: categoryFields.name,
-        icon: t.category.icon ?? undefined,
-        description: categoryFields.description ?? undefined,
-        bgColor: t.category.bg_color,
-        textColor: t.category.text_color,
-      },
-      tags,
-      author: {
-        id: String(t.user.id),
-        name: t.user.name,
-        avatar: t.user.avatar,
-      },
-      replies: Math.max(t._count.posts - 1, 0),
-      views: t.views ?? 0,
-      activity: lastActive ? lastActive.toISOString() : "",
-      isPinned: Boolean(t.is_pinned),
-      isCommunity: Boolean(t.is_community),
-      ...(firstPost && {
-        firstPost: {
-          id: String(firstPost.id),
-          content: firstPost.content,
-          createdAt: firstPost.created_at.toISOString(),
-        },
-      }),
-    }
-  })
-
-  // latest模式下数据库已经按置顶+ID排序，不需要额外排序
-  const result: TopicListResult = {
-    items: items,
     page,
     pageSize,
-    total,
-  }
+    locale
+  )
+
   return NextResponse.json(result)
 }
 // 使用 topic-validation.ts 中统一的验证 Schema

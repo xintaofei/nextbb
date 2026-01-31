@@ -31,7 +31,7 @@ async function seedSystemConfigs(tx: TxClient): Promise<void> {
     },
     {
       key: "basic.description",
-      value: "一个现代化的论坛系统",
+      value: "现代化论坛系统",
       type: "string",
       cat: "basic",
       desc: "论坛描述",

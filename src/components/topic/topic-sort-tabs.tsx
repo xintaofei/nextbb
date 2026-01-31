@@ -1,7 +1,7 @@
 "use client"
 
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { useTranslations } from "next-intl"
+import { cn } from "@/lib/utils"
 import Link from "next/link"
 import { useSession } from "next-auth/react"
 import {
@@ -16,6 +16,19 @@ type TopicSortTabsProps = {
   onSortStart?: (next: SortValue) => void
 }
 
+type TabConfig = {
+  value: TabValue
+  labelKey: "latest" | "new" | "community" | "my"
+  requiresAuth?: boolean
+}
+
+const TABS: TabConfig[] = [
+  { value: "latest", labelKey: "latest" },
+  { value: "new", labelKey: "new" },
+  { value: "community", labelKey: "community" },
+  { value: "my", labelKey: "my", requiresAuth: true },
+]
+
 export function TopicSortTabs({
   className,
   onPendingChange,
@@ -23,11 +36,9 @@ export function TopicSortTabs({
 }: TopicSortTabsProps) {
   const tc = useTranslations("Common")
 
-  // 获取当前用户登录状态
   const { data: session } = useSession()
   const isLoggedIn = session?.user?.id !== undefined
 
-  // 使用共享hook管理排序和过滤
   const { selectedTab, getTabPath, setTab } = useTopicSortFilter({
     onPendingChange,
     onSortStart,
@@ -42,48 +53,43 @@ export function TopicSortTabs({
     setTab(value)
   }
 
+  const visibleTabs = TABS.filter((tab) => !tab.requiresAuth || isLoggedIn)
+
   return (
-    <Tabs value={selectedTab} onValueChange={() => {}} className={className}>
-      <TabsList>
-        <TabsTrigger className="md:px-4" value="latest" asChild>
+    <nav
+      role="tablist"
+      className={cn(
+        "grid h-14 w-full bg-transparent p-0",
+        isLoggedIn ? "grid-cols-4" : "grid-cols-3",
+        className
+      )}
+    >
+      {visibleTabs.map((tab) => {
+        const isActive = selectedTab === tab.value
+        return (
           <Link
-            href={getTabPath("latest")}
-            onClick={(e) => handleTabClick(e, "latest")}
+            key={tab.value}
+            role="tab"
+            aria-selected={isActive}
+            href={getTabPath(tab.value)}
+            onClick={(e) => handleTabClick(e, tab.value)}
+            className={cn(
+              "group relative flex h-full items-center justify-center px-4 md:px-6 transition-all hover:bg-muted/50",
+              isActive ? "text-foreground font-bold" : "text-muted-foreground"
+            )}
           >
-            {tc("Tabs.latest")}
+            <span className="relative h-full flex items-center">
+              {tc(`Tabs.${tab.labelKey}`)}
+              <span
+                className={cn(
+                  "absolute -bottom-px left-0 right-0 h-px bg-primary transition-opacity",
+                  isActive ? "opacity-100" : "opacity-0"
+                )}
+              />
+            </span>
           </Link>
-        </TabsTrigger>
-        <TabsTrigger className="md:px-4" value="new" asChild>
-          <Link
-            href={getTabPath("new")}
-            onClick={(e) => handleTabClick(e, "new")}
-          >
-            {tc("Tabs.new")}
-          </Link>
-        </TabsTrigger>
-        <TabsTrigger className="md:px-4" value="community" asChild>
-          <Link
-            href={getTabPath("community")}
-            onClick={(e) => handleTabClick(e, "community")}
-          >
-            {tc("Tabs.community")}
-          </Link>
-        </TabsTrigger>
-        {isLoggedIn && (
-          <TabsTrigger
-            className="hidden md:px-4 md:inline-flex"
-            value="my"
-            asChild
-          >
-            <Link
-              href={getTabPath("my")}
-              onClick={(e) => handleTabClick(e, "my")}
-            >
-              {tc("Tabs.my")}
-            </Link>
-          </TabsTrigger>
-        )}
-      </TabsList>
-    </Tabs>
+        )
+      })}
+    </nav>
   )
 }
