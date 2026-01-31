@@ -12,11 +12,14 @@ import { cn } from "@/lib/utils"
 import { useCategories } from "@/components/providers/taxonomy-provider"
 import type { CategoryWithCount } from "@/types/taxonomy"
 import type { TopicListResult } from "@/lib/services/topic-service"
+import React from "react"
 
 type DynamicRouteClientProps = {
   routeParams: RouteParams
   initialData?: TopicListResult
 }
+
+const PAGE_SIZE = 20
 
 const fetcher = async (url: string) => {
   const res = await fetch(url)
@@ -36,18 +39,6 @@ export function DynamicRouteClient({
   const initialDataRef = useRef(initialData)
   const firstPageFetchedRef = useRef(false)
 
-  // 当 routeParams 或 initialData 变化时，重置 refs（导航场景）
-  useEffect(() => {
-    initialDataRef.current = initialData
-    firstPageFetchedRef.current = false
-  }, [
-    routeParams.categoryId,
-    routeParams.tagId,
-    routeParams.sort,
-    routeParams.filter,
-    initialData,
-  ])
-
   // 从分类列表中查找当前分类
   const category = useMemo(() => {
     if (!routeParams.categoryId) return null
@@ -64,7 +55,7 @@ export function DynamicRouteClient({
       if (routeParams.sort) qs.set("sort", routeParams.sort)
       if (routeParams.filter) qs.set("filter", routeParams.filter)
       qs.set("page", String(pageIndex + 1))
-      qs.set("pageSize", "20")
+      qs.set("pageSize", String(PAGE_SIZE))
       return `/api/topics?${qs.toString()}`
     },
     [
@@ -79,7 +70,7 @@ export function DynamicRouteClient({
   const topicFetcher = useCallback((url: string) => {
     // 拦截第一页请求：如果有初始数据且还没使用过，直接返回
     if (
-      url.includes("page=1") &&
+      url.includes(`page=1`) &&
       initialDataRef.current &&
       !firstPageFetchedRef.current
     ) {
@@ -102,10 +93,11 @@ export function DynamicRouteClient({
     fallbackData: initialData ? [initialData] : undefined,
   })
 
-  // 初始化 SWR 缓存，确保后续 mutate 能正常工作
-  // 注意：不在这里设置 firstPageFetchedRef.current = true
-  // 让 fetcher 的拦截逻辑来控制，确保加载更多时不会重复请求第一页
+  // 当 routeParams 或 initialData 变化时，重置 refs（导航场景）
   useEffect(() => {
+    initialDataRef.current = initialData
+    firstPageFetchedRef.current = false
+    // 同时也重置 SWR 缓存
     if (initialData) {
       mutate([initialData], false)
     }
@@ -162,7 +154,7 @@ export function DynamicRouteClient({
   )
 }
 
-function CategoryHeader({
+const CategoryHeader = React.memo(function CategoryHeader({
   category,
   categoryId,
   tCat,
@@ -202,4 +194,4 @@ function CategoryHeader({
       </div>
     </div>
   )
-}
+})

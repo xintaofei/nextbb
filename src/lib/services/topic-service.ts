@@ -99,69 +99,70 @@ export async function getTopicList(
   }
 
   const sortMode = params.sort ?? "latest"
+  const skip = (page - 1) * pageSize
 
-  // 查询总数
-  const total = await prisma.topics.count({ where })
-
-  // 查询话题列表
-  const topics = await prisma.topics.findMany({
-    where,
-    select: {
-      id: true,
-      translations: getTranslationsQuery(locale, { title: true }),
-      type: true,
-      views: true,
-      is_pinned: true,
-      is_community: true,
-      updated_at: true,
-      user: {
-        select: {
-          id: true,
-          name: true,
-          avatar: true,
-        },
-      },
-      category: {
-        select: {
-          id: true,
-          icon: true,
-          bg_color: true,
-          text_color: true,
-          translations: getTranslationsQuery(locale, {
+  // 并行查询总数和列表数据
+  const [total, topics] = await Promise.all([
+    prisma.topics.count({ where }),
+    prisma.topics.findMany({
+      where,
+      select: {
+        id: true,
+        translations: getTranslationsQuery(locale, { title: true }),
+        type: true,
+        views: true,
+        is_pinned: true,
+        is_community: true,
+        updated_at: true,
+        user: {
+          select: {
+            id: true,
             name: true,
-            description: true,
-          }),
+            avatar: true,
+          },
         },
-      },
-      tag_links: {
-        select: {
-          tag: {
-            select: {
-              id: true,
-              icon: true,
-              bg_color: true,
-              text_color: true,
-              translations: getTranslationsQuery(locale, {
-                name: true,
-                description: true,
-              }),
+        category: {
+          select: {
+            id: true,
+            icon: true,
+            bg_color: true,
+            text_color: true,
+            translations: getTranslationsQuery(locale, {
+              name: true,
+              description: true,
+            }),
+          },
+        },
+        tag_links: {
+          select: {
+            tag: {
+              select: {
+                id: true,
+                icon: true,
+                bg_color: true,
+                text_color: true,
+                translations: getTranslationsQuery(locale, {
+                  name: true,
+                  description: true,
+                }),
+              },
             },
           },
         },
-      },
-      _count: {
-        select: {
-          posts: true,
+        _count: {
+          select: {
+            posts: true,
+          },
         },
       },
-    },
-    skip: (page - 1) * pageSize,
-    take: pageSize,
-    orderBy:
-      sortMode === "latest"
-        ? [{ is_pinned: "desc" }, { updated_at: "desc" }, { id: "desc" }]
-        : { id: "desc" },
-  })
+      skip,
+      take: pageSize,
+      orderBy:
+        sortMode === "latest"
+          ? [{ is_pinned: "desc" }, { updated_at: "desc" }, { id: "desc" }]
+          : { id: "desc" },
+    }),
+  ])
 
   // 类型定义
   type TopicRow = {

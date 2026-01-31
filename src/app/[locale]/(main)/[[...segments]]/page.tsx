@@ -17,8 +17,10 @@ type PageProps = {
 }
 
 export default async function DynamicRoutePage({ params }: PageProps) {
+  // 并行获取 locale 和 session（如果可能）
+  // 提前开始异步任务，避免瀑布流
+  const localePromise = getLocale()
   const { segments } = await params
-  const locale = await getLocale()
 
   // 解析路由参数
   const parsed = parseRouteSegments(segments)
@@ -33,11 +35,12 @@ export default async function DynamicRoutePage({ params }: PageProps) {
     tagId: parsed.tagId,
   }
 
-  // 预取第一页数据
   const apiQuery = routeParamsToApiQuery(routeParams)
 
   // 只在需要时获取用户会话（用于 'my' 过滤器）
   let auth = null
+  const locale = await localePromise
+
   if (apiQuery.filter === "my") {
     auth = await getServerSessionUser()
     // 如果用户未登录，重定向到登录页面
