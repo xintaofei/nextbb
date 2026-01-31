@@ -20,13 +20,13 @@
       "all": "☑️ 全部"
     },
     "Tabs": {
-      "latest": "最新",
-      "new": "新帖",
+      "latest": "最新动态",
+      "new": "最新发布",
       "hot": "热门",
       "top": "排行",
-      "community": "社区",
+      "community": "社区推荐",
       "follow": "关注",
-      "my": "我的",
+      "my": "我的话题",
       "leaderboard": "排行榜",
       "categories": "分类",
       "myPosts": "我的帖子",

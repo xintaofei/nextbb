@@ -20,13 +20,13 @@
       "all": "☑️ All"
     },
     "Tabs": {
-      "latest": "Latest",
-      "new": "New",
+      "latest": "Recent",
+      "new": "New Posts",
       "hot": "Hot",
       "top": "Top",
-      "community": "Community",
+      "community": "Top Picks",
       "follow": "Follow",
-      "my": "My",
+      "my": "My Topics",
       "leaderboard": "Leaderboard",
       "categories": "Categories",
       "myPosts": "My Posts",
