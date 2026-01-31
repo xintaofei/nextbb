@@ -100,10 +100,12 @@ export default async function TopicPage({ params }: TopicPageProps) {
     return null
   }
 
+  const pageSize = 15
+
   // 在服务端预取数据
   const [topicInfo, initialPosts] = await Promise.all([
     getTopicInfo(topicId, locale),
-    getTopicPosts(topicId, locale, auth, 1, 3),
+    getTopicPosts(topicId, locale, auth, 1, pageSize),
   ])
 
   if (!topicInfo) {
@@ -121,6 +123,10 @@ export default async function TopicPage({ params }: TopicPageProps) {
   await incrementTopicViewsOnce(topicId)
 
   return (
-    <TopicOverviewClient topicInfo={topicInfo} initialPosts={initialPosts} />
+    <TopicOverviewClient
+      topicInfo={topicInfo}
+      initialPosts={initialPosts}
+      pageSize={pageSize}
+    />
   )
 }

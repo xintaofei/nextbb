@@ -62,11 +62,13 @@ const fetcherRelated = async (url: string): Promise<RelatedResult> => {
 type TopicOverviewClientProps = {
   topicInfo: TopicInfoResult["topic"]
   initialPosts?: PostPage
+  pageSize?: number
 }
 
 export default function TopicOverviewClient({
   topicInfo,
   initialPosts,
+  pageSize = 15,
 }: TopicOverviewClientProps) {
   const { id, locale } = useParams() as { id: string; locale: string }
   const tc = useTranslations("Common")
@@ -75,8 +77,6 @@ export default function TopicOverviewClient({
   const tq = useTranslations("Topic.Question")
   const te = useTranslations("Error")
   const tEditor = useTranslations("Editor")
-
-  const pageSize = 3
 
   // 使用 ref 存储初始数据，fetcher 消费一次后清除，避免第一页重复网络请求
   const initialPostsRef = useRef(initialPosts)
