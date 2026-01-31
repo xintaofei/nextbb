@@ -2,7 +2,12 @@ import {
   TimelineStepsTitle,
   TimelineStepsDescription,
 } from "@/components/ui/timeline-steps"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import {
+  Avatar,
+  AvatarBadge,
+  AvatarFallback,
+  AvatarImage,
+} from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import {
   DropdownMenu,
@@ -26,6 +31,7 @@ import {
   ChevronDown,
   Languages,
   Loader2,
+  Crown,
 } from "lucide-react"
 import { useState } from "react"
 import { RelativeTime } from "@/components/common/relative-time"
@@ -99,6 +105,7 @@ export const PostHeader = memo(function PostHeader({
   size = "sm",
   currentLocale,
   onLanguageChange,
+  topicAuthorId,
 }: {
   post: PostItem
   index: number
@@ -106,6 +113,7 @@ export const PostHeader = memo(function PostHeader({
   size?: "xs" | "sm" | "md" | "lg"
   currentLocale?: string
   onLanguageChange?: (locale: string) => void
+  topicAuthorId?: string
 }) {
   const displayAvatar = post.author.avatar || undefined
   const [languages, setLanguages] = useState<
@@ -114,6 +122,9 @@ export const PostHeader = memo(function PostHeader({
   const [isLoadingLanguages, setIsLoadingLanguages] = useState(false)
   const [isOpen, setIsOpen] = useState(false)
   const tPost = useTranslations("Topic.Post")
+  const tFloor = useTranslations("Topic.floor")
+
+  const isTopicAuthor = topicAuthorId && post.author.id === topicAuthorId
 
   const handleOpenChange = async (open: boolean) => {
     setIsOpen(open)
@@ -145,6 +156,15 @@ export const PostHeader = memo(function PostHeader({
           <Avatar className="hidden max-sm:flex size-6 cursor-pointer">
             <AvatarImage src={displayAvatar} alt="@avatar" />
             <AvatarFallback>{post.author.name}</AvatarFallback>
+            {isTopicAuthor && (
+              <AvatarBadge
+                className="bg-blue-500 text-white"
+                size="sm"
+                title={tFloor("op")}
+              >
+                <Crown size="10" />
+              </AvatarBadge>
+            )}
           </Avatar>
         </UserInfoCard>
         <TimelineStepsTitle>
