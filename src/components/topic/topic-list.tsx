@@ -312,7 +312,7 @@ export function TopicList({
                     </span>
                   </div>
                 </TableCell>
-                <TableCell className="text-center text-muted-foreground max-sm:hidden">
+                <TableCell className="text-center max-sm:hidden">
                   {t.replies}
                 </TableCell>
                 <TableCell className="text-center text-muted-foreground max-lg:hidden">
