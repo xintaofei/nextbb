@@ -1,12 +1,13 @@
 "use client"
 
-import { useState } from "react"
-import useSWR from "swr"
+import { useState, useRef, useCallback, useEffect, memo } from "react"
+import useSWRInfinite from "swr/infinite"
 import { useTranslations } from "next-intl"
 import { Trophy, Medal, Award, TrendingUp, ChartColumn } from "lucide-react"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Card, CardContent } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Skeleton } from "@/components/ui/skeleton"
 import { UserInfoCard } from "@/components/common/user-info-card"
 import { MagicCard } from "@/components/ui/magic-card"
 import { useTheme } from "next-themes"
@@ -28,9 +29,15 @@ type RankingUser = {
 type LeaderboardResponse = {
   type: LeaderboardType
   rankings: RankingUser[]
+  hasMore: boolean
+  total: number
+  page: number
+  pageSize: number
   currentUserRanking?: RankingUser | null
   updatedAt: string
 }
+
+const PAGE_SIZE = 20
 
 const fetcher = async (url: string): Promise<LeaderboardResponse> => {
   const res = await fetch(url)
@@ -42,13 +49,13 @@ const fetcher = async (url: string): Promise<LeaderboardResponse> => {
 
 function RankBadge({ rank }: { rank: number }) {
   if (rank === 1) {
-    return <span className="text-7xl">🥇</span>
+    return <span className="text-4xl sm:text-8xl">🥇</span>
   }
   if (rank === 2) {
-    return <span className="text-5xl">🥈</span>
+    return <span className="text-3xl sm:text-6xl">🥈</span>
   }
   if (rank === 3) {
-    return <span className="text-5xl">🥉</span>
+    return <span className="text-3xl sm:text-6xl">🥉</span>
   }
   return (
     <div className="flex size-8 sm:size-10 items-center justify-center text-sm font-semibold text-muted-foreground">
@@ -110,6 +117,56 @@ function LeaderboardItem({
   )
 }
 
+// 骨架屏组件
+const LeaderboardItemSkeleton = memo(function LeaderboardItemSkeleton() {
+  return (
+    <div className="rounded-2xl border bg-card p-4">
+      <div className="flex flex-row items-center justify-between gap-4">
+        <div className="flex flex-row items-center gap-4 max-sm:gap-2">
+          <Skeleton className="size-8 sm:size-10 rounded-full" />
+          <Skeleton className="size-8 sm:size-10 rounded-full" />
+          <Skeleton className="h-5 w-24" />
+        </div>
+        <div className="flex items-center gap-2">
+          <Skeleton className="h-4 w-12" />
+          <Skeleton className="h-6 w-16" />
+        </div>
+      </div>
+    </div>
+  )
+})
+
+const TopThreeSkeleton = memo(function TopThreeSkeleton() {
+  return (
+    <div className="mb-8 grid grid-cols-3 gap-2 sm:gap-6">
+      {[2, 1, 3].map((i) => (
+        <div
+          key={i}
+          className={`flex flex-col items-center ${
+            i === 1 ? "order-2" : i === 2 ? "order-1" : "order-3"
+          }`}
+        >
+          <Skeleton
+            className={`mb-1 sm:mb-3 rounded-full ${i === 1 ? "size-12 sm:size-24" : "size-10 sm:size-20"}`}
+          />
+          <div className="rounded-xl border bg-card py-4 sm:py-10 px-2 sm:px-8 w-full">
+            <div className="flex flex-col items-center">
+              <Skeleton
+                className={`rounded-full mb-1 sm:mb-3 ${i === 1 ? "size-10 sm:size-16" : "size-8 sm:size-14"}`}
+              />
+              <Skeleton className="h-3 sm:h-5 w-12 sm:w-20 mb-0.5 sm:mb-2" />
+              <div className="flex flex-col sm:flex-row items-center gap-0 sm:gap-1">
+                <Skeleton className="h-2 sm:h-3 w-6 sm:w-8" />
+                <Skeleton className="h-3 sm:h-6 w-8 sm:w-14" />
+              </div>
+            </div>
+          </div>
+        </div>
+      ))}
+    </div>
+  )
+})
+
 function TopThreeDisplay({
   rankings,
   valueLabel,
@@ -128,7 +185,7 @@ function TopThreeDisplay({
   ].filter(Boolean)
 
   return (
-    <div className="mb-8 grid grid-cols-1 gap-4 sm:grid-cols-3">
+    <div className="mb-8 grid grid-cols-3 gap-2 sm:gap-6">
       {orderedRankings.map((ranking) => {
         const isFirst = ranking.rank === 1
         return (
@@ -136,10 +193,10 @@ function TopThreeDisplay({
             key={ranking.user.id}
             className={`flex flex-col items-center ${
               isFirst
-                ? "sm:order-2"
+                ? "order-2 sm:order-2"
                 : ranking.rank === 2
-                  ? "sm:order-1"
-                  : "sm:order-3"
+                  ? "order-1 sm:order-1"
+                  : "order-3 sm:order-3"
             }`}
           >
             <UserInfoCard
@@ -151,37 +208,41 @@ function TopThreeDisplay({
             >
               <div className="flex flex-col items-center cursor-pointer transition-transform hover:scale-105">
                 <div
-                  className={`mb-3 flex items-center justify-center ${
-                    isFirst ? "size-24" : "size-20"
+                  className={`mb-1 sm:mb-3 flex items-center justify-center ${
+                    isFirst ? "size-12 sm:size-24" : "size-10 sm:size-20"
                   }`}
                 >
                   <RankBadge rank={ranking.rank} />
                 </div>
-                <Card className="relative shadow-none overflow-hidden py-12">
-                  <CardContent className="min-w-44 px-8 text-center">
-                    <Avatar className={`mx-auto mb-3 size-16`}>
+                <Card className="relative shadow-none overflow-hidden py-4 sm:py-10">
+                  <CardContent className="min-w-0 w-full px-2 sm:px-8 text-center">
+                    <Avatar
+                      className={`mx-auto mb-1 sm:mb-3 ${isFirst ? "size-10 sm:size-16" : "size-8 sm:size-14"}`}
+                    >
                       <AvatarImage
                         src={ranking.user.avatar}
                         alt={ranking.user.name}
                       />
-                      <AvatarFallback className="text-xl">
+                      <AvatarFallback className="text-sm sm:text-xl">
                         {ranking.user.name.slice(0, 1).toUpperCase()}
                       </AvatarFallback>
                     </Avatar>
                     <div
-                      className={`mb-2 font-semibold ${
-                        isFirst ? "text-lg" : "text-base"
+                      className={`mb-0.5 sm:mb-2 font-semibold truncate mx-auto ${
+                        isFirst
+                          ? "text-xs sm:text-lg max-w-16 sm:max-w-36"
+                          : "text-xs sm:text-base max-w-14 sm:max-w-32"
                       }`}
                     >
                       {ranking.user.name}
                     </div>
-                    <div className="flex items-center justify-center gap-2">
-                      <span className="text-xs text-muted-foreground">
+                    <div className="flex flex-col sm:flex-row items-center justify-center gap-0 sm:gap-1">
+                      <span className="text-[10px] sm:text-sm text-muted-foreground">
                         {valueLabel}
                       </span>
                       <span
                         className={`font-bold ${
-                          isFirst ? "text-xl" : "text-lg"
+                          isFirst ? "text-sm sm:text-xl" : "text-xs sm:text-lg"
                         }`}
                       >
                         {ranking.value.toLocaleString()}
@@ -218,25 +279,62 @@ function LeaderboardList({
   valueLabel: string
 }) {
   const t = useTranslations("Leaderboard")
-  const { data, error, isLoading } = useSWR<LeaderboardResponse>(
-    `/api/leaderboard?type=${type}`,
-    fetcher,
-    {
-      revalidateOnFocus: false,
-      refreshInterval: 30000,
-    }
+  const loadMoreRef = useRef<HTMLDivElement>(null)
+
+  // SWR Infinite 配置
+  const getKey = useCallback(
+    (pageIndex: number, previousPageData: LeaderboardResponse | null) => {
+      if (previousPageData && !previousPageData.hasMore) return null
+      return `/api/leaderboard?type=${type}&page=${pageIndex + 1}&pageSize=${PAGE_SIZE}`
+    },
+    [type]
   )
+
+  const { data, error, isLoading, isValidating, size, setSize } =
+    useSWRInfinite<LeaderboardResponse>(getKey, fetcher, {
+      revalidateOnFocus: false,
+      revalidateFirstPage: false,
+    })
+
+  // 合并所有页的数据
+  const allRankings = data ? data.flatMap((page) => page.rankings) : []
+  const hasMore = data ? (data[data.length - 1]?.hasMore ?? false) : false
+  const isLoadingMore =
+    isLoading || (size > 0 && data && typeof data[size - 1] === "undefined")
+  const total = data?.[0]?.total ?? 0
+  const updatedAt = data?.[0]?.updatedAt
 
   // 获取当前用户信息
   const { user: currentUser } = useCurrentUser()
 
+  // IntersectionObserver 触发加载更多
+  useEffect(() => {
+    if (!loadMoreRef.current || !hasMore || isValidating) return
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && hasMore && !isValidating) {
+          setSize(size + 1)
+        }
+      },
+      { threshold: 0.1 }
+    )
+
+    observer.observe(loadMoreRef.current)
+    return () => observer.disconnect()
+  }, [hasMore, isValidating, size, setSize])
+
+  // 初始加载骨架屏
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center py-12">
-        <div className="text-center">
-          <div className="mb-2 text-lg">{t("loading")}</div>
-          <div className="text-sm text-muted-foreground">
-            {t("loadingData")}
+      <div className="space-y-6">
+        <TopThreeSkeleton />
+        <div>
+          <Skeleton className="h-5 w-24 mb-4" />
+          <div className="space-y-4">
+            {Array.from({ length: 5 }).map((_, i) => (
+              <LeaderboardItemSkeleton key={i} />
+            ))}
           </div>
         </div>
       </div>
@@ -254,7 +352,7 @@ function LeaderboardList({
     )
   }
 
-  if (!data || data.rankings.length === 0) {
+  if (allRankings.length === 0) {
     return (
       <div className="flex items-center justify-center py-12">
         <div className="text-center">
@@ -268,12 +366,12 @@ function LeaderboardList({
   }
 
   // 区分前三名和其他排名
-  const topThree = data.rankings.slice(0, 3)
-  const restRankings = data.rankings.slice(3)
+  const topThree = allRankings.slice(0, 3)
+  const restRankings = allRankings.slice(3)
 
   // 查找当前用户的排名（如果不在前三名中）
   const currentUserRanking = currentUser?.id
-    ? data.rankings.find((r) => r.user.id === currentUser.id)
+    ? allRankings.find((r) => r.user.id === currentUser.id)
     : null
 
   const showCurrentUserRanking =
@@ -302,7 +400,7 @@ function LeaderboardList({
       {restRankings.length > 0 && (
         <div>
           <h3 className="mb-4 text-sm font-semibold text-muted-foreground">
-            {t("fullLeaderboard")}
+            {t("fullLeaderboard")} ({total > 3 ? total - 3 : 0})
           </h3>
           <div className="space-y-4">
             {restRankings.map((ranking) => (
@@ -314,12 +412,31 @@ function LeaderboardList({
               />
             ))}
           </div>
+
+          {/* 加载更多触发器 */}
+          <div ref={loadMoreRef} className="py-2" />
+
+          {/* 骨架屏：加载更多时显示 */}
+          {isLoadingMore && hasMore && (
+            <div className="space-y-4">
+              {Array.from({ length: 3 }).map((_, i) => (
+                <LeaderboardItemSkeleton key={`skeleton-${i}`} />
+              ))}
+            </div>
+          )}
+
+          {/* 没有更多数据 */}
+          {!hasMore && allRankings.length > 3 && (
+            <div className="py-4 text-center text-sm text-muted-foreground">
+              {t("noMoreData")}
+            </div>
+          )}
         </div>
       )}
 
-      {data.updatedAt && (
+      {updatedAt && (
         <div className="pt-4 text-center text-xs text-muted-foreground">
-          {t("lastUpdated")}：{new Date(data.updatedAt).toLocaleString("zh-CN")}
+          {t("lastUpdated")}：{new Date(updatedAt).toLocaleString("zh-CN")}
         </div>
       )}
     </div>

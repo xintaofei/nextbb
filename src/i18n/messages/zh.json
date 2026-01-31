@@ -117,7 +117,11 @@
     "success": "签到成功！获得 {credits} 积分",
     "alreadyCheckedIn": "今天已经签到过了",
     "error": "签到失败，请稍后重试",
-    "loginRequired": "请先登录后签到"
+    "loginRequired": "请先登录后签到",
+    "fullList": "完整榜单",
+    "noMoreData": "没有更多数据了",
+    "loadFailed": "加载失败",
+    "retryLater": "请稍后重试"
   },
   "Error": {
     "unauthorized": "请先登录",
@@ -1871,7 +1875,8 @@
     "wealthShort": "富豪",
     "pioneerShort": "先锋",
     "expertShort": "智囊",
-    "reputationShort": "声望"
+    "reputationShort": "声望",
+    "noMoreData": "没有更多数据了"
   },
   "Donation": {
     "pageTitle": "捐赠荣誉榜",
@@ -1897,7 +1902,8 @@
     "lastUpdated": "最后更新",
     "people": "人次",
     "donatedAt": "捐赠于",
-    "fullLeaderboard": "完整排行榜"
+    "fullLeaderboard": "完整排行榜",
+    "noMoreData": "没有更多数据了"
   },
   "AdminTranslationTasks": {
     "title": "翻译任务管理",

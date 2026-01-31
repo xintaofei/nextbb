@@ -1,9 +1,10 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useRef, useCallback, useEffect, memo } from "react"
 import { useTranslations } from "next-intl"
 import { CalendarCheck, ChevronRight, Loader2, Trophy } from "lucide-react"
 import useSWR, { mutate } from "swr"
+import useSWRInfinite from "swr/infinite"
 import { Card, CardContent } from "@/components/ui/card"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
@@ -43,28 +44,41 @@ type CheckinRecord = {
   rank: number
 }
 
+type CheckinListResponse = {
+  success: boolean
+  checkins: CheckinRecord[]
+  hasMore: boolean
+  total: number
+  page: number
+  pageSize: number
+  updatedAt: string
+}
+
+const PAGE_SIZE = 20
+
 const statusFetcher = async (url: string): Promise<CheckinStatus | null> => {
   const res = await fetch(url, { cache: "no-store" })
   if (!res.ok) return null
   return res.json()
 }
 
-const listFetcher = async (url: string): Promise<CheckinRecord[]> => {
+const listFetcher = async (url: string): Promise<CheckinListResponse> => {
   const res = await fetch(url, { cache: "no-store" })
-  if (!res.ok) return []
-  const data = await res.json()
-  return data.checkins || []
+  if (!res.ok) {
+    throw new Error("Failed to fetch checkin list")
+  }
+  return res.json()
 }
 
 function RankBadge({ rank }: { rank: number }) {
   if (rank === 1) {
-    return <span className="text-7xl">🥇</span>
+    return <span className="text-4xl sm:text-8xl">🥇</span>
   }
   if (rank === 2) {
-    return <span className="text-5xl">🥈</span>
+    return <span className="text-3xl sm:text-6xl">🥈</span>
   }
   if (rank === 3) {
-    return <span className="text-5xl">🥉</span>
+    return <span className="text-3xl sm:text-6xl">🥉</span>
   }
   return (
     <div className="flex size-8 sm:size-10 items-center justify-center text-sm font-semibold text-muted-foreground">
@@ -125,6 +139,54 @@ function CheckinItem({ checkin }: { checkin: CheckinRecord }) {
   )
 }
 
+// 骨架屏组件
+const CheckinItemSkeleton = memo(function CheckinItemSkeleton() {
+  return (
+    <div className="rounded-2xl border bg-card p-4">
+      <div className="flex flex-row items-center justify-between gap-4">
+        <div className="flex flex-row items-center gap-4 max-sm:gap-2">
+          <Skeleton className="size-8 sm:size-10 rounded-full" />
+          <Skeleton className="size-8 sm:size-10 rounded-full" />
+          <Skeleton className="h-5 w-24" />
+        </div>
+        <div className="flex flex-col items-end gap-1">
+          <Skeleton className="h-6 w-16" />
+          <Skeleton className="h-4 w-14" />
+        </div>
+      </div>
+    </div>
+  )
+})
+
+const TopThreeSkeleton = memo(function TopThreeSkeleton() {
+  return (
+    <div className="mb-8 grid grid-cols-3 gap-2 sm:gap-6">
+      {[2, 1, 3].map((i) => (
+        <div
+          key={i}
+          className={`flex flex-col items-center ${
+            i === 1 ? "order-2" : i === 2 ? "order-1" : "order-3"
+          }`}
+        >
+          <Skeleton
+            className={`mb-1 sm:mb-3 rounded-full ${i === 1 ? "size-12 sm:size-24" : "size-10 sm:size-20"}`}
+          />
+          <div className="rounded-xl border bg-card py-4 sm:py-10 px-2 sm:px-8 w-full">
+            <div className="flex flex-col items-center">
+              <Skeleton
+                className={`rounded-full mb-1 sm:mb-3 ${i === 1 ? "size-10 sm:size-16" : "size-8 sm:size-14"}`}
+              />
+              <Skeleton className="h-3 sm:h-5 w-12 sm:w-20 mb-0.5 sm:mb-2" />
+              <Skeleton className="h-6 w-14 sm:w-20 mb-1 sm:mb-2" />
+              <Skeleton className="h-2 sm:h-4 w-10 sm:w-16" />
+            </div>
+          </div>
+        </div>
+      ))}
+    </div>
+  )
+})
+
 function TopThreeDisplay({ checkins }: { checkins: CheckinRecord[] }) {
   const t = useTranslations("Checkin")
   const locale = useLocale()
@@ -140,7 +202,7 @@ function TopThreeDisplay({ checkins }: { checkins: CheckinRecord[] }) {
   ].filter(Boolean)
 
   return (
-    <div className="mb-8 grid grid-cols-1 gap-4 sm:grid-cols-3">
+    <div className="mb-8 grid grid-cols-3 gap-2 sm:gap-6">
       {orderedCheckins.map((checkin) => {
         const isFirst = checkin.rank === 1
         return (
@@ -148,10 +210,10 @@ function TopThreeDisplay({ checkins }: { checkins: CheckinRecord[] }) {
             key={checkin.id}
             className={`flex flex-col items-center ${
               isFirst
-                ? "sm:order-2"
+                ? "order-2 sm:order-2"
                 : checkin.rank === 2
-                  ? "sm:order-1"
-                  : "sm:order-3"
+                  ? "order-1 sm:order-1"
+                  : "order-3 sm:order-3"
             }`}
           >
             <UserInfoCard
@@ -163,36 +225,43 @@ function TopThreeDisplay({ checkins }: { checkins: CheckinRecord[] }) {
             >
               <div className="flex flex-col items-center cursor-pointer transition-transform hover:scale-105">
                 <div
-                  className={`mb-3 flex items-center justify-center ${
-                    isFirst ? "size-24" : "size-20"
+                  className={`mb-1 sm:mb-3 flex items-center justify-center ${
+                    isFirst ? "size-12 sm:size-24" : "size-10 sm:size-20"
                   }`}
                 >
                   <RankBadge rank={checkin.rank} />
                 </div>
-                <Card className="relative shadow-none overflow-hidden py-12">
-                  <CardContent className="min-w-44 px-8 text-center">
-                    <Avatar className="mx-auto mb-3 size-16">
+                <Card className="relative shadow-none overflow-hidden py-4 sm:py-10">
+                  <CardContent className="min-w-0 w-full px-2 sm:px-8 text-center">
+                    <Avatar
+                      className={`mx-auto mb-1 sm:mb-3 ${isFirst ? "size-10 sm:size-16" : "size-8 sm:size-14"}`}
+                    >
                       <AvatarImage
                         src={checkin.user.avatar}
                         alt={checkin.user.name}
                       />
-                      <AvatarFallback className="text-xl">
+                      <AvatarFallback className="text-sm sm:text-xl">
                         {checkin.user.name.slice(0, 1).toUpperCase()}
                       </AvatarFallback>
                     </Avatar>
                     <div
-                      className={`mb-2 font-semibold ${
-                        isFirst ? "text-lg" : "text-base"
+                      className={`mb-0.5 sm:mb-2 font-semibold truncate mx-auto ${
+                        isFirst
+                          ? "text-xs sm:text-lg max-w-16 sm:max-w-36"
+                          : "text-xs sm:text-base max-w-14 sm:max-w-32"
                       }`}
                     >
                       {checkin.user.name}
                     </div>
-                    <div className="flex items-center justify-center gap-2">
-                      <Badge variant="secondary">
+                    <div className="flex flex-col items-center justify-center gap-0 sm:gap-1">
+                      <Badge
+                        variant="secondary"
+                        className="text-[10px] sm:text-sm"
+                      >
                         +{checkin.creditsEarned} {t("credits")}
                       </Badge>
                     </div>
-                    <div className="mt-2 text-xs text-muted-foreground">
+                    <div className="mt-1 sm:mt-2 text-[10px] sm:text-xs text-muted-foreground">
                       {format(new Date(checkin.checkinTime), "HH:mm:ss", {
                         locale: dateLocale,
                       })}
@@ -248,54 +317,11 @@ function CheckinListSkeleton() {
       </div>
 
       <div className="mt-8 max-sm:mt-4">
-        {/* 前三名骨架 */}
-        <div className="mb-8 grid grid-cols-1 gap-4 sm:grid-cols-3">
-          {[0, 1, 2].map((i) => (
-            <div
-              key={i}
-              className={`flex flex-col items-center ${
-                i === 1 ? "sm:order-2" : i === 0 ? "sm:order-1" : "sm:order-3"
-              }`}
-            >
-              <Skeleton
-                className={`mb-3 rounded-full ${
-                  i === 1 ? "size-24" : "size-20"
-                }`}
-              />
-              <Card className="shadow-none py-12">
-                <CardContent className="min-w-44 px-8 text-center space-y-3">
-                  <Skeleton className="mx-auto size-16 rounded-full" />
-                  <Skeleton
-                    className={`mx-auto ${i === 1 ? "h-6 w-24" : "h-5 w-20"}`}
-                  />
-                  <Skeleton className="mx-auto h-6 w-16" />
-                  <Skeleton className="mx-auto h-4 w-20" />
-                </CardContent>
-              </Card>
-            </div>
-          ))}
-        </div>
-
-        {/* 其余列表骨架 */}
-        <div className="space-y-2">
-          {[0, 1, 2].map((i) => (
-            <MagicCard
-              key={i}
-              gradientColor="#26262600"
-              className="p-4 rounded-2xl"
-            >
-              <div className="flex flex-row items-center justify-between gap-4">
-                <div className="flex flex-row items-center gap-4 max-sm:gap-2">
-                  <Skeleton className="size-8 sm:size-10 rounded-md" />
-                  <Skeleton className="size-8 sm:size-10 rounded-full" />
-                  <Skeleton className="h-6 w-24" />
-                </div>
-                <div className="flex flex-col items-end gap-1">
-                  <Skeleton className="h-6 w-16" />
-                  <Skeleton className="h-4 w-14" />
-                </div>
-              </div>
-            </MagicCard>
+        <TopThreeSkeleton />
+        <Skeleton className="h-5 w-24 mb-4" />
+        <div className="space-y-4">
+          {Array.from({ length: 5 }).map((_, i) => (
+            <CheckinItemSkeleton key={i} />
           ))}
         </div>
       </div>
@@ -306,6 +332,7 @@ function CheckinListSkeleton() {
 export function CheckinSection() {
   const t = useTranslations("Checkin")
   const [isChecking, setIsChecking] = useState(false)
+  const loadMoreRef = useRef<HTMLDivElement>(null)
 
   // 获取用户时区偏移量（分钟）
   const timezoneOffset = new Date().getTimezoneOffset()
@@ -319,17 +346,52 @@ export function CheckinSection() {
       }
     )
 
-  const {
-    data: todayCheckins = [],
-    mutate: mutateList,
-    isLoading: isListLoading,
-  } = useSWR<CheckinRecord[]>(
-    `/api/checkin?list=today&timezoneOffset=${timezoneOffset}`,
-    listFetcher,
-    {
-      refreshInterval: 30000,
-    }
+  // SWR Infinite 配置
+  const getKey = useCallback(
+    (pageIndex: number, previousPageData: CheckinListResponse | null) => {
+      if (previousPageData && !previousPageData.hasMore) return null
+      return `/api/checkin?list=today&timezoneOffset=${timezoneOffset}&page=${pageIndex + 1}&pageSize=${PAGE_SIZE}`
+    },
+    [timezoneOffset]
   )
+
+  const {
+    data,
+    error,
+    isLoading: isListLoading,
+    isValidating,
+    size,
+    setSize,
+    mutate: mutateList,
+  } = useSWRInfinite<CheckinListResponse>(getKey, listFetcher, {
+    revalidateOnFocus: false,
+    revalidateFirstPage: false,
+    refreshInterval: 30000,
+  })
+
+  // 合并所有页的数据
+  const allCheckins = data ? data.flatMap((page) => page.checkins) : []
+  const hasMore = data ? (data[data.length - 1]?.hasMore ?? false) : false
+  const isLoadingMore =
+    isListLoading || (size > 0 && data && typeof data[size - 1] === "undefined")
+  const total = data?.[0]?.total ?? 0
+
+  // IntersectionObserver 触发加载更多
+  useEffect(() => {
+    if (!loadMoreRef.current || !hasMore || isValidating) return
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && hasMore && !isValidating) {
+          setSize(size + 1)
+        }
+      },
+      { threshold: 0.1 }
+    )
+
+    observer.observe(loadMoreRef.current)
+    return () => observer.disconnect()
+  }, [hasMore, isValidating, size, setSize])
 
   const handleCheckin = async (event: React.MouseEvent<HTMLButtonElement>) => {
     try {
@@ -380,8 +442,8 @@ export function CheckinSection() {
   const consecutiveDays = checkinStatus?.consecutiveDays || 0
   const monthlyCheckins = checkinStatus?.monthlyCheckins || 0
 
-  const topThree = todayCheckins.slice(0, 3)
-  const restCheckins = todayCheckins.slice(3)
+  const topThree = allCheckins.slice(0, 3)
+  const restCheckins = allCheckins.slice(3)
 
   return (
     <div className="space-y-8">
@@ -459,6 +521,19 @@ export function CheckinSection() {
       {/* 今日签到列表 */}
       {isListLoading ? (
         <CheckinListSkeleton />
+      ) : error ? (
+        <div className="mt-16 max-sm:mt-8">
+          <div className="flex items-center justify-center py-12">
+            <div className="text-center">
+              <div className="mb-2 text-lg text-destructive">
+                {t("loadFailed")}
+              </div>
+              <div className="text-sm text-muted-foreground">
+                {t("retryLater")}
+              </div>
+            </div>
+          </div>
+        </div>
       ) : (
         <div className="mt-16 max-sm:mt-8">
           <div className="flex flex-col gap-2 items-center">
@@ -467,26 +542,50 @@ export function CheckinSection() {
               {t("todayList")}
             </span>
             <span className="text-muted-foreground">
-              {t("todayListDescription", { count: todayCheckins.length })}
+              {t("todayListDescription", { count: total })}
             </span>
           </div>
           <div className="mt-8 max-sm:mt-4">
-            {todayCheckins.length === 0 ? (
+            {allCheckins.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-12 text-muted-foreground">
                 <CalendarCheck className="mb-4 h-12 w-12 opacity-20" />
                 <p>{t("noCheckinToday")}</p>
               </div>
             ) : (
-              <div>
+              <div className="space-y-6">
                 {/* 前三名特殊展示 */}
                 {topThree.length > 0 && <TopThreeDisplay checkins={topThree} />}
 
                 {/* 其余用户列表 */}
                 {restCheckins.length > 0 && (
-                  <div className="space-y-2">
-                    {restCheckins.map((checkin) => (
-                      <CheckinItem key={checkin.id} checkin={checkin} />
-                    ))}
+                  <div>
+                    <h3 className="mb-4 text-sm font-semibold text-muted-foreground">
+                      {t("fullList")} ({total > 3 ? total - 3 : 0})
+                    </h3>
+                    <div className="space-y-4">
+                      {restCheckins.map((checkin) => (
+                        <CheckinItem key={checkin.id} checkin={checkin} />
+                      ))}
+                    </div>
+
+                    {/* 加载更多触发器 */}
+                    <div ref={loadMoreRef} className="py-2" />
+
+                    {/* 骨架屏：加载更多时显示 */}
+                    {isLoadingMore && hasMore && (
+                      <div className="space-y-4">
+                        {Array.from({ length: 3 }).map((_, i) => (
+                          <CheckinItemSkeleton key={`skeleton-${i}`} />
+                        ))}
+                      </div>
+                    )}
+
+                    {/* 没有更多数据 */}
+                    {!hasMore && allCheckins.length > 3 && (
+                      <div className="py-4 text-center text-sm text-muted-foreground">
+                        {t("noMoreData")}
+                      </div>
+                    )}
                   </div>
                 )}
               </div>

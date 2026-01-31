@@ -129,6 +129,7 @@ export async function POST(request: Request) {
  * 获取用户签到状态或当日签到列表
  * GET /api/checkin - 获取用户签到状态
  * GET /api/checkin?list=today&timezoneOffset=number - 获取用户本地日期的签到记录
+ * GET /api/checkin?list=today&timezoneOffset=number&page=1&pageSize=20 - 分页获取签到记录
  */
 export async function GET(request: Request) {
   try {
@@ -156,6 +157,29 @@ export async function GET(request: Request) {
         }
       }
 
+      // 获取分页参数
+      const pageParam = searchParams.get("page")
+      const pageSizeParam = searchParams.get("pageSize")
+
+      let page = 1
+      let pageSize = 20
+      if (pageParam) {
+        const parsedPage = parseInt(pageParam, 10)
+        if (!isNaN(parsedPage) && parsedPage >= 1) {
+          page = parsedPage
+        }
+      }
+      if (pageSizeParam) {
+        const parsedPageSize = parseInt(pageSizeParam, 10)
+        if (
+          !isNaN(parsedPageSize) &&
+          parsedPageSize >= 1 &&
+          parsedPageSize <= 50
+        ) {
+          pageSize = parsedPageSize
+        }
+      }
+
       // 根据用户时区计算用户本地日期
       const now = new Date()
       const userLocalTime = new Date(now.getTime() - timezoneOffset * 60 * 1000)
@@ -170,28 +194,42 @@ export async function GET(request: Request) {
       const tomorrow = new Date(today)
       tomorrow.setUTCDate(tomorrow.getUTCDate() + 1)
 
-      // 查询当天所有签到记录，按创建时间排序（最先签到的最前）
-      // 使用 gte 和 lt 进行范围查询，避免时区问题
-      const todayCheckins = await prisma.user_checkins.findMany({
-        where: {
-          checkin_date: {
-            gte: today,
-            lt: tomorrow,
-          },
-        },
-        orderBy: {
-          created_at: "asc",
-        },
-        include: {
-          user: {
-            select: {
-              id: true,
-              name: true,
-              avatar: true,
+      // 并行查询签到记录和总数
+      const [todayCheckins, total] = await Promise.all([
+        prisma.user_checkins.findMany({
+          where: {
+            checkin_date: {
+              gte: today,
+              lt: tomorrow,
             },
           },
-        },
-      })
+          orderBy: {
+            created_at: "asc",
+          },
+          include: {
+            user: {
+              select: {
+                id: true,
+                name: true,
+                avatar: true,
+              },
+            },
+          },
+          skip: (page - 1) * pageSize,
+          take: pageSize,
+        }),
+        prisma.user_checkins.count({
+          where: {
+            checkin_date: {
+              gte: today,
+              lt: tomorrow,
+            },
+          },
+        }),
+      ])
+
+      const hasMore = page * pageSize < total
+      const offset = (page - 1) * pageSize
 
       return NextResponse.json({
         success: true,
@@ -204,8 +242,13 @@ export async function GET(request: Request) {
           },
           creditsEarned: checkin.credits_earned,
           checkinTime: checkin.created_at,
-          rank: index + 1,
+          rank: offset + index + 1,
         })),
+        hasMore,
+        total,
+        page,
+        pageSize,
+        updatedAt: new Date().toISOString(),
       })
     }
 
