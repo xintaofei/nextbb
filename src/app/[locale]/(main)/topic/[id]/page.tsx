@@ -103,7 +103,7 @@ export default async function TopicPage({ params }: TopicPageProps) {
   // 在服务端预取数据
   const [topicInfo, initialPosts] = await Promise.all([
     getTopicInfo(topicId, locale),
-    getTopicPosts(topicId, locale, auth, 1, 15),
+    getTopicPosts(topicId, locale, auth, 1, 3),
   ])
 
   if (!topicInfo) {
