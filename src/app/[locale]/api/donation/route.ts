@@ -26,6 +26,10 @@ type DonationResponse = {
     month?: number
   }
   rankings: RankingDonor[]
+  hasMore: boolean
+  total: number
+  page: number
+  pageSize: number
   totalAmount: number
   totalCount: number
   updatedAt: string
@@ -34,10 +38,13 @@ type DonationResponse = {
 // 默认匿名头像URL
 const DEFAULT_ANONYMOUS_AVATAR = "/avatars/anonymous.png"
 
+const DEFAULT_PAGE_SIZE = 20
+
 export async function GET(req: Request) {
   const url = new URL(req.url)
   const type = url.searchParams.get("type") as DonationType | null
-  const limitParam = url.searchParams.get("limit")
+  const pageParam = url.searchParams.get("page")
+  const pageSizeParam = url.searchParams.get("pageSize")
 
   // 验证类型参数
   if (!type || !["month", "year", "all"].includes(type)) {
@@ -47,17 +54,29 @@ export async function GET(req: Request) {
     )
   }
 
-  // 验证限制参数
-  let limit = 100
-  if (limitParam) {
-    const parsedLimit = parseInt(limitParam, 10)
-    if (isNaN(parsedLimit) || parsedLimit < 1 || parsedLimit > 100) {
+  // 验证分页参数
+  let page = 1
+  if (pageParam) {
+    const parsedPage = parseInt(pageParam, 10)
+    if (isNaN(parsedPage) || parsedPage < 1) {
       return NextResponse.json(
-        { error: "Invalid limit parameter" },
+        { error: "Invalid page parameter" },
         { status: 400 }
       )
     }
-    limit = parsedLimit
+    page = parsedPage
+  }
+
+  let pageSize = DEFAULT_PAGE_SIZE
+  if (pageSizeParam) {
+    const parsedPageSize = parseInt(pageSizeParam, 10)
+    if (isNaN(parsedPageSize) || parsedPageSize < 1 || parsedPageSize > 100) {
+      return NextResponse.json(
+        { error: "Invalid pageSize parameter" },
+        { status: 400 }
+      )
+    }
+    pageSize = parsedPageSize
   }
 
   try {
@@ -181,20 +200,31 @@ export async function GET(req: Request) {
     })
 
     // 转换为数组并排序
-    const sortedDonors = Array.from(donorMap.values())
-      .sort((a, b) => b.totalAmount - a.totalAmount)
-      .slice(0, limit)
-
-    // 计算统计数据
-    const totalAmount = sortedDonors.reduce(
-      (sum, donor) => sum + donor.totalAmount,
-      0
+    const allSortedDonors = Array.from(donorMap.values()).sort(
+      (a, b) => b.totalAmount - a.totalAmount
     )
-    const totalCount = sortedDonors.length
+
+    // 计算分页
+    const total = allSortedDonors.length
+    const startIndex = (page - 1) * pageSize
+    const endIndex = startIndex + pageSize
+    const paginatedDonors = allSortedDonors.slice(startIndex, endIndex)
+    const hasMore = endIndex < total
+
+    // 只在第一页计算统计数据，后续页面返回 0（前端只使用第一页的统计）
+    let totalAmount = 0
+    let totalCount = 0
+    if (page === 1) {
+      totalAmount = allSortedDonors.reduce(
+        (sum, donor) => sum + donor.totalAmount,
+        0
+      )
+      totalCount = total
+    }
 
     // 生成排名列表
-    const rankings: RankingDonor[] = sortedDonors.map((donor, index) => ({
-      rank: index + 1,
+    const rankings: RankingDonor[] = paginatedDonors.map((donor, index) => ({
+      rank: startIndex + index + 1,
       donor: {
         id: donor.userId,
         name: donor.userName,
@@ -211,6 +241,10 @@ export async function GET(req: Request) {
       type,
       period: periodInfo,
       rankings,
+      hasMore,
+      total,
+      page,
+      pageSize,
       totalAmount,
       totalCount,
       updatedAt: new Date().toISOString(),

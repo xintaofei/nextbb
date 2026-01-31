@@ -1902,7 +1902,8 @@
     "lastUpdated": "Last Updated",
     "people": "donations",
     "donatedAt": "Donated at",
-    "fullLeaderboard": "Full Leaderboard"
+    "fullLeaderboard": "Full Leaderboard",
+    "noMoreData": "No more data"
   },
   "AdminTranslationTasks": {
     "title": "Translation Tasks Management",
