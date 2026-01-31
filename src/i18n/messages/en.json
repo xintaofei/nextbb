@@ -117,7 +117,11 @@
     "success": "Check-in successful! Earned {credits} credits",
     "alreadyCheckedIn": "Already checked in today",
     "error": "Check-in failed, please try again later",
-    "loginRequired": "Please sign in to check in"
+    "loginRequired": "Please sign in to check in",
+    "fullList": "Full List",
+    "noMoreData": "No more data",
+    "loadFailed": "Failed to load",
+    "retryLater": "Please try again later"
   },
   "Error": {
     "unauthorized": "Unauthorized",

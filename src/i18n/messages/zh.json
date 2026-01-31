@@ -117,7 +117,11 @@
     "success": "签到成功！获得 {credits} 积分",
     "alreadyCheckedIn": "今天已经签到过了",
     "error": "签到失败，请稍后重试",
-    "loginRequired": "请先登录后签到"
+    "loginRequired": "请先登录后签到",
+    "fullList": "完整榜单",
+    "noMoreData": "没有更多数据了",
+    "loadFailed": "加载失败",
+    "retryLater": "请稍后重试"
   },
   "Error": {
     "unauthorized": "请先登录",
