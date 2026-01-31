@@ -129,7 +129,7 @@ export function DynamicRouteClient({
   return (
     <div className="flex min-h-screen w-full flex-col max-sm:p-4">
       <TopicHeaderBar
-        className="p-4 max-sm:p-0 max-sm:pb-4 sm:sticky sm:top-0 sm:z-1 bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/60"
+        className="max-sm:pb-4 sm:sticky sm:top-0 sm:z-1 bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/60"
         onSortStart={() => {}}
       />
       <div className={cn(routeParams.categoryId ? "max-sm:mb-4" : "")}>

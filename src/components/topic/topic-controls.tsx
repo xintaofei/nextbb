@@ -104,15 +104,15 @@ export function TopicControls({
   )
 
   return (
-    <div className={cn("flex flex-row gap-2 items-center", className)}>
+    <div className={cn("flex flex-col gap-2 items-start", className)}>
       <CategorySelect
-        className="min-w-36"
+        className="w-full text-xs shadow-none"
         value={categoryId}
         onChange={handleCategoryChange}
         clearable
       />
       <TagSelect
-        className="min-w-36"
+        className="w-full text-xs shadow-none"
         value={tagId}
         onChange={handleTagChange}
         clearable

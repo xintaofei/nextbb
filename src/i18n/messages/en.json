@@ -13,6 +13,7 @@
       "noResults": "No results found"
     },
     "Filters": {
+      "title": "Topic Filters",
       "category": "Category",
       "tag": "Tag",
       "tags": "Tags",
@@ -40,7 +41,8 @@
       "participants": "Participants",
       "activity": "Activity",
       "empty": "No data",
-      "related": "Related Topics"
+      "related": "Related Topics",
+      "inTopic": "In: {topic}"
     },
     "Title": {
       "latestComments": "Latest Comments"

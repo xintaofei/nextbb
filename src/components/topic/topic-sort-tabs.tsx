@@ -2,6 +2,7 @@
 
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { useTranslations } from "next-intl"
+import { cn } from "@/lib/utils"
 import Link from "next/link"
 import { useSession } from "next-auth/react"
 import {
@@ -43,43 +44,75 @@ export function TopicSortTabs({
   }
 
   return (
-    <Tabs value={selectedTab} onValueChange={() => {}} className={className}>
-      <TabsList>
-        <TabsTrigger className="md:px-4" value="latest" asChild>
+    <Tabs
+      value={selectedTab}
+      onValueChange={() => {}}
+      className={cn("w-full", className)}
+    >
+      <TabsList className="flex h-14 w-auto justify-start overflow-x-auto rounded-none border-none bg-transparent p-0 no-scrollbar">
+        <TabsTrigger
+          className="group relative h-full bg-transparent border-none rounded-none px-4 md:px-6 text-muted-foreground data-[state=active]:text-foreground data-[state=active]:font-bold data-[state=active]:bg-transparent data-[state=active]:shadow-none hover:bg-muted/30 transition-all"
+          value="latest"
+          asChild
+        >
           <Link
             href={getTabPath("latest")}
             onClick={(e) => handleTabClick(e, "latest")}
+            className="flex items-center justify-center h-full"
           >
-            {tc("Tabs.latest")}
+            <span className="relative h-full flex items-center">
+              {tc("Tabs.latest")}
+              <div className="absolute bottom-0 left-0 right-0 h-1 bg-primary rounded-full opacity-0 group-data-[state=active]:opacity-100 transition-opacity" />
+            </span>
           </Link>
         </TabsTrigger>
-        <TabsTrigger className="md:px-4" value="new" asChild>
+        <TabsTrigger
+          className="group relative h-full bg-transparent border-none rounded-none px-4 md:px-6 text-muted-foreground data-[state=active]:text-foreground data-[state=active]:font-bold data-[state=active]:bg-transparent data-[state=active]:shadow-none hover:bg-muted/30 transition-all"
+          value="new"
+          asChild
+        >
           <Link
             href={getTabPath("new")}
             onClick={(e) => handleTabClick(e, "new")}
+            className="flex items-center justify-center h-full"
           >
-            {tc("Tabs.new")}
+            <span className="relative h-full flex items-center">
+              {tc("Tabs.new")}
+              <div className="absolute bottom-0 left-0 right-0 h-1 bg-primary rounded-full opacity-0 group-data-[state=active]:opacity-100 transition-opacity" />
+            </span>
           </Link>
         </TabsTrigger>
-        <TabsTrigger className="md:px-4" value="community" asChild>
+        <TabsTrigger
+          className="group relative h-full bg-transparent border-none rounded-none px-4 md:px-6 text-muted-foreground data-[state=active]:text-foreground data-[state=active]:font-bold data-[state=active]:bg-transparent data-[state=active]:shadow-none hover:bg-muted/30 transition-all"
+          value="community"
+          asChild
+        >
           <Link
             href={getTabPath("community")}
             onClick={(e) => handleTabClick(e, "community")}
+            className="flex items-center justify-center h-full"
           >
-            {tc("Tabs.community")}
+            <span className="relative h-full flex items-center">
+              {tc("Tabs.community")}
+              <div className="absolute bottom-0 left-0 right-0 h-1 bg-primary rounded-full opacity-0 group-data-[state=active]:opacity-100 transition-opacity" />
+            </span>
           </Link>
         </TabsTrigger>
         {isLoggedIn && (
           <TabsTrigger
-            className="hidden md:px-4 md:inline-flex"
+            className="group relative h-full bg-transparent border-none rounded-none px-4 md:px-6 text-muted-foreground data-[state=active]:text-foreground data-[state=active]:font-bold data-[state=active]:bg-transparent data-[state=active]:shadow-none hover:bg-muted/30 transition-all"
             value="my"
             asChild
           >
             <Link
               href={getTabPath("my")}
               onClick={(e) => handleTabClick(e, "my")}
+              className="flex items-center justify-center h-full"
             >
-              {tc("Tabs.my")}
+              <span className="relative h-full flex items-center">
+                {tc("Tabs.my")}
+                <div className="absolute bottom-0 left-0 right-0 h-1 bg-primary rounded-full opacity-0 group-data-[state=active]:opacity-100 transition-opacity" />
+              </span>
             </Link>
           </TabsTrigger>
         )}

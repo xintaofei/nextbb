@@ -13,6 +13,7 @@
       "noResults": "无结果"
     },
     "Filters": {
+      "title": "话题筛选",
       "category": "分类",
       "tag": "标签",
       "tags": "标签",
@@ -40,7 +41,8 @@
       "participants": "参与者",
       "activity": "活动",
       "empty": "暂无数据",
-      "related": "相关话题"
+      "related": "相关话题",
+      "inTopic": "来自话题: {topic}"
     },
     "Title": {
       "latestComments": "最新评论"
