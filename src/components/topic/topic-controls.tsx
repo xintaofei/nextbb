@@ -89,18 +89,32 @@ export function TopicControls({
     [routeParams, router, startTransition, tagId, onChange]
   )
 
+  const handleCategoryChange = useCallback(
+    (v: string | undefined) => {
+      navigateToCategory(v)
+    },
+    [navigateToCategory]
+  )
+
+  const handleTagChange = useCallback(
+    (v: string | undefined) => {
+      updateQuery({ categoryId, tagId: v })
+    },
+    [updateQuery, categoryId]
+  )
+
   return (
     <div className={cn("flex flex-row gap-2 items-center", className)}>
       <CategorySelect
         className="min-w-36"
         value={categoryId}
-        onChange={(v) => navigateToCategory(v)}
+        onChange={handleCategoryChange}
         clearable
       />
       <TagSelect
         className="min-w-36"
         value={tagId}
-        onChange={(v) => updateQuery({ categoryId, tagId: v })}
+        onChange={handleTagChange}
         clearable
       />
     </div>

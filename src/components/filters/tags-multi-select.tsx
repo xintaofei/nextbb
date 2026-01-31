@@ -1,6 +1,6 @@
 "use client"
 
-import { useMemo, useState, useTransition } from "react"
+import { memo, useMemo, useState, useTransition } from "react"
 import { Check, ChevronsUpDown, X } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
@@ -27,7 +27,7 @@ type Props = {
   placeholder?: string
 }
 
-export function TagsMultiSelect({
+export const TagsMultiSelect = memo(function TagsMultiSelect({
   value = [],
   onChange,
   className,
@@ -38,10 +38,11 @@ export function TagsMultiSelect({
   const [open, setOpen] = useState(false)
   const [, startTransition] = useTransition()
 
-  const selectedTags = useMemo(
-    () => tags.filter((tag) => value.includes(tag.name)),
-    [tags, value]
-  )
+  const selectedTags = useMemo(() => {
+    if (value.length === 0) return []
+    const valueSet = new Set(value)
+    return tags.filter((tag) => valueSet.has(tag.name))
+  }, [tags, value])
 
   const defaultPlaceholder = useMemo(() => t("Filters.tags"), [t])
   const searchPlaceholder = useMemo(() => t("Search.placeholder"), [t])
@@ -160,4 +161,4 @@ export function TagsMultiSelect({
       </PopoverContent>
     </Popover>
   )
-}
+})

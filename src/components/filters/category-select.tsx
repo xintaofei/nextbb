@@ -1,6 +1,6 @@
 "use client"
 
-import { useMemo, useState, useTransition } from "react"
+import { memo, useMemo, useState, useTransition } from "react"
 import { ChevronsUpDown, X } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
@@ -27,7 +27,7 @@ type Props = {
   clearable?: boolean
 }
 
-export function CategorySelect({
+export const CategorySelect = memo(function CategorySelect({
   value,
   onChange,
   className,
@@ -150,4 +150,4 @@ export function CategorySelect({
       </PopoverContent>
     </Popover>
   )
-}
+})

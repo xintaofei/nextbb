@@ -1,6 +1,6 @@
 "use client"
 
-import { useMemo, useState, useTransition } from "react"
+import { memo, useMemo, useState, useTransition } from "react"
 import { Check, ChevronsUpDown, X } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
@@ -27,7 +27,12 @@ type Props = {
   clearable?: boolean
 }
 
-export function TagSelect({ value, onChange, className, clearable }: Props) {
+export const TagSelect = memo(function TagSelect({
+  value,
+  onChange,
+  className,
+  clearable = true,
+}: Props) {
   const t = useTranslations("Common")
   const tags = useTags()
   const [open, setOpen] = useState(false)
@@ -142,4 +147,4 @@ export function TagSelect({ value, onChange, className, clearable }: Props) {
       </PopoverContent>
     </Popover>
   )
-}
+})
