@@ -82,7 +82,7 @@ export function TopicSortTabs({
               {tc(`Tabs.${tab.labelKey}`)}
               <span
                 className={cn(
-                  "absolute bottom-0 left-0 right-0 h-1 bg-primary rounded-full transition-opacity",
+                  "absolute -bottom-px left-0 right-0 h-px bg-primary transition-opacity",
                   isActive ? "opacity-100" : "opacity-0"
                 )}
               />
