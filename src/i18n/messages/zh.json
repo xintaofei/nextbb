@@ -138,6 +138,7 @@
     "edit": "编辑",
     "delete": "删除",
     "deleted": "该楼层已被删除",
+    "notFound": "话题不存在",
     "deleteConfirm": "确认删除当前楼层？",
     "reply": "回复",
     "replies": "个回复",

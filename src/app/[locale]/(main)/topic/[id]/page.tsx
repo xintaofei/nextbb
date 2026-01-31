@@ -1,7 +1,7 @@
 import TopicOverviewClient from "@/components/topic/topic-overview-client"
 import type { Metadata } from "next"
 import { getPublicConfigs } from "@/lib/config"
-import { getLocale } from "next-intl/server"
+import { getLocale, getTranslations } from "next-intl/server"
 import {
   getTopicInfo,
   getTopicPosts,
@@ -107,16 +107,20 @@ export default async function TopicPage({ params }: TopicPageProps) {
   ])
 
   if (!topicInfo) {
-    return null
+    const t = await getTranslations("Topic")
+    return (
+      <div className="flex min-h-[50vh] w-full flex-col items-center justify-center p-8 text-center">
+        <h1 className="text-3xl font-medium text-muted-foreground">
+          {t("notFound")}
+        </h1>
+      </div>
+    )
   }
 
   // 增加话题浏览量（使用 cache 确保同一请求中只执行一次）
   await incrementTopicViewsOnce(topicId)
 
   return (
-    <TopicOverviewClient
-      initialTopicInfo={topicInfo}
-      initialPosts={initialPosts}
-    />
+    <TopicOverviewClient topicInfo={topicInfo} initialPosts={initialPosts} />
   )
 }

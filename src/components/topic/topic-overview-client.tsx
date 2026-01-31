@@ -50,12 +50,6 @@ import { Clock, Eye, Users } from "lucide-react"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { useCurrentUser } from "@/hooks/use-current-user"
 
-const fetcherInfo = async (url: string): Promise<TopicInfoResult> => {
-  const res = await fetch(url, { cache: "no-store" })
-  if (!res.ok) throw new Error("Failed to load")
-  return (await res.json()) as TopicInfoResult
-}
-
 const fetcherPosts = async (url: string): Promise<PostPage> => {
   const res = await fetch(url, { cache: "no-store" })
   if (!res.ok) throw new Error("Failed to load")
@@ -80,12 +74,12 @@ const fetcherRelated = async (url: string): Promise<RelatedResult> => {
 }
 
 type TopicOverviewClientProps = {
-  initialTopicInfo?: TopicInfoResult["topic"]
+  topicInfo: TopicInfoResult["topic"]
   initialPosts?: PostPage
 }
 
 export default function TopicOverviewClient({
-  initialTopicInfo,
+  topicInfo,
   initialPosts,
 }: TopicOverviewClientProps) {
   const { id, locale } = useParams() as { id: string; locale: string }
@@ -96,36 +90,17 @@ export default function TopicOverviewClient({
   const te = useTranslations("Error")
   const tEditor = useTranslations("Editor")
 
-  const { data: infoData, isLoading: loadingInfo } = useSWR<TopicInfoResult>(
-    `/api/topic/${id}`,
-    fetcherInfo,
-    {
-      revalidateOnFocus: false,
-      revalidateOnMount: false,
-      fallbackData: initialTopicInfo ? { topic: initialTopicInfo } : undefined,
-    }
-  )
-  const topic = useMemo(
-    () =>
-      infoData?.topic ?? {
-        id: id,
-        title: "",
-      },
-    [infoData, id]
-  )
-  const topicInfo = infoData?.topic
-
   const pageSize = 15
 
-  // 使用 ref 存储初始数据，避免第一页重复请求
+  // 使用 ref 存储初始数据，fetcher 消费一次后清除，避免第一页重复网络请求
   const initialPostsRef = useRef(initialPosts)
-  const firstPageFetchedRef = useRef(false)
+  const initialIdRef = useRef(id)
 
-  // 当 id 或 initialPosts 改变时，重置 ref（话题切换场景）
-  useEffect(() => {
+  // 当话题切换时重置初始数据
+  if (id !== initialIdRef.current) {
+    initialIdRef.current = id
     initialPostsRef.current = initialPosts
-    firstPageFetchedRef.current = false
-  }, [id, initialPosts])
+  }
 
   const [replyContent, setReplyContent] = useState<string>("")
   const [replyToPostId, setReplyToPostId] = useState<string | null>(null)
@@ -159,16 +134,13 @@ export default function TopicOverviewClient({
   )
 
   // 使用 useCallback 包装 fetcher，避免每次渲染都创建新函数
+  // 首次请求 page=1 时返回服务端预取的数据（无网络请求），之后清除以允许真实刷新
   const postsFetcher = useCallback((args: string | [string, string]) => {
     const url = Array.isArray(args) ? args[0] : args
-    // 拦截第一页请求：如果有初始数据且还没被使用过，直接返回
-    if (
-      url.includes("page=1") &&
-      initialPostsRef.current &&
-      !firstPageFetchedRef.current
-    ) {
-      firstPageFetchedRef.current = true
-      return Promise.resolve(initialPostsRef.current)
+    if (url.includes("page=1") && initialPostsRef.current) {
+      const data = initialPostsRef.current
+      initialPostsRef.current = undefined
+      return Promise.resolve(data)
     }
     return fetcherPosts(url)
   }, [])
@@ -181,7 +153,6 @@ export default function TopicOverviewClient({
     isValidating: validatingPosts,
   } = useSWRInfinite<PostPage>(getKey, postsFetcher, {
     revalidateOnFocus: false,
-    revalidateOnMount: false,
     revalidateFirstPage: false,
     fallbackData: initialPosts ? [initialPosts] : undefined,
   })
@@ -189,16 +160,6 @@ export default function TopicOverviewClient({
     () => (postsPages ? postsPages.flatMap((p) => p.items) : []),
     [postsPages]
   )
-
-  // 初始化 SWR 缓存并确保挂载后允许重新验证
-  useEffect(() => {
-    // 注入初始数据到全局缓存，确保乐观更新有数据基础
-    if (initialPosts) {
-      mutatePosts([initialPosts], false)
-    }
-    // 组件挂载完成后，标记首页已“获取”，后续 mutate(..., true) 将触发真实请求
-    firstPageFetchedRef.current = true
-  }, [id, initialPosts, mutatePosts])
 
   // 当 ID 变化时重置，避免不同话题切换时的高亮残留
   useEffect(() => {
@@ -802,13 +763,18 @@ export default function TopicOverviewClient({
     if (!sentinel) return
     const observer = new IntersectionObserver((entries) => {
       const entry = entries[0]
-      if (entry.isIntersecting && hasMore && !loadingPosts) {
+      if (
+        entry.isIntersecting &&
+        hasMore &&
+        !loadingPosts &&
+        !validatingPosts
+      ) {
         setSize((s) => s + 1)
       }
     })
     observer.observe(sentinel)
     return () => observer.disconnect()
-  }, [hasMore, loadingPosts, setSize, sentinelRef])
+  }, [hasMore, loadingPosts, validatingPosts, setSize, sentinelRef])
 
   /**
    * 根据主题类型渲染特定内容插槽
@@ -857,110 +823,92 @@ export default function TopicOverviewClient({
   return (
     <div className="flex min-h-screen w-full flex-col p-8 max-sm:p-4 gap-4">
       <div className="flex flex-col gap-2">
-        {loadingInfo ? (
-          <>
-            <Skeleton className="h-8 w-full" />
-            <div className="flex max-w-full flex-wrap gap-2 overflow-hidden">
-              <Skeleton className="h-6 w-24" />
-              <Skeleton className="h-6 w-20" />
-              <Skeleton className="h-6 w-28" />
-            </div>
-          </>
-        ) : (
-          <>
-            <div>
-              {topicInfo && (
-                <TopicStatusTags
-                  isPinned={topicInfo.isPinned}
-                  isCommunity={topicInfo.isCommunity}
-                  topicType={topicInfo.type as TopicTypeValue}
-                  size="size-5"
-                  className="align-middle mr-1"
-                />
-              )}
-              <Link href={`/topic/${topic.id}`} className="align-middle">
-                <span className="cursor-pointer max-w-full text-2xl font-medium whitespace-normal wrap-break-word">
-                  {topic.title}
-                </span>
-              </Link>
-            </div>
-            <div className="flex max-w-full flex-wrap gap-2 overflow-hidden">
-              {topicInfo?.category ? (
-                <>
-                  <CategoryBadge
-                    id={topicInfo.category.id}
-                    icon={topicInfo.category.icon}
-                    name={topicInfo.category.name}
-                    description={topicInfo.category.description}
-                    bgColor={topicInfo.category.bgColor}
-                    textColor={topicInfo.category.textColor}
-                  />
-                </>
-              ) : null}
-              {(topicInfo?.tags ?? []).map((tag) => (
-                <TagBadge
-                  key={tag.id}
-                  id={tag.id}
-                  icon={tag.icon}
-                  name={tag.name}
-                  description={tag.description}
-                  bgColor={tag.bgColor}
-                  textColor={tag.textColor}
-                />
-              ))}
-            </div>
-          </>
-        )}
+        <div>
+          {topicInfo && (
+            <TopicStatusTags
+              isPinned={topicInfo.isPinned}
+              isCommunity={topicInfo.isCommunity}
+              topicType={topicInfo.type as TopicTypeValue}
+              size="size-5"
+              className="align-middle mr-1"
+            />
+          )}
+          <Link href={`/topic/${topicInfo.id}`} className="align-middle">
+            <span className="cursor-pointer max-w-full text-2xl font-medium whitespace-normal wrap-break-word">
+              {topicInfo.title}
+            </span>
+          </Link>
+        </div>
+        <div className="flex max-w-full flex-wrap gap-2 overflow-hidden">
+          {topicInfo?.category ? (
+            <>
+              <CategoryBadge
+                id={topicInfo.category.id}
+                icon={topicInfo.category.icon}
+                name={topicInfo.category.name}
+                description={topicInfo.category.description}
+                bgColor={topicInfo.category.bgColor}
+                textColor={topicInfo.category.textColor}
+              />
+            </>
+          ) : null}
+          {(topicInfo?.tags ?? []).map((tag) => (
+            <TagBadge
+              key={tag.id}
+              id={tag.id}
+              icon={tag.icon}
+              name={tag.name}
+              description={tag.description}
+              bgColor={tag.bgColor}
+              textColor={tag.textColor}
+            />
+          ))}
+        </div>
       </div>
 
       <div className="w-full">
         <div className="flex-1">
-          {loadingInfo ? (
-            <Skeleton className="h-10 w-full mb-8" />
-          ) : (
-            <div className="flex flex-wrap justify-between items-center text-sm text-muted-foreground mb-8 bg-muted/50 px-4 max-sm:px-2 py-2 rounded-lg">
-              <div className="flex items-center gap-x-8 max-sm:gap-x-4 gap-y-2">
-                <div className="flex items-center gap-1">
-                  <Eye className="w-4 h-4" />
-                  <span>{topicInfo?.views || 0}</span>
-                  <span className="max-sm:hidden">{tc("Table.views")}</span>
-                </div>
-                <div className="flex items-center gap-1">
-                  <Users className="w-4 h-4" />
-                  <span>{topicInfo?.participantCount || 0}</span>
-                  <span className="max-sm:hidden">
-                    {tc("Table.participants")}
-                  </span>
-                </div>
-                {topicInfo?.participants &&
-                  topicInfo.participants.length > 0 && (
-                    <div className="flex items-center -space-x-2">
-                      {topicInfo.participants.map((user) => (
-                        <UserInfoCard
-                          key={user.id}
-                          userId={user.id}
-                          userName={user.name}
-                          userAvatar={user.avatar}
-                          side="bottom"
-                        >
-                          <Avatar className="w-6 h-6 border-2 border-background cursor-pointer">
-                            <AvatarImage src={user.avatar} alt={user.name} />
-                            <AvatarFallback>{user.name[0]}</AvatarFallback>
-                          </Avatar>
-                        </UserInfoCard>
-                      ))}
-                    </div>
-                  )}
+          <div className="flex flex-wrap justify-between items-center text-sm text-muted-foreground mb-8 bg-muted/50 px-4 max-sm:px-2 py-2 rounded-lg">
+            <div className="flex items-center gap-x-8 max-sm:gap-x-4 gap-y-2">
+              <div className="flex items-center gap-1">
+                <Eye className="w-4 h-4" />
+                <span>{topicInfo?.views || 0}</span>
+                <span className="max-sm:hidden">{tc("Table.views")}</span>
               </div>
               <div className="flex items-center gap-1">
-                <Clock className="w-4 h-4" />
-                <span className="max-sm:hidden">{tc("Table.activity")} </span>
-                <RelativeTime
-                  date={topicInfo?.lastActiveTime || topicInfo?.endTime || ""}
-                />
+                <Users className="w-4 h-4" />
+                <span>{topicInfo?.participantCount || 0}</span>
+                <span className="max-sm:hidden">
+                  {tc("Table.participants")}
+                </span>
               </div>
+              {topicInfo?.participants && topicInfo.participants.length > 0 && (
+                <div className="flex items-center -space-x-2">
+                  {topicInfo.participants.map((user) => (
+                    <UserInfoCard
+                      key={user.id}
+                      userId={user.id}
+                      userName={user.name}
+                      userAvatar={user.avatar}
+                      side="bottom"
+                    >
+                      <Avatar className="w-6 h-6 border-2 border-background cursor-pointer">
+                        <AvatarImage src={user.avatar} alt={user.name} />
+                        <AvatarFallback>{user.name[0]}</AvatarFallback>
+                      </Avatar>
+                    </UserInfoCard>
+                  ))}
+                </div>
+              )}
             </div>
-          )}
+            <div className="flex items-center gap-1">
+              <Clock className="w-4 h-4" />
+              <span className="max-sm:hidden">{tc("Table.activity")} </span>
+              <RelativeTime
+                date={topicInfo?.lastActiveTime || topicInfo?.endTime || ""}
+              />
+            </div>
+          </div>
           {postListLoading ? (
             <TimelineSteps>
               <PostSkeletonList count={8} />
@@ -1061,7 +1009,7 @@ export default function TopicOverviewClient({
               setReplyToPostId(null)
               setReplyOpen(true)
             }}
-            topicLoading={loadingInfo}
+            topicLoading={false}
             repliesLoading={postListLoading}
             className="w-full h-auto static"
           />,

@@ -138,6 +138,7 @@
     "edit": "Edit",
     "delete": "Delete",
     "deleted": "This floor has been deleted",
+    "notFound": "Topic not found",
     "deleteConfirm": "Are you sure to delete this floor?",
     "reply": "Reply",
     "replies": "replies",
