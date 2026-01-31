@@ -6,7 +6,12 @@ import {
   TimelineStepsContent,
   TimelineStepsAction,
 } from "@/components/ui/timeline-steps"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import {
+  Avatar,
+  AvatarBadge,
+  AvatarFallback,
+  AvatarImage,
+} from "@/components/ui/avatar"
 import { PostItem } from "@/types/topic"
 import { UserInfoCard } from "@/components/common/user-info-card"
 import { ReactNode, useMemo, useState, memo, useCallback, useRef } from "react"
@@ -23,7 +28,8 @@ import { RelativeTime } from "@/components/common/relative-time"
 import parse from "html-react-parser"
 import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
-import { ChevronUp } from "lucide-react"
+import { ChevronUp, Crown } from "lucide-react"
+import { useTranslations } from "next-intl"
 
 const repliesFetcher = async (url: string) => {
   const res = await fetch(url)
@@ -34,10 +40,15 @@ const repliesFetcher = async (url: string) => {
 const SubReplyItem = memo(function SubReplyItem({
   sub,
   idx,
+  topicAuthorId,
 }: {
   sub: PostItem
   idx: number
+  topicAuthorId: string | undefined
 }) {
+  const isTopicAuthor = topicAuthorId && sub.author.id === topicAuthorId
+  const tFloor = useTranslations("Topic.floor")
+
   return (
     <TimelineStepsItem size="sm">
       <TimelineStepsConnector
@@ -52,10 +63,7 @@ const SubReplyItem = memo(function SubReplyItem({
           className="max-sm:hidden"
         />
       )}
-      <TimelineStepsIcon
-        size="sm"
-        className="overflow-hidden p-0 max-sm:hidden"
-      >
+      <TimelineStepsIcon size="sm" className="p-0 max-sm:hidden">
         <UserInfoCard
           userId={sub.author.id}
           userName={sub.author.name}
@@ -68,6 +76,15 @@ const SubReplyItem = memo(function SubReplyItem({
               alt={sub.author.name}
             />
             <AvatarFallback>{sub.author.name}</AvatarFallback>
+            {isTopicAuthor && (
+              <AvatarBadge
+                className="bg-blue-500 text-white"
+                size="sm"
+                title={tFloor("op")}
+              >
+                <Crown size="10" />
+              </AvatarBadge>
+            )}
           </Avatar>
         </UserInfoCard>
       </TimelineStepsIcon>
@@ -77,6 +94,7 @@ const SubReplyItem = memo(function SubReplyItem({
           index={0}
           floorOpText={<RelativeTime date={sub.createdAt} />}
           size="xs"
+          topicAuthorId={topicAuthorId}
         />
         <div className="text-sm text-muted-foreground">
           {sub.contentHtml ? (
@@ -124,6 +142,7 @@ interface TopicPostItemProps {
   showAcceptButton?: boolean
   onAccept?: (postId: string, isAccepted: boolean) => void | Promise<void>
   acceptMutating?: boolean
+  topicAuthorId?: string
 }
 
 export const TopicPostItem = memo(function TopicPostItem({
@@ -154,10 +173,14 @@ export const TopicPostItem = memo(function TopicPostItem({
   showAcceptButton = false,
   onAccept,
   acceptMutating = false,
+  topicAuthorId,
 }: TopicPostItemProps) {
   const displayAvatar = useMemo(() => {
     return post.author.avatar || undefined
   }, [post.author.avatar])
+
+  const isTopicAuthor = topicAuthorId && post.author.id === topicAuthorId
+  const tFloor = useTranslations("Topic.floor")
 
   const [expanded, setExpanded] = useState(false)
   const [overrideLocale, setOverrideLocale] = useState<string | null>(null)
@@ -231,7 +254,7 @@ export const TopicPostItem = memo(function TopicPostItem({
       <TimelineStepsConnector variant="dashed" className="max-sm:hidden" />
       <TimelineStepsIcon
         size="lg"
-        className="sticky top-18 md:top-4 overflow-hidden p-0.5 max-sm:hidden"
+        className="sticky top-18 md:top-4 p-0.5 max-sm:hidden"
       >
         <UserInfoCard
           userId={post.author.id}
@@ -242,6 +265,14 @@ export const TopicPostItem = memo(function TopicPostItem({
           <Avatar className="size-full cursor-pointer">
             <AvatarImage src={displayAvatar} alt="@avatar" />
             <AvatarFallback>{post.author.name}</AvatarFallback>
+            {isTopicAuthor && (
+              <AvatarBadge
+                className="bg-blue-500 text-white"
+                title={tFloor("op")}
+              >
+                <Crown size="14" />
+              </AvatarBadge>
+            )}
           </Avatar>
         </UserInfoCard>
       </TimelineStepsIcon>
@@ -252,6 +283,7 @@ export const TopicPostItem = memo(function TopicPostItem({
           floorOpText={floorOpText}
           currentLocale={currentDisplayLocale}
           onLanguageChange={handleLanguageChange}
+          topicAuthorId={topicAuthorId}
         />
 
         <PostContent
@@ -323,7 +355,12 @@ export const TopicPostItem = memo(function TopicPostItem({
                   ))
                 ) : subReplies.length > 0 ? (
                   subReplies.map((sub, idx) => (
-                    <SubReplyItem key={sub.id} sub={sub} idx={idx} />
+                    <SubReplyItem
+                      key={sub.id}
+                      sub={sub}
+                      idx={idx}
+                      topicAuthorId={topicAuthorId}
+                    />
                   ))
                 ) : (
                   <div className="text-sm text-muted-foreground py-2 pl-2">

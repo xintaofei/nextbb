@@ -853,6 +853,7 @@ export default function TopicOverviewClient({
                     showAcceptButton={showAcceptButton}
                     onAccept={onAccept}
                     acceptMutating={acceptMutating}
+                    topicAuthorId={topicAuthorId}
                   />
                 )
               })}
