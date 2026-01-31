@@ -7,7 +7,6 @@ import { useTranslations } from "next-intl"
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { createPortal } from "react-dom"
 import { toast } from "sonner"
-import { Skeleton } from "@/components/ui/skeleton"
 import useSWR from "swr"
 import useSWRInfinite from "swr/infinite"
 import useSWRMutation from "swr/mutation"
@@ -32,7 +31,7 @@ const DrawerEditor = dynamic(
     import("@/components/editor/drawer-editor").then((mod) => mod.DrawerEditor),
   {
     ssr: false,
-    loading: () => <Skeleton className="h-[200px] w-full" />,
+    loading: () => null,
   }
 )
 
