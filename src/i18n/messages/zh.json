@@ -1871,7 +1871,8 @@
     "wealthShort": "富豪",
     "pioneerShort": "先锋",
     "expertShort": "智囊",
-    "reputationShort": "声望"
+    "reputationShort": "声望",
+    "noMoreData": "没有更多数据了"
   },
   "Donation": {
     "pageTitle": "捐赠荣誉榜",

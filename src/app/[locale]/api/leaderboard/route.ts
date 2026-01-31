@@ -30,6 +30,10 @@ type RankingUser = {
 type LeaderboardResponse = {
   type: LeaderboardType
   rankings: RankingUser[]
+  hasMore: boolean
+  total: number
+  page: number
+  pageSize: number
   updatedAt: string
 }
 
@@ -37,7 +41,8 @@ export async function GET(req: Request) {
   const locale = await getLocale()
   const url = new URL(req.url)
   const type = url.searchParams.get("type") as LeaderboardType | null
-  const limitParam = url.searchParams.get("limit")
+  const pageParam = url.searchParams.get("page")
+  const pageSizeParam = url.searchParams.get("pageSize")
 
   // 验证类型参数
   if (!type || !["wealth", "pioneer", "expert", "reputation"].includes(type)) {
@@ -47,40 +52,63 @@ export async function GET(req: Request) {
     )
   }
 
-  // 验证限制参数
-  let limit = 100
-  if (limitParam) {
-    const parsedLimit = parseInt(limitParam, 10)
-    if (isNaN(parsedLimit) || parsedLimit < 1 || parsedLimit > 100) {
+  // 验证分页参数
+  let page = 1
+  let pageSize = 20
+  if (pageParam) {
+    const parsedPage = parseInt(pageParam, 10)
+    if (isNaN(parsedPage) || parsedPage < 1) {
       return NextResponse.json(
-        { error: "Invalid limit parameter" },
+        { error: "Invalid page parameter" },
         { status: 400 }
       )
     }
-    limit = parsedLimit
+    page = parsedPage
+  }
+  if (pageSizeParam) {
+    const parsedPageSize = parseInt(pageSizeParam, 10)
+    if (isNaN(parsedPageSize) || parsedPageSize < 1 || parsedPageSize > 50) {
+      return NextResponse.json(
+        { error: "Invalid pageSize parameter" },
+        { status: 400 }
+      )
+    }
+    pageSize = parsedPageSize
   }
 
   try {
-    let rankings: RankingUser[] = []
+    let allRankings: RankingUser[] = []
+    let total = 0
 
+    // 获取所有排名数据（用于计算总数和分页）
     switch (type) {
       case "wealth":
-        rankings = await getWealthRankings(limit, locale)
+        ;({ rankings: allRankings, total } = await getWealthRankings(locale))
         break
       case "pioneer":
-        rankings = await getPioneerRankings(limit, locale)
+        ;({ rankings: allRankings, total } = await getPioneerRankings(locale))
         break
       case "expert":
-        rankings = await getExpertRankings(limit, locale)
+        ;({ rankings: allRankings, total } = await getExpertRankings(locale))
         break
       case "reputation":
-        rankings = await getReputationRankings(limit, locale)
+        ;({ rankings: allRankings, total } =
+          await getReputationRankings(locale))
         break
     }
 
+    // 分页处理
+    const offset = (page - 1) * pageSize
+    const paginatedRankings = allRankings.slice(offset, offset + pageSize)
+    const hasMore = offset + pageSize < total
+
     const response: LeaderboardResponse = {
       type,
-      rankings,
+      rankings: paginatedRankings,
+      hasMore,
+      total,
+      page,
+      pageSize,
       updatedAt: new Date().toISOString(),
     }
 
@@ -96,29 +124,36 @@ export async function GET(req: Request) {
 
 // 富豪榜：基于用户当前的 credits 余额
 async function getWealthRankings(
-  limit: number,
   locale: string
-): Promise<RankingUser[]> {
-  const users = await prisma.users.findMany({
-    where: {
-      is_deleted: false,
-    },
-    select: {
-      id: true,
-      name: true,
-      avatar: true,
-      credits: true,
-    },
-    orderBy: {
-      credits: "desc",
-    },
-    take: limit,
-  })
+): Promise<{ rankings: RankingUser[]; total: number }> {
+  const [users, totalCount] = await Promise.all([
+    prisma.users.findMany({
+      where: {
+        is_deleted: false,
+        credits: { gt: 0 },
+      },
+      select: {
+        id: true,
+        name: true,
+        avatar: true,
+        credits: true,
+      },
+      orderBy: {
+        credits: "desc",
+      },
+    }),
+    prisma.users.count({
+      where: {
+        is_deleted: false,
+        credits: { gt: 0 },
+      },
+    }),
+  ])
 
   const userIds = users.map((u) => u.id)
   const userBadges = await getUserBadges(userIds, locale)
 
-  return users.map((user, index) => ({
+  const rankings = users.map((user, index) => ({
     rank: index + 1,
     user: {
       id: String(user.id),
@@ -128,13 +163,14 @@ async function getWealthRankings(
     value: user.credits,
     badges: userBadges.get(String(user.id)) || [],
   }))
+
+  return { rankings, total: totalCount }
 }
 
 // 先锋榜：基于近 7 天内用户发布的 Topic 和 Post 总数
 async function getPioneerRankings(
-  limit: number,
   locale: string
-): Promise<RankingUser[]> {
+): Promise<{ rankings: RankingUser[]; total: number }> {
   const sevenDaysAgo = new Date()
   sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7)
 
@@ -177,13 +213,15 @@ async function getPioneerRankings(
     activityMap.set(userId, (activityMap.get(userId) || 0) + p._count.id)
   })
 
-  // 排序并获取前 N 名
-  const sortedActivities = Array.from(activityMap.entries())
-    .sort((a, b) => b[1] - a[1])
-    .slice(0, limit)
+  // 排序
+  const sortedActivities = Array.from(activityMap.entries()).sort(
+    (a, b) => b[1] - a[1]
+  )
+
+  const total = sortedActivities.length
 
   if (sortedActivities.length === 0) {
-    return []
+    return { rankings: [], total: 0 }
   }
 
   const userIds = sortedActivities.map(([userId]) => BigInt(userId))
@@ -204,7 +242,7 @@ async function getPioneerRankings(
   const userMap = new Map(users.map((u) => [String(u.id), u]))
   const userBadges = await getUserBadges(userIds, locale)
 
-  return sortedActivities
+  const rankings = sortedActivities
     .map(([userId, activity], index) => {
       const user = userMap.get(userId)
       if (!user) return null
@@ -220,13 +258,14 @@ async function getPioneerRankings(
       }
     })
     .filter((r): r is RankingUser => r !== null)
+
+  return { rankings, total }
 }
 
 // 智囊榜：基于用户在提问主题中被采纳为"最佳答案"的次数
 async function getExpertRankings(
-  limit: number,
   locale: string
-): Promise<RankingUser[]> {
+): Promise<{ rankings: RankingUser[]; total: number }> {
   const acceptances = await prisma.question_acceptances.findMany({
     select: {
       post: {
@@ -246,12 +285,14 @@ async function getExpertRankings(
     }
   })
 
-  const sortedAcceptances = Array.from(acceptanceMap.entries())
-    .sort((a, b) => b[1] - a[1])
-    .slice(0, limit)
+  const sortedAcceptances = Array.from(acceptanceMap.entries()).sort(
+    (a, b) => b[1] - a[1]
+  )
+
+  const total = sortedAcceptances.length
 
   if (sortedAcceptances.length === 0) {
-    return []
+    return { rankings: [], total: 0 }
   }
 
   const userIds = sortedAcceptances.map(([userId]) => BigInt(userId))
@@ -271,7 +312,7 @@ async function getExpertRankings(
   const userMap = new Map(users.map((u) => [String(u.id), u]))
   const userBadges = await getUserBadges(userIds, locale)
 
-  return sortedAcceptances
+  const rankings = sortedAcceptances
     .map(([userId, count], index) => {
       const user = userMap.get(userId)
       if (!user) return null
@@ -287,13 +328,14 @@ async function getExpertRankings(
       }
     })
     .filter((r): r is RankingUser => r !== null)
+
+  return { rankings, total }
 }
 
 // 声望榜：基于用户发布的所有帖子收到的点赞总数 + 收藏总数
 async function getReputationRankings(
-  limit: number,
   locale: string
-): Promise<RankingUser[]> {
+): Promise<{ rankings: RankingUser[]; total: number }> {
   // 获取点赞统计
   const likes = await prisma.post_likes.groupBy({
     by: ["post_id"],
@@ -339,15 +381,19 @@ async function getReputationRankings(
     const likesCount = likesMap.get(postId) || 0
     const bookmarksCount = bookmarksMap.get(postId) || 0
     const reputation = likesCount + bookmarksCount
-    reputationMap.set(userId, (reputationMap.get(userId) || 0) + reputation)
+    if (reputation > 0) {
+      reputationMap.set(userId, (reputationMap.get(userId) || 0) + reputation)
+    }
   })
 
-  const sortedReputations = Array.from(reputationMap.entries())
-    .sort((a, b) => b[1] - a[1])
-    .slice(0, limit)
+  const sortedReputations = Array.from(reputationMap.entries()).sort(
+    (a, b) => b[1] - a[1]
+  )
+
+  const total = sortedReputations.length
 
   if (sortedReputations.length === 0) {
-    return []
+    return { rankings: [], total: 0 }
   }
 
   const userIds = sortedReputations.map(([userId]) => BigInt(userId))
@@ -367,7 +413,7 @@ async function getReputationRankings(
   const userMap = new Map(users.map((u) => [String(u.id), u]))
   const userBadges = await getUserBadges(userIds, locale)
 
-  return sortedReputations
+  const rankings = sortedReputations
     .map(([userId, reputation], index) => {
       const user = userMap.get(userId)
       if (!user) return null
@@ -383,6 +429,8 @@ async function getReputationRankings(
       }
     })
     .filter((r): r is RankingUser => r !== null)
+
+  return { rankings, total }
 }
 
 // 获取用户徽章（最多3个，按等级和获得时间排序）

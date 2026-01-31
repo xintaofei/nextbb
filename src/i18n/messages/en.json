@@ -1871,7 +1871,8 @@
     "wealthShort": "Wealth",
     "pioneerShort": "Pioneer",
     "expertShort": "Expert",
-    "reputationShort": "Reputation"
+    "reputationShort": "Reputation",
+    "noMoreData": "No more data"
   },
   "Donation": {
     "pageTitle": "Donation Honor Roll",
