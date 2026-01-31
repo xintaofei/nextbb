@@ -24,7 +24,6 @@ export function TopicHeaderBar({
         className
       )}
     >
-      <TopicControls initialCategoryId={categoryId} />
       <TopicSortTabs
         className="max-sm:hidden"
         onSortStart={(next) => {
@@ -37,6 +36,7 @@ export function TopicHeaderBar({
           onSortStart?.(next)
         }}
       />
+      <TopicControls initialCategoryId={categoryId} />
     </div>
   )
 }
