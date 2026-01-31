@@ -1,7 +1,8 @@
 "use client"
 
 import { useCallback, useMemo, useTransition } from "react"
-import { useRouter, useParams } from "next/navigation"
+import { useRouter } from "nextjs-toploader/app"
+import { useParams } from "next/navigation"
 import { CategorySelect } from "@/components/filters/category-select"
 import { TagSelect } from "@/components/filters/tag-select"
 import {
@@ -31,7 +32,7 @@ export function TopicControls({
 }: TopicControlsProps) {
   const router = useRouter()
   const params = useParams<{ segments?: string[] }>()
-  const [, startTransition] = useTransition()
+  const [isPending, startTransition] = useTransition()
 
   // 从路由段中提取当前参数
   const routeParams = useMemo(() => {
@@ -110,12 +111,14 @@ export function TopicControls({
         value={categoryId}
         onChange={handleCategoryChange}
         clearable
+        loading={isPending}
       />
       <TagSelect
         className="w-full text-xs shadow-none"
         value={tagId}
         onChange={handleTagChange}
         clearable
+        loading={isPending}
       />
     </div>
   )

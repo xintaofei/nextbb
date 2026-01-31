@@ -1,7 +1,7 @@
 "use client"
 
 import { memo, useMemo, useState, useTransition } from "react"
-import { Check, ChevronsUpDown, X } from "lucide-react"
+import { Check, ChevronsUpDown, Loader2, X } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import {
@@ -25,6 +25,7 @@ type Props = {
   onChange?: (value: string | undefined) => void
   className?: string
   clearable?: boolean
+  loading?: boolean
 }
 
 export const TagSelect = memo(function TagSelect({
@@ -32,6 +33,7 @@ export const TagSelect = memo(function TagSelect({
   onChange,
   className,
   clearable = true,
+  loading = false,
 }: Props) {
   const t = useTranslations("Common")
   const tags = useTags()
@@ -71,6 +73,7 @@ export const TagSelect = memo(function TagSelect({
           variant="outline"
           role="combobox"
           aria-expanded={open}
+          disabled={loading}
           className={cn("justify-between", className)}
           onClick={(e) => {
             const target = e.target as HTMLElement
@@ -86,27 +89,32 @@ export const TagSelect = memo(function TagSelect({
             {labelText}
           </span>
           <div className="flex items-center gap-1">
-            {clearable && value && (
-              <div
-                data-clear-button
-                role="button"
-                tabIndex={0}
-                onClick={(e) => {
-                  e.preventDefault()
-                  e.stopPropagation()
-                  handleClear()
-                }}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter" || e.key === " ") {
+            {loading ? (
+              <Loader2 className="h-3.5 w-3.5 shrink-0 opacity-50 animate-spin" />
+            ) : (
+              clearable &&
+              value && (
+                <div
+                  data-clear-button
+                  role="button"
+                  tabIndex={0}
+                  onClick={(e) => {
                     e.preventDefault()
                     e.stopPropagation()
                     handleClear()
-                  }
-                }}
-                className="h-4 w-4 shrink-0 opacity-50 hover:opacity-100 hover:text-destructive flex items-center justify-center cursor-pointer transition-all"
-              >
-                <X className="h-3.5 w-3.5" />
-              </div>
+                  }}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      e.preventDefault()
+                      e.stopPropagation()
+                      handleClear()
+                    }
+                  }}
+                  className="h-4 w-4 shrink-0 opacity-50 hover:opacity-100 hover:text-destructive flex items-center justify-center cursor-pointer transition-all"
+                >
+                  <X className="h-3.5 w-3.5" />
+                </div>
+              )
             )}
             <ChevronsUpDown className="h-4 w-4 shrink-0 opacity-50" />
           </div>
