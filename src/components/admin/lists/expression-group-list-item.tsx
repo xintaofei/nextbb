@@ -21,7 +21,7 @@ import {
 } from "@/components/ui/collapsible"
 import { useState } from "react"
 import { cn } from "@/lib/utils"
-import type { ExpressionGroup } from "@/types/expression"
+import type { ExpressionGroup, Expression } from "@/types/expression"
 
 type ExpressionGroupListItemProps = {
   group: Pick<
@@ -29,12 +29,13 @@ type ExpressionGroupListItemProps = {
     | "id"
     | "code"
     | "name"
-    | "icon"
+    | "iconId"
     | "sort"
     | "isEnabled"
     | "isDeleted"
     | "expressionCount"
   >
+  expressions?: Pick<Expression, "id" | "imageUrl" | "textContent" | "type">[]
   onEdit: (id: string) => void
   onDelete: (id: string) => void
   onToggleEnabled: (id: string, enabled: boolean) => void
@@ -45,6 +46,7 @@ type ExpressionGroupListItemProps = {
 
 export function ExpressionGroupListItem({
   group,
+  expressions = [],
   onEdit,
   onDelete,
   onToggleEnabled,
@@ -55,6 +57,11 @@ export function ExpressionGroupListItem({
   const t = useTranslations("AdminExpressions")
   const tAdmin = useTranslations("Admin")
   const [isOpen, setIsOpen] = useState(true)
+
+  // 根据 iconId 查找对应的表情
+  const iconExpression = group.iconId
+    ? expressions.find((e) => e.id === group.iconId)
+    : null
 
   return (
     <Collapsible open={isOpen} onOpenChange={setIsOpen}>
@@ -83,9 +90,24 @@ export function ExpressionGroupListItem({
                 </Button>
               </CollapsibleTrigger>
 
-              {group.icon ? (
-                <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-border/40 text-xl shrink-0">
-                  {group.icon}
+              {iconExpression ? (
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-border/40 shrink-0">
+                  {iconExpression.type === "IMAGE" &&
+                  iconExpression.imageUrl ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={iconExpression.imageUrl}
+                      alt={group.name}
+                      className="max-w-full max-h-full object-contain"
+                    />
+                  ) : iconExpression.type === "TEXT" &&
+                    iconExpression.textContent ? (
+                    <span className="text-xl">
+                      {iconExpression.textContent}
+                    </span>
+                  ) : (
+                    <Folder className="h-5 w-5 text-muted-foreground" />
+                  )}
                 </div>
               ) : (
                 <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-border/40 bg-muted/30 shrink-0">

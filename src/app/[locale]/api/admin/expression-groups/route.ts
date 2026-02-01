@@ -9,7 +9,7 @@ type ExpressionGroupDTO = {
   id: string
   code: string
   name: string
-  icon: string | null
+  iconId: string | null
   sort: number
   isEnabled: boolean
   isDeleted: boolean
@@ -34,7 +34,6 @@ export async function GET(request: NextRequest) {
     const page = parseInt(searchParams.get("page") || "1")
     const pageSize = parseInt(searchParams.get("pageSize") || "20")
     const q = searchParams.get("q") || ""
-    const deleted = searchParams.get("deleted")
     const enabled = searchParams.get("enabled")
     const sortBy = searchParams.get("sortBy") || "updated_at"
 
@@ -47,9 +46,11 @@ export async function GET(request: NextRequest) {
           }
         }
       }>
-      is_deleted?: boolean
+      is_deleted: boolean
       is_enabled?: boolean
-    } = {}
+    } = {
+      is_deleted: false, // 默认不查询已删除的
+    }
 
     if (q.trim().length > 0) {
       where.OR = [
@@ -61,12 +62,6 @@ export async function GET(request: NextRequest) {
           },
         },
       ]
-    }
-
-    if (deleted === "true") {
-      where.is_deleted = true
-    } else if (deleted === "false") {
-      where.is_deleted = false
     }
 
     if (enabled === "true") {
@@ -90,7 +85,7 @@ export async function GET(request: NextRequest) {
       select: {
         id: true,
         code: true,
-        icon: true,
+        icon_id: true,
         sort: true,
         is_enabled: true,
         is_deleted: true,
@@ -134,7 +129,7 @@ export async function GET(request: NextRequest) {
         id: String(g.id),
         code: g.code,
         name: translation?.name || "",
-        icon: g.icon,
+        iconId: g.icon_id ? String(g.icon_id) : null,
         sort: g.sort,
         isEnabled: g.is_enabled,
         isDeleted: g.is_deleted,
@@ -166,7 +161,7 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    const { code, name, icon, sort } = body
+    const { code, name, iconId, sort } = body
 
     // 验证必填字段
     if (
@@ -231,7 +226,7 @@ export async function POST(request: NextRequest) {
         data: {
           id: groupId,
           code,
-          icon: icon || null,
+          icon_id: iconId ? BigInt(iconId) : null,
           sort,
           is_enabled: true,
           is_deleted: false,
@@ -268,7 +263,7 @@ export async function POST(request: NextRequest) {
       id: String(result.id),
       code: result.code,
       name: result.translation.name,
-      icon: result.icon,
+      iconId: result.icon_id ? String(result.icon_id) : null,
       sort: result.sort,
       isEnabled: result.is_enabled,
       isDeleted: result.is_deleted,

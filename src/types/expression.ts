@@ -2,7 +2,7 @@ export type ExpressionGroup = {
   id: string
   code: string
   name: string
-  icon: string | null
+  iconId: string | null
   sort: number
   isEnabled: boolean
   isDeleted: boolean
@@ -61,7 +61,7 @@ export type TranslationResult = {
 export type ExpressionGroupFormData = {
   code: string
   name: string
-  icon: string | null
+  iconId: string | null
   sort: number
 }
 

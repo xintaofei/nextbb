@@ -42,7 +42,6 @@ export async function GET(request: NextRequest) {
     const q = searchParams.get("q") || ""
     const groupId = searchParams.get("groupId")
     const type = searchParams.get("type")
-    const deleted = searchParams.get("deleted")
     const enabled = searchParams.get("enabled")
     const sortBy = searchParams.get("sortBy") || "sort"
 
@@ -57,9 +56,11 @@ export async function GET(request: NextRequest) {
       }>
       group_id?: bigint
       type?: "IMAGE" | "TEXT"
-      is_deleted?: boolean
+      is_deleted: boolean
       is_enabled?: boolean
-    } = {}
+    } = {
+      is_deleted: false, // 默认不查询已删除的
+    }
 
     if (q.trim().length > 0) {
       where.OR = [
@@ -79,12 +80,6 @@ export async function GET(request: NextRequest) {
 
     if (type === "IMAGE" || type === "TEXT") {
       where.type = type
-    }
-
-    if (deleted === "true") {
-      where.is_deleted = true
-    } else if (deleted === "false") {
-      where.is_deleted = false
     }
 
     if (enabled === "true") {

@@ -1114,15 +1114,16 @@ model expression_groups {
   id            BigInt   @id @db.BigInt
   source_locale String   @default("zh") @db.VarChar(8)
   code          String   @unique @db.VarChar(32) // e.g. "default", "onion"
-  icon          String?  @db.VarChar(256) // Group icon
+  icon_id       BigInt?  @db.BigInt // Reference to expression ID for group icon
   sort          Int      @default(0)
   is_enabled    Boolean  @default(true)
   is_deleted    Boolean  @default(false)
   created_at    DateTime @default(now())
   updated_at    DateTime @updatedAt
 
-  expressions  expressions[]
-  translations expression_group_translations[]
+  icon_expression expressions?                     @relation("GroupIcon", fields: [icon_id], references: [id], onDelete: SetNull)
+  expressions     expressions[]                    @relation("GroupExpressions")
+  translations    expression_group_translations[]
 
   @@map("expression_groups")
 }
@@ -1145,23 +1146,24 @@ model expression_group_translations {
 }
 
 model expressions {
-  id            BigInt   @id @db.BigInt
-  group_id      BigInt   @db.BigInt
-  source_locale String   @default("zh") @db.VarChar(8)
+  id            BigInt         @id @db.BigInt
+  group_id      BigInt         @db.BigInt
+  source_locale String         @default("zh") @db.VarChar(8)
   type          ExpressionType @default(IMAGE)
-  code          String   @db.VarChar(32) // e.g. "smile", "001"
-  image_path    String?  @db.VarChar(256) // e.g. "onion/001.gif"
-  text_content  String?  @db.VarChar(64) // e.g. "😊"
+  code          String         @db.VarChar(32) // e.g. "smile", "001"
+  image_path    String?        @db.VarChar(256) // e.g. "onion/001.gif"
+  text_content  String?        @db.VarChar(64) // e.g. "😊"
   width         Int?
   height        Int?
-  sort          Int      @default(0)
-  is_enabled    Boolean  @default(true)
-  is_deleted    Boolean  @default(false)
-  created_at    DateTime @default(now())
-  updated_at    DateTime @updatedAt
+  sort          Int            @default(0)
+  is_enabled    Boolean        @default(true)
+  is_deleted    Boolean        @default(false)
+  created_at    DateTime       @default(now())
+  updated_at    DateTime       @updatedAt
 
-  group        expression_groups         @relation(fields: [group_id], references: [id])
-  translations expression_translations[]
+  group              expression_groups         @relation("GroupExpressions", fields: [group_id], references: [id])
+  translations       expression_translations[]
+  used_as_group_icon expression_groups[]       @relation("GroupIcon")
 
   @@unique([group_id, code], map: "expressions_group_code_unique")
   @@index([group_id], map: "expressions_group_index")

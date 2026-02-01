@@ -2564,6 +2564,9 @@
       "namePlaceholder": "e.g: Default, Onion",
       "icon": "Group Icon",
       "iconPlaceholder": "Click to select emoji",
+      "selectIconPlaceholder": "Select icon from expressions",
+      "noIcon": "No icon",
+      "iconHint": "Select an expression from this group as the group icon",
       "sortValue": "Sort Value",
       "cancel": "Cancel",
       "submit": "Save"

@@ -56,7 +56,6 @@ export default function AdminExpressionsPage() {
   const [q, setQ] = useState("")
   const [type, setType] = useState<string | undefined>(undefined)
   const [enabled, setEnabled] = useState<string | undefined>(undefined)
-  const [deleted, setDeleted] = useState<string | undefined>(undefined)
   const [sortBy, setSortBy] = useState("sort")
 
   // Dialog states
@@ -97,11 +96,10 @@ export default function AdminExpressionsPage() {
     const params = new URLSearchParams()
     params.set("pageSize", "100")
     if (q.trim().length > 0) params.set("q", q.trim())
-    if (typeof deleted === "string") params.set("deleted", deleted)
     if (typeof enabled === "string") params.set("enabled", enabled)
     params.set("sortBy", sortBy)
     return `/api/admin/expression-groups?${params.toString()}`
-  }, [q, deleted, enabled, sortBy])
+  }, [q, enabled, sortBy])
 
   const {
     data: groupsData,
@@ -117,11 +115,10 @@ export default function AdminExpressionsPage() {
     const params = new URLSearchParams()
     params.set("pageSize", "1000")
     if (type) params.set("type", type)
-    if (typeof deleted === "string") params.set("deleted", deleted)
     if (typeof enabled === "string") params.set("enabled", enabled)
     params.set("sortBy", sortBy)
     return `/api/admin/expressions?${params.toString()}`
-  }, [type, deleted, enabled, sortBy])
+  }, [type, enabled, sortBy])
 
   const { data: expressionsData, mutate: mutateExpressions } =
     useSWR<ExpressionListResult>(
@@ -244,10 +241,22 @@ export default function AdminExpressionsPage() {
         : "/api/admin/expression-groups"
       const method = editingGroup ? "PATCH" : "POST"
 
+      // 如果是创建，自动计算排序值（排到最后）
+      const submitData = { ...formData }
+      if (!editingGroup && groupsData) {
+        const maxSort = Math.max(0, ...groupsData.items.map((g) => g.sort))
+        submitData.sort = maxSort + 1
+      }
+
+      // iconId 字段直接保存表情 ID，如果是 "__none__" 则设为 null
+      if (submitData.iconId === "__none__") {
+        submitData.iconId = null
+      }
+
       const res = await fetch(url, {
         method,
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
+        body: JSON.stringify(submitData),
       })
 
       if (res.ok) {
@@ -461,7 +470,7 @@ export default function AdminExpressionsPage() {
             />
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
             <Select
               value={type}
               onValueChange={(v) => setType(v === "all" ? undefined : v)}
@@ -490,24 +499,6 @@ export default function AdminExpressionsPage() {
                 </SelectItem>
                 <SelectItem value="false">
                   {t("filter.enabled.disabled")}
-                </SelectItem>
-              </SelectContent>
-            </Select>
-
-            <Select
-              value={deleted}
-              onValueChange={(v) => setDeleted(v === "all" ? undefined : v)}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder={t("filter.deleted.all")} />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">{t("filter.deleted.all")}</SelectItem>
-                <SelectItem value="false">
-                  {t("filter.deleted.normal")}
-                </SelectItem>
-                <SelectItem value="true">
-                  {t("filter.deleted.deleted")}
                 </SelectItem>
               </SelectContent>
             </Select>
@@ -543,6 +534,7 @@ export default function AdminExpressionsPage() {
                 <ExpressionGroupListItem
                   key={group.id}
                   group={group}
+                  expressions={expressions}
                   onEdit={handleEditGroup}
                   onDelete={handleDeleteGroup}
                   onToggleEnabled={handleToggleGroupEnabled}
@@ -584,6 +576,7 @@ export default function AdminExpressionsPage() {
         open={groupDialogOpen}
         onOpenChange={setGroupDialogOpen}
         group={editingGroup}
+        expressions={editingGroup ? getGroupExpressions(editingGroup.id) : []}
         onSubmit={handleSubmitGroup}
       />
 

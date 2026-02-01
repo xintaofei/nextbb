@@ -11,16 +11,27 @@ import {
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { EmojiPickerField } from "@/components/common/emoji-picker-field"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 import type {
   ExpressionGroup,
   ExpressionGroupFormData,
+  Expression,
 } from "@/types/expression"
 
 type ExpressionGroupDialogProps = {
   open: boolean
   onOpenChange: (open: boolean) => void
-  group?: Pick<ExpressionGroup, "id" | "code" | "name" | "icon" | "sort">
+  group?: Pick<ExpressionGroup, "id" | "code" | "name" | "iconId" | "sort">
+  expressions?: Pick<
+    Expression,
+    "id" | "name" | "imageUrl" | "textContent" | "type"
+  >[]
   onSubmit: (data: ExpressionGroupFormData) => Promise<void>
 }
 
@@ -28,13 +39,14 @@ export function ExpressionGroupDialog({
   open,
   onOpenChange,
   group,
+  expressions = [],
   onSubmit,
 }: ExpressionGroupDialogProps) {
   const t = useTranslations("AdminExpressions")
   const [formData, setFormData] = useState<ExpressionGroupFormData>({
     code: "",
     name: "",
-    icon: null,
+    iconId: null,
     sort: 0,
   })
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -44,14 +56,14 @@ export function ExpressionGroupDialog({
       setFormData({
         code: group.code,
         name: group.name,
-        icon: group.icon,
+        iconId: group.iconId,
         sort: group.sort,
       })
     } else {
       setFormData({
         code: "",
         name: "",
-        icon: null,
+        iconId: null,
         sort: 0,
       })
     }
@@ -115,32 +127,52 @@ export function ExpressionGroupDialog({
               />
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <EmojiPickerField
-                label={t("groupDialog.icon")}
-                value={formData.icon || ""}
-                onChange={(emoji) =>
-                  setFormData({ ...formData, icon: emoji || null })
-                }
-                placeholder={t("groupDialog.iconPlaceholder")}
-              />
-
+            {/* Icon field - only show when editing and has expressions */}
+            {group && expressions.length > 0 && (
               <div className="space-y-2">
-                <Label htmlFor="sort">{t("groupDialog.sortValue")}</Label>
-                <Input
-                  id="sort"
-                  type="number"
-                  value={formData.sort}
-                  onChange={(e) =>
+                <Label htmlFor="icon">{t("groupDialog.icon")}</Label>
+                <Select
+                  value={formData.iconId || "__none__"}
+                  onValueChange={(value) =>
                     setFormData({
                       ...formData,
-                      sort: parseInt(e.target.value) || 0,
+                      iconId: value === "__none__" ? null : value,
                     })
                   }
-                  required
-                />
+                >
+                  <SelectTrigger>
+                    <SelectValue
+                      placeholder={t("groupDialog.selectIconPlaceholder")}
+                    />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="__none__">
+                      {t("groupDialog.noIcon")}
+                    </SelectItem>
+                    {expressions.map((expr) => (
+                      <SelectItem key={expr.id} value={expr.id}>
+                        <div className="flex items-center gap-2">
+                          {expr.type === "IMAGE" && expr.imageUrl ? (
+                            // eslint-disable-next-line @next/next/no-img-element
+                            <img
+                              src={expr.imageUrl}
+                              alt={expr.name}
+                              className="w-6 h-6 object-contain"
+                            />
+                          ) : expr.type === "TEXT" && expr.textContent ? (
+                            <span className="text-lg">{expr.textContent}</span>
+                          ) : null}
+                          <span>{expr.name}</span>
+                        </div>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <p className="text-xs text-muted-foreground">
+                  {t("groupDialog.iconHint")}
+                </p>
               </div>
-            </div>
+            )}
           </div>
 
           <div className="flex items-center gap-2 pt-4 border-t">

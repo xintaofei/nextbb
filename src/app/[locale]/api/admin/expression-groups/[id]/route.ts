@@ -7,7 +7,7 @@ type ExpressionGroupDTO = {
   id: string
   code: string
   name: string
-  icon: string | null
+  iconId: string | null
   sort: number
   isEnabled: boolean
   isDeleted: boolean
@@ -39,7 +39,7 @@ export async function PATCH(
     }
 
     const body = await request.json()
-    const { name, icon, sort, isEnabled, isDeleted } = body
+    const { name, iconId, sort, isEnabled, isDeleted } = body
 
     // 验证字段
     if (name !== undefined) {
@@ -63,13 +63,14 @@ export async function PATCH(
     // 构建更新数据
     const hasTranslationUpdate = name !== undefined
     const groupUpdateData: {
-      icon?: string | null
+      icon_id?: bigint | null
       sort?: number
       is_enabled?: boolean
       is_deleted?: boolean
     } = {}
 
-    if (icon !== undefined) groupUpdateData.icon = icon || null
+    if (iconId !== undefined)
+      groupUpdateData.icon_id = iconId ? BigInt(iconId) : null
     if (sort !== undefined) groupUpdateData.sort = sort
     if (isEnabled !== undefined) groupUpdateData.is_enabled = isEnabled
     if (isDeleted !== undefined) groupUpdateData.is_deleted = isDeleted
@@ -124,7 +125,7 @@ export async function PATCH(
         select: {
           id: true,
           code: true,
-          icon: true,
+          icon_id: true,
           sort: true,
           is_enabled: true,
           is_deleted: true,
@@ -174,7 +175,7 @@ export async function PATCH(
       id: String(result.id),
       code: result.code,
       name: translation?.name || "",
-      icon: result.icon,
+      iconId: result.icon_id ? String(result.icon_id) : null,
       sort: result.sort,
       isEnabled: result.is_enabled,
       isDeleted: result.is_deleted,

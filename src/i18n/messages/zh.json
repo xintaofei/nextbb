@@ -2564,6 +2564,9 @@
       "namePlaceholder": "如: 默认表情, 洋葱表情",
       "icon": "分组图标",
       "iconPlaceholder": "点击选择 emoji",
+      "selectIconPlaceholder": "从表情中选择图标",
+      "noIcon": "不设置图标",
+      "iconHint": "从分组下的表情中选择一个作为分组图标",
       "sortValue": "排序值",
       "cancel": "取消",
       "submit": "保存"
