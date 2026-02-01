@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma"
 import { generateId } from "@/lib/id"
 import { getLocale } from "next-intl/server"
 import { createTranslationTasks } from "@/lib/services/translation-task"
+import { getTranslationsQuery, getTranslationFields } from "@/lib/locale"
 import { TranslationEntityType } from "@prisma/client"
 
 type ExpressionGroupDTO = {
@@ -29,8 +30,8 @@ type ExpressionGroupListResult = {
 // GET - 获取表情分组列表
 export async function GET(request: NextRequest) {
   try {
+    const locale = await getLocale()
     const searchParams = request.nextUrl.searchParams
-    const locale = (request.nextUrl.pathname.split("/")[1] || "zh") as string
     const page = parseInt(searchParams.get("page") || "1")
     const pageSize = parseInt(searchParams.get("pageSize") || "20")
     const q = searchParams.get("q") || ""
@@ -38,7 +39,7 @@ export async function GET(request: NextRequest) {
     const sortBy = searchParams.get("sortBy") || "updated_at"
 
     // 构建查询条件
-    const where: {
+    type WhereClause = {
       OR?: Array<{
         translations: {
           some: {
@@ -48,7 +49,9 @@ export async function GET(request: NextRequest) {
       }>
       is_deleted: boolean
       is_enabled?: boolean
-    } = {
+    }
+
+    const where: WhereClause = {
       is_deleted: false, // 默认不查询已删除的
     }
 
@@ -92,17 +95,9 @@ export async function GET(request: NextRequest) {
         source_locale: true,
         created_at: true,
         updated_at: true,
-        translations: {
-          where: {
-            OR: [{ locale, is_source: false }, { is_source: true }],
-          },
-          select: {
-            locale: true,
-            name: true,
-            is_source: true,
-          },
-          take: 2,
-        },
+        translations: getTranslationsQuery(locale, {
+          name: true,
+        }),
         _count: {
           select: {
             expressions: {
@@ -120,15 +115,15 @@ export async function GET(request: NextRequest) {
 
     // 转换为 DTO
     const items: ExpressionGroupDTO[] = groups.map((g) => {
-      // 选择翻译：优先匹配当前 locale，否则取 is_source 为 true 的
-      const translation =
-        g.translations.find((tr) => tr.locale === locale && !tr.is_source) ||
-        g.translations.find((tr) => tr.is_source)
+      // 使用通用工具函数获取翻译字段
+      const { name } = getTranslationFields(g.translations, locale, {
+        name: "",
+      })
 
       return {
         id: String(g.id),
         code: g.code,
-        name: translation?.name || "",
+        name,
         iconId: g.icon_id ? String(g.icon_id) : null,
         sort: g.sort,
         isEnabled: g.is_enabled,

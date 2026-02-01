@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma"
 import { generateId } from "@/lib/id"
 import { getLocale } from "next-intl/server"
 import { createTranslationTasks } from "@/lib/services/translation-task"
+import { getTranslationsQuery, getTranslationFields } from "@/lib/locale"
 import { TranslationEntityType } from "@prisma/client"
 
 type ExpressionDTO = {
@@ -35,8 +36,8 @@ type ExpressionListResult = {
 // GET - 获取表情列表
 export async function GET(request: NextRequest) {
   try {
+    const locale = await getLocale()
     const searchParams = request.nextUrl.searchParams
-    const locale = (request.nextUrl.pathname.split("/")[1] || "zh") as string
     const page = parseInt(searchParams.get("page") || "1")
     const pageSize = parseInt(searchParams.get("pageSize") || "100")
     const q = searchParams.get("q") || ""
@@ -46,7 +47,7 @@ export async function GET(request: NextRequest) {
     const sortBy = searchParams.get("sortBy") || "sort"
 
     // 构建查询条件
-    const where: {
+    type WhereClause = {
       OR?: Array<{
         translations: {
           some: {
@@ -58,7 +59,9 @@ export async function GET(request: NextRequest) {
       type?: "IMAGE" | "TEXT"
       is_deleted: boolean
       is_enabled?: boolean
-    } = {
+    }
+
+    const where: WhereClause = {
       is_deleted: false, // 默认不查询已删除的
     }
 
@@ -117,30 +120,10 @@ export async function GET(request: NextRequest) {
         updated_at: true,
         group: {
           select: {
-            translations: {
-              where: {
-                OR: [{ locale, is_source: false }, { is_source: true }],
-              },
-              select: {
-                name: true,
-                locale: true,
-                is_source: true,
-              },
-              take: 2,
-            },
+            translations: getTranslationsQuery(locale, { name: true }),
           },
         },
-        translations: {
-          where: {
-            OR: [{ locale, is_source: false }, { is_source: true }],
-          },
-          select: {
-            locale: true,
-            name: true,
-            is_source: true,
-          },
-          take: 2,
-        },
+        translations: getTranslationsQuery(locale, { name: true }),
       },
       orderBy,
       skip: (page - 1) * pageSize,
@@ -149,16 +132,11 @@ export async function GET(request: NextRequest) {
 
     // 转换为 DTO
     const items: ExpressionDTO[] = expressions.map((e) => {
-      // 选择表情翻译
-      const translation =
-        e.translations.find((tr) => tr.locale === locale && !tr.is_source) ||
-        e.translations.find((tr) => tr.is_source)
-
-      // 选择分组翻译
-      const groupTranslation =
-        e.group.translations.find(
-          (tr) => tr.locale === locale && !tr.is_source
-        ) || e.group.translations.find((tr) => tr.is_source)
+      // 使用通用工具函数获取翻译字段
+      const fields = getTranslationFields(e.translations, locale, { name: "" })
+      const groupFields = getTranslationFields(e.group.translations, locale, {
+        name: "",
+      })
 
       // 构建完整图片 URL
       let imageUrl: string | null = null
@@ -169,9 +147,9 @@ export async function GET(request: NextRequest) {
       return {
         id: String(e.id),
         groupId: String(e.group_id),
-        groupName: groupTranslation?.name || "",
+        groupName: groupFields.name,
         code: e.code,
-        name: translation?.name || "",
+        name: fields.name,
         type: e.type,
         imagePath: e.image_path,
         imageUrl,

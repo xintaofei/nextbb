@@ -38,7 +38,6 @@ import type {
   Expression,
   ExpressionGroupListResult,
   ExpressionListResult,
-  TranslationResult,
   ExpressionGroupFormData,
   ExpressionFormData,
 } from "@/types/expression"
@@ -125,27 +124,6 @@ export default function AdminExpressionsPage() {
       expressionsQuery,
       fetcher<ExpressionListResult>
     )
-
-  // Fetch translation data when needed
-  const translatingGroup = groupsData?.items.find(
-    (g) => g.id === translatingGroupId
-  )
-  const { data: groupTranslations } = useSWR<TranslationResult>(
-    translatingGroupId
-      ? `/api/admin/expression-groups/${translatingGroupId}/translations`
-      : null,
-    fetcher<TranslationResult>
-  )
-
-  const translatingExpression = expressionsData?.items.find(
-    (e) => e.id === translatingExpressionId
-  )
-  const { data: expressionTranslations } = useSWR<TranslationResult>(
-    translatingExpressionId
-      ? `/api/admin/expressions/${translatingExpressionId}/translations`
-      : null,
-    fetcher<TranslationResult>
-  )
 
   const stats = useMemo(() => {
     if (!groupsData || !expressionsData) {
@@ -371,58 +349,6 @@ export default function AdminExpressionsPage() {
     }
   }
 
-  // Translation handlers
-  const handleSaveGroupTranslation = async (locale: string, name: string) => {
-    if (!translatingGroupId) return
-
-    try {
-      const res = await fetch(
-        `/api/admin/expression-groups/${translatingGroupId}/translations`,
-        {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ locale, name }),
-        }
-      )
-
-      if (res.ok) {
-        toast.success(t("message.translationUpdateSuccess"))
-        await mutateGroups()
-      } else {
-        toast.error(t("message.translationUpdateError"))
-      }
-    } catch {
-      toast.error(t("message.translationUpdateError"))
-    }
-  }
-
-  const handleSaveExpressionTranslation = async (
-    locale: string,
-    name: string
-  ) => {
-    if (!translatingExpressionId) return
-
-    try {
-      const res = await fetch(
-        `/api/admin/expressions/${translatingExpressionId}/translations`,
-        {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ locale, name }),
-        }
-      )
-
-      if (res.ok) {
-        toast.success(t("message.translationUpdateSuccess"))
-        await mutateExpressions()
-      } else {
-        toast.error(t("message.translationUpdateError"))
-      }
-    } catch {
-      toast.error(t("message.translationUpdateError"))
-    }
-  }
-
   // Get expressions for each group
   const getGroupExpressions = (groupId: string): Expression[] => {
     if (!expressionsData) return []
@@ -589,27 +515,17 @@ export default function AdminExpressionsPage() {
         onSubmit={handleSubmitExpression}
       />
 
-      {groupTranslations && translatingGroup && (
-        <ExpressionGroupTranslationDialog
-          open={groupTranslationDialogOpen}
-          onOpenChange={setGroupTranslationDialogOpen}
-          groupId={translatingGroup.id}
-          sourceLocale={groupTranslations.sourceLocale}
-          translations={groupTranslations.translations}
-          onSave={handleSaveGroupTranslation}
-        />
-      )}
+      <ExpressionGroupTranslationDialog
+        open={groupTranslationDialogOpen}
+        onOpenChange={setGroupTranslationDialogOpen}
+        groupId={translatingGroupId}
+      />
 
-      {expressionTranslations && translatingExpression && (
-        <ExpressionTranslationDialog
-          open={expressionTranslationDialogOpen}
-          onOpenChange={setExpressionTranslationDialogOpen}
-          expressionId={translatingExpression.id}
-          sourceLocale={expressionTranslations.sourceLocale}
-          translations={expressionTranslations.translations}
-          onSave={handleSaveExpressionTranslation}
-        />
-      )}
+      <ExpressionTranslationDialog
+        open={expressionTranslationDialogOpen}
+        onOpenChange={setExpressionTranslationDialogOpen}
+        expressionId={translatingExpressionId}
+      />
 
       <AlertDialog
         open={deleteGroupDialogOpen}
