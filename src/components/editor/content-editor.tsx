@@ -467,7 +467,15 @@ const MilkdownEditor: React.FC<MilkdownEditorProps> = ({
                       wrapIn(schema.nodes.ordered_list)(state, dispatch)
                       break
                     case "codeBlock":
-                      setBlockType(schema.nodes.code_block)(state, dispatch)
+                      setBlockType(schema.nodes.code_block)(state, (tr) => {
+                        const { $to } = tr.selection
+                        const pos = $to.after()
+                        const p = schema.nodes.paragraph.createAndFill()
+                        if (p) {
+                          tr.insert(pos, p)
+                        }
+                        dispatch(tr)
+                      })
                       break
                     case "blockquote":
                       wrapIn(schema.nodes.blockquote)(state, dispatch)

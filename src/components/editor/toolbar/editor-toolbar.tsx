@@ -25,6 +25,7 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { editorViewCtx, schemaCtx } from "@milkdown/kit/core"
 import { setBlockType, wrapIn } from "@milkdown/kit/prose/commands"
+import { TextSelection } from "@milkdown/kit/prose/state"
 import type { Ctx } from "@milkdown/ctx"
 import { ToolbarButton } from "./toolbar-button"
 import { HeadingDropdown } from "./heading-dropdown"
@@ -90,16 +91,64 @@ export const EditorToolbar = memo(({ getEditor }: EditorToolbarProps) => {
 
   const handleInlineCode = useCallback(() => {
     executeCommand((ctx) => {
+      const view = ctx.get(editorViewCtx)
       const schema = ctx.get(schemaCtx) as unknown as Record<string, unknown>
       const marks = schema.marks as Record<string, unknown>
-      if (!marks?.inlineCode) {
+      const codeMarkType = (marks?.inlineCode || marks?.code) as
+        | import("@milkdown/kit/prose/model").MarkType
+        | undefined
+
+      if (!codeMarkType) {
         console.warn("Inline code mark not found")
         return
       }
-      toggleMarkInEditor(ctx, (schema: unknown) => {
-        const s = schema as Record<string, unknown>
-        return (s.marks as Record<string, unknown>)?.inlineCode
-      })
+
+      const { state, dispatch } = view
+      const { from, to, empty } = state.selection
+
+      // Check if active
+      let isActive = false
+      if (empty) {
+        const storedMarks = state.storedMarks || state.selection.$from.marks()
+        isActive = storedMarks.some((m) => m.type === codeMarkType)
+      } else {
+        let hasText = false
+        let allHaveMark = true
+        state.doc.nodesBetween(from, to, (node) => {
+          if (node.isText) {
+            hasText = true
+            if (!node.marks.some((m) => m.type === codeMarkType)) {
+              allHaveMark = false
+              return false
+            }
+          }
+          return true
+        })
+        isActive = hasText && allHaveMark
+      }
+
+      if (isActive) {
+        toggleMarkInEditor(ctx, (schema: unknown) => {
+          const s = schema as Record<string, unknown>
+          return (s.marks as Record<string, unknown>)?.inlineCode
+        })
+        return
+      }
+
+      // Toggle ON: Add spaces
+      const tr = state.tr
+      if (empty) {
+        tr.insertText("  ")
+        tr.setSelection(TextSelection.create(tr.doc, from + 1))
+        tr.addStoredMark(codeMarkType.create())
+      } else {
+        tr.insertText(" ", to)
+        tr.insertText(" ", from)
+        tr.addMark(from + 1, to + 1, codeMarkType.create())
+        tr.setSelection(TextSelection.create(tr.doc, from + 1, to + 1))
+      }
+      dispatch(tr)
+      view.focus()
     })
   }, [executeCommand])
 
@@ -215,7 +264,15 @@ export const EditorToolbar = memo(({ getEditor }: EditorToolbarProps) => {
       if (state.selection.$from.parent.type.name === "code_block") {
         setBlockType(schema.nodes.paragraph)(state, dispatch)
       } else {
-        setBlockType(schema.nodes.code_block)(state, dispatch)
+        setBlockType(schema.nodes.code_block)(state, (tr) => {
+          const { $to } = tr.selection
+          const pos = $to.after()
+          const p = schema.nodes.paragraph.createAndFill()
+          if (p) {
+            tr.insert(pos, p)
+          }
+          dispatch(tr)
+        })
       }
 
       view.focus()
