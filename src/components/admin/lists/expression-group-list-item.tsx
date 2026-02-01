@@ -60,8 +60,6 @@ export function ExpressionGroupContent({
   children,
   attributes,
   listeners,
-  setNodeRef,
-  style,
   isDragging,
   disabled,
 }: ExpressionGroupListItemProps & {
@@ -69,8 +67,6 @@ export function ExpressionGroupContent({
   attributes?: any
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   listeners?: any
-  setNodeRef?: (node: HTMLElement | null) => void
-  style?: React.CSSProperties
   isDragging?: boolean
 }) {
   const t = useTranslations("AdminExpressions")
@@ -85,8 +81,6 @@ export function ExpressionGroupContent({
   return (
     <Collapsible open={isOpen} onOpenChange={setIsOpen}>
       <motion.div
-        ref={setNodeRef}
-        style={style}
         initial={false}
         animate={
           isDragging
@@ -258,17 +252,22 @@ export function ExpressionGroupListItem(props: ExpressionGroupListItemProps) {
   const style = {
     transform: CSS.Transform.toString(transform),
     transition,
-    opacity: isDragging ? 0.5 : 1,
+    zIndex: isDragging ? 50 : "auto",
+    position: "relative" as const,
   }
 
   return (
-    <ExpressionGroupContent
-      {...props}
-      attributes={attributes}
-      listeners={listeners}
-      setNodeRef={setNodeRef}
+    <div
+      ref={setNodeRef}
       style={style}
-      isDragging={isDragging}
-    />
+      className={cn("mb-4", isDragging && "z-50")}
+    >
+      <ExpressionGroupContent
+        {...props}
+        attributes={attributes}
+        listeners={listeners}
+        isDragging={isDragging}
+      />
+    </div>
   )
 }

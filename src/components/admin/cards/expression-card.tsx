@@ -46,8 +46,6 @@ export function ExpressionCardContent({
   onManageTranslations,
   attributes,
   listeners,
-  setNodeRef,
-  style,
   isDragging,
   disabled,
 }: ExpressionCardProps & {
@@ -55,8 +53,6 @@ export function ExpressionCardContent({
   attributes?: any
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   listeners?: any
-  setNodeRef?: (node: HTMLElement | null) => void
-  style?: React.CSSProperties
   isDragging?: boolean
 }) {
   const t = useTranslations("AdminExpressions")
@@ -64,8 +60,6 @@ export function ExpressionCardContent({
 
   return (
     <motion.div
-      ref={setNodeRef}
-      style={style}
       initial={false}
       animate={
         isDragging
@@ -217,17 +211,18 @@ export function ExpressionCard(props: ExpressionCardProps) {
   const style = {
     transform: CSS.Transform.toString(transform),
     transition,
-    opacity: isDragging ? 0.5 : 1,
+    zIndex: isDragging ? 50 : "auto",
+    position: "relative" as const,
   }
 
   return (
-    <ExpressionCardContent
-      {...props}
-      attributes={attributes}
-      listeners={listeners}
-      setNodeRef={setNodeRef}
-      style={style}
-      isDragging={isDragging}
-    />
+    <div ref={setNodeRef} style={style} className={cn(isDragging && "z-50")}>
+      <ExpressionCardContent
+        {...props}
+        attributes={attributes}
+        listeners={listeners}
+        isDragging={isDragging}
+      />
+    </div>
   )
 }
