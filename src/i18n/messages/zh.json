@@ -1936,7 +1936,9 @@
       "tag": "标签",
       "badge": "徽章",
       "topic": "话题",
-      "post": "帖子"
+      "post": "帖子",
+      "expression_group": "表情分组",
+      "expression": "表情"
     },
     "filter": {
       "title": "筛选",

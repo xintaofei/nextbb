@@ -1936,7 +1936,9 @@
       "tag": "Tag",
       "badge": "Badge",
       "topic": "Topic",
-      "post": "Post"
+      "post": "Post",
+      "expression_group": "Expression Group",
+      "expression": "Expression"
     },
     "filter": {
       "title": "Filter",
