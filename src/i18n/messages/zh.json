@@ -2497,5 +2497,142 @@
       "reorderSuccess": "排序更新成功",
       "reorderError": "排序更新失败"
     }
+  },
+  "AdminExpressions": {
+    "title": "表情管理",
+    "description": "管理论坛表情包，包括分组、图片表情和文本表情",
+    "createGroupButton": "创建分组",
+    "createExpressionButton": "添加表情",
+    "searchPlaceholder": "搜索分组或表情名称",
+    "stats": {
+      "totalGroups": "分组总数",
+      "totalExpressions": "表情总数",
+      "imageExpressions": "图片表情",
+      "textExpressions": "文本表情"
+    },
+    "filter": {
+      "title": "筛选",
+      "type": {
+        "all": "全部类型",
+        "image": "图片表情",
+        "text": "文本表情"
+      },
+      "enabled": {
+        "all": "全部状态",
+        "enabled": "已启用",
+        "disabled": "已禁用"
+      },
+      "deleted": {
+        "all": "全部",
+        "normal": "正常",
+        "deleted": "已删除"
+      },
+      "sortBy": "排序方式",
+      "sortByOptions": {
+        "sort": "自定义排序",
+        "updatedAt": "更新时间"
+      }
+    },
+    "group": {
+      "code": "分组代码",
+      "icon": "分组图标",
+      "expressionCount": "表情数量",
+      "expand": "展开",
+      "collapse": "收起",
+      "enabled": "已启用",
+      "disabled": "已禁用",
+      "enable": "启用",
+      "disable": "禁用"
+    },
+    "expression": {
+      "code": "表情代码",
+      "type": "类型",
+      "image": "图片",
+      "text": "文本",
+      "dimensions": "尺寸",
+      "preview": "预览"
+    },
+    "groupDialog": {
+      "createTitle": "创建表情分组",
+      "editTitle": "编辑表情分组",
+      "code": "分组代码",
+      "codePlaceholder": "如: default, onion (仅字母数字下划线)",
+      "codeHint": "创建后不可修改",
+      "name": "分组名称",
+      "namePlaceholder": "如: 默认表情, 洋葱表情",
+      "icon": "分组图标",
+      "iconPlaceholder": "点击选择 emoji",
+      "sortValue": "排序值",
+      "cancel": "取消",
+      "submit": "保存"
+    },
+    "expressionDialog": {
+      "createTitle": "添加表情",
+      "editTitle": "编辑表情",
+      "selectGroup": "选择分组",
+      "selectGroupPlaceholder": "请选择表情分组",
+      "code": "表情代码",
+      "codePlaceholder": "如: smile, 001",
+      "codeHint": "同一分组内唯一",
+      "name": "表情名称",
+      "namePlaceholder": "如: 微笑, 开心",
+      "type": "表情类型",
+      "imageTab": "图片表情",
+      "textTab": "文本表情",
+      "uploadImage": "上传图片",
+      "uploadHint": "支持 PNG/GIF/JPG/WEBP, 最大 2MB",
+      "dragHint": "点击或拖拽文件到此处",
+      "textContent": "文本内容",
+      "textPlaceholder": "输入 emoji 或文本符号",
+      "dimensions": "尺寸",
+      "width": "宽度",
+      "height": "高度",
+      "autoDetect": "自动检测",
+      "sortValue": "排序值",
+      "cancel": "取消",
+      "submit": "保存"
+    },
+    "message": {
+      "createGroupSuccess": "分组创建成功",
+      "createGroupError": "分组创建失败",
+      "updateGroupSuccess": "分组更新成功",
+      "updateGroupError": "分组更新失败",
+      "deleteGroupSuccess": "分组删除成功",
+      "deleteGroupError": "分组删除失败",
+      "createExpressionSuccess": "表情创建成功",
+      "createExpressionError": "表情创建失败",
+      "updateExpressionSuccess": "表情更新成功",
+      "updateExpressionError": "表情更新失败",
+      "deleteExpressionSuccess": "表情删除成功",
+      "deleteExpressionError": "表情删除失败",
+      "uploadImageSuccess": "图片上传成功",
+      "uploadImageError": "图片上传失败",
+      "invalidImageType": "不支持的图片格式",
+      "imageTooLarge": "图片大小超过限制",
+      "translationUpdateSuccess": "翻译更新成功",
+      "translationUpdateError": "翻译更新失败"
+    },
+    "deleteConfirm": {
+      "groupTitle": "确认删除分组",
+      "groupDescription": "该分组下有 {count} 个表情。删除后分组将被标记为已删除，但表情会保留。",
+      "expressionTitle": "确认删除表情",
+      "expressionDescription": "此操作将软删除该表情，确定继续吗？",
+      "cancel": "取消",
+      "confirm": "确认删除"
+    },
+    "translationDialog": {
+      "groupTitle": "管理分组多语言翻译",
+      "expressionTitle": "管理表情多语言翻译",
+      "sourceLanguage": "源语言",
+      "translated": "已翻译",
+      "missing": "未翻译",
+      "noName": "未填写名称",
+      "edit": "编辑",
+      "save": "保存",
+      "cancel": "取消",
+      "name": "名称"
+    },
+    "loading": "加载中...",
+    "empty": "暂无数据"
   }
 }
