@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma"
 import { generateId } from "@/lib/id"
 import { getLocale } from "next-intl/server"
 import { createTranslationTasks } from "@/lib/services/translation-task"
+import { getTranslationsQuery, getTranslationFields } from "@/lib/locale"
 import { TranslationEntityType } from "@prisma/client"
 
 type TagDTO = {
@@ -43,8 +44,8 @@ function validateColor(color: string | null): boolean {
 // GET - 获取标签列表
 export async function GET(request: NextRequest) {
   try {
+    const locale = await getLocale()
     const searchParams = request.nextUrl.searchParams
-    const locale = (request.nextUrl.pathname.split("/")[1] || "zh") as string
     const page = parseInt(searchParams.get("page") || "1")
     const pageSize = parseInt(searchParams.get("pageSize") || "20")
     const q = searchParams.get("q") || ""
@@ -105,18 +106,10 @@ export async function GET(request: NextRequest) {
         is_deleted: true,
         created_at: true,
         updated_at: true,
-        translations: {
-          where: {
-            OR: [{ locale, is_source: false }, { is_source: true }],
-          },
-          select: {
-            locale: true,
-            name: true,
-            description: true,
-            is_source: true,
-          },
-          take: 2,
-        },
+        translations: getTranslationsQuery(locale, {
+          name: true,
+          description: true,
+        }),
         _count: {
           select: {
             topic_links: true,
@@ -130,16 +123,16 @@ export async function GET(request: NextRequest) {
 
     // 转换为 DTO
     const items: TagDTO[] = tags.map((t) => {
-      // 选择翻译：优先匹配当前 locale，否则取 is_source 为 true 的
-      const translation =
-        t.translations.find((tr) => tr.locale === locale && !tr.is_source) ||
-        t.translations.find((tr) => tr.is_source)
+      const fields = getTranslationFields(t.translations, locale, {
+        name: "",
+        description: null,
+      })
 
       return {
         id: String(t.id),
-        name: translation?.name || "",
+        name: fields.name,
         icon: t.icon,
-        description: translation?.description || null,
+        description: fields.description,
         sort: t.sort,
         bgColor: t.bg_color,
         textColor: t.text_color,

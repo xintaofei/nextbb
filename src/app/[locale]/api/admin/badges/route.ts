@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma"
 import { generateId } from "@/lib/id"
 import { getLocale } from "next-intl/server"
 import { createTranslationTasks } from "@/lib/services/translation-task"
+import { getTranslationsQuery, getTranslationFields } from "@/lib/locale"
 import { TranslationEntityType } from "@prisma/client"
 
 type BadgeDTO = {
@@ -57,8 +58,8 @@ function validateLevel(level: number): boolean {
 // GET - 获取徽章列表
 export async function GET(request: NextRequest) {
   try {
+    const locale = await getLocale()
     const searchParams = request.nextUrl.searchParams
-    const locale = (request.nextUrl.pathname.split("/")[1] || "zh") as string
     const page = parseInt(searchParams.get("page") || "1")
     const pageSize = parseInt(searchParams.get("pageSize") || "20")
     const q = searchParams.get("q") || ""
@@ -156,18 +157,10 @@ export async function GET(request: NextRequest) {
         is_deleted: true,
         created_at: true,
         updated_at: true,
-        translations: {
-          where: {
-            OR: [{ locale, is_source: false }, { is_source: true }],
-          },
-          select: {
-            locale: true,
-            name: true,
-            description: true,
-            is_source: true,
-          },
-          take: 2,
-        },
+        translations: getTranslationsQuery(locale, {
+          name: true,
+          description: true,
+        }),
       },
       orderBy,
       skip: (page - 1) * pageSize,
@@ -176,16 +169,16 @@ export async function GET(request: NextRequest) {
 
     // 转换为 DTO
     const items: BadgeDTO[] = badges.map((b) => {
-      // 选择翻译：优先匹配当前 locale，否则取 is_source 为 true 的
-      const translation =
-        b.translations.find((tr) => tr.locale === locale && !tr.is_source) ||
-        b.translations.find((tr) => tr.is_source)
+      const fields = getTranslationFields(b.translations, locale, {
+        name: "",
+        description: null,
+      })
 
       return {
         id: String(b.id),
-        name: translation?.name || "",
+        name: fields.name,
         icon: b.icon,
-        description: translation?.description || null,
+        description: fields.description,
         badgeType: b.badge_type,
         level: b.level,
         sort: b.sort,
