@@ -47,6 +47,7 @@ interface MilkdownEditorProps {
   value?: string
   placeholder?: string
   slashPlaceholder?: string
+  autoFocus?: boolean
   onChange?: (
     value: string,
     json?: Record<string, unknown>,
@@ -124,6 +125,7 @@ const MilkdownEditor: React.FC<MilkdownEditorProps> = ({
   onPendingChange,
   placeholder,
   slashPlaceholder,
+  autoFocus,
 }) => {
   const valueRef = useRef<string | undefined>(value)
   const onChangeRef = useRef(onChange)
@@ -352,6 +354,26 @@ const MilkdownEditor: React.FC<MilkdownEditorProps> = ({
     lastSyncedValueRef.current = value
     isInitializedRef.current = true
   }, [value, get, loading, cancelDebounce])
+
+  useEffect(() => {
+    if (!loading && autoFocus) {
+      const editor = get()
+      if (!editor) return
+
+      // Use requestAnimationFrame to ensure the editor is ready and visible
+      // This is more reliable than setTimeout for focus management in React 18+
+      const frameId = requestAnimationFrame(() => {
+        editor.action((ctx) => {
+          const view = ctx.get(editorViewCtx)
+          if (view && !view.hasFocus()) {
+            view.focus()
+          }
+        })
+      })
+
+      return () => cancelAnimationFrame(frameId)
+    }
+  }, [loading, autoFocus, get])
 
   const calculatePopoverStyle = useCallback(
     (x: number, y: number, isOpen: boolean) => {

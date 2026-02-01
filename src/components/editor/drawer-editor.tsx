@@ -66,6 +66,7 @@ export function DrawerEditor({
             value={value}
             placeholder={placeholder}
             slashPlaceholder={slashPlaceholder}
+            autoFocus={open}
             onChange={(val, json, h) => {
               setValue(val)
               setHtml(h || "")
