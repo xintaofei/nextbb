@@ -34,14 +34,14 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    await prisma.$transaction(async (tx) => {
-      for (const item of items) {
-        await tx.expressions.update({
+    await prisma.$transaction(
+      items.map((item) =>
+        prisma.expressions.update({
           where: { id: BigInt(item.id) },
           data: { sort: item.sort },
         })
-      }
-    })
+      )
+    )
 
     return NextResponse.json({ success: true })
   } catch (error) {
