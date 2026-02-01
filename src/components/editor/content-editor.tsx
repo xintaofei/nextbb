@@ -57,18 +57,21 @@ interface MilkdownEditorProps {
 
 const parseContent = (value: string | undefined) => {
   if (!value) return ""
-  try {
-    const parsed = JSON.parse(value)
-    if (
-      parsed &&
-      typeof parsed === "object" &&
-      parsed.type === "doc" &&
-      Array.isArray(parsed.content)
-    ) {
-      return parsed
+  // Optimization: Only try to parse as JSON if it looks like a JSON object
+  if (value.trim().startsWith("{")) {
+    try {
+      const parsed = JSON.parse(value)
+      if (
+        parsed &&
+        typeof parsed === "object" &&
+        parsed.type === "doc" &&
+        Array.isArray(parsed.content)
+      ) {
+        return parsed
+      }
+    } catch {
+      // Not JSON, treat as markdown
     }
-  } catch {
-    // Not JSON, treat as markdown
   }
   return value
 }
@@ -183,6 +186,7 @@ const MilkdownEditor: React.FC<MilkdownEditorProps> = ({
 
   // 记录上一次同步给编辑器的外部 value，用于区分“外部修改”和“防抖期间的旧值回流”
   const lastSyncedValueRef = useRef(value)
+  const isRemoteUpdate = useRef(false)
 
   // 同步 pending 状态给父组件
   useEffect(() => {
@@ -192,6 +196,12 @@ const MilkdownEditor: React.FC<MilkdownEditorProps> = ({
   const handleUpdate = useCallback(
     (ctx: Ctx, doc: Node) => {
       if (!onChangeRef.current) return
+
+      // Optimization: Skip processing if update was triggered by remote change
+      if (isRemoteUpdate.current) {
+        isRemoteUpdate.current = false
+        return
+      }
 
       // 1. JSON
       const json = doc.toJSON()
@@ -310,6 +320,7 @@ const MilkdownEditor: React.FC<MilkdownEditorProps> = ({
     const content = parseContent(value)
 
     if (typeof content === "string") {
+      isRemoteUpdate.current = true
       editor.action(replaceAll(content))
     } else {
       editor.action((ctx) => {
@@ -321,6 +332,7 @@ const MilkdownEditor: React.FC<MilkdownEditorProps> = ({
           view.state.doc.content.size,
           node
         )
+        isRemoteUpdate.current = true
         Promise.resolve().then(() => view.dispatch(tr))
       })
     }
