@@ -2,10 +2,20 @@
 
 import { motion } from "framer-motion"
 import { useTranslations } from "next-intl"
-import { Edit, Trash2, Globe, Image as ImageIcon, Type } from "lucide-react"
+import {
+  Edit,
+  Trash2,
+  Globe,
+  Image as ImageIcon,
+  Type,
+  GripVertical,
+} from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import type { Expression } from "@/types/expression"
+import { useSortable } from "@dnd-kit/sortable"
+import { CSS } from "@dnd-kit/utilities"
+import { cn } from "@/lib/utils"
 
 type ExpressionCardProps = {
   expression: Pick<
@@ -25,54 +35,97 @@ type ExpressionCardProps = {
   onEdit: (id: string) => void
   onDelete: (id: string) => void
   onManageTranslations: (id: string) => void
+  sortableId: string
+  disabled?: boolean
 }
 
-export function ExpressionCard({
+export function ExpressionCardContent({
   expression,
   onEdit,
   onDelete,
   onManageTranslations,
-}: ExpressionCardProps) {
+  attributes,
+  listeners,
+  setNodeRef,
+  style,
+  isDragging,
+  disabled,
+}: ExpressionCardProps & {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  attributes?: any
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  listeners?: any
+  setNodeRef?: (node: HTMLElement | null) => void
+  style?: React.CSSProperties
+  isDragging?: boolean
+}) {
   const t = useTranslations("AdminExpressions")
   const tAdmin = useTranslations("Admin")
 
   return (
     <motion.div
-      initial={{ opacity: 0, scale: 0.95 }}
-      animate={{ opacity: 1, scale: 1 }}
-      transition={{ duration: 0.2 }}
-      className="group relative overflow-hidden rounded-2xl border border-border/40 bg-background/60 p-4 backdrop-blur transition-all hover:border-border/60 hover:shadow-lg"
+      ref={setNodeRef}
+      style={style}
+      initial={false}
+      animate={
+        isDragging
+          ? {
+              scale: 1.05,
+              zIndex: 50,
+              boxShadow: "0 10px 30px -10px rgba(0,0,0,0.2)",
+            }
+          : { scale: 1, zIndex: 1, boxShadow: "none" }
+      }
+      className={cn(
+        "group relative overflow-hidden rounded-2xl border border-border/40 bg-background/60 p-4 backdrop-blur transition-all hover:border-border/60 hover:shadow-lg",
+        isDragging && "border-primary/50"
+      )}
     >
       <div className="absolute inset-0 bg-gradient-to-br from-foreground/4 via-transparent to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100 -z-10" />
 
       <div className="relative space-y-3">
         {/* Preview Area */}
         <div className="flex items-center justify-between">
-          <div className="flex h-16 w-16 items-center justify-center rounded-xl border border-border/40 bg-muted/30">
-            {expression.type === "IMAGE" && expression.imageUrl ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
-                src={expression.imageUrl}
-                alt={expression.name}
-                className="max-w-full max-h-full object-contain"
-                style={{
-                  width: expression.width ? `${expression.width}px` : "auto",
-                  height: expression.height ? `${expression.height}px` : "auto",
-                  maxWidth: "100%",
-                  maxHeight: "100%",
-                }}
-              />
-            ) : expression.type === "TEXT" && expression.textContent ? (
-              <span className="text-3xl">{expression.textContent}</span>
-            ) : (
-              <div className="text-muted-foreground">
-                {expression.type === "IMAGE" ? (
-                  <ImageIcon className="h-6 w-6" aria-hidden="true" />
-                ) : (
-                  <Type className="h-6 w-6" aria-hidden="true" />
-                )}
-              </div>
-            )}
+          <div className="flex items-center gap-2">
+            <button
+              {...attributes}
+              {...listeners}
+              className={cn(
+                "shrink-0 cursor-grab text-muted-foreground hover:text-foreground active:cursor-grabbing",
+                disabled && "opacity-50 cursor-not-allowed"
+              )}
+              disabled={disabled}
+            >
+              <GripVertical className="h-4 w-4" />
+            </button>
+            <div className="flex h-16 w-16 items-center justify-center rounded-xl border border-border/40 bg-muted/30">
+              {expression.type === "IMAGE" && expression.imageUrl ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={expression.imageUrl}
+                  alt={expression.name}
+                  className="max-w-full max-h-full object-contain"
+                  style={{
+                    width: expression.width ? `${expression.width}px` : "auto",
+                    height: expression.height
+                      ? `${expression.height}px`
+                      : "auto",
+                    maxWidth: "100%",
+                    maxHeight: "100%",
+                  }}
+                />
+              ) : expression.type === "TEXT" && expression.textContent ? (
+                <span className="text-3xl">{expression.textContent}</span>
+              ) : (
+                <div className="text-muted-foreground">
+                  {expression.type === "IMAGE" ? (
+                    <ImageIcon className="h-6 w-6" aria-hidden="true" />
+                  ) : (
+                    <Type className="h-6 w-6" aria-hidden="true" />
+                  )}
+                </div>
+              )}
+            </div>
           </div>
 
           <div className="flex flex-col gap-2 items-end">
@@ -145,5 +198,36 @@ export function ExpressionCard({
         </div>
       </div>
     </motion.div>
+  )
+}
+
+export function ExpressionCard(props: ExpressionCardProps) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({
+    id: props.sortableId,
+    disabled: props.disabled,
+  })
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+  }
+
+  return (
+    <ExpressionCardContent
+      {...props}
+      attributes={attributes}
+      listeners={listeners}
+      setNodeRef={setNodeRef}
+      style={style}
+      isDragging={isDragging}
+    />
   )
 }

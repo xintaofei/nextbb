@@ -3,6 +3,22 @@
 import { useMemo, useState } from "react"
 import useSWR from "swr"
 import { useTranslations } from "next-intl"
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragEndEvent,
+} from "@dnd-kit/core"
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  verticalListSortingStrategy,
+  rectSortingStrategy,
+} from "@dnd-kit/sortable"
 import { AdminPageContainer } from "@/components/admin/layout/admin-page-container"
 import { AdminPageSection } from "@/components/admin/layout/admin-page-section"
 import { Search, Plus } from "lucide-react"
@@ -90,6 +106,13 @@ export default function AdminExpressionsPage() {
   const [translatingExpressionId, setTranslatingExpressionId] = useState<
     string | null
   >(null)
+
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  )
 
   const groupsQuery = useMemo(() => {
     const params = new URLSearchParams()
@@ -355,6 +378,130 @@ export default function AdminExpressionsPage() {
     return expressionsData.items.filter((e) => e.groupId === groupId)
   }
 
+  const handleDragEnd = async (event: DragEndEvent) => {
+    const { active, over } = event
+    if (!over || active.id === over.id) return
+
+    const activeId = String(active.id)
+    const overId = String(over.id)
+
+    // Group Reorder
+    if (activeId.startsWith("group-") && overId.startsWith("group-")) {
+      const oldIndex =
+        groupsData?.items.findIndex((g) => `group-${g.id}` === activeId) ?? -1
+      const newIndex =
+        groupsData?.items.findIndex((g) => `group-${g.id}` === overId) ?? -1
+
+      if (oldIndex !== -1 && newIndex !== -1 && groupsData) {
+        const newItems = arrayMove(groupsData.items, oldIndex, newIndex)
+
+        try {
+          // Optimistic update
+          await mutateGroups(
+            {
+              ...groupsData,
+              items: newItems,
+            },
+            false
+          )
+
+          const itemsWithSort = newItems.map((item, index) => ({
+            id: item.id,
+            sort: index,
+          }))
+
+          const res = await fetch("/api/admin/expression-groups/reorder", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ items: itemsWithSort }),
+          })
+
+          if (res.ok) {
+            toast.success(t("message.reorderGroupSuccess"))
+            await mutateGroups()
+          } else {
+            toast.error(t("message.reorderGroupError"))
+            await mutateGroups() // Revert
+          }
+        } catch {
+          toast.error(t("message.reorderGroupError"))
+          await mutateGroups() // Revert
+        }
+      }
+    }
+
+    // Expression Reorder
+    if (activeId.startsWith("expr-") && overId.startsWith("expr-")) {
+      const oldIndex =
+        expressionsData?.items.findIndex((e) => `expr-${e.id}` === activeId) ??
+        -1
+      const newIndex =
+        expressionsData?.items.findIndex((e) => `expr-${e.id}` === overId) ?? -1
+
+      if (oldIndex !== -1 && newIndex !== -1 && expressionsData) {
+        const activeExpr = expressionsData.items[oldIndex]
+        const overExpr = expressionsData.items[newIndex]
+
+        // Only allow reordering within the same group for now
+        if (activeExpr.groupId !== overExpr.groupId) return
+
+        const groupExpressions = expressionsData.items.filter(
+          (e) => e.groupId === activeExpr.groupId
+        )
+        const oldGroupIndex = groupExpressions.findIndex(
+          (e) => e.id === activeExpr.id
+        )
+        const newGroupIndex = groupExpressions.findIndex(
+          (e) => e.id === overExpr.id
+        )
+
+        const newGroupExpressions = arrayMove(
+          groupExpressions,
+          oldGroupIndex,
+          newGroupIndex
+        )
+
+        try {
+          // Optimistic update
+          const otherExpressions = expressionsData.items.filter(
+            (e) => e.groupId !== activeExpr.groupId
+          )
+          const newGlobalItems = [...otherExpressions, ...newGroupExpressions]
+
+          await mutateExpressions(
+            {
+              ...expressionsData,
+              items: newGlobalItems,
+            },
+            false
+          )
+
+          const itemsWithSort = newGroupExpressions.map((item, index) => ({
+            id: item.id,
+            sort: index,
+          }))
+
+          const res = await fetch("/api/admin/expressions/reorder", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ items: itemsWithSort }),
+          })
+
+          if (res.ok) {
+            toast.success(t("message.reorderExpressionSuccess"))
+            await mutateExpressions()
+          } else {
+            toast.error(t("message.reorderExpressionError"))
+            await mutateExpressions() // Revert
+          }
+        } catch {
+          toast.error(t("message.reorderExpressionError"))
+          await mutateExpressions() // Revert
+        }
+      }
+    }
+  }
+
   const deletingGroup = groupsData?.items.find((g) => g.id === deletingGroupId)
 
   return (
@@ -454,41 +601,59 @@ export default function AdminExpressionsPage() {
               {t("loading")}
             </div>
           ) : groupsData && groupsData.items.length > 0 ? (
-            groupsData.items.map((group) => {
-              const expressions = getGroupExpressions(group.id)
-              return (
-                <ExpressionGroupListItem
-                  key={group.id}
-                  group={group}
-                  expressions={expressions}
-                  onEdit={handleEditGroup}
-                  onDelete={handleDeleteGroup}
-                  onToggleEnabled={handleToggleGroupEnabled}
-                  onManageTranslations={handleManageGroupTranslations}
-                  onAddExpression={handleAddExpression}
-                >
-                  {expressions.length > 0 ? (
-                    <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
-                      {expressions.map((expression) => (
-                        <ExpressionCard
-                          key={expression.id}
-                          expression={expression}
-                          onEdit={handleEditExpression}
-                          onDelete={handleDeleteExpression}
-                          onManageTranslations={
-                            handleManageExpressionTranslations
-                          }
-                        />
-                      ))}
-                    </div>
-                  ) : (
-                    <div className="text-center py-8 text-muted-foreground text-sm">
-                      {t("empty")}
-                    </div>
-                  )}
-                </ExpressionGroupListItem>
-              )
-            })
+            <DndContext
+              sensors={sensors}
+              collisionDetection={closestCenter}
+              onDragEnd={handleDragEnd}
+            >
+              <SortableContext
+                items={groupsData.items.map((g) => `group-${g.id}`)}
+                strategy={verticalListSortingStrategy}
+              >
+                {groupsData.items.map((group) => {
+                  const expressions = getGroupExpressions(group.id)
+                  return (
+                    <ExpressionGroupListItem
+                      key={group.id}
+                      sortableId={`group-${group.id}`}
+                      group={group}
+                      expressions={expressions}
+                      onEdit={handleEditGroup}
+                      onDelete={handleDeleteGroup}
+                      onToggleEnabled={handleToggleGroupEnabled}
+                      onManageTranslations={handleManageGroupTranslations}
+                      onAddExpression={handleAddExpression}
+                    >
+                      {expressions.length > 0 ? (
+                        <SortableContext
+                          items={expressions.map((e) => `expr-${e.id}`)}
+                          strategy={rectSortingStrategy}
+                        >
+                          <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
+                            {expressions.map((expression) => (
+                              <ExpressionCard
+                                key={expression.id}
+                                sortableId={`expr-${expression.id}`}
+                                expression={expression}
+                                onEdit={handleEditExpression}
+                                onDelete={handleDeleteExpression}
+                                onManageTranslations={
+                                  handleManageExpressionTranslations
+                                }
+                              />
+                            ))}
+                          </div>
+                        </SortableContext>
+                      ) : (
+                        <div className="text-center py-8 text-muted-foreground text-sm">
+                          {t("empty")}
+                        </div>
+                      )}
+                    </ExpressionGroupListItem>
+                  )
+                })}
+              </SortableContext>
+            </DndContext>
           ) : (
             <div className="text-center py-12 text-muted-foreground">
               {t("empty")}

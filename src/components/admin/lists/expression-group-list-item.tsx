@@ -1,5 +1,7 @@
 "use client"
 
+import { useSortable } from "@dnd-kit/sortable"
+import { CSS } from "@dnd-kit/utilities"
 import { motion } from "framer-motion"
 import { useTranslations } from "next-intl"
 import {
@@ -11,6 +13,7 @@ import {
   Folder,
   Power,
   PowerOff,
+  GripVertical,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -42,9 +45,11 @@ type ExpressionGroupListItemProps = {
   onManageTranslations: (id: string) => void
   onAddExpression: (groupId: string) => void
   children: React.ReactNode
+  sortableId: string
+  disabled?: boolean
 }
 
-export function ExpressionGroupListItem({
+export function ExpressionGroupContent({
   group,
   expressions = [],
   onEdit,
@@ -53,7 +58,21 @@ export function ExpressionGroupListItem({
   onManageTranslations,
   onAddExpression,
   children,
-}: ExpressionGroupListItemProps) {
+  attributes,
+  listeners,
+  setNodeRef,
+  style,
+  isDragging,
+  disabled,
+}: ExpressionGroupListItemProps & {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  attributes?: any
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  listeners?: any
+  setNodeRef?: (node: HTMLElement | null) => void
+  style?: React.CSSProperties
+  isDragging?: boolean
+}) {
   const t = useTranslations("AdminExpressions")
   const tAdmin = useTranslations("Admin")
   const [isOpen, setIsOpen] = useState(true)
@@ -66,15 +85,35 @@ export function ExpressionGroupListItem({
   return (
     <Collapsible open={isOpen} onOpenChange={setIsOpen}>
       <motion.div
-        initial={{ opacity: 0, y: -10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.2 }}
-        className="rounded-2xl border border-border/40 bg-background/60 backdrop-blur overflow-hidden"
+        ref={setNodeRef}
+        style={style}
+        initial={false}
+        animate={
+          isDragging
+            ? { scale: 1.02, boxShadow: "0 10px 30px -10px rgba(0,0,0,0.2)" }
+            : { scale: 1, boxShadow: "none" }
+        }
+        className={cn(
+          "rounded-2xl border border-border/40 bg-background/60 backdrop-blur overflow-hidden",
+          isDragging && "z-50 border-primary/50"
+        )}
       >
         {/* Group Header */}
         <div className="p-4 border-b border-border/40">
           <div className="flex items-center justify-between gap-4">
             <div className="flex items-center gap-3 flex-1 min-w-0">
+              <button
+                {...attributes}
+                {...listeners}
+                className={cn(
+                  "shrink-0 cursor-grab text-muted-foreground hover:text-foreground active:cursor-grabbing",
+                  disabled && "opacity-50 cursor-not-allowed"
+                )}
+                disabled={disabled}
+              >
+                <GripVertical className="h-4 w-4" />
+              </button>
+
               <CollapsibleTrigger asChild>
                 <Button
                   variant="ghost"
@@ -203,5 +242,33 @@ export function ExpressionGroupListItem({
         </CollapsibleContent>
       </motion.div>
     </Collapsible>
+  )
+}
+
+export function ExpressionGroupListItem(props: ExpressionGroupListItemProps) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: props.sortableId, disabled: props.disabled })
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+  }
+
+  return (
+    <ExpressionGroupContent
+      {...props}
+      attributes={attributes}
+      listeners={listeners}
+      setNodeRef={setNodeRef}
+      style={style}
+      isDragging={isDragging}
+    />
   )
 }
