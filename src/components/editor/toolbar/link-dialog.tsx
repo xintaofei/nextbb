@@ -6,6 +6,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogFooter,
+  DialogDescription,
 } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -60,6 +61,9 @@ export const LinkDialog = memo(
             <DialogTitle>
               {mode === "edit" ? t("editLink") : t("insertLink")}
             </DialogTitle>
+            <DialogDescription className="sr-only">
+              {mode === "edit" ? t("editLink") : t("insertLink")}
+            </DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
             <div className="space-y-2">
@@ -84,7 +88,7 @@ export const LinkDialog = memo(
               />
             </div>
           </div>
-          <DialogFooter className="gap-2 sm:gap-0">
+          <DialogFooter className="gap-2">
             <Button
               variant="outline"
               onClick={() => onOpenChange(false)}

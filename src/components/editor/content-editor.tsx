@@ -129,6 +129,9 @@ const MilkdownEditor: React.FC<MilkdownEditorProps> = ({
   const onChangeRef = useRef(onChange)
   const onPendingChangeRef = useRef(onPendingChange)
 
+  // Parse initial content once to determine initialization strategy
+  const [initialContent] = useState(() => parseContent(value))
+
   useEffect(() => {
     onChangeRef.current = onChange
   }, [onChange])
@@ -185,8 +188,12 @@ const MilkdownEditor: React.FC<MilkdownEditorProps> = ({
   )
 
   // 记录上一次同步给编辑器的外部 value，用于区分“外部修改”和“防抖期间的旧值回流”
+  // If initial content is JSON, we skip defaultValueCtx, so we start "unsynced" (undefined)
+  // to force useEffect to load the JSON content.
+  // We use a flag to track if initialization is needed for JSON
   const lastSyncedValueRef = useRef(value)
   const isRemoteUpdate = useRef(false)
+  const isInitializedRef = useRef(typeof initialContent === "string")
 
   // 同步 pending 状态给父组件
   useEffect(() => {
@@ -228,9 +235,11 @@ const MilkdownEditor: React.FC<MilkdownEditorProps> = ({
         .config((ctx) => {
           ctx.set(rootCtx, root)
 
-          const initialContent = parseContent(value)
-          if (initialContent) {
-            ctx.set(defaultValueCtx, initialContent)
+          const content = parseContent(value)
+          // Only use defaultValueCtx for string (Markdown) content.
+          // For JSON, we load it via useEffect transaction to ensure schema compatibility.
+          if (typeof content === "string") {
+            ctx.set(defaultValueCtx, content)
           }
 
           ctx.get(listenerCtx).updated((ctx, doc) => {
@@ -302,16 +311,19 @@ const MilkdownEditor: React.FC<MilkdownEditorProps> = ({
   useEffect(() => {
     if (loading || value === undefined) return
 
-    // 如果当前 value 和上一次同步的值一样，说明不是外部的主动修改（如重置或加载新内容）
-    // 此时即使 value !== valueRef.current，也只是因为防抖还没结束，不应该同步回编辑器
-    if (value === lastSyncedValueRef.current) return
+    // 如果未初始化（是JSON），则忽略检查强制加载
+    if (isInitializedRef.current) {
+      // 如果当前 value 和上一次同步的值一样，说明不是外部的主动修改（如重置或加载新内容）
+      // 此时即使 value !== valueRef.current，也只是因为防抖还没结束，不应该同步回编辑器
+      if (value === lastSyncedValueRef.current) return
 
-    // 走到这里说明外部真正改变了内容（例如点击了重置按钮），需要取消当前的防抖并同步
-    cancelDebounce()
+      // 走到这里说明外部真正改变了内容（例如点击了重置按钮），需要取消当前的防抖并同步
+      cancelDebounce()
 
-    if (value === valueRef.current) {
-      lastSyncedValueRef.current = value
-      return
+      if (value === valueRef.current) {
+        lastSyncedValueRef.current = value
+        return
+      }
     }
 
     const editor = get()
@@ -338,6 +350,7 @@ const MilkdownEditor: React.FC<MilkdownEditorProps> = ({
     }
     valueRef.current = value
     lastSyncedValueRef.current = value
+    isInitializedRef.current = true
   }, [value, get, loading, cancelDebounce])
 
   const calculatePopoverStyle = useCallback(

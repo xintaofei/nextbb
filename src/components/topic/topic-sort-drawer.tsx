@@ -7,6 +7,7 @@ import {
   DrawerHeader,
   DrawerTitle,
   DrawerTrigger,
+  DrawerDescription,
 } from "@/components/ui/drawer"
 import { ChevronsUpDown, Check } from "lucide-react"
 import { useTranslations } from "next-intl"
@@ -85,6 +86,9 @@ export function TopicSortDrawer({
       <DrawerContent>
         <DrawerHeader>
           <DrawerTitle>{tc("Tabs.categories")}</DrawerTitle>
+          <DrawerDescription className="sr-only">
+            {tc("Tabs.categories")}
+          </DrawerDescription>
         </DrawerHeader>
         <div className="w-full px-4 pb-8">
           <div className="flex flex-col gap-1">
