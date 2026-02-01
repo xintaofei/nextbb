@@ -157,7 +157,7 @@ export const useToolbarState = (
           isCodeBlock = true
         }
 
-        setState({
+        const newState = {
           bold,
           italic,
           strikethrough,
@@ -167,6 +167,22 @@ export const useToolbarState = (
           isOrderedList,
           isBlockquote,
           isCodeBlock,
+        }
+
+        setState((prevState) => {
+          // Shallow comparison to avoid unnecessary re-renders
+          const isSame =
+            prevState.bold === newState.bold &&
+            prevState.italic === newState.italic &&
+            prevState.strikethrough === newState.strikethrough &&
+            prevState.code === newState.code &&
+            prevState.headingLevel === newState.headingLevel &&
+            prevState.isBulletList === newState.isBulletList &&
+            prevState.isOrderedList === newState.isOrderedList &&
+            prevState.isBlockquote === newState.isBlockquote &&
+            prevState.isCodeBlock === newState.isCodeBlock
+
+          return isSame ? prevState : newState
         })
       })
     },

@@ -148,8 +148,23 @@ const MilkdownEditor: React.FC<MilkdownEditorProps> = ({
     isPending,
     cancel: cancelDebounce,
   } = useDebouncedCallback(
-    (jsonString: string, json: Record<string, unknown>, html: string) => {
-      onChange?.(jsonString, json, html)
+    (
+      ctx: Ctx,
+      doc: Node,
+      jsonString: string,
+      json: Record<string, unknown>
+    ) => {
+      if (!onChange) return
+
+      // HTML serialization - done only when debounce fires
+      const schema = ctx.get(schemaCtx)
+      const domSerializer = DOMSerializer.fromSchema(schema)
+      const fragment = domSerializer.serializeFragment(doc.content)
+      const tmp = document.createElement("div")
+      tmp.appendChild(fragment)
+      const html = tmp.innerHTML
+
+      onChange(jsonString, json, html)
     },
     300
   )
@@ -176,18 +191,10 @@ const MilkdownEditor: React.FC<MilkdownEditorProps> = ({
         return
       }
 
-      // 2. HTML
-      const schema = ctx.get(schemaCtx)
-      const domSerializer = DOMSerializer.fromSchema(schema)
-      const fragment = domSerializer.serializeFragment(doc.content)
-      const tmp = document.createElement("div")
-      tmp.appendChild(fragment)
-      const html = tmp.innerHTML
-
       // 立即更新 Ref，防止光标跳动
       valueRef.current = jsonString
       // 防抖通知父组件
-      debouncedOnChange(jsonString, json, html)
+      debouncedOnChange(ctx, doc, jsonString, json)
     },
     [onChange, debouncedOnChange]
   )
@@ -200,7 +207,7 @@ const MilkdownEditor: React.FC<MilkdownEditorProps> = ({
           ctx.set(rootCtx, root)
 
           const initialContent = parseContent(value)
-          if (typeof initialContent === "string") {
+          if (initialContent) {
             ctx.set(defaultValueCtx, initialContent)
           }
 
