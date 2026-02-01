@@ -43,6 +43,9 @@ export const EditorToolbar = memo(({ getEditor }: EditorToolbarProps) => {
   const toolbarState = useToolbarState(getEditor)
   const [linkDialogOpen, setLinkDialogOpen] = useState(false)
 
+  // Debug: log toolbar state changes
+  console.log("[EditorToolbar] Toolbar state:", toolbarState)
+
   // Execute editor command
   const executeCommand = useCallback(
     (fn: (ctx: Ctx) => void) => {

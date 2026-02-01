@@ -13,23 +13,36 @@ export const toggleMarkInEditor = (
   const markType = getMarkFn(schema) as MarkType | null | undefined
   if (!markType) return
 
+  const { from, to, empty } = state.selection
+
   // Detect if mark is active
-  let isActive
-  if (state.selection.empty) {
+  let isActive = false
+  if (empty) {
     // Empty selection: check storedMarks or marks at cursor position
     const storedMarks = state.storedMarks || state.selection.$from.marks()
     isActive = storedMarks.some((m) => m.type === markType)
   } else {
-    // Range selection: use rangeHasMark to check if ALL text has the mark
-    isActive = state.doc.rangeHasMark(
-      state.selection.$from.pos,
-      state.selection.$to.pos,
-      markType
-    )
+    // Range selection: check if all text in range has the mark
+    isActive = true
+    let hasText = false
+    state.doc.nodesBetween(from, to, (node) => {
+      // Only check text nodes
+      if (node.isText) {
+        hasText = true
+        // Check if this text node has the mark
+        if (!node.marks.some((m) => m.type === markType)) {
+          isActive = false
+          return false // Stop iteration
+        }
+      }
+      return true
+    })
+    // If no text in selection, mark is not active
+    if (!hasText) isActive = false
   }
 
   const tr = state.tr
-  if (state.selection.empty) {
+  if (empty) {
     if (isActive) {
       tr.removeStoredMark(markType)
     } else {
@@ -37,17 +50,9 @@ export const toggleMarkInEditor = (
     }
   } else {
     if (isActive) {
-      tr.removeMark(
-        state.selection.$from.pos,
-        state.selection.$to.pos,
-        markType
-      )
+      tr.removeMark(from, to, markType)
     } else {
-      tr.addMark(
-        state.selection.$from.pos,
-        state.selection.$to.pos,
-        markType.create()
-      )
+      tr.addMark(from, to, markType.create())
     }
   }
   dispatch(tr)

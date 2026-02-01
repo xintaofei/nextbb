@@ -22,24 +22,37 @@ interface EditorInstance {
 /**
  * Check if a mark is active in the current selection
  * - Empty selection: check storedMarks (affects next input)
- * - Range selection: use rangeHasMark to check if ALL text has the mark
+ * - Range selection: check if the entire range has the mark consistently
  */
 const checkMarkActive = (state: EditorState, markTypeName: string): boolean => {
   const markType = state.schema.marks[markTypeName]
   if (!markType) return false
 
-  // Empty selection: check storedMarks
-  if (state.selection.empty) {
+  const { from, to, empty } = state.selection
+
+  // Empty selection: check storedMarks or marks at cursor position
+  if (empty) {
     const storedMarks = state.storedMarks || state.selection.$from.marks()
     return storedMarks.some((m) => m.type === markType)
   }
 
-  // Range selection: use rangeHasMark
-  return state.doc.rangeHasMark(
-    state.selection.$from.pos,
-    state.selection.$to.pos,
-    markType
-  )
+  // Range selection: check if all text in range has the mark
+  let allHaveMark = true
+  let hasText = false
+  state.doc.nodesBetween(from, to, (node) => {
+    // Only check text nodes
+    if (node.isText) {
+      hasText = true
+      // Check if this text node has the mark
+      if (!node.marks.some((m) => m.type === markType)) {
+        allHaveMark = false
+        return false // Stop iteration - found text without mark
+      }
+    }
+    return true
+  })
+
+  return hasText && allHaveMark
 }
 
 export const useToolbarState = (
@@ -70,9 +83,36 @@ export const useToolbarState = (
 
       // Use precise mark detection
       const bold = checkMarkActive(editorState, "strong")
-      const italic = checkMarkActive(editorState, "em")
+      const italic =
+        checkMarkActive(editorState, "em") ||
+        checkMarkActive(editorState, "emphasis")
       const strikethrough = checkMarkActive(editorState, "strike_through")
       const code = checkMarkActive(editorState, "inlineCode")
+
+      // Debug logging (remove in production)
+      if (!selection.empty) {
+        console.log("[Toolbar] Selection marks:", {
+          bold,
+          italic,
+          strikethrough,
+          code,
+          from: selection.from,
+          to: selection.to,
+        })
+
+        // Debug: Check what marks are actually in the document
+        const actualMarks: string[] = []
+        editorState.doc.nodesBetween(selection.from, selection.to, (node) => {
+          if (node.isText) {
+            node.marks.forEach((m) => {
+              if (!actualMarks.includes(m.type.name)) {
+                actualMarks.push(m.type.name)
+              }
+            })
+          }
+        })
+        console.log("[Toolbar] Actual marks in selection:", actualMarks)
+      }
 
       // Check block types
       const node = selection.$from.parent
@@ -156,10 +196,10 @@ export const useToolbarState = (
 
     // Update on any selection change (don't filter by anchorNode as toolbar clicks change focus)
     const handleSelectionChange = () => {
-      // Use requestAnimationFrame to ensure state is updated after transaction
-      requestAnimationFrame(() => {
+      // Small delay to ensure ProseMirror state is updated
+      setTimeout(() => {
         updateState()
-      })
+      }, 0)
     }
 
     // Handle keyboard events in editor
@@ -169,10 +209,10 @@ export const useToolbarState = (
 
     // Handle mouse events - covers clicks and selection
     const handleMouseUp = () => {
-      // Delay slightly to ensure transaction is complete
-      requestAnimationFrame(() => {
+      // Small delay to ensure transaction is complete
+      setTimeout(() => {
         updateState()
-      })
+      }, 0)
     }
 
     // Use event-driven updates
