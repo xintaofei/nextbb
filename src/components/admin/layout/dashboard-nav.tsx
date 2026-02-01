@@ -16,6 +16,8 @@ import {
   ChevronDown,
   Heart,
   Link2,
+  Smile,
+  Blocks,
 } from "lucide-react"
 import { useState } from "react"
 import Link from "next/link"
@@ -56,11 +58,6 @@ export function DashboardNav() {
         { label: t("categories"), icon: Folder, path: "/admin/categories" },
         { label: t("tags"), icon: Tag, path: "/admin/tags" },
         { label: t("badges"), icon: Award, path: "/admin/badges" },
-        {
-          label: t("socialProviders"),
-          icon: Link2,
-          path: "/admin/social-providers",
-        },
       ],
     },
     {
@@ -84,7 +81,23 @@ export function DashboardNav() {
         },
       ],
     },
-    { label: t("donations"), icon: Heart, path: "/admin/donations" },
+    {
+      label: t("extensions"),
+      icon: Blocks,
+      items: [
+        {
+          label: t("socialProviders"),
+          icon: Link2,
+          path: "/admin/social-providers",
+        },
+        {
+          label: t("expressions"),
+          icon: Smile,
+          path: "/admin/expressions",
+        },
+        { label: t("donations"), icon: Heart, path: "/admin/donations" },
+      ],
+    },
     { label: t("settings"), icon: Settings, path: "/admin/settings" },
   ]
 

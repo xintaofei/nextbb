@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
 import { generateId } from "@/lib/id"
 import { getLocale } from "next-intl/server"
+import { getTranslationsQuery, getTranslationFields } from "@/lib/locale"
 
 type CategoryDTO = {
   id: string
@@ -39,6 +40,7 @@ function validateColor(color: string | null): boolean {
 // GET - 获取分类列表
 export async function GET(request: NextRequest) {
   try {
+    const locale = await getLocale()
     const searchParams = request.nextUrl.searchParams
     const q = searchParams.get("q") || ""
     const deleted = searchParams.get("deleted")
@@ -46,22 +48,26 @@ export async function GET(request: NextRequest) {
 
     // 构建查询条件
     const where: {
-      translations?: {
-        some: {
-          name?: { contains: string; mode: "insensitive" }
-          is_source: boolean
+      OR?: Array<{
+        translations: {
+          some: {
+            name: { contains: string; mode: "insensitive" }
+          }
         }
-      }
+      }>
       is_deleted?: boolean
     } = {}
 
     if (q.trim().length > 0) {
-      where.translations = {
-        some: {
-          name: { contains: q.trim(), mode: "insensitive" },
-          is_source: true,
+      where.OR = [
+        {
+          translations: {
+            some: {
+              name: { contains: q.trim(), mode: "insensitive" },
+            },
+          },
         },
-      }
+      ]
     }
 
     if (deleted === "true") {
@@ -95,14 +101,10 @@ export async function GET(request: NextRequest) {
         is_deleted: true,
         created_at: true,
         updated_at: true,
-        translations: {
-          where: { is_source: true },
-          select: {
-            name: true,
-            description: true,
-          },
-          take: 1,
-        },
+        translations: getTranslationsQuery(locale, {
+          name: true,
+          description: true,
+        }),
         _count: {
           select: {
             topics: true,
@@ -114,12 +116,15 @@ export async function GET(request: NextRequest) {
 
     // 转换为 DTO
     const items: CategoryDTO[] = categories.map((c) => {
-      const translation = c.translations[0]
+      const fields = getTranslationFields(c.translations, locale, {
+        name: "",
+        description: null,
+      })
       return {
         id: String(c.id),
-        name: translation?.name || "",
+        name: fields.name,
         icon: c.icon,
-        description: translation?.description || null,
+        description: fields.description,
         sort: c.sort,
         bgColor: c.bg_color,
         textColor: c.text_color,

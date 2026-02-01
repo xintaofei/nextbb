@@ -719,6 +719,8 @@
       "llmConfigs": "LLM Configs",
       "contentStructure": "Content Structure",
       "intelligence": "Intelligence Services",
+      "extensions": "Extensions",
+      "expressions": "Expressions",
       "donations": "Donations",
       "settings": "Settings"
     },
@@ -1936,7 +1938,9 @@
       "tag": "Tag",
       "badge": "Badge",
       "topic": "Topic",
-      "post": "Post"
+      "post": "Post",
+      "expression_group": "Expression Group",
+      "expression": "Expression"
     },
     "filter": {
       "title": "Filter",
@@ -2497,5 +2501,149 @@
       "reorderSuccess": "Order updated successfully",
       "reorderError": "Failed to update order"
     }
+  },
+  "AdminExpressions": {
+    "title": "Expression Management",
+    "description": "Manage forum expressions, including groups, image expressions and text expressions",
+    "createGroupButton": "Create Group",
+    "createExpressionButton": "Add Expression",
+    "searchPlaceholder": "Search groups or expressions",
+    "stats": {
+      "totalGroups": "Total Groups",
+      "totalExpressions": "Total Expressions",
+      "imageExpressions": "Image Expressions",
+      "textExpressions": "Text Expressions"
+    },
+    "filter": {
+      "title": "Filter",
+      "type": {
+        "all": "All Types",
+        "image": "Image",
+        "text": "Text"
+      },
+      "enabled": {
+        "all": "All Status",
+        "enabled": "Enabled",
+        "disabled": "Disabled"
+      },
+      "deleted": {
+        "all": "All",
+        "normal": "Normal",
+        "deleted": "Deleted"
+      },
+      "sortBy": "Sort By",
+      "sortByOptions": {
+        "sort": "Custom Sort",
+        "updatedAt": "Updated Time"
+      }
+    },
+    "group": {
+      "code": "Group Code",
+      "icon": "Group Icon",
+      "expressionCount": "Expression Count",
+      "expand": "Expand",
+      "collapse": "Collapse",
+      "enabled": "Enabled",
+      "disabled": "Disabled",
+      "enable": "Enable",
+      "disable": "Disable"
+    },
+    "expression": {
+      "code": "Expression Code",
+      "type": "Type",
+      "image": "Image",
+      "text": "Text",
+      "dimensions": "Dimensions",
+      "preview": "Preview"
+    },
+    "groupDialog": {
+      "createTitle": "Create Expression Group",
+      "editTitle": "Edit Expression Group",
+      "code": "Group Code",
+      "codePlaceholder": "e.g: default, onion (letters, numbers, underscore only)",
+      "codeHint": "Cannot be changed after creation",
+      "name": "Group Name",
+      "namePlaceholder": "e.g: Default, Onion",
+      "icon": "Group Icon",
+      "iconPlaceholder": "Click to select emoji",
+      "selectIconPlaceholder": "Select icon from expressions",
+      "noIcon": "No icon",
+      "iconHint": "Select an expression from this group as the group icon",
+      "sortValue": "Sort Value",
+      "cancel": "Cancel",
+      "submit": "Save"
+    },
+    "expressionDialog": {
+      "createTitle": "Add Expression",
+      "editTitle": "Edit Expression",
+      "selectGroup": "Select Group",
+      "selectGroupPlaceholder": "Please select a group",
+      "code": "Expression Code",
+      "codePlaceholder": "e.g: smile, 001",
+      "codeHint": "Unique within the group",
+      "name": "Expression Name",
+      "namePlaceholder": "e.g: Smile, Happy",
+      "type": "Expression Type",
+      "imageTab": "Image",
+      "textTab": "Text",
+      "uploadImage": "Upload Image",
+      "uploadHint": "Supports PNG/GIF/JPG/WEBP, max 2MB",
+      "dragHint": "Click or drag file here",
+      "textContent": "Text Content",
+      "textPlaceholder": "Enter emoji or text symbol",
+      "dimensions": "Dimensions",
+      "width": "Width",
+      "height": "Height",
+      "autoDetect": "Auto Detect",
+      "sortValue": "Sort Value",
+      "cancel": "Cancel",
+      "submit": "Save"
+    },
+    "message": {
+      "createGroupSuccess": "Group created successfully",
+      "createGroupError": "Failed to create group",
+      "updateGroupSuccess": "Group updated successfully",
+      "updateGroupError": "Failed to update group",
+      "deleteGroupSuccess": "Group deleted successfully",
+      "deleteGroupError": "Failed to delete group",
+      "reorderGroupSuccess": "Group order updated successfully",
+      "reorderGroupError": "Failed to update group order",
+      "createExpressionSuccess": "Expression created successfully",
+      "createExpressionError": "Failed to create expression",
+      "updateExpressionSuccess": "Expression updated successfully",
+      "updateExpressionError": "Failed to update expression",
+      "deleteExpressionSuccess": "Expression deleted successfully",
+      "deleteExpressionError": "Failed to delete expression",
+      "reorderExpressionSuccess": "Expression order updated successfully",
+      "reorderExpressionError": "Failed to update expression order",
+      "uploadImageSuccess": "Image uploaded successfully",
+      "uploadImageError": "Failed to upload image",
+      "invalidImageType": "Invalid image type",
+      "imageTooLarge": "Image size exceeds limit",
+      "translationUpdateSuccess": "Translation updated successfully",
+      "translationUpdateError": "Failed to update translation"
+    },
+    "deleteConfirm": {
+      "groupTitle": "Confirm Delete Group",
+      "groupDescription": "This group has {count} expressions. The group will be marked as deleted but expressions will be retained.",
+      "expressionTitle": "Confirm Delete Expression",
+      "expressionDescription": "This will soft delete the expression. Continue?",
+      "cancel": "Cancel",
+      "confirm": "Confirm Delete"
+    },
+    "translationDialog": {
+      "groupTitle": "Manage Group Translations",
+      "expressionTitle": "Manage Expression Translations",
+      "sourceLanguage": "Source Language",
+      "translated": "Translated",
+      "missing": "Not Translated",
+      "noName": "No name provided",
+      "edit": "Edit",
+      "save": "Save",
+      "cancel": "Cancel",
+      "name": "Name"
+    },
+    "loading": "Loading...",
+    "empty": "No data"
   }
 }
