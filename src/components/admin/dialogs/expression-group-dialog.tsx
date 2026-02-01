@@ -175,7 +175,7 @@ export function ExpressionGroupDialog({
             )}
           </div>
 
-          <div className="flex items-center gap-2 pt-4 border-t">
+          <div className="flex items-center gap-2 pt-2">
             <Button
               type="button"
               variant="outline"
