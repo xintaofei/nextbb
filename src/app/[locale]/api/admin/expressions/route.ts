@@ -278,11 +278,22 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    if (typeof sort !== "number" || !Number.isInteger(sort)) {
-      return NextResponse.json(
-        { error: "Sort must be an integer" },
-        { status: 400 }
-      )
+    let finalSort: number
+    if (sort === undefined || sort === null) {
+      const maxSortExpression = await prisma.expressions.findFirst({
+        where: { group_id: groupIdBigInt },
+        orderBy: { sort: "desc" },
+        select: { sort: true },
+      })
+      finalSort = (maxSortExpression?.sort ?? 0) + 1
+    } else {
+      if (typeof sort !== "number" || !Number.isInteger(sort)) {
+        return NextResponse.json(
+          { error: "Sort must be an integer" },
+          { status: 400 }
+        )
+      }
+      finalSort = sort
     }
 
     // 获取当前请求的语言作为源语言
@@ -301,7 +312,7 @@ export async function POST(request: NextRequest) {
           text_content: type === "TEXT" ? textContent : null,
           width: type === "IMAGE" ? width : null,
           height: type === "IMAGE" ? height : null,
-          sort,
+          sort: finalSort,
           is_enabled: true,
           is_deleted: false,
           source_locale: sourceLocale,

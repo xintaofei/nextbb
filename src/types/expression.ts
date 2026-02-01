@@ -74,5 +74,5 @@ export type ExpressionFormData = {
   textContent: string | null
   width: number | null
   height: number | null
-  sort: number
+  sort?: number
 }

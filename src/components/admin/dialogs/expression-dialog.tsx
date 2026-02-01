@@ -66,7 +66,6 @@ export function ExpressionDialog({
     textContent: null,
     width: null,
     height: null,
-    sort: 0,
   })
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [imageUrl, setImageUrl] = useState<string | null>(null)
@@ -95,7 +94,6 @@ export function ExpressionDialog({
         textContent: null,
         width: null,
         height: null,
-        sort: 0,
       })
       setImageUrl(null)
     }
@@ -240,23 +238,6 @@ export function ExpressionDialog({
                 />
               </div>
             )}
-
-            {/* Sort Value */}
-            <div className="space-y-2">
-              <Label htmlFor="sort">{t("expressionDialog.sortValue")}</Label>
-              <Input
-                id="sort"
-                type="number"
-                value={formData.sort}
-                onChange={(e) =>
-                  setFormData({
-                    ...formData,
-                    sort: parseInt(e.target.value) || 0,
-                  })
-                }
-                required
-              />
-            </div>
           </div>
 
           <div className="flex items-center gap-2 pt-2">
