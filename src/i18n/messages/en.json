@@ -719,6 +719,8 @@
       "llmConfigs": "LLM Configs",
       "contentStructure": "Content Structure",
       "intelligence": "Intelligence Services",
+      "extensions": "Extensions",
+      "expressions": "Expressions",
       "donations": "Donations",
       "settings": "Settings"
     },

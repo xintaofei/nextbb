@@ -719,6 +719,8 @@
       "llmConfigs": "大模型配置",
       "contentStructure": "内容结构",
       "intelligence": "智能服务",
+      "extensions": "扩展功能",
+      "expressions": "表情管理",
       "donations": "捐赠",
       "settings": "系统配置"
     },
