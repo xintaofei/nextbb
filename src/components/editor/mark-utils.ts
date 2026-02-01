@@ -1,6 +1,6 @@
 import type { Ctx } from "@milkdown/ctx"
 import { editorViewCtx, schemaCtx } from "@milkdown/kit/core"
-import type { Mark, MarkType } from "@milkdown/kit/prose/model"
+import type { MarkType } from "@milkdown/kit/prose/model"
 
 export const toggleMarkInEditor = (
   ctx: Ctx,
@@ -13,8 +13,20 @@ export const toggleMarkInEditor = (
   const markType = getMarkFn(schema) as MarkType | null | undefined
   if (!markType) return
 
-  const marks = (state.storedMarks || []) as Mark[]
-  const isActive = marks.some((m) => m.type.name === markType.name)
+  // Detect if mark is active
+  let isActive
+  if (state.selection.empty) {
+    // Empty selection: check storedMarks or marks at cursor position
+    const storedMarks = state.storedMarks || state.selection.$from.marks()
+    isActive = storedMarks.some((m) => m.type === markType)
+  } else {
+    // Range selection: use rangeHasMark to check if ALL text has the mark
+    isActive = state.doc.rangeHasMark(
+      state.selection.$from.pos,
+      state.selection.$to.pos,
+      markType
+    )
+  }
 
   const tr = state.tr
   if (state.selection.empty) {

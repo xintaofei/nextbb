@@ -1,7 +1,7 @@
 import { useEffect, useState, useCallback } from "react"
 import { editorViewCtx } from "@milkdown/kit/core"
 import type { Ctx } from "@milkdown/ctx"
-import type { Node as ProseMirrorNode } from "@milkdown/kit/prose/model"
+import type { EditorState } from "@milkdown/kit/prose/state"
 
 export interface ToolbarState {
   bold: boolean
@@ -19,10 +19,27 @@ interface EditorInstance {
   action: (fn: (ctx: Ctx) => void) => void
 }
 
-interface Mark {
-  type: {
-    name: string
+/**
+ * Check if a mark is active in the current selection
+ * - Empty selection: check storedMarks (affects next input)
+ * - Range selection: use rangeHasMark to check if ALL text has the mark
+ */
+const checkMarkActive = (state: EditorState, markTypeName: string): boolean => {
+  const markType = state.schema.marks[markTypeName]
+  if (!markType) return false
+
+  // Empty selection: check storedMarks
+  if (state.selection.empty) {
+    const storedMarks = state.storedMarks || state.selection.$from.marks()
+    return storedMarks.some((m) => m.type === markType)
   }
+
+  // Range selection: use rangeHasMark
+  return state.doc.rangeHasMark(
+    state.selection.$from.pos,
+    state.selection.$to.pos,
+    markType
+  )
 }
 
 export const useToolbarState = (
@@ -49,36 +66,13 @@ export const useToolbarState = (
       if (!view) return
 
       const { state: editorState } = view
-      const { selection, doc, storedMarks } = editorState
+      const { selection } = editorState
 
-      // Check marks on current selection or stored marks
-      const marksToCheck: Mark[] = storedMarks ? [...storedMarks] : []
-      if (selection && !selection.empty) {
-        doc.nodesBetween(
-          selection.$from.pos,
-          selection.$to.pos,
-          (node: ProseMirrorNode) => {
-            node.marks.forEach((mark) => {
-              if (!marksToCheck.includes(mark)) {
-                marksToCheck.push(mark)
-              }
-            })
-          }
-        )
-      }
-
-      // Check for marks
-      let bold = false
-      let italic = false
-      let strikethrough = false
-      let code = false
-
-      marksToCheck.forEach((mark) => {
-        if (mark.type.name === "strong") bold = true
-        if (mark.type.name === "em") italic = true
-        if (mark.type.name === "strike_through") strikethrough = true
-        if (mark.type.name === "inlineCode") code = true
-      })
+      // Use precise mark detection
+      const bold = checkMarkActive(editorState, "strong")
+      const italic = checkMarkActive(editorState, "em")
+      const strikethrough = checkMarkActive(editorState, "strike_through")
+      const code = checkMarkActive(editorState, "inlineCode")
 
       // Check block types
       const node = selection.$from.parent
@@ -142,10 +136,55 @@ export const useToolbarState = (
     // Initial state update
     updateState()
 
-    // Listen for selection updates
-    const interval = setInterval(updateState, 100)
+    // Get the editor view DOM element and its parent container
+    let editorDom: HTMLElement | null = null
+    let containerDom: HTMLElement | null = null
+    editor.action((ctx: Ctx) => {
+      const view = ctx.get(editorViewCtx)
+      if (view) {
+        editorDom = view.dom
+        // Get the toolbar container (parent of editor)
+        containerDom = editorDom.closest(".prose")?.parentElement || null
+      }
+    })
 
-    return () => clearInterval(interval)
+    if (!editorDom) return
+
+    // Store references for event listeners (TypeScript needs explicit typing)
+    const editorElement: HTMLElement = editorDom
+    const targetElement: HTMLElement = containerDom || editorDom
+
+    // Update on any selection change (don't filter by anchorNode as toolbar clicks change focus)
+    const handleSelectionChange = () => {
+      // Use requestAnimationFrame to ensure state is updated after transaction
+      requestAnimationFrame(() => {
+        updateState()
+      })
+    }
+
+    // Handle keyboard events in editor
+    const handleKeyUp = () => {
+      updateState()
+    }
+
+    // Handle mouse events - covers clicks and selection
+    const handleMouseUp = () => {
+      // Delay slightly to ensure transaction is complete
+      requestAnimationFrame(() => {
+        updateState()
+      })
+    }
+
+    // Use event-driven updates
+    document.addEventListener("selectionchange", handleSelectionChange)
+    editorElement.addEventListener("keyup", handleKeyUp)
+    targetElement.addEventListener("mouseup", handleMouseUp)
+
+    return () => {
+      document.removeEventListener("selectionchange", handleSelectionChange)
+      editorElement.removeEventListener("keyup", handleKeyUp)
+      targetElement.removeEventListener("mouseup", handleMouseUp)
+    }
   }, [getEditor, updateState])
 
   return state
