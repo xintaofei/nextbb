@@ -37,6 +37,7 @@ import { useEditorUpload } from "./use-editor-upload"
 import { imageBlockNode } from "./plugins/image-block/node"
 import { ImageBlockView } from "./plugins/image-block/view"
 import { ImageView } from "./plugins/image/view"
+import { EditorToolbar } from "./toolbar/editor-toolbar"
 
 type EditorType = ReturnType<typeof Editor.make>
 type ConfigFn = Parameters<EditorType["config"]>[0]
@@ -46,6 +47,7 @@ interface MilkdownEditorProps {
   value?: string
   placeholder?: string
   slashPlaceholder?: string
+  autoFocus?: boolean
   onChange?: (
     value: string,
     json?: Record<string, unknown>,
@@ -56,18 +58,21 @@ interface MilkdownEditorProps {
 
 const parseContent = (value: string | undefined) => {
   if (!value) return ""
-  try {
-    const parsed = JSON.parse(value)
-    if (
-      parsed &&
-      typeof parsed === "object" &&
-      parsed.type === "doc" &&
-      Array.isArray(parsed.content)
-    ) {
-      return parsed
+  // Optimization: Only try to parse as JSON if it looks like a JSON object
+  if (value.trim().startsWith("{")) {
+    try {
+      const parsed = JSON.parse(value)
+      if (
+        parsed &&
+        typeof parsed === "object" &&
+        parsed.type === "doc" &&
+        Array.isArray(parsed.content)
+      ) {
+        return parsed
+      }
+    } catch {
+      // Not JSON, treat as markdown
     }
-  } catch {
-    // Not JSON, treat as markdown
   }
   return value
 }
@@ -120,8 +125,23 @@ const MilkdownEditor: React.FC<MilkdownEditorProps> = ({
   onPendingChange,
   placeholder,
   slashPlaceholder,
+  autoFocus,
 }) => {
   const valueRef = useRef<string | undefined>(value)
+  const onChangeRef = useRef(onChange)
+  const onPendingChangeRef = useRef(onPendingChange)
+
+  // Parse initial content once to determine initialization strategy
+  const [initialContent] = useState(() => parseContent(value))
+
+  useEffect(() => {
+    onChangeRef.current = onChange
+  }, [onChange])
+
+  useEffect(() => {
+    onPendingChangeRef.current = onPendingChange
+  }, [onPendingChange])
+
   const mentionListRef = useRef<MentionListRef>(null)
   const [mentionState, setMentionState] = useState<PluginState>({
     open: false,
@@ -147,23 +167,50 @@ const MilkdownEditor: React.FC<MilkdownEditorProps> = ({
     isPending,
     cancel: cancelDebounce,
   } = useDebouncedCallback(
-    (jsonString: string, json: Record<string, unknown>, html: string) => {
-      onChange?.(jsonString, json, html)
+    (
+      ctx: Ctx,
+      doc: Node,
+      jsonString: string,
+      json: Record<string, unknown>
+    ) => {
+      const currentOnChange = onChangeRef.current
+      if (!currentOnChange) return
+
+      // HTML serialization - done only when debounce fires
+      const schema = ctx.get(schemaCtx)
+      const domSerializer = DOMSerializer.fromSchema(schema)
+      const fragment = domSerializer.serializeFragment(doc.content)
+      const tmp = document.createElement("div")
+      tmp.appendChild(fragment)
+      const html = tmp.innerHTML
+
+      currentOnChange(jsonString, json, html)
     },
     300
   )
 
   // 记录上一次同步给编辑器的外部 value，用于区分“外部修改”和“防抖期间的旧值回流”
+  // If initial content is JSON, we skip defaultValueCtx, so we start "unsynced" (undefined)
+  // to force useEffect to load the JSON content.
+  // We use a flag to track if initialization is needed for JSON
   const lastSyncedValueRef = useRef(value)
+  const isRemoteUpdate = useRef(false)
+  const isInitializedRef = useRef(typeof initialContent === "string")
 
   // 同步 pending 状态给父组件
   useEffect(() => {
-    onPendingChange?.(isPending)
-  }, [isPending, onPendingChange])
+    onPendingChangeRef.current?.(isPending)
+  }, [isPending])
 
   const handleUpdate = useCallback(
     (ctx: Ctx, doc: Node) => {
-      if (!onChange) return
+      if (!onChangeRef.current) return
+
+      // Optimization: Skip processing if update was triggered by remote change
+      if (isRemoteUpdate.current) {
+        isRemoteUpdate.current = false
+        return
+      }
 
       // 1. JSON
       const json = doc.toJSON()
@@ -175,20 +222,12 @@ const MilkdownEditor: React.FC<MilkdownEditorProps> = ({
         return
       }
 
-      // 2. HTML
-      const schema = ctx.get(schemaCtx)
-      const domSerializer = DOMSerializer.fromSchema(schema)
-      const fragment = domSerializer.serializeFragment(doc.content)
-      const tmp = document.createElement("div")
-      tmp.appendChild(fragment)
-      const html = tmp.innerHTML
-
       // 立即更新 Ref，防止光标跳动
       valueRef.current = jsonString
       // 防抖通知父组件
-      debouncedOnChange(jsonString, json, html)
+      debouncedOnChange(ctx, doc, jsonString, json)
     },
-    [onChange, debouncedOnChange]
+    [debouncedOnChange]
   )
 
   const { get, loading } = useEditor(
@@ -198,9 +237,11 @@ const MilkdownEditor: React.FC<MilkdownEditorProps> = ({
         .config((ctx) => {
           ctx.set(rootCtx, root)
 
-          const initialContent = parseContent(value)
-          if (typeof initialContent === "string") {
-            ctx.set(defaultValueCtx, initialContent)
+          const content = parseContent(value)
+          // Only use defaultValueCtx for string (Markdown) content.
+          // For JSON, we load it via useEffect transaction to ensure schema compatibility.
+          if (typeof content === "string") {
+            ctx.set(defaultValueCtx, content)
           }
 
           ctx.get(listenerCtx).updated((ctx, doc) => {
@@ -272,16 +313,19 @@ const MilkdownEditor: React.FC<MilkdownEditorProps> = ({
   useEffect(() => {
     if (loading || value === undefined) return
 
-    // 如果当前 value 和上一次同步的值一样，说明不是外部的主动修改（如重置或加载新内容）
-    // 此时即使 value !== valueRef.current，也只是因为防抖还没结束，不应该同步回编辑器
-    if (value === lastSyncedValueRef.current) return
+    // 如果未初始化（是JSON），则忽略检查强制加载
+    if (isInitializedRef.current) {
+      // 如果当前 value 和上一次同步的值一样，说明不是外部的主动修改（如重置或加载新内容）
+      // 此时即使 value !== valueRef.current，也只是因为防抖还没结束，不应该同步回编辑器
+      if (value === lastSyncedValueRef.current) return
 
-    // 走到这里说明外部真正改变了内容（例如点击了重置按钮），需要取消当前的防抖并同步
-    cancelDebounce()
+      // 走到这里说明外部真正改变了内容（例如点击了重置按钮），需要取消当前的防抖并同步
+      cancelDebounce()
 
-    if (value === valueRef.current) {
-      lastSyncedValueRef.current = value
-      return
+      if (value === valueRef.current) {
+        lastSyncedValueRef.current = value
+        return
+      }
     }
 
     const editor = get()
@@ -290,6 +334,7 @@ const MilkdownEditor: React.FC<MilkdownEditorProps> = ({
     const content = parseContent(value)
 
     if (typeof content === "string") {
+      isRemoteUpdate.current = true
       editor.action(replaceAll(content))
     } else {
       editor.action((ctx) => {
@@ -301,12 +346,34 @@ const MilkdownEditor: React.FC<MilkdownEditorProps> = ({
           view.state.doc.content.size,
           node
         )
+        isRemoteUpdate.current = true
         Promise.resolve().then(() => view.dispatch(tr))
       })
     }
     valueRef.current = value
     lastSyncedValueRef.current = value
+    isInitializedRef.current = true
   }, [value, get, loading, cancelDebounce])
+
+  useEffect(() => {
+    if (!loading && autoFocus) {
+      const editor = get()
+      if (!editor) return
+
+      // Use requestAnimationFrame to ensure the editor is ready and visible
+      // This is more reliable than setTimeout for focus management in React 18+
+      const frameId = requestAnimationFrame(() => {
+        editor.action((ctx) => {
+          const view = ctx.get(editorViewCtx)
+          if (view && !view.hasFocus()) {
+            view.focus()
+          }
+        })
+      })
+
+      return () => cancelAnimationFrame(frameId)
+    }
+  }, [loading, autoFocus, get])
 
   const calculatePopoverStyle = useCallback(
     (x: number, y: number, isOpen: boolean) => {
@@ -346,6 +413,7 @@ const MilkdownEditor: React.FC<MilkdownEditorProps> = ({
 
   return (
     <>
+      <EditorToolbar getEditor={get} />
       <Milkdown />
       {mentionState.open &&
         typeof document !== "undefined" &&
@@ -458,7 +526,15 @@ const MilkdownEditor: React.FC<MilkdownEditorProps> = ({
                       wrapIn(schema.nodes.ordered_list)(state, dispatch)
                       break
                     case "codeBlock":
-                      setBlockType(schema.nodes.code_block)(state, dispatch)
+                      setBlockType(schema.nodes.code_block)(state, (tr) => {
+                        const { $to } = tr.selection
+                        const pos = $to.after()
+                        const p = schema.nodes.paragraph.createAndFill()
+                        if (p) {
+                          tr.insert(pos, p)
+                        }
+                        dispatch(tr)
+                      })
                       break
                     case "blockquote":
                       wrapIn(schema.nodes.blockquote)(state, dispatch)

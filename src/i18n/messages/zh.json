@@ -2375,6 +2375,33 @@
       "error": "上传失败: {name}",
       "genericError": "上传失败",
       "widgetText": "正在上传图片..."
+    },
+    "Toolbar": {
+      "bold": "粗体",
+      "italic": "斜体",
+      "strikethrough": "删除线",
+      "code": "代码",
+      "paragraph": "段落",
+      "heading1": "标题 1",
+      "heading2": "标题 2",
+      "heading3": "标题 3",
+      "heading4": "标题 4",
+      "bulletList": "无序列表",
+      "orderedList": "有序列表",
+      "blockquote": "引用",
+      "codeBlock": "代码块",
+      "link": "链接",
+      "image": "图片",
+      "hr": "分割线",
+      "insertLink": "插入链接",
+      "editLink": "编辑链接",
+      "linkUrl": "链接地址",
+      "linkText": "链接文本",
+      "linkTextPlaceholder": "显示的链接文本（默认为链接地址）",
+      "cancel": "取消",
+      "insert": "插入",
+      "update": "更新",
+      "more": "更多"
     }
   },
   "EmojiPicker": {

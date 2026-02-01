@@ -870,6 +870,8 @@ enum TranslationEntityType {
   BADGE // 徽章
   TOPIC // 话题
   POST // 帖子
+  EXPRESSION_GROUP // 表情分组
+  EXPRESSION // 表情
 }
 
 // 翻译任务状态枚举
@@ -1099,4 +1101,86 @@ model user_two_factor {
   user users @relation(fields: [user_id], references: [id], onDelete: Cascade)
 
   @@map("user_two_factor")
+}
+
+// ==================== 表情系统 ====================
+
+enum ExpressionType {
+  IMAGE
+  TEXT
+}
+
+model expression_groups {
+  id            BigInt   @id @db.BigInt
+  source_locale String   @default("zh") @db.VarChar(8)
+  code          String   @unique @db.VarChar(32) // e.g. "default", "onion"
+  icon          String?  @db.VarChar(256) // Group icon
+  sort          Int      @default(0)
+  is_enabled    Boolean  @default(true)
+  is_deleted    Boolean  @default(false)
+  created_at    DateTime @default(now())
+  updated_at    DateTime @updatedAt
+
+  expressions  expressions[]
+  translations expression_group_translations[]
+
+  @@map("expression_groups")
+}
+
+model expression_group_translations {
+  group_id    BigInt   @db.BigInt
+  locale      String   @db.VarChar(8)
+  name        String   @db.VarChar(32)
+  is_source   Boolean  @default(false)
+  version     Int      @default(0)
+  created_at  DateTime @default(now())
+  updated_at  DateTime @updatedAt
+
+  group expression_groups @relation(fields: [group_id], references: [id], onDelete: Cascade)
+
+  @@id([group_id, locale])
+  @@index([locale, is_source], map: "expression_group_trans_locale_source_index")
+  @@index([group_id, is_source], map: "expression_group_trans_group_source_index")
+  @@map("expression_group_translations")
+}
+
+model expressions {
+  id            BigInt   @id @db.BigInt
+  group_id      BigInt   @db.BigInt
+  source_locale String   @default("zh") @db.VarChar(8)
+  type          ExpressionType @default(IMAGE)
+  code          String   @db.VarChar(32) // e.g. "smile", "001"
+  image_path    String?  @db.VarChar(256) // e.g. "onion/001.gif"
+  text_content  String?  @db.VarChar(64) // e.g. "😊"
+  width         Int?
+  height        Int?
+  sort          Int      @default(0)
+  is_enabled    Boolean  @default(true)
+  is_deleted    Boolean  @default(false)
+  created_at    DateTime @default(now())
+  updated_at    DateTime @updatedAt
+
+  group        expression_groups         @relation(fields: [group_id], references: [id])
+  translations expression_translations[]
+
+  @@unique([group_id, code], map: "expressions_group_code_unique")
+  @@index([group_id], map: "expressions_group_index")
+  @@map("expressions")
+}
+
+model expression_translations {
+  expression_id BigInt   @db.BigInt
+  locale        String   @db.VarChar(8)
+  name          String   @db.VarChar(64) // e.g. "Smile"
+  is_source     Boolean  @default(false)
+  version       Int      @default(0)
+  created_at    DateTime @default(now())
+  updated_at    DateTime @updatedAt
+
+  expression expressions @relation(fields: [expression_id], references: [id], onDelete: Cascade)
+
+  @@id([expression_id, locale])
+  @@index([locale, is_source], map: "expression_trans_locale_source_index")
+  @@index([expression_id, is_source], map: "expression_trans_expression_source_index")
+  @@map("expression_translations")
 }

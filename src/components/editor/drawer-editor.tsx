@@ -57,15 +57,16 @@ export function DrawerEditor({
       <DrawerContent>
         <DrawerHeader>
           <DrawerTitle>{title}</DrawerTitle>
-          {description ? (
-            <DrawerDescription>{description}</DrawerDescription>
-          ) : null}
+          <DrawerDescription className={description ? "" : "sr-only"}>
+            {description || "Editor"}
+          </DrawerDescription>
         </DrawerHeader>
         <div className="flex justify-center px-4">
           <MilkdownEditorWrapper
             value={value}
             placeholder={placeholder}
             slashPlaceholder={slashPlaceholder}
+            autoFocus={open}
             onChange={(val, json, h) => {
               setValue(val)
               setHtml(h || "")
