@@ -18,51 +18,80 @@ export interface ToolbarState {
 interface EditorInstance {
   action: (fn: (ctx: Ctx) => void) => void
 }
+import { MarkType } from "@milkdown/kit/prose/model"
 
 /**
- * Check if a mark is active in the current selection
- * - Empty selection: check storedMarks (affects next input)
- * - Range selection: check if the entire range has the mark consistently
+ * Check multiple marks active state in a single pass
  */
-const checkMarkActive = (
+const checkMarksActive = (
   state: EditorState,
-  markTypeNames: string[]
-): boolean => {
+  marksMap: Record<string, string[]>
+): Record<string, boolean> => {
   const { from, to, empty } = state.selection
+  const markTypes: Record<string, MarkType> = {}
 
-  // Find the first valid mark type
-  let markType = null
-  for (const name of markTypeNames) {
-    if (state.schema.marks[name]) {
-      markType = state.schema.marks[name]
-      break
+  // Resolve mark types
+  Object.entries(marksMap).forEach(([key, names]) => {
+    for (const name of names) {
+      if (state.schema.marks[name]) {
+        markTypes[key] = state.schema.marks[name]
+        break
+      }
     }
-  }
-  if (!markType) return false
+  })
 
-  // Empty selection: check storedMarks or marks at cursor position
+  const result: Record<string, boolean> = {}
+  const keys = Object.keys(markTypes)
+
+  // Initialize all to false
+  keys.forEach((key) => {
+    result[key] = false
+  })
+
+  if (keys.length === 0) return result
+
+  // Empty selection: check storedMarks
   if (empty) {
     const storedMarks = state.storedMarks || state.selection.$from.marks()
-    return storedMarks.some((m) => m.type === markType)
+    keys.forEach((key) => {
+      const type = markTypes[key]
+      result[key] = storedMarks.some((m) => m.type === type)
+    })
+    return result
   }
 
   // Range selection: check if all text in range has the mark
-  let allHaveMark = true
+  // We need to track which marks are NOT fully covering the range
+  const missingMarks = new Set<string>()
+
   let hasText = false
   state.doc.nodesBetween(from, to, (node) => {
-    // Only check text nodes
+    // If we already failed all marks, stop traversal
+    if (missingMarks.size === keys.length) return false
+
     if (node.isText) {
       hasText = true
-      // Check if this text node has the mark
-      if (!node.marks.some((m) => m.type === markType)) {
-        allHaveMark = false
-        return false // Stop iteration - found text without mark
-      }
+      keys.forEach((key) => {
+        if (missingMarks.has(key)) return // Already failed this mark
+
+        const type = markTypes[key]
+        if (!node.marks.some((m) => m.type === type)) {
+          missingMarks.add(key)
+        }
+      })
     }
     return true
   })
 
-  return hasText && allHaveMark
+  // If no text, no marks are active
+  if (!hasText) return result
+
+  // A mark is active if it's not in the missing set
+  keys.forEach((key) => {
+    result[key] = !missingMarks.has(key)
+  })
+
+  return result
 }
 
 export const useToolbarState = (
@@ -111,10 +140,15 @@ export const useToolbarState = (
         prevSelectionRef.current = { from, to }
 
         // Use precise mark detection - pass multiple possible names to avoid double traversal
-        const bold = checkMarkActive(editorState, ["strong"])
-        const italic = checkMarkActive(editorState, ["em", "emphasis"])
-        const strikethrough = checkMarkActive(editorState, ["strike_through"])
-        const code = checkMarkActive(editorState, ["inlineCode"])
+        const { bold, italic, strikethrough, code } = checkMarksActive(
+          editorState,
+          {
+            bold: ["strong"],
+            italic: ["em", "emphasis"],
+            strikethrough: ["strike_through"],
+            code: ["inlineCode"],
+          }
+        )
 
         // Check block types
         const node = selection.$from.parent

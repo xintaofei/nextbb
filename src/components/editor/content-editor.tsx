@@ -123,6 +123,17 @@ const MilkdownEditor: React.FC<MilkdownEditorProps> = ({
   slashPlaceholder,
 }) => {
   const valueRef = useRef<string | undefined>(value)
+  const onChangeRef = useRef(onChange)
+  const onPendingChangeRef = useRef(onPendingChange)
+
+  useEffect(() => {
+    onChangeRef.current = onChange
+  }, [onChange])
+
+  useEffect(() => {
+    onPendingChangeRef.current = onPendingChange
+  }, [onPendingChange])
+
   const mentionListRef = useRef<MentionListRef>(null)
   const [mentionState, setMentionState] = useState<PluginState>({
     open: false,
@@ -154,7 +165,8 @@ const MilkdownEditor: React.FC<MilkdownEditorProps> = ({
       jsonString: string,
       json: Record<string, unknown>
     ) => {
-      if (!onChange) return
+      const currentOnChange = onChangeRef.current
+      if (!currentOnChange) return
 
       // HTML serialization - done only when debounce fires
       const schema = ctx.get(schemaCtx)
@@ -164,7 +176,7 @@ const MilkdownEditor: React.FC<MilkdownEditorProps> = ({
       tmp.appendChild(fragment)
       const html = tmp.innerHTML
 
-      onChange(jsonString, json, html)
+      currentOnChange(jsonString, json, html)
     },
     300
   )
@@ -174,12 +186,12 @@ const MilkdownEditor: React.FC<MilkdownEditorProps> = ({
 
   // 同步 pending 状态给父组件
   useEffect(() => {
-    onPendingChange?.(isPending)
-  }, [isPending, onPendingChange])
+    onPendingChangeRef.current?.(isPending)
+  }, [isPending])
 
   const handleUpdate = useCallback(
     (ctx: Ctx, doc: Node) => {
-      if (!onChange) return
+      if (!onChangeRef.current) return
 
       // 1. JSON
       const json = doc.toJSON()
@@ -196,7 +208,7 @@ const MilkdownEditor: React.FC<MilkdownEditorProps> = ({
       // 防抖通知父组件
       debouncedOnChange(ctx, doc, jsonString, json)
     },
-    [onChange, debouncedOnChange]
+    [debouncedOnChange]
   )
 
   const { get, loading } = useEditor(
