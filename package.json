@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "prisma generate && prisma db push --accept-data-loss && tsx prisma/seeds/runner.ts && next build",
+    "build:code": "prisma generate && next build",
     "start": "next start",
     "lint": "eslint",
     "prisma": "prisma",
@@ -26,6 +27,7 @@
     "@emoji-mart/data": "^1.2.1",
     "@emoji-mart/react": "^1.1.1",
     "@hookform/resolvers": "^5.2.2",
+    "@milkdown/ctx": "^7.18.0",
     "@milkdown/kit": "^7.18.0",
     "@milkdown/react": "^7.18.0",
     "@milkdown/theme-nord": "^7.18.0",
