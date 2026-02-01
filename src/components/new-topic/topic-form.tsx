@@ -46,7 +46,7 @@ const MilkdownEditorWrapper = dynamic(
     ),
   {
     ssr: false,
-    loading: () => <Skeleton className="h-[200px] w-full rounded-md" />,
+    loading: () => <Skeleton className="h-36 w-full rounded-md" />,
   }
 )
 import { useCurrentUserProfile } from "@/hooks/use-current-user-profile"

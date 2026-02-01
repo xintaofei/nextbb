@@ -2375,6 +2375,33 @@
       "error": "Upload failed: {name}",
       "genericError": "Upload failed",
       "widgetText": "Uploading image..."
+    },
+    "Toolbar": {
+      "bold": "Bold",
+      "italic": "Italic",
+      "strikethrough": "Strikethrough",
+      "code": "Code",
+      "paragraph": "Paragraph",
+      "heading1": "Heading 1",
+      "heading2": "Heading 2",
+      "heading3": "Heading 3",
+      "heading4": "Heading 4",
+      "bulletList": "Bullet List",
+      "orderedList": "Ordered List",
+      "blockquote": "Blockquote",
+      "codeBlock": "Code Block",
+      "link": "Link",
+      "image": "Image",
+      "hr": "Horizontal Rule",
+      "insertLink": "Insert Link",
+      "editLink": "Edit Link",
+      "linkUrl": "URL",
+      "linkText": "Link Text",
+      "linkTextPlaceholder": "Display text for the link (defaults to URL)",
+      "cancel": "Cancel",
+      "insert": "Insert",
+      "update": "Update",
+      "more": "More"
     }
   },
   "EmojiPicker": {

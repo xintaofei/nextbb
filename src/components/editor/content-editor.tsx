@@ -37,6 +37,7 @@ import { useEditorUpload } from "./use-editor-upload"
 import { imageBlockNode } from "./plugins/image-block/node"
 import { ImageBlockView } from "./plugins/image-block/view"
 import { ImageView } from "./plugins/image/view"
+import { EditorToolbar } from "./toolbar/editor-toolbar"
 
 type EditorType = ReturnType<typeof Editor.make>
 type ConfigFn = Parameters<EditorType["config"]>[0]
@@ -346,6 +347,7 @@ const MilkdownEditor: React.FC<MilkdownEditorProps> = ({
 
   return (
     <>
+      <EditorToolbar getEditor={get} />
       <Milkdown />
       {mentionState.open &&
         typeof document !== "undefined" &&
