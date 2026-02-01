@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from "react"
+import { useEffect, useState, useCallback, useRef } from "react"
 import { editorViewCtx } from "@milkdown/kit/core"
 import type { Ctx } from "@milkdown/ctx"
 import type { EditorState } from "@milkdown/kit/prose/state"
@@ -24,11 +24,21 @@ interface EditorInstance {
  * - Empty selection: check storedMarks (affects next input)
  * - Range selection: check if the entire range has the mark consistently
  */
-const checkMarkActive = (state: EditorState, markTypeName: string): boolean => {
-  const markType = state.schema.marks[markTypeName]
-  if (!markType) return false
-
+const checkMarkActive = (
+  state: EditorState,
+  markTypeNames: string[]
+): boolean => {
   const { from, to, empty } = state.selection
+
+  // Find the first valid mark type
+  let markType = null
+  for (const name of markTypeNames) {
+    if (state.schema.marks[name]) {
+      markType = state.schema.marks[name]
+      break
+    }
+  }
+  if (!markType) return false
 
   // Empty selection: check storedMarks or marks at cursor position
   if (empty) {
@@ -70,111 +80,122 @@ export const useToolbarState = (
     isCodeBlock: false,
   })
 
-  const updateState = useCallback(() => {
-    const editor = getEditor()
-    if (!editor) return
+  // Use ref to track RAF ID for cleanup and previous selection state
+  const rafIdRef = useRef<number | null>(null)
+  const prevSelectionRef = useRef<{ from: number; to: number } | null>(null)
 
-    editor.action((ctx: Ctx) => {
-      const view = ctx.get(editorViewCtx)
-      if (!view) return
+  const updateState = useCallback(
+    (force = false) => {
+      const editor = getEditor()
+      if (!editor) return
 
-      const { state: editorState } = view
-      const { selection } = editorState
+      editor.action((ctx: Ctx) => {
+        const view = ctx.get(editorViewCtx)
+        if (!view) return
 
-      // Use precise mark detection
-      const bold = checkMarkActive(editorState, "strong")
-      const italic =
-        checkMarkActive(editorState, "em") ||
-        checkMarkActive(editorState, "emphasis")
-      const strikethrough = checkMarkActive(editorState, "strike_through")
-      const code = checkMarkActive(editorState, "inlineCode")
+        const { state: editorState } = view
+        const { selection } = editorState
+        const { from, to } = selection
 
-      // Debug logging (remove in production)
-      if (!selection.empty) {
-        console.log("[Toolbar] Selection marks:", {
+        // Performance optimization: Skip update if selection hasn't changed (unless forced)
+        if (
+          !force &&
+          prevSelectionRef.current &&
+          prevSelectionRef.current.from === from &&
+          prevSelectionRef.current.to === to
+        ) {
+          return
+        }
+
+        // Update cache
+        prevSelectionRef.current = { from, to }
+
+        // Use precise mark detection - pass multiple possible names to avoid double traversal
+        const bold = checkMarkActive(editorState, ["strong"])
+        const italic = checkMarkActive(editorState, ["em", "emphasis"])
+        const strikethrough = checkMarkActive(editorState, ["strike_through"])
+        const code = checkMarkActive(editorState, ["inlineCode"])
+
+        // Check block types
+        const node = selection.$from.parent
+        let headingLevel: number | null = null
+        let isBulletList = false
+        let isOrderedList = false
+        let isBlockquote = false
+        let isCodeBlock = false
+
+        if (node.type.name === "heading") {
+          headingLevel = node.attrs.level || null
+        } else if (node.type.name === "paragraph") {
+          headingLevel = null
+        }
+
+        // Check if inside list (single loop for both types)
+        for (let d = selection.$from.depth; d > 0; d--) {
+          const parent = selection.$from.node(d)
+          if (parent.type.name === "bullet_list") {
+            isBulletList = true
+            break
+          }
+          if (parent.type.name === "ordered_list") {
+            isOrderedList = true
+            break
+          }
+        }
+
+        // Check for blockquote
+        for (let d = selection.$from.depth; d > 0; d--) {
+          const parent = selection.$from.node(d)
+          if (parent.type.name === "blockquote") {
+            isBlockquote = true
+            break
+          }
+        }
+
+        // Check for code block
+        if (node.type.name === "code_block") {
+          isCodeBlock = true
+        }
+
+        setState({
           bold,
           italic,
           strikethrough,
           code,
-          from: selection.from,
-          to: selection.to,
+          headingLevel,
+          isBulletList,
+          isOrderedList,
+          isBlockquote,
+          isCodeBlock,
         })
-
-        // Debug: Check what marks are actually in the document
-        const actualMarks: string[] = []
-        editorState.doc.nodesBetween(selection.from, selection.to, (node) => {
-          if (node.isText) {
-            node.marks.forEach((m) => {
-              if (!actualMarks.includes(m.type.name)) {
-                actualMarks.push(m.type.name)
-              }
-            })
-          }
-        })
-        console.log("[Toolbar] Actual marks in selection:", actualMarks)
-      }
-
-      // Check block types
-      const node = selection.$from.parent
-      let headingLevel: number | null = null
-      let isBulletList = false
-      let isOrderedList = false
-      let isBlockquote = false
-      let isCodeBlock = false
-
-      if (node.type.name === "heading") {
-        headingLevel = node.attrs.level || null
-      } else if (node.type.name === "paragraph") {
-        headingLevel = null
-      }
-
-      // Check if inside list
-      for (let d = selection.$from.depth; d > 0; d--) {
-        const parent = selection.$from.node(d)
-        if (parent.type.name === "bullet_list") {
-          isBulletList = true
-          break
-        }
-        if (parent.type.name === "ordered_list") {
-          isOrderedList = true
-          break
-        }
-      }
-
-      // Check for blockquote
-      for (let d = selection.$from.depth; d > 0; d--) {
-        const parent = selection.$from.node(d)
-        if (parent.type.name === "blockquote") {
-          isBlockquote = true
-          break
-        }
-      }
-
-      // Check for code block
-      if (node.type.name === "code_block") {
-        isCodeBlock = true
-      }
-
-      setState({
-        bold,
-        italic,
-        strikethrough,
-        code,
-        headingLevel,
-        isBulletList,
-        isOrderedList,
-        isBlockquote,
-        isCodeBlock,
       })
-    })
-  }, [getEditor])
+    },
+    [getEditor]
+  )
+
+  // Debounced update using requestAnimationFrame
+  const scheduleUpdate = useCallback(
+    (force = false) => {
+      // Cancel any pending update
+      if (rafIdRef.current !== null) {
+        cancelAnimationFrame(rafIdRef.current)
+      }
+
+      // Schedule new update
+      rafIdRef.current = requestAnimationFrame(() => {
+        rafIdRef.current = null
+        updateState(force)
+      })
+    },
+    [updateState]
+  )
 
   useEffect(() => {
     const editor = getEditor()
     if (!editor) return
 
     // Initial state update
-    updateState()
+    updateState(true)
 
     // Get the editor view DOM element and its parent container
     let editorDom: HTMLElement | null = null
@@ -194,38 +215,42 @@ export const useToolbarState = (
     const editorElement: HTMLElement = editorDom
     const targetElement: HTMLElement = containerDom || editorDom
 
-    // Update on any selection change (don't filter by anchorNode as toolbar clicks change focus)
+    // Selection change - use cache check (most frequent event)
     const handleSelectionChange = () => {
-      // Small delay to ensure ProseMirror state is updated
-      setTimeout(() => {
-        updateState()
-      }, 0)
+      scheduleUpdate(false)
     }
 
-    // Handle keyboard events in editor
+    // Keyboard input - force update as content may have changed
     const handleKeyUp = () => {
-      updateState()
+      scheduleUpdate(true)
     }
 
-    // Handle mouse events - covers clicks and selection
+    // Mouse click - force update as format may have changed (toolbar clicks)
     const handleMouseUp = () => {
-      // Small delay to ensure transaction is complete
-      setTimeout(() => {
-        updateState()
-      }, 0)
+      scheduleUpdate(true)
     }
 
-    // Use event-driven updates
+    // Use event-driven updates with RAF-based debouncing
     document.addEventListener("selectionchange", handleSelectionChange)
     editorElement.addEventListener("keyup", handleKeyUp)
     targetElement.addEventListener("mouseup", handleMouseUp)
 
     return () => {
+      // Clean up event listeners
       document.removeEventListener("selectionchange", handleSelectionChange)
       editorElement.removeEventListener("keyup", handleKeyUp)
       targetElement.removeEventListener("mouseup", handleMouseUp)
+
+      // Cancel any pending animation frame
+      if (rafIdRef.current !== null) {
+        cancelAnimationFrame(rafIdRef.current)
+        rafIdRef.current = null
+      }
+
+      // Clear cache
+      prevSelectionRef.current = null
     }
-  }, [getEditor, updateState])
+  }, [getEditor, updateState, scheduleUpdate])
 
   return state
 }
