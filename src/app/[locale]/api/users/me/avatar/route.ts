@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server"
-import { put } from "@vercel/blob"
 import { getServerSessionUser } from "@/lib/server-auth"
 import { prisma } from "@/lib/prisma"
+import { StorageService, getDefaultProvider } from "@/lib/storage"
 
 const MAX_SIZE = 5 * 1024 * 1024 // 5MB
 const ALLOWED_TYPES = [
@@ -52,19 +52,35 @@ export async function POST(req: Request) {
       )
     }
 
-    // 将文件转换为 ArrayBuffer
-    const arrayBuffer = await file.arrayBuffer()
+    let url: string
 
-    // 上传到 Vercel Blob
-    const userId = session.userId.toString()
-    const ext = getExtFromContentType(file.type)
-    const key = `avatars/${userId}.${ext}`
+    // Check if storage provider is configured
+    const provider = await getDefaultProvider()
 
-    const { url } = await put(key, arrayBuffer, {
-      access: "public",
-      contentType: file.type,
-      token: process.env.BLOB_READ_WRITE_TOKEN,
-    })
+    if (provider) {
+      // Use new StorageService
+      const result = await StorageService.upload(file, {
+        referenceType: "AVATAR",
+        userId: session.userId,
+        originalFilename: file.name,
+      })
+      url = result.url
+    } else {
+      // Fallback to legacy Vercel Blob if no provider configured
+      const { put } = await import("@vercel/blob")
+
+      const arrayBuffer = await file.arrayBuffer()
+      const userId = session.userId.toString()
+      const ext = getExtFromContentType(file.type)
+      const key = `avatars/${userId}.${ext}`
+
+      const result = await put(key, arrayBuffer, {
+        access: "public",
+        contentType: file.type,
+        token: process.env.BLOB_READ_WRITE_TOKEN,
+      })
+      url = result.url
+    }
 
     // 更新用户头像 URL
     const updatedUser = await prisma.users.update({

@@ -1,7 +1,7 @@
 import { prisma } from "@/lib/prisma"
 import { cookies } from "next/headers"
 import { generateId } from "@/lib/id"
-import { uploadAvatarFromUrl } from "@/lib/blob"
+import { StorageService, getDefaultProvider } from "@/lib/storage"
 import { AutomationEvents } from "@/lib/automation/event-bus"
 import { recordLogin } from "@/lib/auth"
 import { encodeUsername } from "@/lib/utils"
@@ -39,6 +39,72 @@ async function ensureUniqueName(name: string): Promise<string> {
   }
 
   return `${name}${Date.now().toString().slice(-8)}`
+}
+
+/**
+ * Upload avatar from URL using StorageService or fallback to legacy method
+ */
+async function uploadAvatarFromUrl(
+  userId: bigint,
+  srcUrl: string
+): Promise<string> {
+  // Check if storage provider is configured
+  const provider = await getDefaultProvider()
+
+  if (provider) {
+    // Use new StorageService
+    const result = await StorageService.uploadFromUrl(srcUrl, {
+      referenceType: "AVATAR",
+      userId,
+    })
+    return result.url
+  }
+
+  // Fallback to legacy Vercel Blob method
+  const MAX_SIZE = 5 * 1024 * 1024
+  const controller = new AbortController()
+  const timer = setTimeout(() => controller.abort(), 10000)
+
+  try {
+    const res = await fetch(srcUrl, { signal: controller.signal })
+    if (!res.ok) throw new Error("avatar fetch failed")
+
+    const ct = res.headers.get("content-type")
+    const lenHeader = res.headers.get("content-length")
+    const len = lenHeader ? parseInt(lenHeader, 10) : undefined
+    if (len && Number.isFinite(len) && len > MAX_SIZE) {
+      throw new Error("avatar too large")
+    }
+
+    const ab = await res.arrayBuffer()
+    if (ab.byteLength > MAX_SIZE) {
+      throw new Error("avatar too large")
+    }
+
+    const ext = getExtFromContentType(ct)
+    const idStr = userId.toString()
+    const key = `avatars/${idStr}.${ext}`
+
+    const { put } = await import("@vercel/blob")
+    const { url } = await put(key, ab, {
+      access: "public",
+      contentType: ct ?? "image/jpeg",
+      token: process.env.BLOB_READ_WRITE_TOKEN,
+    })
+
+    return url
+  } finally {
+    clearTimeout(timer)
+  }
+}
+
+function getExtFromContentType(ct: string | null): string {
+  if (!ct) return "jpg"
+  if (ct.includes("png")) return "png"
+  if (ct.includes("jpeg") || ct.includes("jpg")) return "jpg"
+  if (ct.includes("webp")) return "webp"
+  if (ct.includes("gif")) return "gif"
+  return "jpg"
 }
 
 /**

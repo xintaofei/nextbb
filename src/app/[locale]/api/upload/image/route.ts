@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server"
-import { put } from "@vercel/blob"
 import { getServerSessionUser } from "@/lib/server-auth"
 import { prisma } from "@/lib/prisma"
 import { generateId } from "@/lib/id"
+import { StorageService, getDefaultProvider } from "@/lib/storage"
 
 const MAX_SIZE = 5 * 1024 * 1024 // 5MB
 const ALLOWED_TYPES = [
@@ -12,14 +12,6 @@ const ALLOWED_TYPES = [
   "image/webp",
   "image/gif",
 ]
-
-function getExtFromContentType(ct: string): string {
-  if (ct.includes("png")) return "png"
-  if (ct.includes("jpeg") || ct.includes("jpg")) return "jpg"
-  if (ct.includes("webp")) return "webp"
-  if (ct.includes("gif")) return "gif"
-  return "jpg"
-}
 
 export async function POST(req: Request) {
   // Verify user authentication
@@ -52,12 +44,29 @@ export async function POST(req: Request) {
       )
     }
 
+    // Check if storage provider is configured
+    const provider = await getDefaultProvider()
+
+    if (provider) {
+      // Use new StorageService
+      const result = await StorageService.upload(file, {
+        referenceType: "POST",
+        userId: session.userId,
+        originalFilename: file.name,
+      })
+
+      return NextResponse.json({ url: result.url }, { status: 200 })
+    }
+
+    // Fallback to legacy Vercel Blob if no provider configured
+    // This maintains backwards compatibility during migration
+    const { put } = await import("@vercel/blob")
+
     const arrayBuffer = await file.arrayBuffer()
     const ext = getExtFromContentType(file.type)
     const date = new Date()
     const year = date.getFullYear()
     const month = (date.getMonth() + 1).toString().padStart(2, "0")
-    // Structure: uploads/YYYY/MM/randomId.ext
     const filename = `${crypto.randomUUID()}.${ext}`
     const key = `uploads/${year}/${month}/${filename}`
 
@@ -67,7 +76,7 @@ export async function POST(req: Request) {
       token: process.env.BLOB_READ_WRITE_TOKEN,
     })
 
-    // Record upload in database
+    // Record upload in legacy uploads table
     await prisma.uploads.create({
       data: {
         id: generateId(),
@@ -87,4 +96,12 @@ export async function POST(req: Request) {
       { status: 500 }
     )
   }
+}
+
+function getExtFromContentType(ct: string): string {
+  if (ct.includes("png")) return "png"
+  if (ct.includes("jpeg") || ct.includes("jpg")) return "jpg"
+  if (ct.includes("webp")) return "webp"
+  if (ct.includes("gif")) return "gif"
+  return "jpg"
 }

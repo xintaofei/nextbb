@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server"
-import { put } from "@vercel/blob"
 import { getServerSessionUser } from "@/lib/server-auth"
+import { StorageService, getDefaultProvider } from "@/lib/storage"
 
 const MAX_SIZE = 2 * 1024 * 1024 // 2MB
 const ALLOWED_TYPES = [
@@ -60,17 +60,38 @@ export async function POST(req: Request) {
       )
     }
 
-    const arrayBuffer = await file.arrayBuffer()
-    const ext = getExtFromContentType(file.type)
-    // Structure: expressions/{groupCode}/{uuid}.{ext}
-    const filename = `${crypto.randomUUID()}.${ext}`
-    const key = `expressions/${groupCode}/${filename}`
+    let url: string
+    let path: string
 
-    const { url } = await put(key, arrayBuffer, {
-      access: "public",
-      contentType: file.type,
-      token: process.env.BLOB_READ_WRITE_TOKEN,
-    })
+    // Check if storage provider is configured
+    const provider = await getDefaultProvider()
+
+    if (provider) {
+      // Use new StorageService
+      const result = await StorageService.upload(file, {
+        referenceType: "EXPRESSION",
+        userId: session.userId,
+        subPath: groupCode,
+        originalFilename: file.name,
+      })
+      url = result.url
+      path = result.storageKey
+    } else {
+      // Fallback to legacy Vercel Blob if no provider configured
+      const { put } = await import("@vercel/blob")
+
+      const arrayBuffer = await file.arrayBuffer()
+      const ext = getExtFromContentType(file.type)
+      const filename = `${crypto.randomUUID()}.${ext}`
+      path = `expressions/${groupCode}/${filename}`
+
+      const result = await put(path, arrayBuffer, {
+        access: "public",
+        contentType: file.type,
+        token: process.env.BLOB_READ_WRITE_TOKEN,
+      })
+      url = result.url
+    }
 
     // Get image dimensions using Image API
     const width: number | null = null
@@ -82,7 +103,7 @@ export async function POST(req: Request) {
     return NextResponse.json(
       {
         url,
-        path: key,
+        path,
         width,
         height,
       },
