@@ -1,6 +1,7 @@
 "use client"
 
 import { motion } from "framer-motion"
+import Image from "next/image"
 import { useTranslations } from "next-intl"
 import {
   Edit,
@@ -75,7 +76,7 @@ export function ExpressionCardContent({
         isDragging && "border-primary/50"
       )}
     >
-      <div className="absolute inset-0 bg-gradient-to-br from-foreground/4 via-transparent to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100 -z-10" />
+      <div className="absolute inset-0 bg-linear-to-br from-foreground/4 via-transparent to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100 -z-10" />
 
       <div className="relative space-y-3">
         {/* Preview Area */}
@@ -94,19 +95,12 @@ export function ExpressionCardContent({
             </button>
             <div className="flex h-16 w-16 items-center justify-center rounded-xl border border-border/40 bg-muted/30">
               {expression.type === "IMAGE" && expression.imageUrl ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
+                <Image
                   src={expression.imageUrl}
                   alt={expression.name}
+                  width={expression.width || 64}
+                  height={expression.height || 64}
                   className="max-w-full max-h-full object-contain"
-                  style={{
-                    width: expression.width ? `${expression.width}px` : "auto",
-                    height: expression.height
-                      ? `${expression.height}px`
-                      : "auto",
-                    maxWidth: "100%",
-                    maxHeight: "100%",
-                  }}
                 />
               ) : expression.type === "TEXT" && expression.textContent ? (
                 <span className="text-3xl">{expression.textContent}</span>

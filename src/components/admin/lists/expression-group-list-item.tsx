@@ -3,6 +3,7 @@
 import { useSortable } from "@dnd-kit/sortable"
 import { CSS } from "@dnd-kit/utilities"
 import { motion } from "framer-motion"
+import Image from "next/image"
 import { useTranslations } from "next-intl"
 import {
   ChevronDown,
@@ -127,10 +128,11 @@ export function ExpressionGroupContent({
                 <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-border/40 shrink-0">
                   {iconExpression.type === "IMAGE" &&
                   iconExpression.imageUrl ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img
+                    <Image
                       src={iconExpression.imageUrl}
                       alt={group.name}
+                      width={40}
+                      height={40}
                       className="max-w-full max-h-full object-contain"
                     />
                   ) : iconExpression.type === "TEXT" &&

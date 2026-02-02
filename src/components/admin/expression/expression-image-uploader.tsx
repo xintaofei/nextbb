@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useRef, useCallback } from "react"
+import Image from "next/image"
 import { useTranslations } from "next-intl"
 import { Upload, X, Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -143,10 +144,11 @@ export function ExpressionImageUploader({
       {value ? (
         <div className="relative">
           <div className="rounded-xl border border-border p-4 bg-muted/30 flex items-center justify-center min-h-32">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
+            <Image
               src={value}
               alt="Preview"
+              width={192}
+              height={192}
               className="max-w-full max-h-48 object-contain"
             />
           </div>

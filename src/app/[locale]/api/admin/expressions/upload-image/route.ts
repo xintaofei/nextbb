@@ -66,10 +66,11 @@ export async function POST(req: Request) {
     const filename = `${crypto.randomUUID()}.${ext}`
     const key = `expressions/${groupCode}/${filename}`
 
-    const { url } = await put(key, arrayBuffer, {
+    const { url, pathname } = await put(key, arrayBuffer, {
       access: "public",
       contentType: file.type,
       token: process.env.BLOB_READ_WRITE_TOKEN,
+      addRandomSuffix: false,
     })
 
     // Get image dimensions using Image API
@@ -82,7 +83,7 @@ export async function POST(req: Request) {
     return NextResponse.json(
       {
         url,
-        path: key,
+        path: pathname,
         width,
         height,
       },

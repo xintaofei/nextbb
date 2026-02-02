@@ -61,10 +61,11 @@ export async function POST(req: Request) {
     const filename = `${crypto.randomUUID()}.${ext}`
     const key = `uploads/${year}/${month}/${filename}`
 
-    const { url } = await put(key, arrayBuffer, {
+    const { url, pathname } = await put(key, arrayBuffer, {
       access: "public",
       contentType: file.type,
       token: process.env.BLOB_READ_WRITE_TOKEN,
+      addRandomSuffix: false,
     })
 
     // Record upload in database
@@ -73,7 +74,7 @@ export async function POST(req: Request) {
         id: generateId(),
         user_id: session.userId,
         url,
-        pathname: key,
+        pathname: pathname,
         content_type: file.type,
         size: file.size,
       },

@@ -30,8 +30,10 @@ import type { Ctx } from "@milkdown/ctx"
 import { ToolbarButton } from "./toolbar-button"
 import { HeadingDropdown } from "./heading-dropdown"
 import { LinkDialog } from "./link-dialog"
+import { ExpressionPicker } from "./expression-picker"
 import { useToolbarState } from "./use-toolbar-state"
 import { toggleMarkInEditor } from "../mark-utils"
+import type { Expression } from "@/types/expression"
 
 interface EditorToolbarProps {
   getEditor: () =>
@@ -339,6 +341,33 @@ export const EditorToolbar = memo(({ getEditor }: EditorToolbarProps) => {
     })
   }, [executeCommand])
 
+  // Expression command
+  const handleExpression = useCallback(
+    (expression: Expression) => {
+      executeCommand((ctx) => {
+        const view = ctx.get(editorViewCtx)
+        const { state, dispatch } = view
+        const { from, to } = state.selection
+
+        if (expression.type === "IMAGE" && expression.imageUrl) {
+          const schema = ctx.get(schemaCtx)
+          const node = schema.nodes.image.create({
+            src: expression.imageUrl,
+            alt: expression.name,
+          })
+          const tr = state.tr.replaceSelectionWith(node)
+          dispatch(tr)
+        } else if (expression.type === "TEXT" && expression.textContent) {
+          const tr = state.tr.insertText(expression.textContent, from, to)
+          dispatch(tr)
+        }
+
+        view.focus()
+      })
+    },
+    [executeCommand]
+  )
+
   return (
     <div className="flex flex-col border-b bg-muted/30 sticky top-0 z-40">
       {/* Desktop toolbar */}
@@ -422,6 +451,7 @@ export const EditorToolbar = memo(({ getEditor }: EditorToolbarProps) => {
           label={t("image")}
           onClick={handleImage}
         />
+        <ExpressionPicker onSelect={handleExpression} />
         <ToolbarButton
           icon={<Minus className="h-4 w-4" />}
           label={t("hr")}
@@ -448,6 +478,7 @@ export const EditorToolbar = memo(({ getEditor }: EditorToolbarProps) => {
           label={t("link")}
           onClick={() => setLinkDialogOpen(true)}
         />
+        <ExpressionPicker onSelect={handleExpression} />
 
         <DropdownMenu>
           <DropdownMenuTrigger asChild>

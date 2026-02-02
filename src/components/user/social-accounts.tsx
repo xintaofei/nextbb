@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { useSearchParams, useRouter } from "next/navigation"
+import Image from "next/image"
 import { useTranslations } from "next-intl"
 import { signIn } from "next-auth/react"
 import useSWR from "swr"
@@ -164,11 +165,13 @@ export function SocialAccounts({ providers }: SocialAccountsProps) {
               >
                 <div className="shrink-0">
                   {provider.icon ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img
+                    <Image
                       src={provider.icon}
                       alt={provider.name}
+                      width={40}
+                      height={40}
                       className="h-10 w-10 rounded-lg"
+                      unoptimized
                     />
                   ) : (
                     <div className="h-10 w-10 rounded-lg bg-muted flex items-center justify-center">

@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import Image from "next/image"
 import { useTranslations } from "next-intl"
 import {
   Dialog,
@@ -153,10 +154,11 @@ export function ExpressionGroupDialog({
                       <SelectItem key={expr.id} value={expr.id}>
                         <div className="flex items-center gap-2">
                           {expr.type === "IMAGE" && expr.imageUrl ? (
-                            // eslint-disable-next-line @next/next/no-img-element
-                            <img
+                            <Image
                               src={expr.imageUrl}
                               alt={expr.name}
+                              width={24}
+                              height={24}
                               className="w-6 h-6 object-contain"
                             />
                           ) : expr.type === "TEXT" && expr.textContent ? (
