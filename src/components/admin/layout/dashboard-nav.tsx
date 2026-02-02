@@ -18,6 +18,7 @@ import {
   Link2,
   Smile,
   Blocks,
+  HardDrive,
 } from "lucide-react"
 import { useState } from "react"
 import Link from "next/link"
@@ -89,6 +90,11 @@ export function DashboardNav() {
           label: t("socialProviders"),
           icon: Link2,
           path: "/admin/social-providers",
+        },
+        {
+          label: t("storageProviders"),
+          icon: HardDrive,
+          path: "/admin/storage-providers",
         },
         {
           label: t("expressions"),

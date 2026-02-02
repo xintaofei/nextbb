@@ -714,6 +714,7 @@
       "tags": "标签",
       "badges": "徽章",
       "socialProviders": "社交登录",
+      "storageProviders": "对象存储",
       "translationTasks": "翻译任务",
       "automationRules": "自动化规则",
       "llmConfigs": "大模型配置",
@@ -2507,6 +2508,84 @@
       "deleteError": "删除失败",
       "reorderSuccess": "排序更新成功",
       "reorderError": "排序更新失败"
+    }
+  },
+  "AdminStorageProviders": {
+    "title": "对象存储管理",
+    "description": "管理文件存储供应商配置",
+    "createButton": "添加供应商",
+    "loading": "加载中...",
+    "empty": "暂无存储供应商",
+    "list": {
+      "default": "默认",
+      "setDefault": "设为默认",
+      "enabled": "已启用",
+      "disabled": "已禁用",
+      "dragHint": "拖拽调整排序"
+    },
+    "providerTypes": {
+      "LOCAL": "本地存储",
+      "VERCEL_BLOB": "Vercel Blob",
+      "ALIYUN_OSS": "阿里云 OSS",
+      "AWS_S3": "AWS S3",
+      "TENCENT_COS": "腾讯云 COS",
+      "QINIU": "七牛云",
+      "UPYUN": "又拍云",
+      "MINIO": "MinIO"
+    },
+    "dialog": {
+      "createTitle": "添加存储供应商",
+      "editTitle": "编辑存储供应商",
+      "name": "供应商名称",
+      "providerType": "供应商类型",
+      "providerTypePlaceholder": "选择供应商类型",
+      "baseUrl": "访问基础地址",
+      "isActive": "启用此供应商",
+      "maxFileSize": "最大文件大小 (MB)",
+      "allowedTypes": "允许的文件类型",
+      "allowedTypesPlaceholder": "例如: image/*,application/pdf",
+      "configSection": "供应商配置",
+      "cancel": "取消",
+      "submit": "保存",
+      "submitting": "保存中...",
+      "secretPlaceholder": "留空保持不变",
+      "config": {
+        "basePath": "基础路径",
+        "token": "访问令牌",
+        "accessKeyId": "Access Key ID",
+        "accessKeySecret": "Access Key Secret",
+        "secretAccessKey": "Secret Access Key",
+        "secretId": "Secret ID",
+        "secretKey": "Secret Key",
+        "region": "区域",
+        "bucket": "存储桶",
+        "endpoint": "端点地址",
+        "accessKey": "Access Key",
+        "operator": "操作员",
+        "password": "密码",
+        "port": "端口",
+        "useSsl": "使用 SSL"
+      }
+    },
+    "deleteDialog": {
+      "title": "确认删除",
+      "description": "确定要删除此存储供应商吗?如果有文件正在使用该供应商,删除后可能导致文件无法访问。",
+      "cannotDeleteDefault": "无法删除默认供应商,请先设置其他供应商为默认。",
+      "cancel": "取消",
+      "confirm": "删除"
+    },
+    "message": {
+      "createSuccess": "创建成功",
+      "createError": "创建失败",
+      "updateSuccess": "更新成功",
+      "updateError": "更新失败",
+      "deleteSuccess": "删除成功",
+      "deleteError": "删除失败",
+      "setDefaultSuccess": "默认供应商设置成功",
+      "setDefaultError": "设置失败",
+      "reorderSuccess": "排序更新成功",
+      "reorderError": "排序更新失败",
+      "cannotDisableDefault": "无法禁用默认供应商"
     }
   },
   "AdminExpressions": {

@@ -714,6 +714,7 @@
       "tags": "Tags",
       "badges": "Badges",
       "socialProviders": "Social Login",
+      "storageProviders": "Object Storage",
       "translationTasks": "Translation Tasks",
       "automationRules": "Automation Rules",
       "llmConfigs": "LLM Configs",
@@ -2507,6 +2508,84 @@
       "deleteError": "Failed to delete provider",
       "reorderSuccess": "Order updated successfully",
       "reorderError": "Failed to update order"
+    }
+  },
+  "AdminStorageProviders": {
+    "title": "Storage Provider Management",
+    "description": "Manage file storage provider configurations",
+    "createButton": "Add Provider",
+    "loading": "Loading...",
+    "empty": "No storage providers configured",
+    "list": {
+      "default": "Default",
+      "setDefault": "Set as Default",
+      "enabled": "Enabled",
+      "disabled": "Disabled",
+      "dragHint": "Drag to reorder"
+    },
+    "providerTypes": {
+      "LOCAL": "Local Storage",
+      "VERCEL_BLOB": "Vercel Blob",
+      "ALIYUN_OSS": "Aliyun OSS",
+      "AWS_S3": "AWS S3",
+      "TENCENT_COS": "Tencent COS",
+      "QINIU": "Qiniu",
+      "UPYUN": "Upyun",
+      "MINIO": "MinIO"
+    },
+    "dialog": {
+      "createTitle": "Add Storage Provider",
+      "editTitle": "Edit Storage Provider",
+      "name": "Provider Name",
+      "providerType": "Provider Type",
+      "providerTypePlaceholder": "Select provider type",
+      "baseUrl": "Base URL",
+      "isActive": "Enable this provider",
+      "maxFileSize": "Max File Size (MB)",
+      "allowedTypes": "Allowed File Types",
+      "allowedTypesPlaceholder": "e.g.: image/*,application/pdf",
+      "configSection": "Provider Configuration",
+      "cancel": "Cancel",
+      "submit": "Save",
+      "submitting": "Saving...",
+      "secretPlaceholder": "Leave empty to keep unchanged",
+      "config": {
+        "basePath": "Base Path",
+        "token": "Access Token",
+        "accessKeyId": "Access Key ID",
+        "accessKeySecret": "Access Key Secret",
+        "secretAccessKey": "Secret Access Key",
+        "secretId": "Secret ID",
+        "secretKey": "Secret Key",
+        "region": "Region",
+        "bucket": "Bucket",
+        "endpoint": "Endpoint",
+        "accessKey": "Access Key",
+        "operator": "Operator",
+        "password": "Password",
+        "port": "Port",
+        "useSsl": "Use SSL"
+      }
+    },
+    "deleteDialog": {
+      "title": "Confirm Delete",
+      "description": "Are you sure you want to delete this storage provider? Files using this provider may become inaccessible.",
+      "cannotDeleteDefault": "Cannot delete the default provider. Please set another provider as default first.",
+      "cancel": "Cancel",
+      "confirm": "Delete"
+    },
+    "message": {
+      "createSuccess": "Provider created successfully",
+      "createError": "Failed to create provider",
+      "updateSuccess": "Provider updated successfully",
+      "updateError": "Failed to update provider",
+      "deleteSuccess": "Provider deleted successfully",
+      "deleteError": "Failed to delete provider",
+      "setDefaultSuccess": "Default provider set successfully",
+      "setDefaultError": "Failed to set default provider",
+      "reorderSuccess": "Order updated successfully",
+      "reorderError": "Failed to update order",
+      "cannotDisableDefault": "Cannot disable the default provider"
     }
   },
   "AdminExpressions": {
