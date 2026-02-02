@@ -92,6 +92,12 @@ export async function POST(request: NextRequest) {
       select: { sort: true },
     })
 
+    // 检查是否存在其他供应商，如果没有则设为默认
+    const existingCount = await prisma.storage_providers.count({
+      where: { is_deleted: false },
+    })
+    const isFirstProvider = existingCount === 0
+
     const maxFileSizeInBytes = body.maxFileSize
       ? BigInt(body.maxFileSize) * BigInt(1024) * BigInt(1024)
       : null
@@ -104,7 +110,7 @@ export async function POST(request: NextRequest) {
         config: body.config as object,
         base_url: body.baseUrl,
         is_active: body.isActive ?? true,
-        is_default: false,
+        is_default: isFirstProvider,
         sort: (maxSort?.sort ?? 0) + 1,
         max_file_size: maxFileSizeInBytes,
         allowed_types: body.allowedTypes ?? null,

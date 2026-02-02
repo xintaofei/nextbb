@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useMemo, useCallback } from "react"
 import { useTranslations } from "next-intl"
 import {
   Dialog,
@@ -21,6 +21,8 @@ import {
 import { Checkbox } from "@/components/ui/checkbox"
 import { StorageProviderDTO } from "@/types/storage-provider"
 import { StorageProviderType } from "@prisma/client"
+import { STORAGE_PROVIDER_TYPES } from "@/types/storage-provider-config"
+import { getConfigFields } from "@/lib/storage-provider-fields"
 
 type StorageProviderFormData = {
   name: string
@@ -38,17 +40,6 @@ type StorageProviderDialogProps = {
   provider?: StorageProviderDTO
   onSubmit: (data: StorageProviderFormData) => Promise<void>
 }
-
-const PROVIDER_TYPES: StorageProviderType[] = [
-  "LOCAL",
-  "VERCEL_BLOB",
-  "ALIYUN_OSS",
-  "AWS_S3",
-  "TENCENT_COS",
-  "QINIU",
-  "UPYUN",
-  "MINIO",
-]
 
 export function StorageProviderDialog({
   open,
@@ -68,26 +59,17 @@ export function StorageProviderDialog({
   })
   const [isSubmitting, setIsSubmitting] = useState(false)
 
+  // 初始化表单数据
   useEffect(() => {
     if (provider) {
       const maxFileSizeMB = provider.maxFileSize
         ? (Number(provider.maxFileSize) / (1024 * 1024)).toString()
         : ""
 
-      const sensitiveFields = getSensitiveFields(provider.providerType)
-      const config = {
-        ...(provider.config as unknown as Record<string, unknown>),
-      }
-      for (const field of sensitiveFields) {
-        if (config[field] === "••••••••") {
-          config[field] = ""
-        }
-      }
-
       setFormData({
         name: provider.name,
         providerType: provider.providerType,
-        config,
+        config: provider.config as unknown as Record<string, unknown>,
         baseUrl: provider.baseUrl,
         isActive: provider.isActive,
         maxFileSize: maxFileSizeMB,
@@ -106,226 +88,79 @@ export function StorageProviderDialog({
     }
   }, [provider, open])
 
-  const getSensitiveFields = (
-    providerType: StorageProviderType | ""
-  ): string[] => {
-    const sensitiveFieldsMap: Record<string, string[]> = {
-      VERCEL_BLOB: ["token"],
-      ALIYUN_OSS: ["accessKeySecret"],
-      AWS_S3: ["secretAccessKey"],
-      TENCENT_COS: ["secretKey"],
-      QINIU: ["secretKey"],
-      UPYUN: ["password"],
-      MINIO: ["secretKey"],
-    }
-    return sensitiveFieldsMap[providerType] || []
-  }
+  // 缓存配置字段
+  const configFields = useMemo(
+    () => getConfigFields(formData.providerType, t),
+    [formData.providerType, t]
+  )
 
-  const getConfigFields = (
-    providerType: StorageProviderType | ""
-  ): Array<{ key: string; label: string; type: string; required: boolean }> => {
-    const configMap: Record<
-      string,
-      Array<{ key: string; label: string; type: string; required: boolean }>
-    > = {
-      LOCAL: [
-        {
-          key: "basePath",
-          label: t("dialog.config.basePath"),
-          type: "text",
-          required: true,
-        },
-      ],
-      VERCEL_BLOB: [
-        {
-          key: "token",
-          label: t("dialog.config.token"),
-          type: "password",
-          required: true,
-        },
-      ],
-      ALIYUN_OSS: [
-        {
-          key: "accessKeyId",
-          label: t("dialog.config.accessKeyId"),
-          type: "text",
-          required: true,
-        },
-        {
-          key: "accessKeySecret",
-          label: t("dialog.config.accessKeySecret"),
-          type: "password",
-          required: true,
-        },
-        {
-          key: "region",
-          label: t("dialog.config.region"),
-          type: "text",
-          required: true,
-        },
-        {
-          key: "bucket",
-          label: t("dialog.config.bucket"),
-          type: "text",
-          required: true,
-        },
-        {
-          key: "endpoint",
-          label: t("dialog.config.endpoint"),
-          type: "text",
-          required: false,
-        },
-      ],
-      AWS_S3: [
-        {
-          key: "accessKeyId",
-          label: t("dialog.config.accessKeyId"),
-          type: "text",
-          required: true,
-        },
-        {
-          key: "secretAccessKey",
-          label: t("dialog.config.secretAccessKey"),
-          type: "password",
-          required: true,
-        },
-        {
-          key: "region",
-          label: t("dialog.config.region"),
-          type: "text",
-          required: true,
-        },
-        {
-          key: "bucket",
-          label: t("dialog.config.bucket"),
-          type: "text",
-          required: true,
-        },
-      ],
-      TENCENT_COS: [
-        {
-          key: "secretId",
-          label: t("dialog.config.secretId"),
-          type: "text",
-          required: true,
-        },
-        {
-          key: "secretKey",
-          label: t("dialog.config.secretKey"),
-          type: "password",
-          required: true,
-        },
-        {
-          key: "region",
-          label: t("dialog.config.region"),
-          type: "text",
-          required: true,
-        },
-        {
-          key: "bucket",
-          label: t("dialog.config.bucket"),
-          type: "text",
-          required: true,
-        },
-      ],
-      QINIU: [
-        {
-          key: "accessKey",
-          label: t("dialog.config.accessKey"),
-          type: "text",
-          required: true,
-        },
-        {
-          key: "secretKey",
-          label: t("dialog.config.secretKey"),
-          type: "password",
-          required: true,
-        },
-        {
-          key: "bucket",
-          label: t("dialog.config.bucket"),
-          type: "text",
-          required: true,
-        },
-      ],
-      UPYUN: [
-        {
-          key: "operator",
-          label: t("dialog.config.operator"),
-          type: "text",
-          required: true,
-        },
-        {
-          key: "password",
-          label: t("dialog.config.password"),
-          type: "password",
-          required: true,
-        },
-        {
-          key: "bucket",
-          label: t("dialog.config.bucket"),
-          type: "text",
-          required: true,
-        },
-      ],
-      MINIO: [
-        {
-          key: "endpoint",
-          label: t("dialog.config.endpoint"),
-          type: "text",
-          required: true,
-        },
-        {
-          key: "port",
-          label: t("dialog.config.port"),
-          type: "number",
-          required: true,
-        },
-        {
-          key: "accessKey",
-          label: t("dialog.config.accessKey"),
-          type: "text",
-          required: true,
-        },
-        {
-          key: "secretKey",
-          label: t("dialog.config.secretKey"),
-          type: "password",
-          required: true,
-        },
-        {
-          key: "bucket",
-          label: t("dialog.config.bucket"),
-          type: "text",
-          required: true,
-        },
-        {
-          key: "useSsl",
-          label: t("dialog.config.useSsl"),
-          type: "checkbox",
-          required: true,
-        },
-      ],
+  // 验证 URL 格式
+  const isValidUrl = useCallback((url: string): boolean => {
+    try {
+      new URL(url)
+      return true
+    } catch {
+      return false
     }
-    return configMap[providerType] || []
-  }
+  }, [])
 
+  // 处理表单提交
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+
+    // 基础验证
     if (!formData.name || !formData.providerType || !formData.baseUrl) {
       return
+    }
+
+    // URL 格式验证
+    if (!isValidUrl(formData.baseUrl)) {
+      return
+    }
+
+    // 文件大小验证
+    if (formData.maxFileSize) {
+      const size = parseFloat(formData.maxFileSize)
+      if (isNaN(size) || size < 0 || size > 10240) {
+        return
+      }
     }
 
     setIsSubmitting(true)
     try {
       await onSubmit(formData)
       onOpenChange(false)
+    } catch (error) {
+      console.error("Failed to submit form:", error)
     } finally {
       setIsSubmitting(false)
     }
   }
 
-  const configFields = getConfigFields(formData.providerType)
+  // 处理字段更新
+  const updateFormData = useCallback(
+    (updates: Partial<StorageProviderFormData>) => {
+      setFormData((prev) => ({ ...prev, ...updates }))
+    },
+    []
+  )
+
+  // 处理配置字段更新
+  const updateConfigField = useCallback((key: string, value: unknown) => {
+    setFormData((prev) => ({
+      ...prev,
+      config: { ...prev.config, [key]: value },
+    }))
+  }, [])
+
+  // 处理供应商类型变更
+  const handleProviderTypeChange = useCallback((value: StorageProviderType) => {
+    setFormData((prev) => ({
+      ...prev,
+      providerType: value,
+      config: {},
+    }))
+  }, [])
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -337,30 +172,24 @@ export function StorageProviderDialog({
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="space-y-4">
+            {/* 名称 */}
             <div className="space-y-2">
               <Label htmlFor="name">{t("dialog.name")}</Label>
               <Input
                 id="name"
                 value={formData.name}
-                onChange={(e) =>
-                  setFormData({ ...formData, name: e.target.value })
-                }
+                onChange={(e) => updateFormData({ name: e.target.value })}
                 required
                 maxLength={64}
               />
             </div>
 
+            {/* 供应商类型 */}
             <div className="space-y-2">
               <Label htmlFor="providerType">{t("dialog.providerType")}</Label>
               <Select
                 value={formData.providerType}
-                onValueChange={(value) =>
-                  setFormData({
-                    ...formData,
-                    providerType: value as StorageProviderType,
-                    config: {},
-                  })
-                }
+                onValueChange={handleProviderTypeChange}
                 disabled={!!provider}
               >
                 <SelectTrigger>
@@ -369,7 +198,7 @@ export function StorageProviderDialog({
                   />
                 </SelectTrigger>
                 <SelectContent>
-                  {PROVIDER_TYPES.map((type) => (
+                  {STORAGE_PROVIDER_TYPES.map((type) => (
                     <SelectItem key={type} value={type}>
                       {t(`providerTypes.${type}`)}
                     </SelectItem>
@@ -378,20 +207,21 @@ export function StorageProviderDialog({
               </Select>
             </div>
 
+            {/* 基础 URL */}
             <div className="space-y-2">
               <Label htmlFor="baseUrl">{t("dialog.baseUrl")}</Label>
               <Input
                 id="baseUrl"
                 value={formData.baseUrl}
-                onChange={(e) =>
-                  setFormData({ ...formData, baseUrl: e.target.value })
-                }
+                onChange={(e) => updateFormData({ baseUrl: e.target.value })}
                 required
                 placeholder="https://cdn.example.com"
                 maxLength={512}
+                type="url"
               />
             </div>
 
+            {/* 最大文件大小 */}
             <div className="space-y-2">
               <Label htmlFor="maxFileSize">{t("dialog.maxFileSize")}</Label>
               <Input
@@ -399,38 +229,30 @@ export function StorageProviderDialog({
                 type="number"
                 value={formData.maxFileSize}
                 onChange={(e) =>
-                  setFormData({ ...formData, maxFileSize: e.target.value })
+                  updateFormData({ maxFileSize: e.target.value })
                 }
                 placeholder="100"
+                min="0"
+                max="10240"
+                step="0.1"
               />
             </div>
 
+            {/* 允许的文件类型 */}
             <div className="space-y-2">
               <Label htmlFor="allowedTypes">{t("dialog.allowedTypes")}</Label>
               <Input
                 id="allowedTypes"
                 value={formData.allowedTypes}
                 onChange={(e) =>
-                  setFormData({ ...formData, allowedTypes: e.target.value })
+                  updateFormData({ allowedTypes: e.target.value })
                 }
                 placeholder={t("dialog.allowedTypesPlaceholder")}
               />
             </div>
-
-            <div className="flex items-center space-x-2">
-              <Checkbox
-                id="isActive"
-                checked={formData.isActive}
-                onCheckedChange={(checked) =>
-                  setFormData({ ...formData, isActive: checked as boolean })
-                }
-              />
-              <Label htmlFor="isActive" className="cursor-pointer">
-                {t("dialog.isActive")}
-              </Label>
-            </div>
           </div>
 
+          {/* 配置字段 */}
           {formData.providerType && configFields.length > 0 && (
             <div className="space-y-4 pt-4 border-t">
               <h3 className="font-semibold text-sm">
@@ -446,13 +268,7 @@ export function StorageProviderDialog({
                           (formData.config[field.key] as boolean) ?? false
                         }
                         onCheckedChange={(checked) =>
-                          setFormData({
-                            ...formData,
-                            config: {
-                              ...formData.config,
-                              [field.key]: checked,
-                            },
-                          })
+                          updateConfigField(field.key, checked)
                         }
                       />
                       <Label htmlFor={field.key} className="cursor-pointer">
@@ -463,7 +279,7 @@ export function StorageProviderDialog({
                     <>
                       <Label htmlFor={field.key}>
                         {field.label}
-                        {field.required && (
+                        {field.required && !provider && (
                           <span className="text-destructive ml-1">*</span>
                         )}
                       </Label>
@@ -478,20 +294,16 @@ export function StorageProviderDialog({
                             field.type === "number"
                               ? parseInt(e.target.value) || 0
                               : e.target.value
-                          setFormData({
-                            ...formData,
-                            config: {
-                              ...formData.config,
-                              [field.key]: value,
-                            },
-                          })
+                          updateConfigField(field.key, value)
                         }}
-                        required={field.required}
+                        required={field.required && !provider}
                         placeholder={
                           field.type === "password" && provider
                             ? t("dialog.secretPlaceholder")
-                            : undefined
+                            : field.placeholder
                         }
+                        min={field.min}
+                        max={field.max}
                       />
                     </>
                   )}
@@ -500,6 +312,7 @@ export function StorageProviderDialog({
             </div>
           )}
 
+          {/* 操作按钮 */}
           <div className="flex justify-end gap-3 pt-4">
             <Button
               type="button"

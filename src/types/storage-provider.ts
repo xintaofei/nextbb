@@ -1,4 +1,5 @@
 import { StorageProviderType } from "@prisma/client"
+import { getSensitiveFields } from "./storage-provider-config"
 
 // 供应商配置类型定义
 export interface LocalConfig {
@@ -86,43 +87,12 @@ export function maskSensitiveConfig(
   config: StorageProviderConfig
 ): StorageProviderConfig {
   const masked = { ...config }
+  const sensitiveFields = getSensitiveFields(providerType)
 
-  switch (providerType) {
-    case "VERCEL_BLOB":
-      if ("token" in masked && masked.token) {
-        masked.token = "••••••••"
-      }
-      break
-    case "ALIYUN_OSS":
-      if ("accessKeySecret" in masked && masked.accessKeySecret) {
-        masked.accessKeySecret = "••••••••"
-      }
-      break
-    case "AWS_S3":
-      if ("secretAccessKey" in masked && masked.secretAccessKey) {
-        masked.secretAccessKey = "••••••••"
-      }
-      break
-    case "TENCENT_COS":
-      if ("secretKey" in masked && masked.secretKey) {
-        masked.secretKey = "••••••••"
-      }
-      break
-    case "QINIU":
-      if ("secretKey" in masked && masked.secretKey) {
-        masked.secretKey = "••••••••"
-      }
-      break
-    case "UPYUN":
-      if ("password" in masked && masked.password) {
-        masked.password = "••••••••"
-      }
-      break
-    case "MINIO":
-      if ("secretKey" in masked && masked.secretKey) {
-        masked.secretKey = "••••••••"
-      }
-      break
+  for (const field of sensitiveFields) {
+    if (field in masked) {
+      ;(masked as Record<string, unknown>)[field] = ""
+    }
   }
 
   return masked

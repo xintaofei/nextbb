@@ -6,6 +6,7 @@ import {
   validateConfig,
   StorageProviderConfig,
 } from "@/types/storage-provider"
+import { getSensitiveFields } from "@/types/storage-provider-config"
 
 // PATCH /api/admin/storage-providers/[id]
 export async function PATCH(
@@ -52,10 +53,20 @@ export async function PATCH(
     let config = existingProvider.config as Record<string, unknown>
 
     if (body.config) {
-      const validation = validateConfig(
-        existingProvider.provider_type,
-        body.config
-      )
+      const providerType = existingProvider.provider_type
+      const sensitiveFields = getSensitiveFields(providerType)
+
+      // 合并配置,空的敏感字段保留原值
+      const configToValidate = { ...config, ...body.config }
+
+      for (const field of sensitiveFields) {
+        if (body.config[field] === "" || body.config[field] === undefined) {
+          // 空值时使用原有值进行验证
+          configToValidate[field] = config[field]
+        }
+      }
+
+      const validation = validateConfig(providerType, configToValidate)
       if (!validation.valid) {
         return NextResponse.json(
           { error: "Invalid configuration", errors: validation.errors },
@@ -63,28 +74,13 @@ export async function PATCH(
         )
       }
 
-      config = {
-        ...config,
-        ...body.config,
-      }
-
-      const providerType = existingProvider.provider_type
-      const sensitiveFields: Record<string, string[]> = {
-        VERCEL_BLOB: ["token"],
-        ALIYUN_OSS: ["accessKeySecret"],
-        AWS_S3: ["secretAccessKey"],
-        TENCENT_COS: ["secretKey"],
-        QINIU: ["secretKey"],
-        UPYUN: ["password"],
-        MINIO: ["secretKey"],
-      }
-
-      const fields = sensitiveFields[providerType] || []
-      for (const field of fields) {
+      // 更新配置,空的敏感字段保留原值
+      config = { ...config, ...body.config }
+      for (const field of sensitiveFields) {
         if (body.config[field] === "" || body.config[field] === undefined) {
-          if (config[field]) {
-            config[field] = (config as Record<string, unknown>)[field]
-          }
+          config[field] = (existingProvider.config as Record<string, unknown>)[
+            field
+          ]
         }
       }
     }
