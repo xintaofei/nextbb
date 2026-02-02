@@ -1,7 +1,28 @@
 import { NextResponse } from "next/server"
 import { StorageReferenceType } from "@prisma/client"
+import { Ratelimit } from "@upstash/ratelimit"
+import { Redis } from "@upstash/redis"
 import { getServerSessionUser } from "@/lib/server-auth"
 import { StorageService } from "@/lib/storage"
+
+// Create a new ratelimiter, that allows 10 requests per 1 minute
+let ratelimit: Ratelimit | null = null
+
+try {
+  if (
+    process.env.UPSTASH_REDIS_REST_URL &&
+    process.env.UPSTASH_REDIS_REST_TOKEN
+  ) {
+    ratelimit = new Ratelimit({
+      redis: Redis.fromEnv(),
+      limiter: Ratelimit.slidingWindow(10, "1 m"),
+      analytics: true,
+      prefix: "@upstash/ratelimit",
+    })
+  }
+} catch (e) {
+  console.warn("Rate limit setup failed:", e)
+}
 
 /**
  * POST /api/upload
@@ -26,6 +47,18 @@ export async function POST(req: Request) {
   const session = await getServerSessionUser()
   if (!session) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+  }
+
+  // Rate Limit Check
+  if (ratelimit) {
+    const identifier = `upload:${session.userId}`
+    const { success } = await ratelimit.limit(identifier)
+    if (!success) {
+      return NextResponse.json(
+        { error: "Too many upload requests. Please try again later." },
+        { status: 429 }
+      )
+    }
   }
 
   try {

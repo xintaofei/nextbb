@@ -81,6 +81,7 @@ export class QiniuProvider implements IStorageProvider {
     data: ArrayBuffer | Buffer,
     _contentType: string
   ): Promise<string> {
+    void _contentType
     const qiniu = this.getQiniuModule()
 
     const mac = new qiniu.auth.digest.Mac(

@@ -20,6 +20,7 @@ export class LocalStorageProvider implements IStorageProvider {
     data: ArrayBuffer | Buffer,
     _contentType: string
   ): Promise<string> {
+    void _contentType
     const filePath = path.join(this.basePath, key)
     const dir = path.dirname(filePath)
 

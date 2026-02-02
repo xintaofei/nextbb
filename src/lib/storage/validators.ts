@@ -1,3 +1,4 @@
+import { fileTypeFromBuffer } from "file-type"
 import type { StorageReferenceType } from "@prisma/client"
 import {
   ALLOWED_IMAGE_TYPES,
@@ -111,4 +112,34 @@ export function validateImageFile(
  */
 export function isAllowedImageType(mimeType: string): boolean {
   return (ALLOWED_IMAGE_TYPES as readonly string[]).includes(mimeType)
+}
+
+/**
+ * Validate file content using magic bytes
+ * @param buffer - File content buffer
+ * @param allowedTypes - List of allowed MIME types
+ * @returns Validation result
+ */
+export async function validateFileContent(
+  buffer: Buffer | ArrayBuffer,
+  allowedTypes: string[] | readonly string[] = ALLOWED_IMAGE_TYPES
+): Promise<ValidationResult> {
+  const type = await fileTypeFromBuffer(buffer)
+
+  if (!type) {
+    return { valid: false, error: "Could not determine file type from content" }
+  }
+
+  // Use validateFileType logic to support wildcards
+  const allowedTypesStr = allowedTypes.join(",")
+  const result = validateFileType(type.mime, allowedTypesStr)
+
+  if (!result.valid) {
+    return {
+      valid: false,
+      error: `Invalid file content type: ${type.mime}. Expected: ${allowedTypesStr}`,
+    }
+  }
+
+  return { valid: true }
 }

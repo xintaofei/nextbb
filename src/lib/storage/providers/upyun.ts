@@ -49,6 +49,7 @@ export class UpyunProvider implements IStorageProvider {
     data: ArrayBuffer | Buffer,
     _contentType: string
   ): Promise<string> {
+    void _contentType
     const client = await this.getClient()
     const buffer = data instanceof ArrayBuffer ? Buffer.from(data) : data
 

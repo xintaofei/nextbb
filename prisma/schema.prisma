@@ -1301,6 +1301,8 @@ model storage_files {
   @@index([user_id], map: "storage_files_user_index")
   @@index([mime_type], map: "storage_files_mime_index")
   @@index([file_hash], map: "storage_files_hash_index")
+  @@index([file_hash, provider_id, is_deleted], map: "storage_files_dedup_index")
+  @@unique([file_hash, provider_id], map: "storage_files_unique_hash")
   @@index([reference_type], map: "storage_files_reference_index")
   @@index([is_deleted, created_at], map: "storage_files_deleted_created_index")
   @@index([created_at], map: "storage_files_created_index")
