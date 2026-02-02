@@ -1221,14 +1221,17 @@ model storage_providers {
 
   // 供应商配置（JSON格式存储不同供应商的配置参数）
   config Json
-  // LOCAL: {"base_path": "/uploads", "base_url": "https://example.com/uploads"}
+  // LOCAL: {"base_path": "/uploads"}
   // VERCEL_BLOB: {"token": "vercel_blob_xxx"}
   // ALIYUN_OSS: {"access_key_id": "xxx", "access_key_secret": "xxx", "region": "oss-cn-shanghai", "bucket": "my-bucket", "endpoint": "oss-cn-shanghai.aliyuncs.com"}
   // AWS_S3: {"access_key_id": "xxx", "secret_access_key": "xxx", "region": "us-east-1", "bucket": "my-bucket"}
   // TENCENT_COS: {"secret_id": "xxx", "secret_key": "xxx", "region": "ap-shanghai", "bucket": "my-bucket"}
-  // QINIU: {"access_key": "xxx", "secret_key": "xxx", "bucket": "my-bucket", "domain": "cdn.example.com"}
-  // UPYUN: {"operator": "xxx", "password": "xxx", "bucket": "my-bucket", "domain": "cdn.example.com"}
+  // QINIU: {"access_key": "xxx", "secret_key": "xxx", "bucket": "my-bucket"}
+  // UPYUN: {"operator": "xxx", "password": "xxx", "bucket": "my-bucket"}
   // MINIO: {"endpoint": "minio.example.com", "port": 9000, "access_key": "xxx", "secret_key": "xxx", "bucket": "my-bucket", "use_ssl": true}
+
+  // 文件访问基础地址（用于生成文件访问URL）
+  base_url String @db.VarChar(512) // 如 "https://cdn.example.com" 或 "https://example.com/uploads"
 
   // 供应商控制
   is_default Boolean @default(false) // 是否为默认供应商（全局只能有一个默认）
