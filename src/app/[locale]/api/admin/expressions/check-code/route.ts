@@ -27,6 +27,7 @@ export async function GET(request: NextRequest) {
         group_id: groupIdBigInt,
         code,
         id: excludeId ? { not: BigInt(excludeId) } : undefined,
+        is_deleted: false,
       },
       select: {
         id: true,

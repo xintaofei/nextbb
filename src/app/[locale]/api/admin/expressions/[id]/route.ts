@@ -239,13 +239,21 @@ export async function DELETE(
       )
     }
 
-    // 软删除表情
-    await prisma.expressions.update({
-      where: { id: expressionId },
-      data: {
-        is_deleted: true,
-      },
-    })
+    // 软删除表情，同时修改code以释放唯一索引
+    if (!existingExpression.is_deleted) {
+      const timestamp = Date.now()
+      const suffix = `_${timestamp}`
+      // 确保 code 长度不超过数据库限制 (32字符)
+      const codePrefix = existingExpression.code.slice(0, 32 - suffix.length)
+
+      await prisma.expressions.update({
+        where: { id: expressionId },
+        data: {
+          is_deleted: true,
+          code: `${codePrefix}${suffix}`,
+        },
+      })
+    }
 
     return NextResponse.json({ success: true })
   } catch (error) {
