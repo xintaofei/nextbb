@@ -2652,7 +2652,7 @@
       "namePlaceholder": "e.g: Default, Onion",
       "expressionSize": "Expression Size",
       "expressionSizePlaceholder": "Select size",
-      "expressionSizeHint": "Only affects display size, not the original image",
+      "expressionSizeHint": "Display size only: Small 32px / Medium 64px / Large 96px",
       "expressionSizePreview": "Preview size: {size}px",
       "sizeOptions": {
         "large": "Large",

@@ -2652,7 +2652,7 @@
       "namePlaceholder": "如: 默认表情, 洋葱表情",
       "expressionSize": "表情大小",
       "expressionSizePlaceholder": "请选择表情大小",
-      "expressionSizeHint": "仅影响前台展示尺寸，图片本身大小不变",
+      "expressionSizeHint": "仅影响前台展示尺寸：小 32px / 中 64px / 大 96px",
       "expressionSizePreview": "预览尺寸：{size}px",
       "sizeOptions": {
         "large": "大",
