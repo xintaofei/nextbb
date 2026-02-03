@@ -203,16 +203,18 @@ export function ExpressionDialog({
                 <Label>{t("expressionDialog.uploadImage")}</Label>
                 <ExpressionImageUploader
                   value={imageUrl}
-                  onChange={(url, dimensions) => {
+                  onChange={(url, dimensions, isAnimated) => {
                     setImageUrl(url)
                     setFormData({
                       ...formData,
                       imagePath: url,
                       width: dimensions.width,
                       height: dimensions.height,
+                      isAnimated,
                     })
                   }}
                   groupCode={selectedGroup?.code || "default"}
+                  expressionCode={formData.code}
                 />
                 {formData.width && formData.height && (
                   <div className="text-sm text-muted-foreground">

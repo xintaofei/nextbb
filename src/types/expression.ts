@@ -27,6 +27,7 @@ export type Expression = {
   sort: number
   isEnabled: boolean
   isDeleted: boolean
+  isAnimated: boolean
   sourceLocale: string
   createdAt: string
   updatedAt: string
@@ -75,4 +76,5 @@ export type ExpressionFormData = {
   width: number | null
   height: number | null
   sort?: number
+  isAnimated?: boolean
 }

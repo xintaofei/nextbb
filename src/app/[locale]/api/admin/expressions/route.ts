@@ -21,6 +21,7 @@ type ExpressionDTO = {
   sort: number
   isEnabled: boolean
   isDeleted: boolean
+  isAnimated: boolean
   sourceLocale: string
   createdAt: string
   updatedAt: string
@@ -115,6 +116,7 @@ export async function GET(request: NextRequest) {
         sort: true,
         is_enabled: true,
         is_deleted: true,
+        is_animated: true,
         source_locale: true,
         created_at: true,
         updated_at: true,
@@ -156,6 +158,7 @@ export async function GET(request: NextRequest) {
         sort: e.sort,
         isEnabled: e.is_enabled,
         isDeleted: e.is_deleted,
+        isAnimated: e.is_animated ?? false,
         sourceLocale: e.source_locale,
         createdAt: e.created_at.toISOString(),
         updatedAt: e.updated_at.toISOString(),
@@ -193,6 +196,7 @@ export async function POST(request: NextRequest) {
       width,
       height,
       sort,
+      isAnimated,
     } = body
 
     // 验证必填字段
@@ -309,6 +313,7 @@ export async function POST(request: NextRequest) {
           text_content: type === "TEXT" ? textContent : null,
           width: type === "IMAGE" ? width : null,
           height: type === "IMAGE" ? height : null,
+          is_animated: type === "IMAGE" ? (isAnimated ?? false) : false,
           sort: finalSort,
           is_enabled: true,
           is_deleted: false,
@@ -355,6 +360,7 @@ export async function POST(request: NextRequest) {
       sort: result.sort,
       isEnabled: result.is_enabled,
       isDeleted: result.is_deleted,
+      isAnimated: result.is_animated ?? false,
       sourceLocale: result.source_locale,
       createdAt: result.created_at.toISOString(),
       updatedAt: result.updated_at.toISOString(),

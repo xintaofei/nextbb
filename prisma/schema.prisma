@@ -1158,6 +1158,7 @@ model expressions {
   sort          Int            @default(0)
   is_enabled    Boolean        @default(true)
   is_deleted    Boolean        @default(false)
+  is_animated   Boolean        @default(false) // 是否为动画表情
   created_at    DateTime       @default(now())
   updated_at    DateTime       @updatedAt
 

@@ -18,6 +18,7 @@ type ExpressionDTO = {
   sort: number
   isEnabled: boolean
   isDeleted: boolean
+  isAnimated: boolean
   sourceLocale: string
   createdAt: string
   updatedAt: string
@@ -54,6 +55,7 @@ export async function PATCH(
       sort,
       isEnabled,
       isDeleted,
+      isAnimated,
     } = body
 
     // 验证字段
@@ -85,6 +87,7 @@ export async function PATCH(
       sort?: number
       is_enabled?: boolean
       is_deleted?: boolean
+      is_animated?: boolean
     } = {}
 
     if (imagePath !== undefined)
@@ -96,6 +99,7 @@ export async function PATCH(
     if (sort !== undefined) expressionUpdateData.sort = sort
     if (isEnabled !== undefined) expressionUpdateData.is_enabled = isEnabled
     if (isDeleted !== undefined) expressionUpdateData.is_deleted = isDeleted
+    if (isAnimated !== undefined) expressionUpdateData.is_animated = isAnimated
 
     // 使用事务更新
     const result = await prisma.$transaction(async (tx) => {
@@ -155,6 +159,7 @@ export async function PATCH(
           sort: true,
           is_enabled: true,
           is_deleted: true,
+          is_animated: true,
           source_locale: true,
           created_at: true,
           updated_at: true,
@@ -206,6 +211,7 @@ export async function PATCH(
       sort: result.sort,
       isEnabled: result.is_enabled,
       isDeleted: result.is_deleted,
+      isAnimated: result.is_animated ?? false,
       sourceLocale: result.source_locale,
       createdAt: result.created_at.toISOString(),
       updatedAt: result.updated_at.toISOString(),

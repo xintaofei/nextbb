@@ -10,8 +10,13 @@ import { toast } from "sonner"
 
 type ExpressionImageUploaderProps = {
   value?: string | null
-  onChange: (url: string, dimensions: { width: number; height: number }) => void
+  onChange: (
+    url: string,
+    dimensions: { width: number; height: number },
+    isAnimated: boolean
+  ) => void
   groupCode: string
+  expressionCode: string
   disabled?: boolean
 }
 
@@ -19,6 +24,7 @@ export function ExpressionImageUploader({
   value,
   onChange,
   groupCode,
+  expressionCode,
   disabled,
 }: ExpressionImageUploaderProps) {
   const t = useTranslations("AdminExpressions")
@@ -73,6 +79,7 @@ export function ExpressionImageUploader({
         const formData = new FormData()
         formData.append("file", file)
         formData.append("groupCode", groupCode)
+        formData.append("expressionCode", expressionCode)
 
         const response = await fetch("/api/admin/expressions/upload-image", {
           method: "POST",
@@ -84,7 +91,7 @@ export function ExpressionImageUploader({
         }
 
         const data = await response.json()
-        onChange(data.url, dimensions)
+        onChange(data.url, dimensions, data.isAnimated)
         toast.success(t("message.uploadImageSuccess"))
       } catch (error) {
         console.error("Upload error:", error)
@@ -93,7 +100,7 @@ export function ExpressionImageUploader({
         setUploading(false)
       }
     },
-    [groupCode, onChange, getImageDimensions, t]
+    [groupCode, expressionCode, onChange, getImageDimensions, t]
   )
 
   const handleDrag = useCallback((e: React.DragEvent) => {
@@ -129,7 +136,7 @@ export function ExpressionImageUploader({
   )
 
   const handleClear = useCallback(() => {
-    onChange("", { width: 0, height: 0 })
+    onChange("", { width: 0, height: 0 }, false)
     if (fileInputRef.current) {
       fileInputRef.current.value = ""
     }
