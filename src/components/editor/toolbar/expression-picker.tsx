@@ -86,8 +86,8 @@ export const ExpressionPicker: React.FC<ExpressionPickerProps> = ({
           </Button>
         )}
       </PopoverTrigger>
-      <PopoverContent className="w-80 p-0" align="start">
-        <div className="flex flex-col h-[400px]">
+      <PopoverContent className="w-md p-0" align="start">
+        <div className="flex flex-col h-96">
           <div className="p-2 border-b">
             <div className="relative">
               <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
