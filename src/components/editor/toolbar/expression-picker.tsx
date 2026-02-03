@@ -144,19 +144,13 @@ export const ExpressionPicker: React.FC<ExpressionPickerProps> = ({
                                   size="icon"
                                   onClick={() => handleSelect(exp)}
                                 >
-                                  {exp.type === "IMAGE" && exp.imageUrl ? (
-                                    <Image
-                                      src={exp.imageUrl}
-                                      alt={exp.name}
-                                      width={exp.width || 32}
-                                      height={exp.height || 32}
-                                      className="max-w-full max-h-full object-contain"
-                                    />
-                                  ) : (
-                                    <span className="text-xl leading-none">
-                                      {exp.textContent}
-                                    </span>
-                                  )}
+                                  <Image
+                                    src={exp.imageUrl}
+                                    alt={exp.name}
+                                    width={exp.width || 32}
+                                    height={exp.height || 32}
+                                    className="max-w-full max-h-full object-contain"
+                                  />
                                 </Button>
                               </TooltipTrigger>
                               <TooltipContent side="bottom" className="text-xs">

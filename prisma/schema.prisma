@@ -1106,11 +1106,6 @@ model user_two_factor {
 
 // ==================== 表情系统 ====================
 
-enum ExpressionType {
-  IMAGE
-  TEXT
-}
-
 model expression_groups {
   id            BigInt   @id @db.BigInt
   source_locale String   @default("zh") @db.VarChar(8)
@@ -1147,21 +1142,19 @@ model expression_group_translations {
 }
 
 model expressions {
-  id            BigInt         @id @db.BigInt
-  group_id      BigInt         @db.BigInt
-  source_locale String         @default("zh") @db.VarChar(8)
-  type          ExpressionType @default(IMAGE)
-  code          String         @db.VarChar(32) // e.g. "smile", "001"
-  image_path    String?        @db.VarChar(256) // e.g. "onion/001.gif"
-  text_content  String?        @db.VarChar(64) // e.g. "😊"
+  id            BigInt   @id @db.BigInt
+  group_id      BigInt   @db.BigInt
+  source_locale String   @default("zh") @db.VarChar(8)
+  code          String   @db.VarChar(32) // e.g. "smile", "001"
+  image_path    String   @db.VarChar(256) // e.g. "onion/001.gif"
   width         Int?
   height        Int?
-  sort          Int            @default(0)
-  is_enabled    Boolean        @default(true)
-  is_deleted    Boolean        @default(false)
-  is_animated   Boolean        @default(false) // 是否为动画表情
-  created_at    DateTime       @default(now())
-  updated_at    DateTime       @updatedAt
+  sort          Int      @default(0)
+  is_enabled    Boolean  @default(true)
+  is_deleted    Boolean  @default(false)
+  is_animated   Boolean  @default(false) // 是否为动画表情
+  created_at    DateTime @default(now())
+  updated_at    DateTime @updatedAt
 
   group              expression_groups         @relation("GroupExpressions", fields: [group_id], references: [id])
   translations       expression_translations[]

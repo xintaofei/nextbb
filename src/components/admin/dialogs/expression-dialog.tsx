@@ -20,7 +20,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { ExpressionTypeToggle } from "../expression/expression-type-toggle"
 import { ExpressionImageUploader } from "../expression/expression-image-uploader"
 import type {
   Expression,
@@ -37,10 +36,8 @@ type ExpressionDialogProps = {
     | "groupId"
     | "code"
     | "name"
-    | "type"
     | "imagePath"
     | "imageUrl"
-    | "textContent"
     | "width"
     | "height"
     | "sort"
@@ -64,15 +61,13 @@ export function ExpressionDialog({
     groupId: defaultGroupId || "",
     code: "",
     name: "",
-    type: "IMAGE",
-    imagePath: null,
-    textContent: null,
+    imagePath: "",
     width: null,
     height: null,
     isAnimated: false,
   })
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const [imageUrl, setImageUrl] = useState<string | null>(null)
+  const [imageUrl, setImageUrl] = useState<string>("")
 
   // Code 唯一性检查状态
   const [isCheckingCode, setIsCheckingCode] = useState(false)
@@ -85,9 +80,7 @@ export function ExpressionDialog({
         groupId: expression.groupId,
         code: expression.code,
         name: expression.name,
-        type: expression.type,
         imagePath: expression.imagePath,
-        textContent: expression.textContent,
         width: expression.width,
         height: expression.height,
         sort: expression.sort,
@@ -99,14 +92,12 @@ export function ExpressionDialog({
         groupId: defaultGroupId || "",
         code: "",
         name: "",
-        type: "IMAGE",
-        imagePath: null,
-        textContent: null,
+        imagePath: "",
         width: null,
         height: null,
         isAnimated: false,
       })
-      setImageUrl(null)
+      setImageUrl("")
     }
     // 重置检查状态
     setCodeExists(false)
@@ -187,15 +178,9 @@ export function ExpressionDialog({
       return
     }
 
-    // 验证图片类型必须上传图片
-    if (formData.type === "IMAGE" && !formData.imagePath) {
+    // 验证图片必须上传
+    if (!formData.imagePath) {
       toast.error(t("message.imageRequired"))
-      return
-    }
-
-    // 验证文本类型必须填写文本内容
-    if (formData.type === "TEXT" && !formData.textContent?.trim()) {
-      toast.error(t("message.textContentRequired"))
       return
     }
 
@@ -324,106 +309,78 @@ export function ExpressionDialog({
               </div>
             </div>
 
-            {/* Type Toggle */}
+            {/* Image Upload */}
             <div className="space-y-2">
-              <Label>{t("expressionDialog.type")}</Label>
-              <ExpressionTypeToggle
-                value={formData.type}
-                onChange={(type) => setFormData({ ...formData, type })}
-                disabled={!!expression}
-              />
+              <Label>{t("expressionDialog.uploadImage")}</Label>
+              {/* Code 格式验证提示 */}
+              {!formData.code.trim() ? (
+                <div className="rounded-lg border border-amber-200 bg-amber-50 dark:border-amber-900 dark:bg-amber-950/30 p-3">
+                  <p className="text-sm text-amber-800 dark:text-amber-200">
+                    {t("expressionDialog.codeRequiredForUpload")}
+                  </p>
+                </div>
+              ) : !/^[a-zA-Z0-9_-]+$/.test(formData.code) ? (
+                <div className="rounded-lg border border-red-200 bg-red-50 dark:border-red-900 dark:bg-red-950/30 p-3">
+                  <p className="text-sm text-red-800 dark:text-red-200">
+                    {t("expressionDialog.codeFormatInvalid")}
+                  </p>
+                </div>
+              ) : codeExists ? (
+                <div className="rounded-lg border border-red-200 bg-red-50 dark:border-red-900 dark:bg-red-950/30 p-3">
+                  <p className="text-sm text-red-800 dark:text-red-200 flex items-center gap-2">
+                    <AlertCircle className="h-4 w-4" />
+                    {t("expressionDialog.codeDuplicateError")}
+                  </p>
+                </div>
+              ) : (
+                <>
+                  <ExpressionImageUploader
+                    value={imageUrl}
+                    onChange={(url, dimensions, isAnimated) => {
+                      setImageUrl(url)
+                      setFormData({
+                        ...formData,
+                        imagePath: url,
+                        width: dimensions.width,
+                        height: dimensions.height,
+                        isAnimated,
+                      })
+                    }}
+                    groupCode={selectedGroup?.code || "default"}
+                    expressionCode={formData.code}
+                    disabled={!formData.code.trim()}
+                  />
+                  {/* 图片信息和说明 */}
+                  <div className="space-y-1.5">
+                    {formData.width && formData.height && (
+                      <div className="text-sm text-muted-foreground">
+                        {t("expressionDialog.dimensions")}: {formData.width} ×{" "}
+                        {formData.height}
+                        {formData.isAnimated && (
+                          <span className="ml-2 text-xs bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 px-2 py-0.5 rounded">
+                            {t("expressionDialog.animatedBadge")}
+                          </span>
+                        )}
+                      </div>
+                    )}
+                    {formData.code.trim() && selectedGroup && (
+                      <div className="text-xs text-muted-foreground space-y-1">
+                        <p>
+                          {t("expressionDialog.storagePathLabel")}
+                          <code className="mx-1 px-1.5 py-0.5 bg-muted rounded">
+                            expressions/{selectedGroup.code}/{formData.code}.
+                            {formData.isAnimated ? "gif" : "webp"}
+                          </code>
+                        </p>
+                        <p className="text-muted-foreground/80">
+                          {t("expressionDialog.formatConversionHint")}
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                </>
+              )}
             </div>
-
-            {/* Type-specific fields */}
-            {formData.type === "IMAGE" ? (
-              <div className="space-y-2">
-                <Label>{t("expressionDialog.uploadImage")}</Label>
-                {/* Code 格式验证提示 */}
-                {!formData.code.trim() ? (
-                  <div className="rounded-lg border border-amber-200 bg-amber-50 dark:border-amber-900 dark:bg-amber-950/30 p-3">
-                    <p className="text-sm text-amber-800 dark:text-amber-200">
-                      {t("expressionDialog.codeRequiredForUpload")}
-                    </p>
-                  </div>
-                ) : !/^[a-zA-Z0-9_-]+$/.test(formData.code) ? (
-                  <div className="rounded-lg border border-red-200 bg-red-50 dark:border-red-900 dark:bg-red-950/30 p-3">
-                    <p className="text-sm text-red-800 dark:text-red-200">
-                      {t("expressionDialog.codeFormatInvalid")}
-                    </p>
-                  </div>
-                ) : codeExists ? (
-                  <div className="rounded-lg border border-red-200 bg-red-50 dark:border-red-900 dark:bg-red-950/30 p-3">
-                    <p className="text-sm text-red-800 dark:text-red-200 flex items-center gap-2">
-                      <AlertCircle className="h-4 w-4" />
-                      {t("expressionDialog.codeDuplicateError")}
-                    </p>
-                  </div>
-                ) : (
-                  <>
-                    <ExpressionImageUploader
-                      value={imageUrl}
-                      onChange={(url, dimensions, isAnimated) => {
-                        setImageUrl(url)
-                        setFormData({
-                          ...formData,
-                          imagePath: url,
-                          width: dimensions.width,
-                          height: dimensions.height,
-                          isAnimated,
-                        })
-                      }}
-                      groupCode={selectedGroup?.code || "default"}
-                      expressionCode={formData.code}
-                      disabled={!formData.code.trim()}
-                    />
-                    {/* 图片信息和说明 */}
-                    <div className="space-y-1.5">
-                      {formData.width && formData.height && (
-                        <div className="text-sm text-muted-foreground">
-                          {t("expressionDialog.dimensions")}: {formData.width} ×{" "}
-                          {formData.height}
-                          {formData.isAnimated && (
-                            <span className="ml-2 text-xs bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 px-2 py-0.5 rounded">
-                              {t("expressionDialog.animatedBadge")}
-                            </span>
-                          )}
-                        </div>
-                      )}
-                      {formData.code.trim() && selectedGroup && (
-                        <div className="text-xs text-muted-foreground space-y-1">
-                          <p>
-                            {t("expressionDialog.storagePathLabel")}
-                            <code className="mx-1 px-1.5 py-0.5 bg-muted rounded">
-                              expressions/{selectedGroup.code}/{formData.code}.
-                              {formData.isAnimated ? "gif" : "webp"}
-                            </code>
-                          </p>
-                          <p className="text-muted-foreground/80">
-                            {t("expressionDialog.formatConversionHint")}
-                          </p>
-                        </div>
-                      )}
-                    </div>
-                  </>
-                )}
-              </div>
-            ) : (
-              <div className="space-y-2">
-                <Label htmlFor="textContent">
-                  {t("expressionDialog.textContent")}
-                </Label>
-                <Input
-                  id="textContent"
-                  value={formData.textContent || ""}
-                  onChange={(e) =>
-                    setFormData({ ...formData, textContent: e.target.value })
-                  }
-                  placeholder={t("expressionDialog.textPlaceholder")}
-                  required={formData.type === "TEXT"}
-                  maxLength={64}
-                />
-              </div>
-            )}
           </div>
 
           <div className="flex items-center gap-2 pt-2">

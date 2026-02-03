@@ -347,18 +347,14 @@ export const EditorToolbar = memo(({ getEditor }: EditorToolbarProps) => {
       executeCommand((ctx) => {
         const view = ctx.get(editorViewCtx)
         const { state, dispatch } = view
-        const { from, to } = state.selection
 
-        if (expression.type === "IMAGE" && expression.imageUrl) {
+        if (expression.imageUrl) {
           const schema = ctx.get(schemaCtx)
           const node = schema.nodes.image.create({
             src: expression.imageUrl,
             alt: expression.name,
           })
           const tr = state.tr.replaceSelectionWith(node)
-          dispatch(tr)
-        } else if (expression.type === "TEXT" && expression.textContent) {
-          const tr = state.tr.insertText(expression.textContent, from, to)
           dispatch(tr)
         }
 

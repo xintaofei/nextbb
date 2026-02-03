@@ -8,7 +8,6 @@ import {
   Trash2,
   Globe,
   Image as ImageIcon,
-  Type,
   GripVertical,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -24,9 +23,7 @@ type ExpressionCardProps = {
     | "id"
     | "code"
     | "name"
-    | "type"
     | "imageUrl"
-    | "textContent"
     | "width"
     | "height"
     | "sort"
@@ -94,7 +91,7 @@ export function ExpressionCardContent({
               <GripVertical className="h-4 w-4" />
             </button>
             <div className="flex h-16 w-16 items-center justify-center rounded-xl border border-border/40 bg-muted/30">
-              {expression.type === "IMAGE" && expression.imageUrl ? (
+              {expression.imageUrl ? (
                 <Image
                   src={expression.imageUrl}
                   alt={expression.name}
@@ -102,16 +99,11 @@ export function ExpressionCardContent({
                   height={expression.height || 64}
                   className="max-w-full max-h-full object-contain"
                 />
-              ) : expression.type === "TEXT" && expression.textContent ? (
-                <span className="text-3xl">{expression.textContent}</span>
               ) : (
-                <div className="text-muted-foreground">
-                  {expression.type === "IMAGE" ? (
-                    <ImageIcon className="h-6 w-6" aria-hidden="true" />
-                  ) : (
-                    <Type className="h-6 w-6" aria-hidden="true" />
-                  )}
-                </div>
+                <ImageIcon
+                  className="h-6 w-6 text-muted-foreground"
+                  aria-hidden="true"
+                />
               )}
             </div>
           </div>
@@ -148,19 +140,12 @@ export function ExpressionCardContent({
             <code className="rounded bg-muted px-1.5 py-0.5">
               {expression.code}
             </code>
-            <Badge variant="outline" className="text-xs">
-              {expression.type === "IMAGE"
-                ? t("expression.image")
-                : t("expression.text")}
-            </Badge>
           </div>
-          {expression.type === "IMAGE" &&
-            expression.width &&
-            expression.height && (
-              <div className="text-xs text-muted-foreground">
-                {expression.width} × {expression.height}
-              </div>
-            )}
+          {expression.width && expression.height && (
+            <div className="text-xs text-muted-foreground">
+              {expression.width} × {expression.height}
+            </div>
+          )}
         </div>
 
         {/* Actions */}

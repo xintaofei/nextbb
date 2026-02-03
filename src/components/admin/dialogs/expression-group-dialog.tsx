@@ -29,10 +29,7 @@ type ExpressionGroupDialogProps = {
   open: boolean
   onOpenChange: (open: boolean) => void
   group?: Pick<ExpressionGroup, "id" | "code" | "name" | "iconId" | "sort">
-  expressions?: Pick<
-    Expression,
-    "id" | "name" | "imageUrl" | "textContent" | "type"
-  >[]
+  expressions?: Pick<Expression, "id" | "name" | "imageUrl">[]
   onSubmit: (data: ExpressionGroupFormData) => Promise<void>
 }
 
@@ -153,7 +150,7 @@ export function ExpressionGroupDialog({
                     {expressions.map((expr) => (
                       <SelectItem key={expr.id} value={expr.id}>
                         <div className="flex items-center gap-2">
-                          {expr.type === "IMAGE" && expr.imageUrl ? (
+                          {expr.imageUrl && (
                             <Image
                               src={expr.imageUrl}
                               alt={expr.name}
@@ -161,9 +158,7 @@ export function ExpressionGroupDialog({
                               height={24}
                               className="w-6 h-6 object-contain"
                             />
-                          ) : expr.type === "TEXT" && expr.textContent ? (
-                            <span className="text-lg">{expr.textContent}</span>
-                          ) : null}
+                          )}
                           <span>{expr.name}</span>
                         </div>
                       </SelectItem>

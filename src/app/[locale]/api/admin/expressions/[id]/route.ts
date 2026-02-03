@@ -9,10 +9,8 @@ type ExpressionDTO = {
   groupName: string
   code: string
   name: string
-  type: "IMAGE" | "TEXT"
-  imagePath: string | null
-  imageUrl: string | null
-  textContent: string | null
+  imagePath: string
+  imageUrl: string
   width: number | null
   height: number | null
   sort: number
@@ -49,7 +47,6 @@ export async function PATCH(
     const {
       name,
       imagePath,
-      textContent,
       width,
       height,
       sort,
@@ -80,8 +77,7 @@ export async function PATCH(
     // 构建更新数据
     const hasTranslationUpdate = name !== undefined
     const expressionUpdateData: {
-      image_path?: string | null
-      text_content?: string | null
+      image_path?: string
       width?: number | null
       height?: number | null
       sort?: number
@@ -90,10 +86,7 @@ export async function PATCH(
       is_animated?: boolean
     } = {}
 
-    if (imagePath !== undefined)
-      expressionUpdateData.image_path = imagePath || null
-    if (textContent !== undefined)
-      expressionUpdateData.text_content = textContent || null
+    if (imagePath !== undefined) expressionUpdateData.image_path = imagePath
     if (width !== undefined) expressionUpdateData.width = width
     if (height !== undefined) expressionUpdateData.height = height
     if (sort !== undefined) expressionUpdateData.sort = sort
@@ -151,9 +144,7 @@ export async function PATCH(
           id: true,
           group_id: true,
           code: true,
-          type: true,
           image_path: true,
-          text_content: true,
           width: true,
           height: true,
           sort: true,
@@ -193,7 +184,6 @@ export async function PATCH(
     }
 
     // 直接使用 image_path 作为 imageUrl（已存储完整 URL）
-    const imageUrl = result.image_path || null
 
     const translation = result.translations[0]
     const expressionDTO: ExpressionDTO = {
@@ -202,10 +192,8 @@ export async function PATCH(
       groupName: "",
       code: result.code,
       name: translation?.name || "",
-      type: result.type,
       imagePath: result.image_path,
-      imageUrl,
-      textContent: result.text_content,
+      imageUrl: result.image_path,
       width: result.width,
       height: result.height,
       sort: result.sort,

@@ -39,7 +39,7 @@ type ExpressionGroupListItemProps = {
     | "isDeleted"
     | "expressionCount"
   >
-  expressions?: Pick<Expression, "id" | "imageUrl" | "textContent" | "type">[]
+  expressions?: Pick<Expression, "id" | "imageUrl">[]
   onEdit: (id: string) => void
   onDelete: (id: string) => void
   onToggleEnabled: (id: string, enabled: boolean) => void
@@ -126,8 +126,7 @@ export function ExpressionGroupContent({
 
               {iconExpression ? (
                 <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-border/40 shrink-0">
-                  {iconExpression.type === "IMAGE" &&
-                  iconExpression.imageUrl ? (
+                  {iconExpression.imageUrl ? (
                     <Image
                       src={iconExpression.imageUrl}
                       alt={group.name}
@@ -135,11 +134,6 @@ export function ExpressionGroupContent({
                       height={40}
                       className="max-w-full max-h-full object-contain"
                     />
-                  ) : iconExpression.type === "TEXT" &&
-                    iconExpression.textContent ? (
-                    <span className="text-xl">
-                      {iconExpression.textContent}
-                    </span>
                   ) : (
                     <Folder className="h-5 w-5 text-muted-foreground" />
                   )}

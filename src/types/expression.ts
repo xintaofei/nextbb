@@ -18,10 +18,8 @@ export type Expression = {
   groupName: string
   code: string
   name: string
-  type: "IMAGE" | "TEXT"
-  imagePath: string | null
-  imageUrl: string | null
-  textContent: string | null
+  imagePath: string
+  imageUrl: string
   width: number | null
   height: number | null
   sort: number
@@ -70,9 +68,7 @@ export type ExpressionFormData = {
   groupId: string
   code: string
   name: string
-  type: "IMAGE" | "TEXT"
-  imagePath: string | null
-  textContent: string | null
+  imagePath: string
   width: number | null
   height: number | null
   sort?: number

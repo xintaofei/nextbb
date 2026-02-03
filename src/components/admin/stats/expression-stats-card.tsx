@@ -1,7 +1,7 @@
 "use client"
 
 import { useTranslations } from "next-intl"
-import { Folder, Smile, Image, Type } from "lucide-react"
+import { Folder, Smile, Image } from "lucide-react"
 import {
   StatsMetricGrid,
   StatsMetricCard,
@@ -18,7 +18,6 @@ export function ExpressionStatsCard({
   totalGroups,
   totalExpressions,
   imageExpressions,
-  textExpressions,
 }: ExpressionStatsCardProps) {
   const t = useTranslations("AdminExpressions")
 
@@ -43,13 +42,6 @@ export function ExpressionStatsCard({
       icon: Image,
       color: "text-purple-500",
       bgColor: "bg-purple-500/10",
-    },
-    {
-      label: t("stats.textExpressions"),
-      value: textExpressions,
-      icon: Type,
-      color: "text-orange-500",
-      bgColor: "bg-orange-500/10",
     },
   ]
 
