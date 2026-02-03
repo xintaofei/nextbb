@@ -214,3 +214,7 @@
   vertical-align: middle;
   max-width: none;
 }
+
+.prose img[data-expression]:hover {
+  box-shadow: none;
+}
