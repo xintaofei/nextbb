@@ -2672,6 +2672,7 @@
       "codeLockedAfterUpload": "ℹ️ Image uploaded, code is locked and cannot be modified",
       "codeRequiredForUpload": "⚠️ Please fill in the expression code first before uploading image",
       "codeFormatInvalid": "❌ Invalid expression code format, only letters, numbers, underscores and hyphens allowed",
+      "codeDuplicateError": "This code already exists in the current group, please use another code",
       "name": "Expression Name",
       "namePlaceholder": "e.g: Smile, Happy",
       "type": "Expression Type",
@@ -2717,6 +2718,7 @@
       "translationUpdateSuccess": "Translation updated successfully",
       "translationUpdateError": "Failed to update translation",
       "codeFormatError": "Invalid expression code format, only letters, numbers, underscores and hyphens allowed",
+      "codeDuplicate": "This code already exists in the current group, please use another code",
       "imageRequired": "Please upload expression image",
       "textContentRequired": "Please fill in text content"
     },

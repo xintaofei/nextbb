@@ -1,8 +1,9 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback, useRef } from "react"
 import { useTranslations } from "next-intl"
 import { toast } from "sonner"
+import { Loader2, AlertCircle, CheckCircle2 } from "lucide-react"
 import {
   Dialog,
   DialogContent,
@@ -73,6 +74,11 @@ export function ExpressionDialog({
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [imageUrl, setImageUrl] = useState<string | null>(null)
 
+  // Code 唯一性检查状态
+  const [isCheckingCode, setIsCheckingCode] = useState(false)
+  const [codeExists, setCodeExists] = useState(false)
+  const checkTimeoutRef = useRef<NodeJS.Timeout | null>(null)
+
   useEffect(() => {
     if (expression) {
       setFormData({
@@ -102,7 +108,69 @@ export function ExpressionDialog({
       })
       setImageUrl(null)
     }
+    // 重置检查状态
+    setCodeExists(false)
+    setIsCheckingCode(false)
   }, [expression, defaultGroupId, open])
+
+  // Code 唯一性检查函数
+  const checkCodeExists = useCallback(
+    async (groupId: string, code: string) => {
+      if (!groupId || !code || !/^[a-zA-Z0-9_-]+$/.test(code)) {
+        setCodeExists(false)
+        return
+      }
+
+      setIsCheckingCode(true)
+      try {
+        const params = new URLSearchParams({
+          groupId,
+          code,
+        })
+        if (expression?.id) {
+          params.append("excludeId", expression.id)
+        }
+
+        const response = await fetch(
+          `/api/admin/expressions/check-code?${params}`
+        )
+        const data = await response.json()
+        setCodeExists(data.exists || false)
+      } catch (error) {
+        console.error("Check code error:", error)
+        setCodeExists(false)
+      } finally {
+        setIsCheckingCode(false)
+      }
+    },
+    [expression?.id]
+  )
+
+  // Code 输入时防抖检查
+  useEffect(() => {
+    // 编辑模式或 code 为空时不检查
+    if (expression || !formData.code.trim() || !formData.groupId) {
+      setCodeExists(false)
+      setIsCheckingCode(false)
+      return
+    }
+
+    // 清除之前的定时器
+    if (checkTimeoutRef.current) {
+      clearTimeout(checkTimeoutRef.current)
+    }
+
+    // 300ms 防抖
+    checkTimeoutRef.current = setTimeout(() => {
+      checkCodeExists(formData.groupId, formData.code)
+    }, 300)
+
+    return () => {
+      if (checkTimeoutRef.current) {
+        clearTimeout(checkTimeoutRef.current)
+      }
+    }
+  }, [formData.code, formData.groupId, expression, checkCodeExists])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -110,6 +178,12 @@ export function ExpressionDialog({
     // 验证 Code 格式（仅在创建时验证，编辑时 code 已禁用）
     if (!expression && !/^[a-zA-Z0-9_-]+$/.test(formData.code)) {
       toast.error(t("message.codeFormatError"))
+      return
+    }
+
+    // 验证 Code 唯一性（仅在创建时）
+    if (!expression && codeExists) {
+      toast.error(t("message.codeDuplicate"))
       return
     }
 
@@ -178,17 +252,36 @@ export function ExpressionDialog({
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="code">{t("expressionDialog.code")}</Label>
-                <Input
-                  id="code"
-                  value={formData.code}
-                  onChange={(e) =>
-                    setFormData({ ...formData, code: e.target.value })
-                  }
-                  placeholder={t("expressionDialog.codePlaceholder")}
-                  required
-                  maxLength={32}
-                  disabled={!!expression || !!imageUrl}
-                />
+                <div className="relative">
+                  <Input
+                    id="code"
+                    value={formData.code}
+                    onChange={(e) =>
+                      setFormData({ ...formData, code: e.target.value })
+                    }
+                    placeholder={t("expressionDialog.codePlaceholder")}
+                    required
+                    maxLength={32}
+                    disabled={!!expression || !!imageUrl}
+                    className={
+                      !expression && codeExists
+                        ? "border-red-500 focus-visible:ring-red-500"
+                        : ""
+                    }
+                  />
+                  {/* Code 检查状态指示器 */}
+                  {!expression && formData.code.trim() && (
+                    <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                      {isCheckingCode ? (
+                        <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+                      ) : codeExists ? (
+                        <AlertCircle className="h-4 w-4 text-red-500" />
+                      ) : (
+                        <CheckCircle2 className="h-4 w-4 text-green-500" />
+                      )}
+                    </div>
+                  )}
+                </div>
                 {!expression && !imageUrl && (
                   <div className="space-y-1">
                     <p className="text-xs text-muted-foreground">
@@ -201,6 +294,13 @@ export function ExpressionDialog({
                       {t("expressionDialog.codeWarning")}
                     </p>
                   </div>
+                )}
+                {/* Code 重复错误提示 */}
+                {!expression && !imageUrl && codeExists && (
+                  <p className="text-xs text-red-600 dark:text-red-400 flex items-center gap-1">
+                    <AlertCircle className="h-3 w-3" />
+                    {t("expressionDialog.codeDuplicateError")}
+                  </p>
                 )}
                 {imageUrl && !expression && (
                   <p className="text-xs text-blue-600 dark:text-blue-400">
@@ -249,6 +349,13 @@ export function ExpressionDialog({
                   <div className="rounded-lg border border-red-200 bg-red-50 dark:border-red-900 dark:bg-red-950/30 p-3">
                     <p className="text-sm text-red-800 dark:text-red-200">
                       {t("expressionDialog.codeFormatInvalid")}
+                    </p>
+                  </div>
+                ) : codeExists ? (
+                  <div className="rounded-lg border border-red-200 bg-red-50 dark:border-red-900 dark:bg-red-950/30 p-3">
+                    <p className="text-sm text-red-800 dark:text-red-200 flex items-center gap-2">
+                      <AlertCircle className="h-4 w-4" />
+                      {t("expressionDialog.codeDuplicateError")}
                     </p>
                   </div>
                 ) : (
@@ -329,7 +436,11 @@ export function ExpressionDialog({
             >
               {t("expressionDialog.cancel")}
             </Button>
-            <Button type="submit" className="flex-1" disabled={isSubmitting}>
+            <Button
+              type="submit"
+              className="flex-1"
+              disabled={isSubmitting || (!expression && codeExists)}
+            >
               {t("expressionDialog.submit")}
             </Button>
           </div>

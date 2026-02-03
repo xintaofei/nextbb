@@ -2672,6 +2672,7 @@
       "codeLockedAfterUpload": "ℹ️ 图片已上传，代码已锁定无法修改",
       "codeRequiredForUpload": "⚠️ 请先填写表情代码（Code）才能上传图片",
       "codeFormatInvalid": "❌ 表情代码格式不正确，仅允许字母、数字、下划线和连字符",
+      "codeDuplicateError": "该代码在当前分组中已存在，请使用其他代码",
       "name": "表情名称",
       "namePlaceholder": "如: 微笑, 开心",
       "type": "表情类型",
@@ -2717,6 +2718,7 @@
       "translationUpdateSuccess": "翻译更新成功",
       "translationUpdateError": "翻译更新失败",
       "codeFormatError": "表情代码格式不正确，仅允许字母、数字、下划线和连字符",
+      "codeDuplicate": "该代码在当前分组中已存在，请使用其他代码",
       "imageRequired": "请上传表情图片",
       "textContentRequired": "请填写文本内容"
     },
