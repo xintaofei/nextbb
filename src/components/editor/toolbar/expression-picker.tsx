@@ -27,7 +27,7 @@ interface ExpressionGroupWithItems {
 }
 
 interface ExpressionPickerProps {
-  onSelect: (expression: Expression) => void
+  onSelect: (expression: Expression, groupSize: ExpressionGroupSize) => void
   trigger?: React.ReactNode
 }
 
@@ -54,8 +54,11 @@ export const ExpressionPicker: React.FC<ExpressionPickerProps> = ({
     fetcher
   )
 
-  const handleSelect = (expression: Expression): void => {
-    onSelect(expression)
+  const handleSelect = (
+    expression: Expression,
+    groupSize: ExpressionGroupSize
+  ): void => {
+    onSelect(expression, groupSize)
     setOpen(false)
   }
 
@@ -88,11 +91,12 @@ export const ExpressionPicker: React.FC<ExpressionPickerProps> = ({
 
   const activeGroup: ExpressionGroupWithItems | undefined =
     filteredGroups?.find((group) => group.id === resolvedGroupId)
+  const activeGroupSizeValue: ExpressionGroupSize =
+    activeGroup?.expressionSize ?? "SMALL"
   const activeGroupSize: number = activeGroup
-    ? getExpressionGroupSizePx(activeGroup.expressionSize)
+    ? getExpressionGroupSizePx(activeGroupSizeValue)
     : 0
-  const shouldShowExpressionName: boolean =
-    activeGroup?.expressionSize !== "SMALL"
+  const shouldShowExpressionName: boolean = activeGroupSizeValue !== "SMALL"
 
   const toggleValues: string[] = useMemo<string[]>(() => {
     const values: string[] = []
@@ -194,7 +198,7 @@ export const ExpressionPicker: React.FC<ExpressionPickerProps> = ({
                     return (
                       <div
                         key={exp.id}
-                        onClick={() => handleSelect(exp)}
+                        onClick={() => handleSelect(exp, activeGroupSizeValue)}
                         title={exp.name}
                         className="cursor-pointer flex flex-col hover:[&_div]:bg-accent"
                       >

@@ -25,6 +25,7 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { editorViewCtx, schemaCtx } from "@milkdown/kit/core"
 import { setBlockType, wrapIn } from "@milkdown/kit/prose/commands"
+import type { NodeType } from "@milkdown/kit/prose/model"
 import { TextSelection } from "@milkdown/kit/prose/state"
 import type { Ctx } from "@milkdown/ctx"
 import { ToolbarButton } from "./toolbar-button"
@@ -33,7 +34,8 @@ import { LinkDialog } from "./link-dialog"
 import { ExpressionPicker } from "./expression-picker"
 import { useToolbarState } from "./use-toolbar-state"
 import { toggleMarkInEditor } from "../mark-utils"
-import type { Expression } from "@/types/expression"
+import { getExpressionGroupSizePx } from "@/lib/expression-size"
+import type { Expression, ExpressionGroupSize } from "@/types/expression"
 
 interface EditorToolbarProps {
   getEditor: () =>
@@ -343,20 +345,43 @@ export const EditorToolbar = memo(({ getEditor }: EditorToolbarProps) => {
 
   // Expression command
   const handleExpression = useCallback(
-    (expression: Expression) => {
+    (expression: Expression, groupSize: ExpressionGroupSize) => {
       executeCommand((ctx) => {
         const view = ctx.get(editorViewCtx)
         const { state, dispatch } = view
 
-        if (expression.imageUrl) {
-          const schema = ctx.get(schemaCtx)
-          const node = schema.nodes.image.create({
-            src: expression.imageUrl,
-            alt: expression.name,
-          })
-          const tr = state.tr.replaceSelectionWith(node)
-          dispatch(tr)
+        if (!expression.imageUrl) {
+          view.focus()
+          return
         }
+
+        const schema = ctx.get(schemaCtx)
+        const expressionNode: NodeType | undefined = schema.nodes.expression
+        if (!expressionNode) {
+          console.warn("Expression node not found")
+          view.focus()
+          return
+        }
+
+        const sizePx: number = getExpressionGroupSizePx(groupSize)
+        const node = expressionNode.create({
+          src: expression.imageUrl,
+          alt: expression.name,
+          title: expression.name,
+          width: sizePx,
+          height: sizePx,
+        })
+        const tr = state.tr.replaceSelectionWith(node)
+        const insertionPos = tr.selection.from
+        const { $from } = tr.selection
+        if (
+          $from.parent.isTextblock &&
+          $from.parentOffset === $from.parent.content.size
+        ) {
+          tr.insertText("\u200b", insertionPos)
+          tr.setSelection(TextSelection.create(tr.doc, insertionPos + 1))
+        }
+        dispatch(tr)
 
         view.focus()
       })

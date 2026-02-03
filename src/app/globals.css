@@ -207,3 +207,10 @@
 .prose img:hover {
   box-shadow: 1px 1px 10px var(--ring);
 }
+
+.prose img[data-expression] {
+  display: inline-block;
+  margin: 0;
+  vertical-align: middle;
+  max-width: none;
+}

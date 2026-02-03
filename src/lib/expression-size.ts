@@ -12,9 +12,7 @@ export const EXPRESSION_GROUP_SIZE_OPTIONS: ExpressionGroupSizeOption[] = [
   { value: "LARGE", labelKey: "groupDialog.sizeOptions.large", px: 96 },
 ]
 
-export const getExpressionGroupSizePx = (
-  size: ExpressionGroupSize
-): number => {
+export const getExpressionGroupSizePx = (size: ExpressionGroupSize): number => {
   const match = EXPRESSION_GROUP_SIZE_OPTIONS.find(
     (option) => option.value === size
   )
