@@ -44,6 +44,7 @@ export async function getEnabledExpressions(locale: string) {
       code: group.code,
       name: groupFields.name,
       iconId: group.icon_id?.toString() || null,
+      expressionSize: group.expression_size,
       expressions: group.expressions.map((exp) => {
         const expFields = getTranslationFields(exp.translations, locale, {
           name: "",

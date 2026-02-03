@@ -2650,6 +2650,15 @@
       "codeHint": "Cannot be changed after creation",
       "name": "Group Name",
       "namePlaceholder": "e.g: Default, Onion",
+      "expressionSize": "Expression Size",
+      "expressionSizePlaceholder": "Select size",
+      "expressionSizeHint": "Only affects display size, not the original image",
+      "expressionSizePreview": "Preview size: {size}px",
+      "sizeOptions": {
+        "large": "Large",
+        "medium": "Medium",
+        "small": "Small"
+      },
       "icon": "Group Icon",
       "iconPlaceholder": "Click to select emoji",
       "selectIconPlaceholder": "Select icon from expressions",

@@ -20,13 +20,15 @@ import {
   TooltipTrigger,
   TooltipProvider,
 } from "@/components/ui/tooltip"
-import type { Expression } from "@/types/expression"
+import type { Expression, ExpressionGroupSize } from "@/types/expression"
+import { getExpressionGroupSizePx } from "@/lib/expression-size"
 
 interface ExpressionGroupWithItems {
   id: string
   code: string
   name: string
   iconId: string | null
+  expressionSize: ExpressionGroupSize
   expressions: Expression[]
 }
 
@@ -128,40 +130,57 @@ export const ExpressionPicker: React.FC<ExpressionPickerProps> = ({
               </TabsList>
               <div className="flex-1 overflow-hidden">
                 <TooltipProvider delayDuration={300}>
-                  {filteredGroups.map((group) => (
-                    <TabsContent
-                      key={group.id}
-                      value={group.id}
-                      className="m-0 h-full overflow-hidden"
-                    >
-                      <ScrollArea className="h-full p-2">
-                        <div className="grid grid-cols-6 gap-1">
-                          {group.expressions.map((exp) => (
-                            <Tooltip key={exp.id}>
-                              <TooltipTrigger asChild>
-                                <Button
-                                  variant="ghost"
-                                  size="icon"
-                                  onClick={() => handleSelect(exp)}
+                  {filteredGroups.map((group) => {
+                    const sizePx = getExpressionGroupSizePx(
+                      group.expressionSize
+                    )
+                    return (
+                      <TabsContent
+                        key={group.id}
+                        value={group.id}
+                        className="m-0 h-full overflow-hidden"
+                      >
+                        <ScrollArea className="h-full p-2">
+                          <div
+                            className="grid gap-1"
+                            style={{
+                              gridTemplateColumns: `repeat(6, ${sizePx}px)`,
+                            }}
+                          >
+                            {group.expressions.map((exp) => (
+                              <Tooltip key={exp.id}>
+                                <TooltipTrigger asChild>
+                                  <Button
+                                    variant="ghost"
+                                    className="p-0"
+                                    style={{
+                                      width: sizePx,
+                                      height: sizePx,
+                                    }}
+                                    onClick={() => handleSelect(exp)}
+                                  >
+                                    <Image
+                                      src={exp.imageUrl}
+                                      alt={exp.name}
+                                      width={sizePx}
+                                      height={sizePx}
+                                      className="max-w-full max-h-full object-contain"
+                                    />
+                                  </Button>
+                                </TooltipTrigger>
+                                <TooltipContent
+                                  side="bottom"
+                                  className="text-xs"
                                 >
-                                  <Image
-                                    src={exp.imageUrl}
-                                    alt={exp.name}
-                                    width={exp.width || 32}
-                                    height={exp.height || 32}
-                                    className="max-w-full max-h-full object-contain"
-                                  />
-                                </Button>
-                              </TooltipTrigger>
-                              <TooltipContent side="bottom" className="text-xs">
-                                {exp.name}
-                              </TooltipContent>
-                            </Tooltip>
-                          ))}
-                        </div>
-                      </ScrollArea>
-                    </TabsContent>
-                  ))}
+                                  {exp.name}
+                                </TooltipContent>
+                              </Tooltip>
+                            ))}
+                          </div>
+                        </ScrollArea>
+                      </TabsContent>
+                    )
+                  })}
                 </TooltipProvider>
               </div>
             </Tabs>

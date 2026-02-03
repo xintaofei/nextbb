@@ -2650,6 +2650,15 @@
       "codeHint": "创建后不可修改",
       "name": "分组名称",
       "namePlaceholder": "如: 默认表情, 洋葱表情",
+      "expressionSize": "表情大小",
+      "expressionSizePlaceholder": "请选择表情大小",
+      "expressionSizeHint": "仅影响前台展示尺寸，图片本身大小不变",
+      "expressionSizePreview": "预览尺寸：{size}px",
+      "sizeOptions": {
+        "large": "大",
+        "medium": "中",
+        "small": "小"
+      },
       "icon": "分组图标",
       "iconPlaceholder": "点击选择 emoji",
       "selectIconPlaceholder": "从表情中选择图标",

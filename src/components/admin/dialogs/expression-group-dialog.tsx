@@ -23,12 +23,20 @@ import type {
   ExpressionGroup,
   ExpressionGroupFormData,
   Expression,
+  ExpressionGroupSize,
 } from "@/types/expression"
+import {
+  EXPRESSION_GROUP_SIZE_OPTIONS,
+  getExpressionGroupSizePx,
+} from "@/lib/expression-size"
 
 type ExpressionGroupDialogProps = {
   open: boolean
   onOpenChange: (open: boolean) => void
-  group?: Pick<ExpressionGroup, "id" | "code" | "name" | "iconId" | "sort">
+  group?: Pick<
+    ExpressionGroup,
+    "id" | "code" | "name" | "iconId" | "sort" | "expressionSize"
+  >
   expressions?: Pick<Expression, "id" | "name" | "imageUrl">[]
   onSubmit: (data: ExpressionGroupFormData) => Promise<void>
 }
@@ -45,6 +53,7 @@ export function ExpressionGroupDialog({
     code: "",
     name: "",
     iconId: null,
+    expressionSize: "SMALL",
     sort: 0,
   })
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -55,6 +64,7 @@ export function ExpressionGroupDialog({
         code: group.code,
         name: group.name,
         iconId: group.iconId,
+        expressionSize: group.expressionSize ?? "SMALL",
         sort: group.sort,
       })
     } else {
@@ -62,10 +72,17 @@ export function ExpressionGroupDialog({
         code: "",
         name: "",
         iconId: null,
+        expressionSize: "SMALL",
         sort: 0,
       })
     }
   }, [group, open])
+
+  const previewExpression =
+    expressions.find((expr) => expr.id === formData.iconId) ??
+    expressions[0] ??
+    null
+  const previewSizePx = getExpressionGroupSizePx(formData.expressionSize)
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -123,6 +140,60 @@ export function ExpressionGroupDialog({
                 required
                 maxLength={32}
               />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="expressionSize">
+                {t("groupDialog.expressionSize")}
+              </Label>
+              <Select
+                value={formData.expressionSize}
+                onValueChange={(value) =>
+                  setFormData({
+                    ...formData,
+                    expressionSize: value as ExpressionGroupSize,
+                  })
+                }
+              >
+                <SelectTrigger id="expressionSize">
+                  <SelectValue
+                    placeholder={t("groupDialog.expressionSizePlaceholder")}
+                  />
+                </SelectTrigger>
+                <SelectContent>
+                  {EXPRESSION_GROUP_SIZE_OPTIONS.map((option) => (
+                    <SelectItem key={option.value} value={option.value}>
+                      {t(option.labelKey)}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <p className="text-xs text-muted-foreground">
+                {t("groupDialog.expressionSizeHint")}
+              </p>
+              <div className="flex items-center gap-3 rounded-lg border border-dashed border-border/60 bg-muted/30 p-3">
+                <div
+                  className="flex items-center justify-center rounded-md border border-border/60 bg-background/70"
+                  style={{ width: previewSizePx, height: previewSizePx }}
+                >
+                  {previewExpression?.imageUrl ? (
+                    <Image
+                      src={previewExpression.imageUrl}
+                      alt={previewExpression.name}
+                      width={previewSizePx}
+                      height={previewSizePx}
+                      className="max-w-full max-h-full object-contain"
+                    />
+                  ) : (
+                    <span className="text-sm leading-none">😀</span>
+                  )}
+                </div>
+                <div className="text-xs text-muted-foreground">
+                  {t("groupDialog.expressionSizePreview", {
+                    size: previewSizePx,
+                  })}
+                </div>
+              </div>
             </div>
 
             {/* Icon field - only show when editing and has expressions */}

@@ -1,8 +1,11 @@
+export type ExpressionGroupSize = "SMALL" | "MEDIUM" | "LARGE"
+
 export type ExpressionGroup = {
   id: string
   code: string
   name: string
   iconId: string | null
+  expressionSize: ExpressionGroupSize
   sort: number
   isEnabled: boolean
   isDeleted: boolean
@@ -61,6 +64,7 @@ export type ExpressionGroupFormData = {
   code: string
   name: string
   iconId: string | null
+  expressionSize: ExpressionGroupSize
   sort: number
 }
 

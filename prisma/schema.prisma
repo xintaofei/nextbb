@@ -1003,6 +1003,12 @@ enum LLMUsage {
   SUMMARIZATION
 }
 
+enum ExpressionGroupSize {
+  SMALL
+  MEDIUM
+  LARGE
+}
+
 model llm_configs {
   id             BigInt           @id @default(autoincrement()) @db.BigInt
   interface_mode LLMInterfaceMode
@@ -1111,6 +1117,7 @@ model expression_groups {
   source_locale String   @default("zh") @db.VarChar(8)
   code          String   @unique @db.VarChar(32) // e.g. "default", "onion"
   icon_id       BigInt?  @db.BigInt // Reference to expression ID for group icon
+  expression_size ExpressionGroupSize @default(SMALL) // 表情展示大小
   sort          Int      @default(0)
   is_enabled    Boolean  @default(true)
   is_deleted    Boolean  @default(false)
