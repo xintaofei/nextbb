@@ -10,11 +10,7 @@ import { toast } from "sonner"
 
 type ExpressionImageUploaderProps = {
   value?: string | null
-  onChange: (
-    url: string,
-    path: string,
-    dimensions: { width: number; height: number }
-  ) => void
+  onChange: (url: string, dimensions: { width: number; height: number }) => void
   groupCode: string
   disabled?: boolean
 }
@@ -88,7 +84,7 @@ export function ExpressionImageUploader({
         }
 
         const data = await response.json()
-        onChange(data.url, data.path, dimensions)
+        onChange(data.url, dimensions)
         toast.success(t("message.uploadImageSuccess"))
       } catch (error) {
         console.error("Upload error:", error)
@@ -133,7 +129,7 @@ export function ExpressionImageUploader({
   )
 
   const handleClear = useCallback(() => {
-    onChange("", "", { width: 0, height: 0 })
+    onChange("", { width: 0, height: 0 })
     if (fileInputRef.current) {
       fileInputRef.current.value = ""
     }

@@ -1,8 +1,6 @@
 import { prisma } from "@/lib/prisma"
 import { getTranslationsQuery, getTranslationFields } from "@/lib/locale"
 
-const BLOB_BASE_URL = process.env.NEXT_PUBLIC_BLOB_BASE_URL || ""
-
 /**
  * 获取所有启用的表情分组及其表情
  */
@@ -58,9 +56,7 @@ export async function getEnabledExpressions(locale: string) {
           name: expFields.name,
           type: exp.type,
           imagePath: exp.image_path,
-          imageUrl: exp.image_path
-            ? `${BLOB_BASE_URL}/${exp.image_path}`
-            : null,
+          imageUrl: exp.image_path || null,
           textContent: exp.text_content,
           width: exp.width,
           height: exp.height,

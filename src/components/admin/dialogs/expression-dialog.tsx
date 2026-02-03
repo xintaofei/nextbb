@@ -203,11 +203,11 @@ export function ExpressionDialog({
                 <Label>{t("expressionDialog.uploadImage")}</Label>
                 <ExpressionImageUploader
                   value={imageUrl}
-                  onChange={(url, path, dimensions) => {
+                  onChange={(url, dimensions) => {
                     setImageUrl(url)
                     setFormData({
                       ...formData,
-                      imagePath: path,
+                      imagePath: url,
                       width: dimensions.width,
                       height: dimensions.height,
                     })

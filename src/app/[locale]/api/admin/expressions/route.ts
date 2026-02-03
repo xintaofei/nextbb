@@ -138,11 +138,8 @@ export async function GET(request: NextRequest) {
         name: "",
       })
 
-      // 构建完整图片 URL
-      let imageUrl: string | null = null
-      if (e.image_path) {
-        imageUrl = `${process.env.NEXT_PUBLIC_BLOB_BASE_URL || ""}/${e.image_path}`
-      }
+      // 直接使用 image_path 作为 imageUrl（已存储完整 URL）
+      const imageUrl = e.image_path || null
 
       return {
         id: String(e.id),
@@ -340,11 +337,8 @@ export async function POST(request: NextRequest) {
       result.translation.version
     )
 
-    // 构建完整图片 URL
-    let imageUrl: string | null = null
-    if (result.image_path) {
-      imageUrl = `${process.env.NEXT_PUBLIC_BLOB_BASE_URL || ""}/${result.image_path}`
-    }
+    // 直接使用 image_path 作为 imageUrl（已存储完整 URL）
+    const imageUrl = result.image_path || null
 
     const expressionDTO: ExpressionDTO = {
       id: String(result.id),
