@@ -24,6 +24,7 @@ type ExpressionCardProps = {
     | "code"
     | "name"
     | "imageUrl"
+    | "thumbnailUrl"
     | "width"
     | "height"
     | "sort"
@@ -55,6 +56,7 @@ export function ExpressionCardContent({
 }) {
   const t = useTranslations("AdminExpressions")
   const tAdmin = useTranslations("Admin")
+  const previewUrl = expression.thumbnailUrl || expression.imageUrl
 
   return (
     <motion.div
@@ -91,9 +93,9 @@ export function ExpressionCardContent({
               <GripVertical className="h-4 w-4" />
             </button>
             <div className="flex h-16 w-16 items-center justify-center rounded-xl border border-border/40 bg-muted/30">
-              {expression.imageUrl ? (
+              {previewUrl ? (
                 <Image
-                  src={expression.imageUrl}
+                  src={previewUrl}
                   alt={expression.name}
                   width={expression.width || 64}
                   height={expression.height || 64}

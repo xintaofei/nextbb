@@ -37,7 +37,7 @@ type ExpressionGroupDialogProps = {
     ExpressionGroup,
     "id" | "code" | "name" | "iconId" | "sort" | "expressionSize"
   >
-  expressions?: Pick<Expression, "id" | "name" | "imageUrl">[]
+  expressions?: Pick<Expression, "id" | "name" | "imageUrl" | "thumbnailUrl">[]
   onSubmit: (data: ExpressionGroupFormData) => Promise<void>
 }
 
@@ -82,6 +82,8 @@ export function ExpressionGroupDialog({
     expressions.find((expr) => expr.id === formData.iconId) ??
     expressions[0] ??
     null
+  const previewUrl =
+    previewExpression?.thumbnailUrl || previewExpression?.imageUrl || ""
   const previewSizePx = getExpressionGroupSizePx(formData.expressionSize)
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -176,9 +178,9 @@ export function ExpressionGroupDialog({
                   className="flex items-center justify-center rounded-md border border-border/60 bg-background/70"
                   style={{ width: previewSizePx, height: previewSizePx }}
                 >
-                  {previewExpression?.imageUrl ? (
+                  {previewUrl ? (
                     <Image
-                      src={previewExpression.imageUrl}
+                      src={previewUrl}
                       alt={previewExpression.name}
                       width={previewSizePx}
                       height={previewSizePx}
@@ -218,22 +220,26 @@ export function ExpressionGroupDialog({
                     <SelectItem value="__none__">
                       {t("groupDialog.noIcon")}
                     </SelectItem>
-                    {expressions.map((expr) => (
-                      <SelectItem key={expr.id} value={expr.id}>
-                        <div className="flex items-center gap-2">
-                          {expr.imageUrl && (
-                            <Image
-                              src={expr.imageUrl}
-                              alt={expr.name}
-                              width={24}
-                              height={24}
-                              className="w-6 h-6 object-contain"
-                            />
-                          )}
-                          <span>{expr.name}</span>
-                        </div>
-                      </SelectItem>
-                    ))}
+                    {expressions.map((expr) => {
+                      const iconPreview =
+                        expr.thumbnailUrl || expr.imageUrl || ""
+                      return (
+                        <SelectItem key={expr.id} value={expr.id}>
+                          <div className="flex items-center gap-2">
+                            {iconPreview && (
+                              <Image
+                                src={iconPreview}
+                                alt={expr.name}
+                                width={24}
+                                height={24}
+                                className="w-6 h-6 object-contain"
+                              />
+                            )}
+                            <span>{expr.name}</span>
+                          </div>
+                        </SelectItem>
+                      )
+                    })}
                   </SelectContent>
                 </Select>
                 <p className="text-xs text-muted-foreground">

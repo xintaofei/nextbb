@@ -39,7 +39,7 @@ type ExpressionGroupListItemProps = {
     | "isDeleted"
     | "expressionCount"
   >
-  expressions?: Pick<Expression, "id" | "imageUrl">[]
+  expressions?: Pick<Expression, "id" | "imageUrl" | "thumbnailUrl">[]
   onEdit: (id: string) => void
   onDelete: (id: string) => void
   onToggleEnabled: (id: string, enabled: boolean) => void
@@ -78,6 +78,7 @@ export function ExpressionGroupContent({
   const iconExpression = group.iconId
     ? expressions.find((e) => e.id === group.iconId)
     : null
+  const iconUrl = iconExpression?.thumbnailUrl || iconExpression?.imageUrl || ""
 
   return (
     <Collapsible open={isOpen} onOpenChange={setIsOpen}>
@@ -126,9 +127,9 @@ export function ExpressionGroupContent({
 
               {iconExpression ? (
                 <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-border/40 shrink-0">
-                  {iconExpression.imageUrl ? (
+                  {iconUrl ? (
                     <Image
-                      src={iconExpression.imageUrl}
+                      src={iconUrl}
                       alt={group.name}
                       width={40}
                       height={40}

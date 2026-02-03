@@ -2,9 +2,14 @@ import { NextResponse } from "next/server"
 import { put } from "@vercel/blob"
 import sharp from "sharp"
 import { getServerSessionUser } from "@/lib/server-auth"
-import { getExpressionImagePath } from "@/lib/expression-utils"
+import {
+  getExpressionImagePath,
+  getExpressionThumbnailPath,
+} from "@/lib/expression-utils"
 
 const MAX_SIZE = 2 * 1024 * 1024 // 2MB
+const THUMBNAIL_SIZE = 128
+const THUMBNAIL_QUALITY = 80
 const ALLOWED_TYPES = [
   "image/jpeg",
   "image/jpg",
@@ -88,7 +93,8 @@ export async function POST(req: Request) {
     }
 
     const arrayBuffer = await file.arrayBuffer()
-    let finalBuffer: Buffer | ArrayBuffer = arrayBuffer
+    const sourceBuffer = Buffer.from(arrayBuffer)
+    let finalBuffer: Buffer = sourceBuffer
     let isAnimated = false
     let contentType = file.type
 
@@ -99,7 +105,7 @@ export async function POST(req: Request) {
 
     // 非动画图片转换为 WebP
     if (!isAnimated) {
-      const webpBuffer = await sharp(Buffer.from(arrayBuffer))
+      const webpBuffer = await sharp(sourceBuffer)
         .webp({ quality: 90 })
         .toBuffer()
       finalBuffer = webpBuffer
@@ -108,19 +114,40 @@ export async function POST(req: Request) {
 
     // 生成文件路径
     const key = getExpressionImagePath(groupCode, expressionCode, isAnimated)
+    const thumbnailKey = getExpressionThumbnailPath(groupCode, expressionCode)
 
-    const { url, pathname } = await put(key, finalBuffer, {
-      access: "public",
-      contentType: contentType,
-      token: process.env.BLOB_READ_WRITE_TOKEN,
-      addRandomSuffix: false,
-    })
+    const thumbnailBuffer = await sharp(sourceBuffer)
+      .resize({
+        width: THUMBNAIL_SIZE,
+        height: THUMBNAIL_SIZE,
+        fit: "inside",
+        withoutEnlargement: true,
+      })
+      .webp({ quality: THUMBNAIL_QUALITY })
+      .toBuffer()
+
+    const [originResult, thumbnailResult] = await Promise.all([
+      put(key, finalBuffer, {
+        access: "public",
+        contentType: contentType,
+        token: process.env.BLOB_READ_WRITE_TOKEN,
+        addRandomSuffix: false,
+      }),
+      put(thumbnailKey, thumbnailBuffer, {
+        access: "public",
+        contentType: "image/webp",
+        token: process.env.BLOB_READ_WRITE_TOKEN,
+        addRandomSuffix: false,
+      }),
+    ])
 
     // 返回数据，包含 is_animated 标识
     return NextResponse.json(
       {
-        url,
-        path: pathname,
+        url: originResult.url,
+        path: originResult.pathname,
+        thumbnailUrl: thumbnailResult.url,
+        thumbnailPath: thumbnailResult.pathname,
         isAnimated,
         width: null,
         height: null,

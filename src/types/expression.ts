@@ -23,6 +23,7 @@ export type Expression = {
   name: string
   imagePath: string
   imageUrl: string
+  thumbnailUrl: string
   width: number | null
   height: number | null
   sort: number

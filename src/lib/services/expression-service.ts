@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma"
 import { getTranslationsQuery, getTranslationFields } from "@/lib/locale"
+import { getExpressionThumbnailPathFromImagePath } from "@/lib/expression-utils"
 
 /**
  * 获取所有启用的表情分组及其表情
@@ -57,6 +58,7 @@ export async function getEnabledExpressions(locale: string) {
           name: expFields.name,
           imagePath: exp.image_path,
           imageUrl: exp.image_path,
+          thumbnailUrl: getExpressionThumbnailPathFromImagePath(exp.image_path),
           width: exp.width,
           height: exp.height,
           sort: exp.sort,

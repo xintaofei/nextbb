@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
 import { createTranslationTasks } from "@/lib/services/translation-task"
 import { TranslationEntityType } from "@prisma/client"
+import { getExpressionThumbnailPathFromImagePath } from "@/lib/expression-utils"
 
 type ExpressionDTO = {
   id: string
@@ -11,6 +12,7 @@ type ExpressionDTO = {
   name: string
   imagePath: string
   imageUrl: string
+  thumbnailUrl: string
   width: number | null
   height: number | null
   sort: number
@@ -194,6 +196,7 @@ export async function PATCH(
       name: translation?.name || "",
       imagePath: result.image_path,
       imageUrl: result.image_path,
+      thumbnailUrl: getExpressionThumbnailPathFromImagePath(result.image_path),
       width: result.width,
       height: result.height,
       sort: result.sort,

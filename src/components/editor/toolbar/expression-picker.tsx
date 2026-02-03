@@ -147,35 +147,41 @@ export const ExpressionPicker: React.FC<ExpressionPickerProps> = ({
                               gridTemplateColumns: `repeat(6, ${sizePx}px)`,
                             }}
                           >
-                            {group.expressions.map((exp) => (
-                              <Tooltip key={exp.id}>
-                                <TooltipTrigger asChild>
-                                  <Button
-                                    variant="ghost"
-                                    className="p-0"
-                                    style={{
-                                      width: sizePx,
-                                      height: sizePx,
-                                    }}
-                                    onClick={() => handleSelect(exp)}
+                            {group.expressions.map((exp) => {
+                              const previewUrl =
+                                exp.thumbnailUrl || exp.imageUrl
+                              return (
+                                <Tooltip key={exp.id}>
+                                  <TooltipTrigger asChild>
+                                    <Button
+                                      variant="ghost"
+                                      className="p-0"
+                                      style={{
+                                        width: sizePx,
+                                        height: sizePx,
+                                      }}
+                                      onClick={() => handleSelect(exp)}
+                                    >
+                                      {previewUrl && (
+                                        <Image
+                                          src={previewUrl}
+                                          alt={exp.name}
+                                          width={sizePx}
+                                          height={sizePx}
+                                          className="max-w-full max-h-full object-contain"
+                                        />
+                                      )}
+                                    </Button>
+                                  </TooltipTrigger>
+                                  <TooltipContent
+                                    side="bottom"
+                                    className="text-xs"
                                   >
-                                    <Image
-                                      src={exp.imageUrl}
-                                      alt={exp.name}
-                                      width={sizePx}
-                                      height={sizePx}
-                                      className="max-w-full max-h-full object-contain"
-                                    />
-                                  </Button>
-                                </TooltipTrigger>
-                                <TooltipContent
-                                  side="bottom"
-                                  className="text-xs"
-                                >
-                                  {exp.name}
-                                </TooltipContent>
-                              </Tooltip>
-                            ))}
+                                    {exp.name}
+                                  </TooltipContent>
+                                </Tooltip>
+                              )
+                            })}
                           </div>
                         </ScrollArea>
                       </TabsContent>

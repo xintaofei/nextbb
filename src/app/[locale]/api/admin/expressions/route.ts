@@ -5,6 +5,7 @@ import { getLocale } from "next-intl/server"
 import { createTranslationTasks } from "@/lib/services/translation-task"
 import { getTranslationsQuery, getTranslationFields } from "@/lib/locale"
 import { TranslationEntityType } from "@prisma/client"
+import { getExpressionThumbnailPathFromImagePath } from "@/lib/expression-utils"
 
 type ExpressionDTO = {
   id: string
@@ -14,6 +15,7 @@ type ExpressionDTO = {
   name: string
   imagePath: string
   imageUrl: string
+  thumbnailUrl: string
   width: number | null
   height: number | null
   sort: number
@@ -138,6 +140,7 @@ export async function GET(request: NextRequest) {
         name: fields.name,
         imagePath: e.image_path,
         imageUrl: e.image_path,
+        thumbnailUrl: getExpressionThumbnailPathFromImagePath(e.image_path),
         width: e.width,
         height: e.height,
         sort: e.sort,
@@ -308,6 +311,7 @@ export async function POST(request: NextRequest) {
       name: result.translation.name,
       imagePath: result.image_path,
       imageUrl: result.image_path,
+      thumbnailUrl: getExpressionThumbnailPathFromImagePath(result.image_path),
       width: result.width,
       height: result.height,
       sort: result.sort,
