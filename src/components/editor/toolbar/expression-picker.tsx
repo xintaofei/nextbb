@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useState } from "react"
+import React, { useEffect, useMemo, useRef, useState } from "react"
 import Image from "next/image"
 import useSWR from "swr"
 import { useTranslations } from "next-intl"
@@ -10,10 +10,10 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { ScrollArea } from "@/components/ui/scroll-area"
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
 import {
   Tooltip,
   TooltipContent,
@@ -37,15 +37,19 @@ interface ExpressionPickerProps {
   trigger?: React.ReactNode
 }
 
-const fetcher = (url: string) => fetch(url).then((res) => res.json())
+const fetcher = (url: string): Promise<ExpressionGroupWithItems[]> =>
+  fetch(url).then((res) => res.json())
 
 export const ExpressionPicker: React.FC<ExpressionPickerProps> = ({
   onSelect,
   trigger,
 }) => {
   const t = useTranslations("Editor.Toolbar.ExpressionPicker")
-  const [open, setOpen] = useState(false)
-  const [search, setSearch] = useState("")
+  const [open, setOpen] = useState<boolean>(false)
+  const [search, setSearch] = useState<string>("")
+  const [activeGroupId, setActiveGroupId] = useState<string>("")
+  const [isSearching, setIsSearching] = useState<boolean>(false)
+  const searchInputRef = useRef<HTMLInputElement | null>(null)
 
   const {
     data: groups,
@@ -56,12 +60,12 @@ export const ExpressionPicker: React.FC<ExpressionPickerProps> = ({
     fetcher
   )
 
-  const handleSelect = (expression: Expression) => {
+  const handleSelect = (expression: Expression): void => {
     onSelect(expression)
     setOpen(false)
   }
 
-  const filteredGroups = groups
+  const filteredGroups: ExpressionGroupWithItems[] | undefined = groups
     ?.map((group) => ({
       ...group,
       expressions: group.expressions.filter(
@@ -71,6 +75,71 @@ export const ExpressionPicker: React.FC<ExpressionPickerProps> = ({
       ),
     }))
     .filter((group) => group.expressions.length > 0)
+
+  useEffect(() => {
+    if (isSearching) {
+      searchInputRef.current?.focus()
+    }
+  }, [isSearching])
+
+  const resolvedGroupId: string = useMemo<string>(() => {
+    if (!filteredGroups || filteredGroups.length === 0) {
+      return ""
+    }
+    if (filteredGroups.some((group) => group.id === activeGroupId)) {
+      return activeGroupId
+    }
+    return filteredGroups[0].id
+  }, [activeGroupId, filteredGroups])
+
+  const activeGroup: ExpressionGroupWithItems | undefined =
+    filteredGroups?.find((group) => group.id === resolvedGroupId)
+  const activeGroupSize: number = activeGroup
+    ? getExpressionGroupSizePx(activeGroup.expressionSize)
+    : 0
+
+  const toggleValues: string[] = useMemo<string[]>(() => {
+    const values: string[] = []
+    if (isSearching) {
+      values.push("search")
+    }
+    if (resolvedGroupId) {
+      values.push(resolvedGroupId)
+    }
+    return values
+  }, [isSearching, resolvedGroupId])
+
+  const handleToggleChange = (values: string[]): void => {
+    const searching = values.includes("search")
+    if (!searching && isSearching) {
+      setSearch("")
+    }
+    setIsSearching(searching)
+
+    const groupValues = values.filter((value) => value !== "search")
+    const nextGroupId = groupValues[groupValues.length - 1]
+    if (nextGroupId) {
+      setActiveGroupId(nextGroupId)
+      return
+    }
+    if (filteredGroups && filteredGroups.length > 0) {
+      setActiveGroupId(filteredGroups[0].id)
+    }
+  }
+
+  const groupIconMap = useMemo<Map<string, Expression | null>>(() => {
+    const map = new Map<string, Expression | null>()
+    if (!groups) {
+      return map
+    }
+    groups.forEach((group) => {
+      const iconExpression = group.iconId
+        ? group.expressions.find((exp) => exp.id === group.iconId)
+        : null
+      map.set(group.id, iconExpression || group.expressions[0] || null)
+    })
+    return map
+  }, [groups])
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -87,111 +156,141 @@ export const ExpressionPicker: React.FC<ExpressionPickerProps> = ({
         )}
       </PopoverTrigger>
       <PopoverContent className="w-md p-0" align="start">
-        <div className="flex flex-col h-96">
-          <div className="p-2 border-b">
-            <div className="relative">
-              <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder={t("searchPlaceholder")}
-                className="pl-8 h-9"
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-              />
-            </div>
-          </div>
+        <TooltipProvider delayDuration={300}>
+          <div className="flex flex-col h-96">
+            {isSearching ? (
+              <div className="p-2 border-b">
+                <div className="relative">
+                  <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    ref={searchInputRef}
+                    placeholder={t("searchPlaceholder")}
+                    className="pl-8 h-9"
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                  />
+                </div>
+              </div>
+            ) : null}
 
-          {isLoading ? (
-            <div className="flex-1 flex items-center justify-center">
-              <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
-            </div>
-          ) : error ? (
-            <div className="flex-1 flex items-center justify-center text-sm text-destructive">
-              {t("error")}
-            </div>
-          ) : !filteredGroups || filteredGroups.length === 0 ? (
-            <div className="flex-1 flex items-center justify-center text-sm text-muted-foreground">
-              {t("noResults")}
-            </div>
-          ) : (
-            <Tabs
-              defaultValue={filteredGroups[0]?.id}
-              className="flex-1 flex flex-col overflow-hidden"
-            >
-              <TabsList className="w-full justify-start h-10 bg-transparent border-b rounded-none px-2 overflow-x-auto no-scrollbar">
-                {filteredGroups.map((group) => (
-                  <TabsTrigger
-                    key={group.id}
-                    value={group.id}
-                    className="h-8 px-3 text-xs data-[state=active]:bg-muted"
+            <div className="flex-1 overflow-hidden">
+              {isLoading ? (
+                <div className="flex-1 flex items-center justify-center">
+                  <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+                </div>
+              ) : error ? (
+                <div className="flex-1 flex items-center justify-center text-sm text-destructive">
+                  {t("error")}
+                </div>
+              ) : !filteredGroups || filteredGroups.length === 0 ? (
+                <div className="flex-1 flex items-center justify-center text-sm text-muted-foreground">
+                  {t("noResults")}
+                </div>
+              ) : !activeGroup ? null : (
+                <ScrollArea className="h-full p-2">
+                  <div
+                    className="grid gap-1"
+                    style={{
+                      gridTemplateColumns: `repeat(6, ${activeGroupSize}px)`,
+                    }}
                   >
-                    {group.name}
-                  </TabsTrigger>
-                ))}
-              </TabsList>
-              <div className="flex-1 overflow-hidden">
-                <TooltipProvider delayDuration={300}>
-                  {filteredGroups.map((group) => {
-                    const sizePx = getExpressionGroupSizePx(
-                      group.expressionSize
-                    )
-                    return (
-                      <TabsContent
-                        key={group.id}
-                        value={group.id}
-                        className="m-0 h-full overflow-hidden"
+                    {activeGroup.expressions.map((exp) => {
+                      const previewUrl = exp.thumbnailUrl || exp.imageUrl
+                      return (
+                        <Tooltip key={exp.id}>
+                          <TooltipTrigger asChild>
+                            <Button
+                              variant="ghost"
+                              className="p-0"
+                              style={{
+                                width: activeGroupSize,
+                                height: activeGroupSize,
+                              }}
+                              onClick={() => handleSelect(exp)}
+                            >
+                              {previewUrl ? (
+                                <Image
+                                  src={previewUrl}
+                                  alt={exp.name}
+                                  width={activeGroupSize}
+                                  height={activeGroupSize}
+                                  className="max-w-full max-h-full object-contain"
+                                />
+                              ) : null}
+                            </Button>
+                          </TooltipTrigger>
+                          <TooltipContent side="bottom" className="text-xs">
+                            {exp.name}
+                          </TooltipContent>
+                        </Tooltip>
+                      )
+                    })}
+                  </div>
+                </ScrollArea>
+              )}
+            </div>
+
+            {filteredGroups && filteredGroups.length > 0 ? (
+              <div className="border-t p-2">
+                <ToggleGroup
+                  type="multiple"
+                  value={toggleValues}
+                  onValueChange={handleToggleChange}
+                  spacing={2}
+                  size="sm"
+                  className="w-full justify-start gap-1 overflow-x-auto no-scrollbar"
+                >
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <ToggleGroupItem
+                        value="search"
+                        className="h-8 w-8 p-0"
+                        aria-label={t("searchPlaceholder")}
                       >
-                        <ScrollArea className="h-full p-2">
-                          <div
-                            className="grid gap-1"
-                            style={{
-                              gridTemplateColumns: `repeat(6, ${sizePx}px)`,
-                            }}
+                        <Search className="h-4 w-4" />
+                      </ToggleGroupItem>
+                    </TooltipTrigger>
+                    <TooltipContent side="top" className="text-xs">
+                      {t("searchPlaceholder")}
+                    </TooltipContent>
+                  </Tooltip>
+
+                  {filteredGroups.map((group) => {
+                    const iconExpression = groupIconMap.get(group.id)
+                    const iconUrl =
+                      iconExpression?.thumbnailUrl || iconExpression?.imageUrl
+                    return (
+                      <Tooltip key={group.id}>
+                        <TooltipTrigger asChild>
+                          <ToggleGroupItem
+                            value={group.id}
+                            className="h-8 w-8 p-0"
+                            aria-label={group.name}
                           >
-                            {group.expressions.map((exp) => {
-                              const previewUrl =
-                                exp.thumbnailUrl || exp.imageUrl
-                              return (
-                                <Tooltip key={exp.id}>
-                                  <TooltipTrigger asChild>
-                                    <Button
-                                      variant="ghost"
-                                      className="p-0"
-                                      style={{
-                                        width: sizePx,
-                                        height: sizePx,
-                                      }}
-                                      onClick={() => handleSelect(exp)}
-                                    >
-                                      {previewUrl && (
-                                        <Image
-                                          src={previewUrl}
-                                          alt={exp.name}
-                                          width={sizePx}
-                                          height={sizePx}
-                                          className="max-w-full max-h-full object-contain"
-                                        />
-                                      )}
-                                    </Button>
-                                  </TooltipTrigger>
-                                  <TooltipContent
-                                    side="bottom"
-                                    className="text-xs"
-                                  >
-                                    {exp.name}
-                                  </TooltipContent>
-                                </Tooltip>
-                              )
-                            })}
-                          </div>
-                        </ScrollArea>
-                      </TabsContent>
+                            {iconUrl ? (
+                              <Image
+                                src={iconUrl}
+                                alt={group.name}
+                                width={20}
+                                height={20}
+                                className="h-5 w-5 object-contain"
+                              />
+                            ) : (
+                              <Smile className="h-4 w-4" />
+                            )}
+                          </ToggleGroupItem>
+                        </TooltipTrigger>
+                        <TooltipContent side="top" className="text-xs">
+                          {group.name}
+                        </TooltipContent>
+                      </Tooltip>
                     )
                   })}
-                </TooltipProvider>
+                </ToggleGroup>
               </div>
-            </Tabs>
-          )}
-        </div>
+            ) : null}
+          </div>
+        </TooltipProvider>
       </PopoverContent>
     </Popover>
   )
