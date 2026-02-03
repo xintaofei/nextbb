@@ -393,6 +393,7 @@ export const EditorToolbar = memo(({ getEditor }: EditorToolbarProps) => {
     <div className="flex flex-col border-b bg-muted/30 sticky top-0 z-40">
       {/* Desktop toolbar */}
       <div className="hidden md:flex items-center gap-1 px-2 py-1.5 flex-wrap">
+        <ExpressionPicker onSelect={handleExpression} />
         {/* Text formatting */}
         <ToolbarButton
           icon={<Bold className="h-4 w-4" />}
@@ -472,7 +473,6 @@ export const EditorToolbar = memo(({ getEditor }: EditorToolbarProps) => {
           label={t("image")}
           onClick={handleImage}
         />
-        <ExpressionPicker onSelect={handleExpression} />
         <ToolbarButton
           icon={<Minus className="h-4 w-4" />}
           label={t("hr")}
@@ -482,6 +482,7 @@ export const EditorToolbar = memo(({ getEditor }: EditorToolbarProps) => {
 
       {/* Mobile toolbar */}
       <div className="flex md:hidden items-center gap-1 px-2 py-1.5">
+        <ExpressionPicker onSelect={handleExpression} />
         <ToolbarButton
           icon={<Bold className="h-4 w-4" />}
           label={t("bold")}
@@ -499,7 +500,6 @@ export const EditorToolbar = memo(({ getEditor }: EditorToolbarProps) => {
           label={t("link")}
           onClick={() => setLinkDialogOpen(true)}
         />
-        <ExpressionPicker onSelect={handleExpression} />
 
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
