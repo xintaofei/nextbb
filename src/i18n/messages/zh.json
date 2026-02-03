@@ -2667,6 +2667,11 @@
       "code": "表情代码",
       "codePlaceholder": "如: smile, 001",
       "codeHint": "同一分组内唯一",
+      "codeFormatHint": "⚠️ 仅允许字母、数字、下划线和连字符，用于生成图片路径",
+      "codeWarning": "💡 保存后不可修改，请谨慎填写",
+      "codeLockedAfterUpload": "ℹ️ 图片已上传，代码已锁定无法修改",
+      "codeRequiredForUpload": "⚠️ 请先填写表情代码（Code）才能上传图片",
+      "codeFormatInvalid": "❌ 表情代码格式不正确，仅允许字母、数字、下划线和连字符",
       "name": "表情名称",
       "namePlaceholder": "如: 微笑, 开心",
       "type": "表情类型",
@@ -2683,7 +2688,10 @@
       "autoDetect": "自动检测",
       "sortValue": "排序值",
       "cancel": "取消",
-      "submit": "保存"
+      "submit": "保存",
+      "animatedBadge": "动画",
+      "storagePathLabel": "📁 存储路径：",
+      "formatConversionHint": "💡 静态图片（PNG/JPG）将自动转换为 WebP 格式；动画 GIF 保留原格式"
     },
     "message": {
       "createGroupSuccess": "分组创建成功",
@@ -2707,7 +2715,10 @@
       "invalidImageType": "不支持的图片格式",
       "imageTooLarge": "图片大小超过限制",
       "translationUpdateSuccess": "翻译更新成功",
-      "translationUpdateError": "翻译更新失败"
+      "translationUpdateError": "翻译更新失败",
+      "codeFormatError": "表情代码格式不正确，仅允许字母、数字、下划线和连字符",
+      "imageRequired": "请上传表情图片",
+      "textContentRequired": "请填写文本内容"
     },
     "deleteConfirm": {
       "groupTitle": "确认删除分组",

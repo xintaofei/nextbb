@@ -2667,6 +2667,11 @@
       "code": "Expression Code",
       "codePlaceholder": "e.g: smile, 001",
       "codeHint": "Unique within the group",
+      "codeFormatHint": "⚠️ Only letters, numbers, underscores and hyphens allowed, used for image path",
+      "codeWarning": "💡 Cannot be modified after saving, please fill carefully",
+      "codeLockedAfterUpload": "ℹ️ Image uploaded, code is locked and cannot be modified",
+      "codeRequiredForUpload": "⚠️ Please fill in the expression code first before uploading image",
+      "codeFormatInvalid": "❌ Invalid expression code format, only letters, numbers, underscores and hyphens allowed",
       "name": "Expression Name",
       "namePlaceholder": "e.g: Smile, Happy",
       "type": "Expression Type",
@@ -2683,7 +2688,10 @@
       "autoDetect": "Auto Detect",
       "sortValue": "Sort Value",
       "cancel": "Cancel",
-      "submit": "Save"
+      "submit": "Save",
+      "animatedBadge": "Animated",
+      "storagePathLabel": "📁 Storage Path:",
+      "formatConversionHint": "💡 Static images (PNG/JPG) will be automatically converted to WebP format; animated GIFs retain original format"
     },
     "message": {
       "createGroupSuccess": "Group created successfully",
@@ -2707,7 +2715,10 @@
       "invalidImageType": "Invalid image type",
       "imageTooLarge": "Image size exceeds limit",
       "translationUpdateSuccess": "Translation updated successfully",
-      "translationUpdateError": "Failed to update translation"
+      "translationUpdateError": "Failed to update translation",
+      "codeFormatError": "Invalid expression code format, only letters, numbers, underscores and hyphens allowed",
+      "imageRequired": "Please upload expression image",
+      "textContentRequired": "Please fill in text content"
     },
     "deleteConfirm": {
       "groupTitle": "Confirm Delete Group",
