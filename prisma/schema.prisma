@@ -57,6 +57,7 @@ model users {
   custom_status   user_custom_statuses?
   social_accounts user_social_accounts[] @relation("user_social_accounts_user")
   two_factor      user_two_factor?
+  storage_files   storage_files[]        @relation("storage_files_user")
 
   @@unique([email], map: "users_email_key")
   @@map("users")
@@ -1002,6 +1003,12 @@ enum LLMUsage {
   SUMMARIZATION
 }
 
+enum ExpressionGroupSize {
+  SMALL
+  MEDIUM
+  LARGE
+}
+
 model llm_configs {
   id             BigInt           @id @default(autoincrement()) @db.BigInt
   interface_mode LLMInterfaceMode
@@ -1089,14 +1096,14 @@ model seed_migrations {
 }
 
 model user_two_factor {
-  user_id       BigInt    @id @db.BigInt
-  secret        String    @db.VarChar(256)  // Base32 encoded secret
-  is_enabled    Boolean   @default(false)
-  backup_codes  Json?                        // Encrypted backup codes
-  enabled_at    DateTime?
-  last_used_at  DateTime?
-  created_at    DateTime  @default(now())
-  updated_at    DateTime  @updatedAt
+  user_id      BigInt    @id @db.BigInt
+  secret       String    @db.VarChar(256) // Base32 encoded secret
+  is_enabled   Boolean   @default(false)
+  backup_codes Json? // Encrypted backup codes
+  enabled_at   DateTime?
+  last_used_at DateTime?
+  created_at   DateTime  @default(now())
+  updated_at   DateTime  @updatedAt
 
   user users @relation(fields: [user_id], references: [id], onDelete: Cascade)
 
@@ -1105,37 +1112,33 @@ model user_two_factor {
 
 // ==================== 表情系统 ====================
 
-enum ExpressionType {
-  IMAGE
-  TEXT
-}
-
 model expression_groups {
   id            BigInt   @id @db.BigInt
   source_locale String   @default("zh") @db.VarChar(8)
   code          String   @unique @db.VarChar(32) // e.g. "default", "onion"
   icon_id       BigInt?  @db.BigInt // Reference to expression ID for group icon
+  expression_size ExpressionGroupSize @default(SMALL) // 表情展示大小
   sort          Int      @default(0)
   is_enabled    Boolean  @default(true)
   is_deleted    Boolean  @default(false)
   created_at    DateTime @default(now())
   updated_at    DateTime @updatedAt
 
-  icon_expression expressions?                     @relation("GroupIcon", fields: [icon_id], references: [id], onDelete: SetNull)
-  expressions     expressions[]                    @relation("GroupExpressions")
+  icon_expression expressions?                    @relation("GroupIcon", fields: [icon_id], references: [id], onDelete: SetNull)
+  expressions     expressions[]                   @relation("GroupExpressions")
   translations    expression_group_translations[]
 
   @@map("expression_groups")
 }
 
 model expression_group_translations {
-  group_id    BigInt   @db.BigInt
-  locale      String   @db.VarChar(8)
-  name        String   @db.VarChar(32)
-  is_source   Boolean  @default(false)
-  version     Int      @default(0)
-  created_at  DateTime @default(now())
-  updated_at  DateTime @updatedAt
+  group_id   BigInt   @db.BigInt
+  locale     String   @db.VarChar(8)
+  name       String   @db.VarChar(32)
+  is_source  Boolean  @default(false)
+  version    Int      @default(0)
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
 
   group expression_groups @relation(fields: [group_id], references: [id], onDelete: Cascade)
 
@@ -1146,20 +1149,19 @@ model expression_group_translations {
 }
 
 model expressions {
-  id            BigInt         @id @db.BigInt
-  group_id      BigInt         @db.BigInt
-  source_locale String         @default("zh") @db.VarChar(8)
-  type          ExpressionType @default(IMAGE)
-  code          String         @db.VarChar(32) // e.g. "smile", "001"
-  image_path    String?        @db.VarChar(256) // e.g. "onion/001.gif"
-  text_content  String?        @db.VarChar(64) // e.g. "😊"
+  id            BigInt   @id @db.BigInt
+  group_id      BigInt   @db.BigInt
+  source_locale String   @default("zh") @db.VarChar(8)
+  code          String   @db.VarChar(32) // e.g. "smile", "001"
+  image_path    String   @db.VarChar(256) // e.g. "onion/001.gif"
   width         Int?
   height        Int?
-  sort          Int            @default(0)
-  is_enabled    Boolean        @default(true)
-  is_deleted    Boolean        @default(false)
-  created_at    DateTime       @default(now())
-  updated_at    DateTime       @updatedAt
+  sort          Int      @default(0)
+  is_enabled    Boolean  @default(true)
+  is_deleted    Boolean  @default(false)
+  is_animated   Boolean  @default(false) // 是否为动画表情
+  created_at    DateTime @default(now())
+  updated_at    DateTime @updatedAt
 
   group              expression_groups         @relation("GroupExpressions", fields: [group_id], references: [id])
   translations       expression_translations[]
@@ -1185,4 +1187,123 @@ model expression_translations {
   @@index([locale, is_source], map: "expression_trans_locale_source_index")
   @@index([expression_id, is_source], map: "expression_trans_expression_source_index")
   @@map("expression_translations")
+}
+
+// ==================== 对象存储系统 ====================
+
+// 存储供应商类型枚举
+enum StorageProviderType {
+  LOCAL // 本地文件系统存储
+  VERCEL_BLOB // Vercel Blob 存储
+  ALIYUN_OSS // 阿里云对象存储
+  AWS_S3 // AWS S3 对象存储
+  TENCENT_COS // 腾讯云对象存储
+  QINIU // 七牛云存储
+  UPYUN // 又拍云存储
+  MINIO // MinIO 对象存储
+}
+
+// 存储文件引用类型枚举
+enum StorageReferenceType {
+  POST // 帖子附件
+  AVATAR // 用户头像
+  EXPRESSION // 表情图片
+  SITE // 站点相关资源（如logo、favicon等）
+  OTHER // 其他资源
+}
+
+// 存储供应商配置表
+model storage_providers {
+  id BigInt @id @db.BigInt
+
+  // 供应商基本信息
+  name          String              @db.VarChar(64) // 供应商名称，如 "默认 OSS"
+  provider_type StorageProviderType // 供应商类型
+
+  // 供应商配置（JSON格式存储不同供应商的配置参数）
+  config Json
+  // LOCAL: {"base_path": "/uploads"}
+  // VERCEL_BLOB: {"token": "vercel_blob_xxx"}
+  // ALIYUN_OSS: {"access_key_id": "xxx", "access_key_secret": "xxx", "region": "oss-cn-shanghai", "bucket": "my-bucket", "endpoint": "oss-cn-shanghai.aliyuncs.com"}
+  // AWS_S3: {"access_key_id": "xxx", "secret_access_key": "xxx", "region": "us-east-1", "bucket": "my-bucket"}
+  // TENCENT_COS: {"secret_id": "xxx", "secret_key": "xxx", "region": "ap-shanghai", "bucket": "my-bucket"}
+  // QINIU: {"access_key": "xxx", "secret_key": "xxx", "bucket": "my-bucket"}
+  // UPYUN: {"operator": "xxx", "password": "xxx", "bucket": "my-bucket"}
+  // MINIO: {"endpoint": "minio.example.com", "port": 9000, "access_key": "xxx", "secret_key": "xxx", "bucket": "my-bucket", "use_ssl": true}
+
+  // 文件访问基础地址（用于生成文件访问URL）
+  base_url String @db.VarChar(512) // 如 "https://cdn.example.com" 或 "https://example.com/uploads"
+
+  // 供应商控制
+  is_default Boolean @default(false) // 是否为默认供应商（全局只能有一个默认）
+  is_active  Boolean @default(true) // 是否启用
+  sort       Int     @default(0) // 排序（数字越小越靠前）
+
+  // 配额限制（可选）
+  max_file_size BigInt? @db.BigInt // 最大单文件大小（字节），null 表示无限制
+  allowed_types String? @db.VarChar(512) // 允许的 MIME 类型（逗号分隔），null 表示不限制，如 "image/*,video/mp4"
+
+  // 审计字段
+  is_deleted Boolean  @default(false)
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  // 关联关系
+  storage_files storage_files[]
+
+  @@index([provider_type], map: "storage_providers_type_index")
+  @@index([is_active, is_deleted], map: "storage_providers_status_index")
+  @@index([is_default, is_active], map: "storage_providers_default_index")
+  @@map("storage_providers")
+}
+
+// 文件存储记录表
+model storage_files {
+  id BigInt @id @db.BigInt
+
+  // 供应商和用户关联
+  provider_id BigInt @db.BigInt // 存储供应商ID
+  user_id     BigInt @db.BigInt // 上传用户ID
+
+  // 文件基本信息
+  original_filename String @db.VarChar(256) // 原始文件名
+  mime_type         String @db.VarChar(128) // MIME 类型，如 "image/jpeg"
+  file_size         BigInt @db.BigInt // 文件大小（字节）
+
+  // 存储位置信息
+  storage_key String @db.VarChar(512) // 在供应商处的存储键/路径，如 "uploads/2024/01/abc123.jpg"
+
+  // 文件元数据
+  metadata Json? // 额外的元信息（JSON格式）
+  // 示例:
+  // 图片: {"width": 1920, "height": 1080, "format": "jpeg"}
+  // 视频: {"duration": 120, "width": 1920, "height": 1080, "codec": "h264"}
+  // 文档: {"pages": 10, "author": "John Doe"}
+
+  // 文件哈希和去重
+  file_hash String @db.VarChar(128) // 文件哈希值（用于去重检测，如 MD5/SHA256）
+
+  // 访问控制
+  is_public Boolean @default(true) // 是否公开访问
+
+  // 使用追踪（可选，用于统计和清理未使用文件）
+  reference_type StorageReferenceType // 引用类型
+
+  // 审计字段
+  is_deleted Boolean  @default(false)
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  // 关联关系
+  provider storage_providers @relation(fields: [provider_id], references: [id])
+  user     users             @relation("storage_files_user", fields: [user_id], references: [id])
+
+  @@index([provider_id], map: "storage_files_provider_index")
+  @@index([user_id], map: "storage_files_user_index")
+  @@index([mime_type], map: "storage_files_mime_index")
+  @@index([file_hash], map: "storage_files_hash_index")
+  @@index([reference_type], map: "storage_files_reference_index")
+  @@index([is_deleted, created_at], map: "storage_files_deleted_created_index")
+  @@index([created_at], map: "storage_files_created_index")
+  @@map("storage_files")
 }

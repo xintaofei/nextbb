@@ -8,6 +8,7 @@ type ExpressionGroupDTO = {
   code: string
   name: string
   iconId: string | null
+  expressionSize: "SMALL" | "MEDIUM" | "LARGE"
   sort: number
   isEnabled: boolean
   isDeleted: boolean
@@ -23,6 +24,11 @@ export async function PATCH(
   context: { params: Promise<{ id: string }> }
 ) {
   try {
+    const validExpressionSizes: ReadonlySet<string> = new Set([
+      "SMALL",
+      "MEDIUM",
+      "LARGE",
+    ])
     const params = await context.params
     const groupId = BigInt(params.id)
 
@@ -39,7 +45,7 @@ export async function PATCH(
     }
 
     const body = await request.json()
-    const { name, iconId, sort, isEnabled, isDeleted } = body
+    const { name, iconId, sort, isEnabled, isDeleted, expressionSize } = body
 
     // 验证字段
     if (name !== undefined) {
@@ -60,10 +66,21 @@ export async function PATCH(
       }
     }
 
+    if (
+      expressionSize !== undefined &&
+      !validExpressionSizes.has(expressionSize)
+    ) {
+      return NextResponse.json(
+        { error: "Expression size is invalid" },
+        { status: 400 }
+      )
+    }
+
     // 构建更新数据
     const hasTranslationUpdate = name !== undefined
     const groupUpdateData: {
       icon_id?: bigint | null
+      expression_size?: "SMALL" | "MEDIUM" | "LARGE"
       sort?: number
       is_enabled?: boolean
       is_deleted?: boolean
@@ -71,6 +88,9 @@ export async function PATCH(
 
     if (iconId !== undefined)
       groupUpdateData.icon_id = iconId ? BigInt(iconId) : null
+    if (expressionSize !== undefined) {
+      groupUpdateData.expression_size = expressionSize
+    }
     if (sort !== undefined) groupUpdateData.sort = sort
     if (isEnabled !== undefined) groupUpdateData.is_enabled = isEnabled
     if (isDeleted !== undefined) groupUpdateData.is_deleted = isDeleted
@@ -126,6 +146,7 @@ export async function PATCH(
           id: true,
           code: true,
           icon_id: true,
+          expression_size: true,
           sort: true,
           is_enabled: true,
           is_deleted: true,
@@ -176,6 +197,7 @@ export async function PATCH(
       code: result.code,
       name: translation?.name || "",
       iconId: result.icon_id ? String(result.icon_id) : null,
+      expressionSize: result.expression_size,
       sort: result.sort,
       isEnabled: result.is_enabled,
       isDeleted: result.is_deleted,

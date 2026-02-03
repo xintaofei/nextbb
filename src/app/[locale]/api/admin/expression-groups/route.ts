@@ -11,6 +11,7 @@ type ExpressionGroupDTO = {
   code: string
   name: string
   iconId: string | null
+  expressionSize: "SMALL" | "MEDIUM" | "LARGE"
   sort: number
   isEnabled: boolean
   isDeleted: boolean
@@ -89,6 +90,7 @@ export async function GET(request: NextRequest) {
         id: true,
         code: true,
         icon_id: true,
+        expression_size: true,
         sort: true,
         is_enabled: true,
         is_deleted: true,
@@ -125,6 +127,7 @@ export async function GET(request: NextRequest) {
         code: g.code,
         name,
         iconId: g.icon_id ? String(g.icon_id) : null,
+        expressionSize: g.expression_size,
         sort: g.sort,
         isEnabled: g.is_enabled,
         isDeleted: g.is_deleted,
@@ -155,8 +158,13 @@ export async function GET(request: NextRequest) {
 // POST - 创建表情分组
 export async function POST(request: NextRequest) {
   try {
+    const validExpressionSizes: ReadonlySet<string> = new Set([
+      "SMALL",
+      "MEDIUM",
+      "LARGE",
+    ])
     const body = await request.json()
-    const { code, name, iconId, sort } = body
+    const { code, name, iconId, sort, expressionSize } = body
 
     // 验证必填字段
     if (
@@ -211,6 +219,16 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    if (
+      expressionSize !== undefined &&
+      !validExpressionSizes.has(expressionSize)
+    ) {
+      return NextResponse.json(
+        { error: "Expression size is invalid" },
+        { status: 400 }
+      )
+    }
+
     // 获取当前请求的语言作为源语言
     const sourceLocale = await getLocale()
 
@@ -222,6 +240,7 @@ export async function POST(request: NextRequest) {
           id: groupId,
           code,
           icon_id: iconId ? BigInt(iconId) : null,
+          expression_size: expressionSize ?? "SMALL",
           sort,
           is_enabled: true,
           is_deleted: false,
@@ -259,6 +278,7 @@ export async function POST(request: NextRequest) {
       code: result.code,
       name: result.translation.name,
       iconId: result.icon_id ? String(result.icon_id) : null,
+      expressionSize: result.expression_size,
       sort: result.sort,
       isEnabled: result.is_enabled,
       isDeleted: result.is_deleted,

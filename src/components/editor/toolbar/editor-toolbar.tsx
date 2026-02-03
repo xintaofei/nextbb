@@ -25,13 +25,17 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { editorViewCtx, schemaCtx } from "@milkdown/kit/core"
 import { setBlockType, wrapIn } from "@milkdown/kit/prose/commands"
+import type { NodeType } from "@milkdown/kit/prose/model"
 import { TextSelection } from "@milkdown/kit/prose/state"
 import type { Ctx } from "@milkdown/ctx"
 import { ToolbarButton } from "./toolbar-button"
 import { HeadingDropdown } from "./heading-dropdown"
 import { LinkDialog } from "./link-dialog"
+import { ExpressionPicker } from "./expression-picker"
 import { useToolbarState } from "./use-toolbar-state"
 import { toggleMarkInEditor } from "../mark-utils"
+import { getExpressionGroupSizePx } from "@/lib/expression-size"
+import type { Expression, ExpressionGroupSize } from "@/types/expression"
 
 interface EditorToolbarProps {
   getEditor: () =>
@@ -339,10 +343,57 @@ export const EditorToolbar = memo(({ getEditor }: EditorToolbarProps) => {
     })
   }, [executeCommand])
 
+  // Expression command
+  const handleExpression = useCallback(
+    (expression: Expression, groupSize: ExpressionGroupSize) => {
+      executeCommand((ctx) => {
+        const view = ctx.get(editorViewCtx)
+        const { state, dispatch } = view
+
+        if (!expression.imageUrl) {
+          view.focus()
+          return
+        }
+
+        const schema = ctx.get(schemaCtx)
+        const expressionNode: NodeType | undefined = schema.nodes.expression
+        if (!expressionNode) {
+          console.warn("Expression node not found")
+          view.focus()
+          return
+        }
+
+        const sizePx: number = getExpressionGroupSizePx(groupSize)
+        const node = expressionNode.create({
+          src: expression.imageUrl,
+          alt: expression.name,
+          title: expression.name,
+          width: sizePx,
+          height: sizePx,
+        })
+        const tr = state.tr.replaceSelectionWith(node)
+        const insertionPos = tr.selection.from
+        const { $from } = tr.selection
+        if (
+          $from.parent.isTextblock &&
+          $from.parentOffset === $from.parent.content.size
+        ) {
+          tr.insertText("\u200b", insertionPos)
+          tr.setSelection(TextSelection.create(tr.doc, insertionPos + 1))
+        }
+        dispatch(tr)
+
+        view.focus()
+      })
+    },
+    [executeCommand]
+  )
+
   return (
     <div className="flex flex-col border-b bg-muted/30 sticky top-0 z-40">
       {/* Desktop toolbar */}
       <div className="hidden md:flex items-center gap-1 px-2 py-1.5 flex-wrap">
+        <ExpressionPicker onSelect={handleExpression} />
         {/* Text formatting */}
         <ToolbarButton
           icon={<Bold className="h-4 w-4" />}
@@ -431,6 +482,7 @@ export const EditorToolbar = memo(({ getEditor }: EditorToolbarProps) => {
 
       {/* Mobile toolbar */}
       <div className="flex md:hidden items-center gap-1 px-2 py-1.5">
+        <ExpressionPicker onSelect={handleExpression} />
         <ToolbarButton
           icon={<Bold className="h-4 w-4" />}
           label={t("bold")}

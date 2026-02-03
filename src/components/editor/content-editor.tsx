@@ -37,6 +37,8 @@ import { useEditorUpload } from "./use-editor-upload"
 import { imageBlockNode } from "./plugins/image-block/node"
 import { ImageBlockView } from "./plugins/image-block/view"
 import { ImageView } from "./plugins/image/view"
+import { expressionNode } from "./plugins/expression/node"
+import { ExpressionView } from "./plugins/expression/view"
 import { EditorToolbar } from "./toolbar/editor-toolbar"
 
 type EditorType = ReturnType<typeof Editor.make>
@@ -277,6 +279,16 @@ const MilkdownEditor: React.FC<MilkdownEditorProps> = ({
           )
         })
         .use(commonmark)
+        .use(expressionNode)
+        .use(
+          $view(expressionNode, () =>
+            nodeViewFactory({
+              component: ExpressionView,
+              stopEvent: imageBlockStopEvent,
+              ignoreMutation: imageBlockIgnoreMutation,
+            })
+          )
+        )
         .use(
           $view(imageNode, () =>
             nodeViewFactory({

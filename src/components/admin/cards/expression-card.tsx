@@ -1,13 +1,13 @@
 "use client"
 
 import { motion } from "framer-motion"
+import Image from "next/image"
 import { useTranslations } from "next-intl"
 import {
   Edit,
   Trash2,
   Globe,
   Image as ImageIcon,
-  Type,
   GripVertical,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -23,9 +23,8 @@ type ExpressionCardProps = {
     | "id"
     | "code"
     | "name"
-    | "type"
     | "imageUrl"
-    | "textContent"
+    | "thumbnailUrl"
     | "width"
     | "height"
     | "sort"
@@ -57,6 +56,7 @@ export function ExpressionCardContent({
 }) {
   const t = useTranslations("AdminExpressions")
   const tAdmin = useTranslations("Admin")
+  const previewUrl = expression.thumbnailUrl || expression.imageUrl
 
   return (
     <motion.div
@@ -75,7 +75,7 @@ export function ExpressionCardContent({
         isDragging && "border-primary/50"
       )}
     >
-      <div className="absolute inset-0 bg-gradient-to-br from-foreground/4 via-transparent to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100 -z-10" />
+      <div className="absolute inset-0 bg-linear-to-br from-foreground/4 via-transparent to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100 -z-10" />
 
       <div className="relative space-y-3">
         {/* Preview Area */}
@@ -93,31 +93,19 @@ export function ExpressionCardContent({
               <GripVertical className="h-4 w-4" />
             </button>
             <div className="flex h-16 w-16 items-center justify-center rounded-xl border border-border/40 bg-muted/30">
-              {expression.type === "IMAGE" && expression.imageUrl ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
-                  src={expression.imageUrl}
+              {previewUrl ? (
+                <Image
+                  src={previewUrl}
                   alt={expression.name}
+                  width={expression.width || 64}
+                  height={expression.height || 64}
                   className="max-w-full max-h-full object-contain"
-                  style={{
-                    width: expression.width ? `${expression.width}px` : "auto",
-                    height: expression.height
-                      ? `${expression.height}px`
-                      : "auto",
-                    maxWidth: "100%",
-                    maxHeight: "100%",
-                  }}
                 />
-              ) : expression.type === "TEXT" && expression.textContent ? (
-                <span className="text-3xl">{expression.textContent}</span>
               ) : (
-                <div className="text-muted-foreground">
-                  {expression.type === "IMAGE" ? (
-                    <ImageIcon className="h-6 w-6" aria-hidden="true" />
-                  ) : (
-                    <Type className="h-6 w-6" aria-hidden="true" />
-                  )}
-                </div>
+                <ImageIcon
+                  className="h-6 w-6 text-muted-foreground"
+                  aria-hidden="true"
+                />
               )}
             </div>
           </div>
@@ -154,19 +142,12 @@ export function ExpressionCardContent({
             <code className="rounded bg-muted px-1.5 py-0.5">
               {expression.code}
             </code>
-            <Badge variant="outline" className="text-xs">
-              {expression.type === "IMAGE"
-                ? t("expression.image")
-                : t("expression.text")}
-            </Badge>
           </div>
-          {expression.type === "IMAGE" &&
-            expression.width &&
-            expression.height && (
-              <div className="text-xs text-muted-foreground">
-                {expression.width} × {expression.height}
-              </div>
-            )}
+          {expression.width && expression.height && (
+            <div className="text-xs text-muted-foreground">
+              {expression.width} × {expression.height}
+            </div>
+          )}
         </div>
 
         {/* Actions */}

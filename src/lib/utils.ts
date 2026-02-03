@@ -60,7 +60,7 @@ export function getPlainTextFromContent(content: string): string {
     const traverse = (node: ProseMirrorNode) => {
       if (node.type === "text" && typeof node.text === "string") {
         text += node.text
-      } else if (node.type === "image") {
+      } else if (node.type === "image" || node.type === "expression") {
         text += "[图片]"
       } else if (node.type === "hard_break") {
         text += " "

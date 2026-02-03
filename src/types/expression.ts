@@ -1,8 +1,11 @@
+export type ExpressionGroupSize = "SMALL" | "MEDIUM" | "LARGE"
+
 export type ExpressionGroup = {
   id: string
   code: string
   name: string
   iconId: string | null
+  expressionSize: ExpressionGroupSize
   sort: number
   isEnabled: boolean
   isDeleted: boolean
@@ -18,15 +21,15 @@ export type Expression = {
   groupName: string
   code: string
   name: string
-  type: "IMAGE" | "TEXT"
-  imagePath: string | null
-  imageUrl: string | null
-  textContent: string | null
+  imagePath: string
+  imageUrl: string
+  thumbnailUrl: string
   width: number | null
   height: number | null
   sort: number
   isEnabled: boolean
   isDeleted: boolean
+  isAnimated: boolean
   sourceLocale: string
   createdAt: string
   updatedAt: string
@@ -62,6 +65,7 @@ export type ExpressionGroupFormData = {
   code: string
   name: string
   iconId: string | null
+  expressionSize: ExpressionGroupSize
   sort: number
 }
 
@@ -69,10 +73,9 @@ export type ExpressionFormData = {
   groupId: string
   code: string
   name: string
-  type: "IMAGE" | "TEXT"
-  imagePath: string | null
-  textContent: string | null
+  imagePath: string
   width: number | null
   height: number | null
   sort?: number
+  isAnimated?: boolean
 }

@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useRef, useCallback } from "react"
+import Image from "next/image"
 import { useTranslations } from "next-intl"
 import { Upload, X, Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -11,10 +12,11 @@ type ExpressionImageUploaderProps = {
   value?: string | null
   onChange: (
     url: string,
-    path: string,
-    dimensions: { width: number; height: number }
+    dimensions: { width: number; height: number },
+    isAnimated: boolean
   ) => void
   groupCode: string
+  expressionCode: string
   disabled?: boolean
 }
 
@@ -22,6 +24,7 @@ export function ExpressionImageUploader({
   value,
   onChange,
   groupCode,
+  expressionCode,
   disabled,
 }: ExpressionImageUploaderProps) {
   const t = useTranslations("AdminExpressions")
@@ -76,6 +79,7 @@ export function ExpressionImageUploader({
         const formData = new FormData()
         formData.append("file", file)
         formData.append("groupCode", groupCode)
+        formData.append("expressionCode", expressionCode)
 
         const response = await fetch("/api/admin/expressions/upload-image", {
           method: "POST",
@@ -87,7 +91,7 @@ export function ExpressionImageUploader({
         }
 
         const data = await response.json()
-        onChange(data.url, data.path, dimensions)
+        onChange(data.url, dimensions, data.isAnimated)
         toast.success(t("message.uploadImageSuccess"))
       } catch (error) {
         console.error("Upload error:", error)
@@ -96,7 +100,7 @@ export function ExpressionImageUploader({
         setUploading(false)
       }
     },
-    [groupCode, onChange, getImageDimensions, t]
+    [groupCode, expressionCode, onChange, getImageDimensions, t]
   )
 
   const handleDrag = useCallback((e: React.DragEvent) => {
@@ -132,7 +136,7 @@ export function ExpressionImageUploader({
   )
 
   const handleClear = useCallback(() => {
-    onChange("", "", { width: 0, height: 0 })
+    onChange("", { width: 0, height: 0 }, false)
     if (fileInputRef.current) {
       fileInputRef.current.value = ""
     }
@@ -143,10 +147,11 @@ export function ExpressionImageUploader({
       {value ? (
         <div className="relative">
           <div className="rounded-xl border border-border p-4 bg-muted/30 flex items-center justify-center min-h-32">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
+            <Image
               src={value}
               alt="Preview"
+              width={192}
+              height={192}
               className="max-w-full max-h-48 object-contain"
             />
           </div>

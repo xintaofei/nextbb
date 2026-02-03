@@ -714,6 +714,7 @@
       "tags": "Tags",
       "badges": "Badges",
       "socialProviders": "Social Login",
+      "storageProviders": "Object Storage",
       "translationTasks": "Translation Tasks",
       "automationRules": "Automation Rules",
       "llmConfigs": "LLM Configs",
@@ -2405,7 +2406,14 @@
       "cancel": "Cancel",
       "insert": "Insert",
       "update": "Update",
-      "more": "More"
+      "more": "More",
+      "ExpressionPicker": {
+        "title": "Select Expression",
+        "searchPlaceholder": "Search expressions...",
+        "noResults": "No expressions found",
+        "error": "Failed to load expressions",
+        "loading": "Loading..."
+      }
     }
   },
   "EmojiPicker": {
@@ -2502,6 +2510,84 @@
       "reorderError": "Failed to update order"
     }
   },
+  "AdminStorageProviders": {
+    "title": "Storage Provider Management",
+    "description": "Manage file storage provider configurations",
+    "createButton": "Add Provider",
+    "loading": "Loading...",
+    "empty": "No storage providers configured",
+    "list": {
+      "default": "Default",
+      "setDefault": "Set as Default",
+      "enabled": "Enabled",
+      "disabled": "Disabled",
+      "dragHint": "Drag to reorder"
+    },
+    "providerTypes": {
+      "LOCAL": "Local Storage",
+      "VERCEL_BLOB": "Vercel Blob",
+      "ALIYUN_OSS": "Aliyun OSS",
+      "AWS_S3": "AWS S3",
+      "TENCENT_COS": "Tencent COS",
+      "QINIU": "Qiniu",
+      "UPYUN": "Upyun",
+      "MINIO": "MinIO"
+    },
+    "dialog": {
+      "createTitle": "Add Storage Provider",
+      "editTitle": "Edit Storage Provider",
+      "name": "Provider Name",
+      "providerType": "Provider Type",
+      "providerTypePlaceholder": "Select provider type",
+      "baseUrl": "Base URL",
+      "isActive": "Enable this provider",
+      "maxFileSize": "Max File Size (MB)",
+      "allowedTypes": "Allowed File Types",
+      "allowedTypesPlaceholder": "e.g.: image/*,application/pdf",
+      "configSection": "Provider Configuration",
+      "cancel": "Cancel",
+      "submit": "Save",
+      "submitting": "Saving...",
+      "secretPlaceholder": "Leave empty to keep unchanged",
+      "config": {
+        "basePath": "Base Path",
+        "token": "Access Token",
+        "accessKeyId": "Access Key ID",
+        "accessKeySecret": "Access Key Secret",
+        "secretAccessKey": "Secret Access Key",
+        "secretId": "Secret ID",
+        "secretKey": "Secret Key",
+        "region": "Region",
+        "bucket": "Bucket",
+        "endpoint": "Endpoint",
+        "accessKey": "Access Key",
+        "operator": "Operator",
+        "password": "Password",
+        "port": "Port",
+        "useSsl": "Use SSL"
+      }
+    },
+    "deleteDialog": {
+      "title": "Confirm Delete",
+      "description": "Are you sure you want to delete this storage provider? Files using this provider may become inaccessible.",
+      "cannotDeleteDefault": "Cannot delete the default provider. Please set another provider as default first.",
+      "cancel": "Cancel",
+      "confirm": "Delete"
+    },
+    "message": {
+      "createSuccess": "Provider created successfully",
+      "createError": "Failed to create provider",
+      "updateSuccess": "Provider updated successfully",
+      "updateError": "Failed to update provider",
+      "deleteSuccess": "Provider deleted successfully",
+      "deleteError": "Failed to delete provider",
+      "setDefaultSuccess": "Default provider set successfully",
+      "setDefaultError": "Failed to set default provider",
+      "reorderSuccess": "Order updated successfully",
+      "reorderError": "Failed to update order",
+      "cannotDisableDefault": "Cannot disable the default provider"
+    }
+  },
   "AdminExpressions": {
     "title": "Expression Management",
     "description": "Manage forum expressions, including groups, image expressions and text expressions",
@@ -2564,6 +2650,15 @@
       "codeHint": "Cannot be changed after creation",
       "name": "Group Name",
       "namePlaceholder": "e.g: Default, Onion",
+      "expressionSize": "Expression Size",
+      "expressionSizePlaceholder": "Select size",
+      "expressionSizeHint": "Display size only: Small 32px / Medium 64px / Large 96px",
+      "expressionSizePreview": "Preview size: {size}px",
+      "sizeOptions": {
+        "large": "Large",
+        "medium": "Medium",
+        "small": "Small"
+      },
       "icon": "Group Icon",
       "iconPlaceholder": "Click to select emoji",
       "selectIconPlaceholder": "Select icon from expressions",
@@ -2581,6 +2676,12 @@
       "code": "Expression Code",
       "codePlaceholder": "e.g: smile, 001",
       "codeHint": "Unique within the group",
+      "codeFormatHint": "⚠️ Only letters, numbers, underscores and hyphens allowed, used for image path",
+      "codeWarning": "💡 Cannot be modified after saving, please fill carefully",
+      "codeLockedAfterUpload": "ℹ️ Image uploaded, code is locked and cannot be modified",
+      "codeRequiredForUpload": "⚠️ Please fill in the expression code first before uploading image",
+      "codeFormatInvalid": "❌ Invalid expression code format, only letters, numbers, underscores and hyphens allowed",
+      "codeDuplicateError": "This code already exists in the current group, please use another code",
       "name": "Expression Name",
       "namePlaceholder": "e.g: Smile, Happy",
       "type": "Expression Type",
@@ -2597,7 +2698,10 @@
       "autoDetect": "Auto Detect",
       "sortValue": "Sort Value",
       "cancel": "Cancel",
-      "submit": "Save"
+      "submit": "Save",
+      "animatedBadge": "Animated",
+      "storagePathLabel": "📁 Storage Path:",
+      "formatConversionHint": "💡 Static images (PNG/JPG) will be automatically converted to WebP format; animated GIFs retain original format"
     },
     "message": {
       "createGroupSuccess": "Group created successfully",
@@ -2621,7 +2725,11 @@
       "invalidImageType": "Invalid image type",
       "imageTooLarge": "Image size exceeds limit",
       "translationUpdateSuccess": "Translation updated successfully",
-      "translationUpdateError": "Failed to update translation"
+      "translationUpdateError": "Failed to update translation",
+      "codeFormatError": "Invalid expression code format, only letters, numbers, underscores and hyphens allowed",
+      "codeDuplicate": "This code already exists in the current group, please use another code",
+      "imageRequired": "Please upload expression image",
+      "textContentRequired": "Please fill in text content"
     },
     "deleteConfirm": {
       "groupTitle": "Confirm Delete Group",

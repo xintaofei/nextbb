@@ -69,7 +69,6 @@ const fetcher = async <T,>(url: string): Promise<T> => {
 export default function AdminExpressionsPage() {
   const t = useTranslations("AdminExpressions")
   const [q, setQ] = useState("")
-  const [type, setType] = useState<string | undefined>(undefined)
   const [enabled, setEnabled] = useState<string | undefined>(undefined)
   const [sortBy, setSortBy] = useState("sort")
 
@@ -136,11 +135,10 @@ export default function AdminExpressionsPage() {
   const expressionsQuery = useMemo(() => {
     const params = new URLSearchParams()
     params.set("pageSize", "1000")
-    if (type) params.set("type", type)
     if (typeof enabled === "string") params.set("enabled", enabled)
     params.set("sortBy", sortBy)
     return `/api/admin/expressions?${params.toString()}`
-  }, [type, enabled, sortBy])
+  }, [enabled, sortBy])
 
   const { data: expressionsData, mutate: mutateExpressions } =
     useSWR<ExpressionListResult>(
@@ -161,10 +159,8 @@ export default function AdminExpressionsPage() {
     return {
       totalGroups: groupsData.total,
       totalExpressions: expressionsData.total,
-      imageExpressions: expressionsData.items.filter((e) => e.type === "IMAGE")
-        .length,
-      textExpressions: expressionsData.items.filter((e) => e.type === "TEXT")
-        .length,
+      imageExpressions: expressionsData.total,
+      textExpressions: 0,
     }
   }, [groupsData, expressionsData])
 
@@ -544,20 +540,6 @@ export default function AdminExpressionsPage() {
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-            <Select
-              value={type}
-              onValueChange={(v) => setType(v === "all" ? undefined : v)}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder={t("filter.type.all")} />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">{t("filter.type.all")}</SelectItem>
-                <SelectItem value="IMAGE">{t("filter.type.image")}</SelectItem>
-                <SelectItem value="TEXT">{t("filter.type.text")}</SelectItem>
-              </SelectContent>
-            </Select>
-
             <Select
               value={enabled}
               onValueChange={(v) => setEnabled(v === "all" ? undefined : v)}

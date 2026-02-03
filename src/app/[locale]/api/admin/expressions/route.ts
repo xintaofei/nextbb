@@ -5,6 +5,7 @@ import { getLocale } from "next-intl/server"
 import { createTranslationTasks } from "@/lib/services/translation-task"
 import { getTranslationsQuery, getTranslationFields } from "@/lib/locale"
 import { TranslationEntityType } from "@prisma/client"
+import { getExpressionThumbnailPathFromImagePath } from "@/lib/expression-utils"
 
 type ExpressionDTO = {
   id: string
@@ -12,15 +13,15 @@ type ExpressionDTO = {
   groupName: string
   code: string
   name: string
-  type: "IMAGE" | "TEXT"
-  imagePath: string | null
-  imageUrl: string | null
-  textContent: string | null
+  imagePath: string
+  imageUrl: string
+  thumbnailUrl: string
   width: number | null
   height: number | null
   sort: number
   isEnabled: boolean
   isDeleted: boolean
+  isAnimated: boolean
   sourceLocale: string
   createdAt: string
   updatedAt: string
@@ -42,7 +43,6 @@ export async function GET(request: NextRequest) {
     const pageSize = parseInt(searchParams.get("pageSize") || "100")
     const q = searchParams.get("q") || ""
     const groupId = searchParams.get("groupId")
-    const type = searchParams.get("type")
     const enabled = searchParams.get("enabled")
     const sortBy = searchParams.get("sortBy") || "sort"
 
@@ -56,7 +56,6 @@ export async function GET(request: NextRequest) {
         }
       }>
       group_id?: bigint
-      type?: "IMAGE" | "TEXT"
       is_deleted: boolean
       is_enabled?: boolean
     }
@@ -81,10 +80,6 @@ export async function GET(request: NextRequest) {
       where.group_id = BigInt(groupId)
     }
 
-    if (type === "IMAGE" || type === "TEXT") {
-      where.type = type
-    }
-
     if (enabled === "true") {
       where.is_enabled = true
     } else if (enabled === "false") {
@@ -107,14 +102,13 @@ export async function GET(request: NextRequest) {
         id: true,
         group_id: true,
         code: true,
-        type: true,
         image_path: true,
-        text_content: true,
         width: true,
         height: true,
         sort: true,
         is_enabled: true,
         is_deleted: true,
+        is_animated: true,
         source_locale: true,
         created_at: true,
         updated_at: true,
@@ -138,27 +132,21 @@ export async function GET(request: NextRequest) {
         name: "",
       })
 
-      // 构建完整图片 URL
-      let imageUrl: string | null = null
-      if (e.image_path) {
-        imageUrl = `${process.env.NEXT_PUBLIC_BLOB_BASE_URL || ""}/${e.image_path}`
-      }
-
       return {
         id: String(e.id),
         groupId: String(e.group_id),
         groupName: groupFields.name,
         code: e.code,
         name: fields.name,
-        type: e.type,
         imagePath: e.image_path,
-        imageUrl,
-        textContent: e.text_content,
+        imageUrl: e.image_path,
+        thumbnailUrl: getExpressionThumbnailPathFromImagePath(e.image_path),
         width: e.width,
         height: e.height,
         sort: e.sort,
         isEnabled: e.is_enabled,
         isDeleted: e.is_deleted,
+        isAnimated: e.is_animated ?? false,
         sourceLocale: e.source_locale,
         createdAt: e.created_at.toISOString(),
         updatedAt: e.updated_at.toISOString(),
@@ -186,17 +174,8 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    const {
-      groupId,
-      code,
-      name,
-      type,
-      imagePath,
-      textContent,
-      width,
-      height,
-      sort,
-    } = body
+    const { groupId, code, name, imagePath, width, height, sort, isAnimated } =
+      body
 
     // 验证必填字段
     if (!groupId) {
@@ -256,24 +235,9 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    if (type !== "IMAGE" && type !== "TEXT") {
+    if (!imagePath) {
       return NextResponse.json(
-        { error: "Type must be IMAGE or TEXT" },
-        { status: 400 }
-      )
-    }
-
-    // 验证类型特定字段
-    if (type === "IMAGE" && !imagePath) {
-      return NextResponse.json(
-        { error: "Image path is required for IMAGE type" },
-        { status: 400 }
-      )
-    }
-
-    if (type === "TEXT" && !textContent) {
-      return NextResponse.json(
-        { error: "Text content is required for TEXT type" },
+        { error: "Image path is required" },
         { status: 400 }
       )
     }
@@ -307,11 +271,10 @@ export async function POST(request: NextRequest) {
           id: expressionId,
           group_id: groupIdBigInt,
           code,
-          type,
-          image_path: type === "IMAGE" ? imagePath : null,
-          text_content: type === "TEXT" ? textContent : null,
-          width: type === "IMAGE" ? width : null,
-          height: type === "IMAGE" ? height : null,
+          image_path: imagePath,
+          width,
+          height,
+          is_animated: isAnimated ?? false,
           sort: finalSort,
           is_enabled: true,
           is_deleted: false,
@@ -340,27 +303,21 @@ export async function POST(request: NextRequest) {
       result.translation.version
     )
 
-    // 构建完整图片 URL
-    let imageUrl: string | null = null
-    if (result.image_path) {
-      imageUrl = `${process.env.NEXT_PUBLIC_BLOB_BASE_URL || ""}/${result.image_path}`
-    }
-
     const expressionDTO: ExpressionDTO = {
       id: String(result.id),
       groupId: String(result.group_id),
       groupName: "",
       code: result.code,
       name: result.translation.name,
-      type: result.type,
       imagePath: result.image_path,
-      imageUrl,
-      textContent: result.text_content,
+      imageUrl: result.image_path,
+      thumbnailUrl: getExpressionThumbnailPathFromImagePath(result.image_path),
       width: result.width,
       height: result.height,
       sort: result.sort,
       isEnabled: result.is_enabled,
       isDeleted: result.is_deleted,
+      isAnimated: result.is_animated ?? false,
       sourceLocale: result.source_locale,
       createdAt: result.created_at.toISOString(),
       updatedAt: result.updated_at.toISOString(),
