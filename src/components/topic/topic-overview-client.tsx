@@ -25,6 +25,7 @@ import {
 } from "@/types/topic"
 import { BountyType, TopicType } from "@/types/topic-type"
 import { useCurrentUser } from "@/hooks/use-current-user"
+import { Loader2 } from "lucide-react"
 
 const DrawerEditor = dynamic(
   () =>
@@ -97,6 +98,8 @@ export default function TopicOverviewClient({
   const [editInitial, setEditInitial] = useState<string>("")
   const [mutatingPostId, setMutatingPostId] = useState<string | null>(null)
   const [highlightIndex, setHighlightIndex] = useState<number | null>(null)
+  const [targetFloor, setTargetFloor] = useState<number | null>(null)
+  const [isLoadingFloor, setIsLoadingFloor] = useState<boolean>(false)
   const previousPostsLengthRef = useRef(0)
   const [portalContainer, setPortalContainer] = useState<HTMLElement | null>(
     null
@@ -744,6 +747,72 @@ export default function TopicOverviewClient({
     [currentUserId, currentUserProfile, mutatePosts, triggerAccept, tq, tc]
   )
 
+  // Effect 1: 解析 URL hash 获取目标楼层号
+  useEffect(() => {
+    const hash = window.location.hash
+    const match = hash.match(/^#floor-(\d+)$/)
+    if (match) {
+      const floor = parseInt(match[1], 10)
+      setTargetFloor(floor)
+      setIsLoadingFloor(true)
+    }
+  }, [])
+
+  // Effect 2: 自动加载所需页面
+  useEffect(() => {
+    if (!targetFloor || !postsPages) return
+
+    // 计算需要加载的页数
+    const pagesNeeded = Math.ceil(targetFloor / pageSize)
+    const currentPages = postsPages.length
+
+    if (currentPages < pagesNeeded) {
+      setSize(pagesNeeded)
+    }
+  }, [targetFloor, postsPages, setSize, pageSize])
+
+  // Effect 3: 滚动到目标楼层
+  useEffect(() => {
+    if (!targetFloor || !posts.length || loadingPosts) return
+
+    // 查找目标楼层的帖子
+    const targetPost = posts.find(
+      (p: PostItem) => p.floorNumber === targetFloor
+    )
+    if (!targetPost) {
+      // 所有数据加载完毕但未找到目标楼层
+      if (posts.length >= totalPosts) {
+        toast.error(t("floor.notFound", { floor: targetFloor }))
+        setTargetFloor(null)
+        setIsLoadingFloor(false)
+      }
+      return
+    }
+
+    // 找到目标帖子，滚动到该位置
+    const targetIndex = posts.indexOf(targetPost)
+    const anchorId = `post-${targetIndex + 1}`
+    const element = document.getElementById(anchorId)
+
+    if (element) {
+      setTimeout(() => {
+        element.scrollIntoView({ behavior: "smooth", block: "center" })
+        setHighlightIndex(targetIndex)
+        setTargetFloor(null)
+        setIsLoadingFloor(false)
+
+        // 清除 hash，延迟执行以确保滚动完成
+        setTimeout(() => {
+          window.history.replaceState(
+            null,
+            "",
+            window.location.pathname + window.location.search
+          )
+        }, 500)
+      }, 100)
+    }
+  }, [targetFloor, posts, loadingPosts, totalPosts, t])
+
   useEffect(() => {
     const sentinel = sentinelRef.current
     if (!sentinel) return
@@ -764,6 +833,16 @@ export default function TopicOverviewClient({
 
   return (
     <div className="flex min-h-screen w-full flex-col p-8 max-sm:p-4 gap-4">
+      {isLoadingFloor && targetFloor !== null && (
+        <div className="fixed top-4 right-4 bg-background/80 backdrop-blur p-3 rounded-md shadow-lg z-50 border">
+          <div className="flex items-center gap-2">
+            <Loader2 className="animate-spin size-4" />
+            <span className="text-sm">
+              {t("floor.loading", { floor: targetFloor })}
+            </span>
+          </div>
+        </div>
+      )}
       <TopicHeader topicInfo={topicInfo} />
 
       <div className="w-full">
@@ -824,6 +903,7 @@ export default function TopicOverviewClient({
                     post={post}
                     index={index}
                     anchorId={`post-${index + 1}`}
+                    floorAnchorId={`floor-${post.floorNumber}`}
                     currentUserId={currentUserId}
                     mutatingPostId={mutatingPostId}
                     likeMutating={likeMutating}

@@ -149,7 +149,10 @@
     "replies": "replies",
     "replyPlaceholder": "Enter your reply...",
     "floor": {
-      "op": "OP"
+      "op": "OP",
+      "notFound": "Floor {floor} does not exist",
+      "outOfRange": "Floor number is out of range",
+      "loading": "Loading floor {floor}..."
     },
     "Navigator": {
       "toFirst": "Jump to first",

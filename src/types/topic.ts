@@ -20,6 +20,7 @@ export type BadgeItem = {
 
 export type PostItem = {
   id: string
+  floorNumber: number
   author: Author
   content: string
   contentHtml?: string

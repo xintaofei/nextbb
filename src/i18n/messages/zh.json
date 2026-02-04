@@ -149,7 +149,10 @@
     "replies": "个回复",
     "replyPlaceholder": "请输入您的回复...",
     "floor": {
-      "op": "楼主"
+      "op": "楼主",
+      "notFound": "楼层 {floor} 不存在",
+      "outOfRange": "楼层号超出范围",
+      "loading": "正在加载第 {floor} 楼..."
     },
     "Navigator": {
       "toFirst": "到首楼",

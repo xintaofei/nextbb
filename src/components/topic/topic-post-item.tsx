@@ -115,6 +115,7 @@ interface TopicPostItemProps {
   post: PostItem
   index: number
   anchorId?: string
+  floorAnchorId?: string
   currentUserId: string | null
   mutatingPostId: string | null
   likeMutating: boolean
@@ -150,6 +151,7 @@ export const TopicPostItem = memo(function TopicPostItem({
   post,
   index,
   anchorId,
+  floorAnchorId,
   currentUserId,
   mutatingPostId,
   likeMutating,
@@ -251,6 +253,7 @@ export const TopicPostItem = memo(function TopicPostItem({
     <TimelineStepsItem
       id={anchorId}
       data-post-anchor
+      data-floor-anchor={floorAnchorId}
       className={highlight ? "animate-(--animate-highlight-fade)" : ""}
     >
       <TimelineStepsConnector variant="dashed" className="max-sm:hidden" />
