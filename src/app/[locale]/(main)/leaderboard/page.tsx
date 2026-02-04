@@ -206,7 +206,7 @@ function TopThreeDisplay({
               side="bottom"
               align="center"
             >
-              <div className="flex flex-col items-center cursor-pointer transition-transform hover:scale-105">
+              <div className="w-full flex flex-col items-center cursor-pointer transition-transform hover:scale-105">
                 <div
                   className={`mb-1 sm:mb-3 flex items-center justify-center ${
                     isFirst ? "size-12 sm:size-24" : "size-10 sm:size-20"
@@ -214,7 +214,7 @@ function TopThreeDisplay({
                 >
                   <RankBadge rank={ranking.rank} />
                 </div>
-                <Card className="relative shadow-none overflow-hidden py-4 sm:py-10">
+                <Card className="w-full relative shadow-none overflow-hidden py-4 sm:py-10">
                   <CardContent className="min-w-0 w-full px-2 sm:px-8 text-center">
                     <Avatar
                       className={`mx-auto mb-1 sm:mb-3 ${isFirst ? "size-10 sm:size-16" : "size-8 sm:size-14"}`}
