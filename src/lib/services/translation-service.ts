@@ -43,7 +43,7 @@ export class TranslationService {
     sourceLocale: string,
     targetLocale: string
   ): string {
-    const basePrompt = `You are a professional translator for a modern forum application. 
+    const basePrompt = `You are a professional translator for a modern forum application.
 Your task is to translate content from ${sourceLocale} to ${targetLocale}.
 Ensure the translation is natural, culturally appropriate, and fits the context of a community forum.`
 
@@ -56,6 +56,13 @@ For Categories, Tags, and Badges:
 - Keep names concise and impactful.
 - Descriptions should be clear and informative.
 - Maintain consistency with standard forum terminology.`
+      case "EXPRESSION_GROUP":
+      case "EXPRESSION":
+        return `${basePrompt}
+For Expression Groups and Expressions:
+- Keep names short and friendly.
+- Avoid adding punctuation, emoji, or extra commentary.
+- Preserve any existing capitalization or numbering style.`
 
       case "TOPIC":
         return `${basePrompt}
@@ -82,7 +89,7 @@ For Posts (Replies):
    * Translates a simple entity (Category, Tag, Badge).
    */
   async translateSimpleEntity(
-    type: "CATEGORY" | "TAG" | "BADGE",
+    type: "CATEGORY" | "TAG" | "BADGE" | "EXPRESSION_GROUP" | "EXPRESSION",
     data: { name: string; description?: string | null },
     sourceLocale: string,
     targetLocale: string

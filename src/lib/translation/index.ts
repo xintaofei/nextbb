@@ -6,6 +6,8 @@ import {
   BadgeTranslationHandler,
   TopicTranslationHandler,
   PostTranslationHandler,
+  ExpressionGroupTranslationHandler,
+  ExpressionTranslationHandler,
 } from "./handlers"
 import {
   TranslationCategoryCreatedEvent,
@@ -13,6 +15,8 @@ import {
   TranslationBadgeCreatedEvent,
   TranslationTopicCreatedEvent,
   TranslationPostCreatedEvent,
+  TranslationExpressionGroupCreatedEvent,
+  TranslationExpressionCreatedEvent,
 } from "./types"
 
 /**
@@ -42,6 +46,8 @@ function registerEventListeners(): void {
   const badgeHandler = new BadgeTranslationHandler()
   const topicHandler = new TopicTranslationHandler()
   const postHandler = new PostTranslationHandler()
+  const expressionGroupHandler = new ExpressionGroupTranslationHandler()
+  const expressionHandler = new ExpressionTranslationHandler()
 
   // 注册分类事件
   TranslationEvents.on(
@@ -70,4 +76,20 @@ function registerEventListeners(): void {
   TranslationEvents.on("post", async (data: TranslationPostCreatedEvent) => {
     await postHandler.handle(data)
   })
+
+  // 注册表情分组事件
+  TranslationEvents.on(
+    "expression_group",
+    async (data: TranslationExpressionGroupCreatedEvent) => {
+      await expressionGroupHandler.handle(data)
+    }
+  )
+
+  // 注册表情事件
+  TranslationEvents.on(
+    "expression",
+    async (data: TranslationExpressionCreatedEvent) => {
+      await expressionHandler.handle(data)
+    }
+  )
 }

@@ -63,6 +63,12 @@ export class TranslationEvents {
       case TranslationEntityType.POST:
         await bus.emit("post", data)
         break
+      case TranslationEntityType.EXPRESSION_GROUP:
+        await bus.emit("expression_group", data)
+        break
+      case TranslationEntityType.EXPRESSION:
+        await bus.emit("expression", data)
+        break
     }
   }
 }

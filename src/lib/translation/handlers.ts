@@ -6,6 +6,8 @@ import {
   TranslationBadgeCreatedEvent,
   TranslationTopicCreatedEvent,
   TranslationPostCreatedEvent,
+  TranslationExpressionGroupCreatedEvent,
+  TranslationExpressionCreatedEvent,
   BaseTranslationCreatedEvent,
 } from "./types"
 import { translationService } from "@/lib/services/translation-service"
@@ -390,6 +392,132 @@ export class PostTranslationHandler extends BaseTranslationHandler<TranslationPo
         post_id: id,
         locale: targetLocale,
         content_html: result.content_html,
+        version: 1,
+        is_source: false,
+      },
+    })
+  }
+}
+
+/**
+ * 表情分组翻译处理器
+ */
+export class ExpressionGroupTranslationHandler extends BaseTranslationHandler<TranslationExpressionGroupCreatedEvent> {
+  protected async execute(
+    event: TranslationExpressionGroupCreatedEvent
+  ): Promise<void> {
+    const { entityId, targetLocale } = event
+    const id = BigInt(entityId)
+
+    const group = await prisma.expression_groups.findUnique({
+      where: { id },
+      include: {
+        translations: {
+          where: { is_source: true },
+        },
+      },
+    })
+
+    if (!group) throw new Error(`Expression group ${entityId} not found`)
+
+    const sourceLocale = group.source_locale
+    const sourceTranslation = group.translations[0]
+
+    if (!sourceTranslation) {
+      throw new Error(
+        `No source translation found for Expression group ${entityId}`
+      )
+    }
+
+    const sourceData = {
+      name: sourceTranslation.name,
+      description: null,
+    }
+
+    const result = await translationService.translateSimpleEntity(
+      "EXPRESSION_GROUP",
+      sourceData,
+      sourceLocale,
+      targetLocale
+    )
+
+    await prisma.expression_group_translations.upsert({
+      where: {
+        group_id_locale: {
+          group_id: id,
+          locale: targetLocale,
+        },
+      },
+      update: {
+        name: result.name,
+        version: { increment: 1 },
+      },
+      create: {
+        group_id: id,
+        locale: targetLocale,
+        name: result.name,
+        version: 1,
+        is_source: false,
+      },
+    })
+  }
+}
+
+/**
+ * 表情翻译处理器
+ */
+export class ExpressionTranslationHandler extends BaseTranslationHandler<TranslationExpressionCreatedEvent> {
+  protected async execute(
+    event: TranslationExpressionCreatedEvent
+  ): Promise<void> {
+    const { entityId, targetLocale } = event
+    const id = BigInt(entityId)
+
+    const expression = await prisma.expressions.findUnique({
+      where: { id },
+      include: {
+        translations: {
+          where: { is_source: true },
+        },
+      },
+    })
+
+    if (!expression) throw new Error(`Expression ${entityId} not found`)
+
+    const sourceLocale = expression.source_locale
+    const sourceTranslation = expression.translations[0]
+
+    if (!sourceTranslation) {
+      throw new Error(`No source translation found for Expression ${entityId}`)
+    }
+
+    const sourceData = {
+      name: sourceTranslation.name,
+      description: null,
+    }
+
+    const result = await translationService.translateSimpleEntity(
+      "EXPRESSION",
+      sourceData,
+      sourceLocale,
+      targetLocale
+    )
+
+    await prisma.expression_translations.upsert({
+      where: {
+        expression_id_locale: {
+          expression_id: id,
+          locale: targetLocale,
+        },
+      },
+      update: {
+        name: result.name,
+        version: { increment: 1 },
+      },
+      create: {
+        expression_id: id,
+        locale: targetLocale,
+        name: result.name,
         version: 1,
         is_source: false,
       },
