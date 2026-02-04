@@ -34,6 +34,25 @@ interface ExpressionPickerProps {
 const fetcher = (url: string): Promise<ExpressionGroupWithItems[]> =>
   fetch(url).then((res) => res.json())
 
+const EXPRESSION_CELL_PADDING_MAP: Record<ExpressionGroupSize, number> = {
+  SMALL: 16,
+  MEDIUM: 12,
+  LARGE: 16,
+}
+const EXPRESSION_NAME_HEIGHT: number = 16
+
+const getExpressionCellPadding = (size: ExpressionGroupSize): number =>
+  EXPRESSION_CELL_PADDING_MAP[size]
+
+const getExpressionCellMinWidth = (size: ExpressionGroupSize): number => {
+  const labelHeight: number = size === "SMALL" ? 0 : EXPRESSION_NAME_HEIGHT
+  return (
+    getExpressionGroupSizePx(size) +
+    getExpressionCellPadding(size) +
+    labelHeight
+  )
+}
+
 export const ExpressionPicker: React.FC<ExpressionPickerProps> = ({
   onSelect,
   trigger,
@@ -96,7 +115,15 @@ export const ExpressionPicker: React.FC<ExpressionPickerProps> = ({
   const activeGroupSize: number = activeGroup
     ? getExpressionGroupSizePx(activeGroupSizeValue)
     : 0
-  const expressionCellMinWidth: number = activeGroupSize + 24
+  const expressionCellMinWidth: number = activeGroup
+    ? getExpressionCellMinWidth(activeGroupSizeValue)
+    : 0
+  const expressionCellPadding: number = activeGroup
+    ? getExpressionCellPadding(activeGroupSizeValue)
+    : 0
+  const expressionCellBoxSize: number = activeGroup
+    ? activeGroupSize + expressionCellPadding
+    : 0
   const shouldShowExpressionName: boolean = activeGroupSizeValue !== "SMALL"
 
   const toggleValues: string[] = useMemo<string[]>(() => {
@@ -201,9 +228,16 @@ export const ExpressionPicker: React.FC<ExpressionPickerProps> = ({
                         key={exp.id}
                         onClick={() => handleSelect(exp, activeGroupSizeValue)}
                         title={exp.name}
-                        className="cursor-pointer flex flex-col hover:[&_div]:bg-accent"
+                        className="cursor-pointer flex min-w-0 flex-col hover:[&_div]:bg-accent"
                       >
-                        <div className="flex items-center justify-center p-2 rounded-md">
+                        <div
+                          className="mx-auto flex items-center justify-center rounded-md box-border"
+                          style={{
+                            padding: expressionCellPadding / 2,
+                            width: expressionCellBoxSize,
+                            height: expressionCellBoxSize,
+                          }}
+                        >
                           {previewUrl ? (
                             <Image
                               src={previewUrl}
@@ -215,7 +249,7 @@ export const ExpressionPicker: React.FC<ExpressionPickerProps> = ({
                           ) : null}
                         </div>
                         {shouldShowExpressionName ? (
-                          <span className="w-full truncate text-center text-xs text-muted-foreground">
+                          <span className="h-4 w-full min-w-0 truncate text-center text-xs leading-4 text-muted-foreground">
                             {exp.name}
                           </span>
                         ) : null}
