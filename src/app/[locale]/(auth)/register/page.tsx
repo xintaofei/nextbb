@@ -60,15 +60,15 @@ export default function RegisterPage() {
     return z
       .object({
         email: z.email(t("error.emailInvalid")),
-        password: z.string().min(8).max(72),
+        password: z
+          .string()
+          .min(8, t("error.passwordMin"))
+          .max(72, t("error.passwordMax")),
         username: z
           .string()
-          .min(2)
-          .max(32)
-          .regex(
-            /^[a-zA-Z0-9_\u4e00-\u9fa5-]+$/,
-            "用户名只能包含字母、数字、下划线、中文和连字符"
-          )
+          .min(2, t("error.usernameMin"))
+          .max(32, t("error.usernameMax"))
+          .regex(/^[a-zA-Z0-9_\u4e00-\u9fa5-]+$/, t("error.usernameFormat"))
           .refine(
             (val) => {
               // 禁止URL路径分隔符和特殊字符
@@ -81,7 +81,7 @@ export default function RegisterPage() {
               return true
             },
             {
-              message: "用户名包含不允许的字符或格式不正确",
+              message: t("error.usernameInvalid"),
             }
           ),
         emailCode: z.union([
@@ -95,7 +95,7 @@ export default function RegisterPage() {
       .superRefine((data, ctx) => {
         if (emailVerifyEnabled && !data.emailCode) {
           ctx.addIssue({
-            code: z.ZodIssueCode.custom,
+            code: "custom",
             path: ["emailCode"],
             message: t("error.codeRequired"),
           })

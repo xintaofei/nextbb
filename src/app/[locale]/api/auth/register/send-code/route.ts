@@ -29,6 +29,7 @@ async function isEmailVerifyEnabled(): Promise<boolean> {
 
 export async function POST(request: Request) {
   const t = await getTranslations("Auth.Register.error")
+  const tEmail = await getTranslations("Auth.Register.verification")
   const json = await request.json().catch(() => null)
   const result = schema.safeParse(json)
 
@@ -65,13 +66,12 @@ export async function POST(request: Request) {
     const code = generateEmailCode()
     await storeEmailCode(email, code)
 
-    const subject = "注册验证码"
-    const text = `您的注册验证码是：${code}，有效期 ${Math.floor(
+    const expiresMinutes = Math.floor(
       EmailVerificationConfig.codeTtlSeconds / 60
-    )} 分钟。`
-    const html = `<p>您的注册验证码是：<strong>${code}</strong></p><p>有效期 ${Math.floor(
-      EmailVerificationConfig.codeTtlSeconds / 60
-    )} 分钟。</p>`
+    )
+    const subject = tEmail("subject")
+    const text = tEmail("textBody", { code, minutes: expiresMinutes })
+    const html = tEmail("htmlBody", { code, minutes: expiresMinutes })
 
     try {
       await sendEmail({ to: email, subject, text, html })

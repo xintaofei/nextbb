@@ -593,9 +593,20 @@
       "hintTitle": "支持社交账号一键注册",
       "questionHaveAccount": "已有账号？",
       "toLogin": "去登录",
+      "verification": {
+        "subject": "注册验证码",
+        "textBody": "您的注册验证码是：{code}，有效期 {minutes} 分钟。",
+        "htmlBody": "<p>您的注册验证码是：<strong>{code}</strong></p><p>有效期 {minutes} 分钟。</p>"
+      },
       "error": {
         "failed": "注册失败",
         "emailInvalid": "邮箱格式不正确",
+        "passwordMin": "密码至少需要 8 个字符",
+        "passwordMax": "密码最多 72 个字符",
+        "usernameMin": "用户名至少需要 2 个字符",
+        "usernameMax": "用户名最多 32 个字符",
+        "usernameFormat": "用户名只能包含字母、数字、下划线、中文和连字符",
+        "usernameInvalid": "用户名包含不允许的字符或格式不正确",
         "codeRequired": "请输入邮箱验证码",
         "codeInvalid": "验证码格式不正确",
         "sendCodeFailed": "发送验证码失败",
