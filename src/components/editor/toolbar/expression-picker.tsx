@@ -96,6 +96,7 @@ export const ExpressionPicker: React.FC<ExpressionPickerProps> = ({
   const activeGroupSize: number = activeGroup
     ? getExpressionGroupSizePx(activeGroupSizeValue)
     : 0
+  const expressionCellMinWidth: number = activeGroupSize + 24
   const shouldShowExpressionName: boolean = activeGroupSizeValue !== "SMALL"
 
   const toggleValues: string[] = useMemo<string[]>(() => {
@@ -190,7 +191,7 @@ export const ExpressionPicker: React.FC<ExpressionPickerProps> = ({
                 <div
                   className="grid gap-1"
                   style={{
-                    gridTemplateColumns: `repeat(6, ${activeGroupSize + 24}px)`,
+                    gridTemplateColumns: `repeat(auto-fit, minmax(min(100%, ${expressionCellMinWidth}px), 1fr))`,
                   }}
                 >
                   {activeGroup.expressions.map((exp) => {
