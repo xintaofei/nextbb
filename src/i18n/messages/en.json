@@ -137,7 +137,8 @@
     "Post": {
       "originallyWrittenIn": "This post was originally written in {locale}",
       "languageSelection": "Language Selection",
-      "source": "(Source)"
+      "source": "(Source)",
+      "firstUserPost": "This is {name}'s first post - let's welcome them to the community!"
     },
     "edit": "Edit",
     "delete": "Delete",

@@ -137,7 +137,8 @@
     "Post": {
       "originallyWrittenIn": "此帖子最初使用 {locale} 编写",
       "languageSelection": "多语言选择",
-      "source": "(原文)"
+      "source": "(原文)",
+      "firstUserPost": "这是 {name} 首次发帖 - 让我们欢迎他/她加入社区吧！"
     },
     "edit": "编辑",
     "delete": "删除",

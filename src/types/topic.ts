@@ -25,6 +25,7 @@ export type PostItem = {
   contentHtml?: string
   contentLocale?: string
   sourceLocale: string
+  isFirstUserPost: boolean
   createdAt: string
   minutesAgo: number
   isDeleted: boolean

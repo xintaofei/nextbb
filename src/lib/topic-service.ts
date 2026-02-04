@@ -170,6 +170,7 @@ export const getTopicPosts = cache(async function getTopicPosts(
         translations: getTranslationsQuery(locale, { content_html: true }),
         created_at: true,
         is_deleted: true,
+        is_first_user_post: true,
         parent_id: true,
         source_locale: true,
         user: {
@@ -471,6 +472,7 @@ export const getTopicPosts = cache(async function getTopicPosts(
         0
       ),
       isDeleted: p.is_deleted,
+      isFirstUserPost: p.is_first_user_post,
       likes: countsById.get(idStr) ?? 0,
       liked: likedSet.has(idStr),
       bookmarks: bookmarkCountsById.get(idStr) ?? 0,

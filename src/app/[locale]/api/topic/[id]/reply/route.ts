@@ -141,6 +141,11 @@ export async function POST(
       })
     }
 
+    const existingPostCount: number = await tx.posts.count({
+      where: { user_id: auth.userId },
+    })
+    const isFirstUserPost: boolean = existingPostCount === 0
+
     // Create post
     const created = await tx.posts.create({
       data: {
@@ -152,6 +157,7 @@ export async function POST(
         floor_number: nextFloor,
         content: body.content,
         source_locale: locale,
+        is_first_user_post: isFirstUserPost,
         translations: {
           create: {
             locale: locale,

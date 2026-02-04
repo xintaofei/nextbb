@@ -20,6 +20,7 @@ interface TopicsDelegate {
 
 interface PostsDelegate {
   create(args: unknown): Promise<{ id: bigint }>
+  count(args: unknown): Promise<number>
 }
 
 interface TopicTagsDelegate {
@@ -223,6 +224,10 @@ export async function POST(req: Request) {
   try {
     const result = await prisma.$transaction(async (tx: unknown) => {
       const client = tx as TxClient
+      const existingPostCount: number = await client.posts.count({
+        where: { user_id: auth.userId },
+      })
+      const isFirstUserPost: boolean = existingPostCount === 0
 
       const topic = await client.topics.create({
         data: {
@@ -270,6 +275,7 @@ export async function POST(req: Request) {
           floor_number: 1,
           content: body.content,
           source_locale: locale,
+          is_first_user_post: isFirstUserPost,
           translations: {
             create: [
               {

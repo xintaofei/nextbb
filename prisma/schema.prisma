@@ -199,6 +199,7 @@ model posts {
   floor_number     Int
   content          String   @db.Text
   source_locale    String   @default("zh") @db.VarChar(8)
+  is_first_user_post Boolean  @default(false)
   is_deleted       Boolean
   created_at       DateTime @default(now())
   updated_at       DateTime @updatedAt

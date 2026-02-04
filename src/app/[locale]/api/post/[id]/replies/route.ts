@@ -32,6 +32,7 @@ export async function GET(
       translations: getTranslationsQuery(locale, { content_html: true }),
       created_at: true,
       is_deleted: true,
+      is_first_user_post: true,
       parent_id: true,
       user: {
         select: { id: true, name: true, avatar: true, title_badge_id: true },
@@ -202,6 +203,7 @@ export async function GET(
         0
       ),
       isDeleted: p.is_deleted,
+      isFirstUserPost: p.is_first_user_post,
       likes: countsById.get(idStr) ?? 0,
       liked: likedSet.has(idStr),
       bookmarks: bookmarkCountsById.get(idStr) ?? 0,

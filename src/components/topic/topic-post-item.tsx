@@ -28,7 +28,8 @@ import { RelativeTime } from "@/components/common/relative-time"
 import parse from "html-react-parser"
 import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
-import { ChevronUp, Crown } from "lucide-react"
+import { Alert, AlertDescription } from "@/components/ui/alert"
+import { CheckCircle2Icon, ChevronUp, Crown, SmileIcon } from "lucide-react"
 import { useTranslations } from "next-intl"
 
 const repliesFetcher = async (url: string) => {
@@ -181,6 +182,7 @@ export const TopicPostItem = memo(function TopicPostItem({
 
   const isTopicAuthor = topicAuthorId && post.author.id === topicAuthorId
   const tFloor = useTranslations("Topic.floor")
+  const tPost = useTranslations("Topic.Post")
 
   const [expanded, setExpanded] = useState(false)
   const [overrideLocale, setOverrideLocale] = useState<string | null>(null)
@@ -277,6 +279,14 @@ export const TopicPostItem = memo(function TopicPostItem({
         </UserInfoCard>
       </TimelineStepsIcon>
       <TimelineStepsContent className={`border-b`}>
+        {post.isFirstUserPost && !post.isDeleted && (
+          <Alert className="border-emerald-200 bg-emerald-50 text-emerald-800  dark:border-emerald-900/50 dark:bg-emerald-950/20 dark:text-emerald-300">
+            <SmileIcon />
+            <AlertDescription className="text-emerald-800 dark:text-emerald-300">
+              {tPost("firstUserPost", { name: post.author.name })}
+            </AlertDescription>
+          </Alert>
+        )}
         <PostHeader
           post={post}
           index={index}
