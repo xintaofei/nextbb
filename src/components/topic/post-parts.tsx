@@ -32,6 +32,7 @@ import {
   Languages,
   Loader2,
   Crown,
+  ExternalLink,
 } from "lucide-react"
 import { useState } from "react"
 import { RelativeTime } from "@/components/common/relative-time"
@@ -271,6 +272,26 @@ export const parseOptions: HTMLReactParserOptions = {
             {domToReact(domNode.children as DOMNode[], parseOptions)}
           </span>
         </UserInfoCard>
+      )
+    }
+
+    // Handle <a> tags: add link icon and open in new window
+    if (
+      domNode instanceof Element &&
+      domNode.name === "a" &&
+      domNode.attribs.href
+    ) {
+      return (
+        <a
+          href={domNode.attribs.href}
+          title={domNode.attribs.title}
+          target="_blank"
+          rel="noopener noreferrer"
+          className={domNode.attribs.class}
+        >
+          <ExternalLink className="inline-block h-3.5 w-3.5 mr-0.5 -mt-0.5 align-middle" />
+          {domToReact(domNode.children as DOMNode[], parseOptions)}
+        </a>
       )
     }
   },

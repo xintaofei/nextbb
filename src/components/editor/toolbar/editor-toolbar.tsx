@@ -296,14 +296,21 @@ export const EditorToolbar = memo(({ getEditor }: EditorToolbarProps) => {
         if (from === to) {
           const displayText = text || url
           const linkMark = schema.marks.link.create({ href: url })
-          const tr = state.tr
-            .insertText(displayText)
-            .addMark(from, from + displayText.length, linkMark)
+          const endPos = from + displayText.length
+          let tr = state.tr
+            .insertText(displayText + " ")
+            .addMark(from, endPos, linkMark)
+            .removeStoredMark(linkMark.type)
+          tr = tr.setSelection(TextSelection.create(tr.doc, endPos + 1))
           dispatch(tr)
         } else {
           // If text selected, apply link mark (use selected text as display)
           const linkMark = schema.marks.link.create({ href: url })
-          const tr = state.tr.addMark(from, to, linkMark)
+          let tr = state.tr
+            .addMark(from, to, linkMark)
+            .insertText(" ", to)
+            .removeStoredMark(linkMark.type)
+          tr = tr.setSelection(TextSelection.create(tr.doc, to + 1))
           dispatch(tr)
         }
 
