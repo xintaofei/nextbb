@@ -482,6 +482,7 @@ export default function TopicOverviewClient({
         const tempId = `temp-${Date.now()}`
         const optimistic: PostItem = {
           id: tempId,
+          floorNumber: postsRef.current.length + 1,
           author: {
             id: currentUserId ?? "0",
             name: currentUserProfile?.name ?? "",
