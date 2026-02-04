@@ -55,6 +55,8 @@ export default function RegisterPage() {
   const siteName = configs?.["basic.name"] || "NextBB"
   const registrationEnabled = configs?.["registration.enabled"] === true
   const emailVerifyEnabled = configs?.["registration.email_verify"] === true
+  const usernameMinLength = configs?.["registration.username_min_length"] ?? 3
+  const usernameMaxLength = configs?.["registration.username_max_length"] ?? 32
 
   const schema = useMemo(() => {
     return z
@@ -66,8 +68,14 @@ export default function RegisterPage() {
           .max(72, t("error.passwordMax")),
         username: z
           .string()
-          .min(2, t("error.usernameMin"))
-          .max(32, t("error.usernameMax"))
+          .min(
+            usernameMinLength,
+            t("error.usernameMin", { min: usernameMinLength })
+          )
+          .max(
+            usernameMaxLength,
+            t("error.usernameMax", { max: usernameMaxLength })
+          )
           .regex(/^[a-zA-Z0-9_\u4e00-\u9fa5-]+$/, t("error.usernameFormat"))
           .refine(
             (val) => {
@@ -101,7 +109,7 @@ export default function RegisterPage() {
           })
         }
       })
-  }, [emailVerifyEnabled, t])
+  }, [emailVerifyEnabled, usernameMinLength, usernameMaxLength, t])
 
   const form = useForm<RegisterValues>({
     resolver: zodResolver(schema),

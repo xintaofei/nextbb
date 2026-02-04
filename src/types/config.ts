@@ -12,6 +12,8 @@ export interface PublicConfigs {
   "basic.welcome_message": string
   "registration.enabled": boolean
   "registration.email_verify": boolean
+  "registration.username_min_length": number
+  "registration.username_max_length": number
 }
 
 /**

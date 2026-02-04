@@ -8,14 +8,15 @@ import { recordLogin } from "@/lib/auth"
 import { AutomationEvents } from "@/lib/automation/event-bus"
 import { verifyEmailCode } from "@/lib/email-verification"
 import { getTranslations } from "next-intl/server"
+import { getConfigValue } from "@/lib/services/config-service"
 
 const schema = z.object({
   email: z.email(),
   password: z.string().min(8).max(72),
   username: z
     .string()
-    .min(2)
-    .max(32)
+    .min(1)
+    .max(64)
     .regex(
       /^[a-zA-Z0-9_\u4e00-\u9fa5-]+$/,
       "用户名只能包含字母、数字、下划线、中文和连字符"
@@ -90,6 +91,26 @@ export async function POST(request: Request) {
 
   const { password, username, emailCode } = result.data
   const email = normalizeEmail(result.data.email)
+
+  // 从配置获取用户名长度限制
+  const [usernameMinLength, usernameMaxLength] = await Promise.all([
+    getConfigValue("registration.username_min_length"),
+    getConfigValue("registration.username_max_length"),
+  ])
+
+  if (username.length < usernameMinLength) {
+    return NextResponse.json(
+      { error: t("usernameMin", { min: usernameMinLength }) },
+      { status: 400 }
+    )
+  }
+
+  if (username.length > usernameMaxLength) {
+    return NextResponse.json(
+      { error: t("usernameMax", { max: usernameMaxLength }) },
+      { status: 400 }
+    )
+  }
 
   if (await isEmailVerifyEnabled()) {
     if (!emailCode) {
