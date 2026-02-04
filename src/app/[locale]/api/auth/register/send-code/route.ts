@@ -9,6 +9,7 @@ import {
   storeEmailCode,
   clearEmailCode,
 } from "@/lib/email-verification"
+import { getTranslations } from "next-intl/server"
 
 const schema = z.object({
   email: z.email(),
@@ -27,15 +28,19 @@ async function isEmailVerifyEnabled(): Promise<boolean> {
 }
 
 export async function POST(request: Request) {
+  const t = await getTranslations("Auth.Register.error")
   const json = await request.json().catch(() => null)
   const result = schema.safeParse(json)
 
   if (!result.success) {
-    return NextResponse.json({ error: "参数不合法" }, { status: 400 })
+    return NextResponse.json({ error: t("invalidParams") }, { status: 400 })
   }
 
   if (!(await isEmailVerifyEnabled())) {
-    return NextResponse.json({ error: "邮箱验证未开启" }, { status: 400 })
+    return NextResponse.json(
+      { error: t("emailVerificationNotEnabled") },
+      { status: 400 }
+    )
   }
 
   const email = normalizeEmail(result.data.email)
@@ -45,14 +50,14 @@ export async function POST(request: Request) {
   })
 
   if (exists) {
-    return NextResponse.json({ error: "邮箱已被注册" }, { status: 409 })
+    return NextResponse.json({ error: t("emailExists") }, { status: 409 })
   }
 
   try {
     const cooldown = await getEmailCodeCooldown(email)
     if (cooldown > 0) {
       return NextResponse.json(
-        { error: "发送过于频繁，请稍后再试", retryAfter: cooldown },
+        { error: t("sendTooFrequent"), retryAfter: cooldown },
         { status: 429 }
       )
     }
@@ -82,6 +87,6 @@ export async function POST(request: Request) {
     })
   } catch (error) {
     console.error("Failed to send email code:", error)
-    return NextResponse.json({ error: "验证码发送失败" }, { status: 500 })
+    return NextResponse.json({ error: t("codeExpired") }, { status: 500 })
   }
 }

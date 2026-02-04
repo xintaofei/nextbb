@@ -53,9 +53,10 @@ export default function RegisterPage() {
 
   const logoSrc = configs?.["basic.logo"] || "/nextbb-logo.png"
   const siteName = configs?.["basic.name"] || "NextBB"
+  const registrationEnabled = configs?.["registration.enabled"] === true
   const emailVerifyEnabled = configs?.["registration.email_verify"] === true
 
-  const schema = useMemo<z.ZodType<RegisterValues>>(() => {
+  const schema = useMemo(() => {
     return z
       .object({
         email: z.email(t("error.emailInvalid")),
@@ -219,6 +220,11 @@ export default function RegisterPage() {
         {/* Right Panel - Register Form */}
         <div className="flex items-center justify-center p-4 sm:p-8">
           <div className="w-full max-w-md space-y-4 animate-slideUp">
+            {!registrationEnabled && (
+              <div className="px-4 py-3 bg-destructive/10 border border-destructive/20 rounded-lg text-destructive text-sm font-medium text-center">
+                {t("error.registrationNotEnabled")}
+              </div>
+            )}
             {/* Mobile Logo */}
             <div className="lg:hidden flex flex-col items-center gap-4">
               <div className="relative w-32 h-32">
@@ -368,7 +374,7 @@ export default function RegisterPage() {
                 <Button
                   type="submit"
                   className="w-full h-11 font-medium"
-                  disabled={form.formState.isSubmitting}
+                  disabled={form.formState.isSubmitting || !registrationEnabled}
                 >
                   {form.formState.isSubmitting ? (
                     <Loader2 className="w-5 h-5 animate-spin" />

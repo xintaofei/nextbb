@@ -598,7 +598,17 @@
         "emailInvalid": "邮箱格式不正确",
         "codeRequired": "请输入邮箱验证码",
         "codeInvalid": "验证码格式不正确",
-        "sendCodeFailed": "发送验证码失败"
+        "sendCodeFailed": "发送验证码失败",
+        "emailExists": "邮箱已被注册",
+        "usernameExists": "用户名已被使用",
+        "invalidParams": "参数不合法",
+        "codeVerificationFailed": "邮箱验证码验证失败",
+        "codeInvalidOrExpired": "邮箱验证码无效或已过期",
+        "registrationFailed": "注册失败，请稍后重试",
+        "registrationNotEnabled": "系统暂未开放注册，请联系管理员",
+        "emailVerificationNotEnabled": "邮箱验证未开启",
+        "sendTooFrequent": "发送过于频繁，请稍后再试",
+        "codeExpired": "验证码发送失败"
       }
     }
   },

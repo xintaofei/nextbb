@@ -598,7 +598,17 @@
         "emailInvalid": "Invalid email format",
         "codeRequired": "Email code is required",
         "codeInvalid": "Invalid code format",
-        "sendCodeFailed": "Failed to send code"
+        "sendCodeFailed": "Failed to send code",
+        "emailExists": "Email already registered",
+        "usernameExists": "Username already taken",
+        "invalidParams": "Invalid parameters",
+        "codeVerificationFailed": "Email code verification failed",
+        "codeInvalidOrExpired": "Email code is invalid or expired",
+        "registrationFailed": "Registration failed, please try again later",
+        "registrationNotEnabled": "Registration is currently closed, please contact administrator",
+        "emailVerificationNotEnabled": "Email verification is not enabled",
+        "sendTooFrequent": "Sending too frequently, please try again later",
+        "codeExpired": "Failed to send verification code"
       }
     }
   },

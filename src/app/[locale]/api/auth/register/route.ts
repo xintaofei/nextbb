@@ -7,6 +7,7 @@ import { generateId } from "@/lib/id"
 import { recordLogin } from "@/lib/auth"
 import { AutomationEvents } from "@/lib/automation/event-bus"
 import { verifyEmailCode } from "@/lib/email-verification"
+import { getTranslations } from "next-intl/server"
 
 const schema = z.object({
   email: z.email(),
@@ -49,6 +50,14 @@ const schema = z.object({
   ),
 })
 
+async function isRegistrationEnabled(): Promise<boolean> {
+  const config = await prisma.system_configs.findUnique({
+    where: { config_key: "registration.enabled" },
+    select: { config_value: true },
+  })
+  return config?.config_value === "true"
+}
+
 async function isEmailVerifyEnabled(): Promise<boolean> {
   const config = await prisma.system_configs.findUnique({
     where: { config_key: "registration.email_verify" },
@@ -62,39 +71,44 @@ function normalizeEmail(email: string): string {
 }
 
 export async function POST(request: Request) {
+  const t = await getTranslations("Auth.Register.error")
+
+  // 检查是否开放注册
+  if (!(await isRegistrationEnabled())) {
+    return NextResponse.json(
+      { error: t("registrationNotEnabled") },
+      { status: 403 }
+    )
+  }
+
   const json = await request.json().catch(() => null)
   const result = schema.safeParse(json)
 
   if (!result.success) {
-    return NextResponse.json({ error: "参数不合法" }, { status: 400 })
+    return NextResponse.json({ error: t("invalidParams") }, { status: 400 })
   }
 
   const { password, username, emailCode } = result.data
   const email = normalizeEmail(result.data.email)
 
-  const exists = await prisma.users.findUnique({
-    where: { email },
-  })
-
-  if (exists) {
-    return NextResponse.json({ error: "邮箱已被注册" }, { status: 409 })
-  }
-
   if (await isEmailVerifyEnabled()) {
     if (!emailCode) {
-      return NextResponse.json({ error: "请输入邮箱验证码" }, { status: 400 })
+      return NextResponse.json({ error: t("codeRequired") }, { status: 400 })
     }
     try {
       const isValid = await verifyEmailCode(email, emailCode)
       if (!isValid) {
         return NextResponse.json(
-          { error: "邮箱验证码无效或已过期" },
+          { error: t("codeInvalidOrExpired") },
           { status: 400 }
         )
       }
     } catch (error) {
       console.error("Email code verification failed:", error)
-      return NextResponse.json({ error: "邮箱验证码验证失败" }, { status: 500 })
+      return NextResponse.json(
+        { error: t("codeVerificationFailed") },
+        { status: 500 }
+      )
     }
   }
 
@@ -107,37 +121,73 @@ export async function POST(request: Request) {
     .digest("hex")
   const avatarUrl = `https://www.gravatar.com/avatar/${emailHash}`
 
-  // 检查是否是第一个用户
-  const userCount = await prisma.users.count()
-  const isFirstUser = userCount === 0
+  try {
+    const user = await prisma.$transaction(async (tx) => {
+      // 检查邮箱和用户名是否已存在
+      const [emailExists, usernameExists] = await Promise.all([
+        tx.users.findUnique({ where: { email } }),
+        tx.users.findFirst({ where: { name: username } }),
+      ])
 
-  const user = await prisma.users.create({
-    data: {
-      id,
-      email,
-      name: username,
-      avatar: avatarUrl,
-      password: hash,
-      status: 1,
-      is_deleted: false,
-      is_admin: isFirstUser,
-    },
-  })
+      if (emailExists) {
+        throw new Error("EMAIL_EXISTS")
+      }
 
-  // 触发用户注册事件
-  await AutomationEvents.userRegister({
-    userId: user.id,
-    email: user.email,
-  })
+      if (usernameExists) {
+        throw new Error("USERNAME_EXISTS")
+      }
 
-  await recordLogin(user.id, "SUCCESS", "FORM")
+      // 检查是否是第一个用户
+      const userCount = await tx.users.count()
+      const isFirstUser = userCount === 0
 
-  // 返回成功，让客户端调用 signIn
-  return NextResponse.json(
-    {
-      success: true,
+      // 创建用户
+      return await tx.users.create({
+        data: {
+          id,
+          email,
+          name: username,
+          avatar: avatarUrl,
+          password: hash,
+          status: 1,
+          is_deleted: false,
+          is_admin: isFirstUser,
+        },
+      })
+    })
+
+    // 触发用户注册事件
+    await AutomationEvents.userRegister({
+      userId: user.id,
       email: user.email,
-    },
-    { status: 201 }
-  )
+    })
+
+    await recordLogin(user.id, "SUCCESS", "FORM")
+
+    // 返回成功，让客户端调用 signIn
+    return NextResponse.json(
+      {
+        success: true,
+        email: user.email,
+      },
+      { status: 201 }
+    )
+  } catch (error) {
+    if (error instanceof Error) {
+      if (error.message === "EMAIL_EXISTS") {
+        return NextResponse.json({ error: t("emailExists") }, { status: 409 })
+      }
+      if (error.message === "USERNAME_EXISTS") {
+        return NextResponse.json(
+          { error: t("usernameExists") },
+          { status: 409 }
+        )
+      }
+    }
+    console.error("User registration failed:", error)
+    return NextResponse.json(
+      { error: t("registrationFailed") },
+      { status: 500 }
+    )
+  }
 }

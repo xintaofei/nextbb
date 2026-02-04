@@ -1,5 +1,6 @@
 import nodemailer from "nodemailer"
 import { prisma } from "@/lib/prisma"
+import { getRedisClient } from "@/lib/redis"
 
 type SmtpConfigKey =
   | "smtp.host"
@@ -19,6 +20,9 @@ const SMTP_CONFIG_KEYS: SmtpConfigKey[] = [
   "smtp.from_name",
   "smtp.from_email",
 ]
+
+const SMTP_CONFIG_CACHE_KEY = "smtp:config"
+const SMTP_CONFIG_CACHE_TTL = 300 // 5 minutes
 
 type SmtpConfig = {
   host: string
@@ -47,7 +51,7 @@ function parseBoolean(value: string): boolean {
   return value === "true"
 }
 
-async function getSmtpConfig(): Promise<SmtpConfig> {
+async function fetchSmtpConfigFromDb(): Promise<SmtpConfig> {
   const configs = await prisma.system_configs.findMany({
     where: { config_key: { in: SMTP_CONFIG_KEYS } },
     select: { config_key: true, config_value: true },
@@ -82,6 +86,42 @@ async function getSmtpConfig(): Promise<SmtpConfig> {
     authPass,
     fromName,
     fromEmail,
+  }
+}
+
+async function getSmtpConfig(): Promise<SmtpConfig> {
+  const redis = getRedisClient()
+
+  try {
+    const cached = await redis.get(SMTP_CONFIG_CACHE_KEY)
+    if (cached) {
+      return JSON.parse(cached) as SmtpConfig
+    }
+  } catch (error) {
+    console.warn("Failed to get SMTP config from cache:", error)
+  }
+
+  const config = await fetchSmtpConfigFromDb()
+
+  try {
+    await redis.setex(
+      SMTP_CONFIG_CACHE_KEY,
+      SMTP_CONFIG_CACHE_TTL,
+      JSON.stringify(config)
+    )
+  } catch (error) {
+    console.warn("Failed to cache SMTP config:", error)
+  }
+
+  return config
+}
+
+export async function clearSmtpConfigCache(): Promise<void> {
+  const redis = getRedisClient()
+  try {
+    await redis.del(SMTP_CONFIG_CACHE_KEY)
+  } catch (error) {
+    console.warn("Failed to clear SMTP config cache:", error)
   }
 }
 

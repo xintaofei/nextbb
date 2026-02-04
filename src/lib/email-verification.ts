@@ -58,11 +58,12 @@ export async function verifyEmailCode(
 ): Promise<boolean> {
   const redis = getRedisClient()
   const codeKey = buildCodeKey(email)
+  const cooldownKey = buildCooldownKey(email)
   const storedHash = await redis.get(codeKey)
   if (!storedHash) return false
   const inputHash = hashEmailCode(email, code)
   if (inputHash !== storedHash) return false
-  await redis.del(codeKey)
+  await redis.del(codeKey, cooldownKey)
   return true
 }
 
