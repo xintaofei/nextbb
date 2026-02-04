@@ -488,6 +488,7 @@ export default function TopicOverviewClient({
           contentHtml,
           sourceLocale: locale,
           contentLocale: locale,
+          isFirstUserPost: false,
           createdAt: new Date().toISOString(),
           minutesAgo: 0,
           isDeleted: false,
