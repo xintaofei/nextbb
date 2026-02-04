@@ -190,7 +190,7 @@ export const ExpressionPicker: React.FC<ExpressionPickerProps> = ({
                 <div
                   className="grid gap-1"
                   style={{
-                    gridTemplateColumns: `repeat(6, ${activeGroupSize}px)`,
+                    gridTemplateColumns: `repeat(6, ${activeGroupSize + 24}px)`,
                   }}
                 >
                   {activeGroup.expressions.map((exp) => {
