@@ -201,7 +201,7 @@ async function seedSystemConfigs(tx: TxClient): Promise<void> {
     },
     {
       key: "smtp.port",
-      value: "587",
+      value: "465",
       type: "number",
       cat: "smtp",
       desc: "SMTP 端口",
@@ -209,7 +209,7 @@ async function seedSystemConfigs(tx: TxClient): Promise<void> {
     },
     {
       key: "smtp.secure",
-      value: "false",
+      value: "true",
       type: "boolean",
       cat: "smtp",
       desc: "是否启用 TLS/SSL",
