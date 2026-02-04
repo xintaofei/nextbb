@@ -34,18 +34,18 @@ export const LinkDialog = memo(
     const [url, setUrl] = useState(initialUrl)
     const [text, setText] = useState(initialText)
 
-    // Update local state when dialog opens with new initial values
-    if (open && (url !== initialUrl || text !== initialText)) {
-      setUrl(initialUrl)
-      setText(initialText)
+    const handleOpenChange = (newOpen: boolean) => {
+      if (newOpen) {
+        setUrl(initialUrl)
+        setText(initialText)
+      }
+      onOpenChange(newOpen)
     }
 
     const handleInsert = () => {
       if (!url.trim()) return
       onInsert(url, text || undefined)
-      onOpenChange(false)
-      setUrl("")
-      setText("")
+      handleOpenChange(false)
     }
 
     const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -55,7 +55,7 @@ export const LinkDialog = memo(
     }
 
     return (
-      <Dialog open={open} onOpenChange={onOpenChange}>
+      <Dialog open={open} onOpenChange={handleOpenChange}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle>
@@ -91,7 +91,7 @@ export const LinkDialog = memo(
           <DialogFooter className="gap-2">
             <Button
               variant="outline"
-              onClick={() => onOpenChange(false)}
+              onClick={() => handleOpenChange(false)}
               className="sm:min-w-20"
             >
               {t("cancel")}
