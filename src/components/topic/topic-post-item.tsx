@@ -29,7 +29,7 @@ import parse from "html-react-parser"
 import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 import { Alert, AlertDescription } from "@/components/ui/alert"
-import { CheckCircle2Icon, ChevronUp, Crown, SmileIcon } from "lucide-react"
+import { ChevronUp, Crown, SmileIcon } from "lucide-react"
 import { useTranslations } from "next-intl"
 
 const repliesFetcher = async (url: string) => {

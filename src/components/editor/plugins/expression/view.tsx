@@ -1,6 +1,7 @@
 import React, { type CSSProperties } from "react"
 import { useNodeViewContext } from "@prosemirror-adapter/react"
 import type { ExpressionNodeAttrs } from "./node"
+import Image from "next/image"
 
 export const ExpressionView: React.FC = () => {
   const { node, selected } = useNodeViewContext()
@@ -25,7 +26,7 @@ export const ExpressionView: React.FC = () => {
       contentEditable={false}
       data-expression="true"
     >
-      <img
+      <Image
         src={attrs.src}
         alt={alt}
         title={title}
