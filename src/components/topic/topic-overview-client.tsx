@@ -801,15 +801,6 @@ export default function TopicOverviewClient({
         setHighlightIndex(targetIndex)
         setTargetFloor(null)
         setIsLoadingFloor(false)
-
-        // 清除 hash，延迟执行以确保滚动完成
-        setTimeout(() => {
-          window.history.replaceState(
-            null,
-            "",
-            window.location.pathname + window.location.search
-          )
-        }, 500)
       }, 100)
     }
   }, [targetFloor, posts, loadingPosts, totalPosts, t])
