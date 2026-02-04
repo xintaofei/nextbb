@@ -291,7 +291,7 @@ export default function RegisterPage() {
                             <Button
                               type="button"
                               variant="outline"
-                              className="h-11 whitespace-nowrap"
+                              className="w-36 h-11 whitespace-nowrap"
                               disabled={
                                 sendingCode ||
                                 codeCooldown > 0 ||
