@@ -209,7 +209,7 @@ async function seedSystemConfigs(tx: TxClient): Promise<void> {
     },
     {
       key: "smtp.secure",
-      value: "true",
+      value: "false",
       type: "boolean",
       cat: "smtp",
       desc: "是否启用 TLS/SSL",

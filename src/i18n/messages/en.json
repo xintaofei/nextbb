@@ -578,16 +578,27 @@
       "title": "Sign Up",
       "email": "Email",
       "emailPlaceholder": "name@example.com",
+      "emailCode": "Email Code",
+      "emailCodePlaceholder": "Enter 6-digit code",
       "password": "Password",
       "passwordPlaceholder": "Enter your password",
       "username": "Username",
       "usernamePlaceholder": "Enter your username",
+      "sendCode": "Send Code",
+      "resendCode": "Resend",
+      "sendingCode": "Sending...",
+      "codeCooldown": "Resend in {seconds}s",
+      "codeHint": "Code expires in 10 minutes",
       "submit": "Sign Up",
       "hintTitle": "Sign up with social accounts",
       "questionHaveAccount": "Already have an account?",
       "toLogin": "Go to Sign In",
       "error": {
-        "failed": "Sign up failed"
+        "failed": "Sign up failed",
+        "emailInvalid": "Invalid email format",
+        "codeRequired": "Email code is required",
+        "codeInvalid": "Invalid code format",
+        "sendCodeFailed": "Failed to send code"
       }
     }
   },

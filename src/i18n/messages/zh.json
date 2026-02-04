@@ -578,16 +578,27 @@
       "title": "注册",
       "email": "邮箱",
       "emailPlaceholder": "name@example.com",
+      "emailCode": "邮箱验证码",
+      "emailCodePlaceholder": "请输入 6 位验证码",
       "password": "密码",
       "passwordPlaceholder": "请输入密码",
       "username": "用户名",
       "usernamePlaceholder": "请输入用户名",
+      "sendCode": "发送验证码",
+      "resendCode": "重新发送",
+      "sendingCode": "发送中...",
+      "codeCooldown": "{seconds}s 后可重发",
+      "codeHint": "验证码有效期 10 分钟",
       "submit": "注册",
       "hintTitle": "支持社交账号一键注册",
       "questionHaveAccount": "已有账号？",
       "toLogin": "去登录",
       "error": {
-        "failed": "注册失败"
+        "failed": "注册失败",
+        "emailInvalid": "邮箱格式不正确",
+        "codeRequired": "请输入邮箱验证码",
+        "codeInvalid": "验证码格式不正确",
+        "sendCodeFailed": "发送验证码失败"
       }
     }
   },

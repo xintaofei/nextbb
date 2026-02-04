@@ -1,11 +1,12 @@
+import { createHash } from "crypto"
 import { NextResponse } from "next/server"
-import { z } from "zod"
 import bcrypt from "bcryptjs"
+import { z } from "zod"
 import { prisma } from "@/lib/prisma"
 import { generateId } from "@/lib/id"
 import { recordLogin } from "@/lib/auth"
-import { createHash } from "crypto"
 import { AutomationEvents } from "@/lib/automation/event-bus"
+import { verifyEmailCode } from "@/lib/email-verification"
 
 const schema = z.object({
   email: z.email(),
@@ -33,7 +34,32 @@ const schema = z.object({
         message: "用户名包含不允许的字符或格式不正确",
       }
     ),
+  emailCode: z.preprocess(
+    (value) => {
+      if (typeof value === "string" && value.trim().length === 0) {
+        return undefined
+      }
+      return value
+    },
+    z
+      .string()
+      .trim()
+      .regex(/^\d{6}$/)
+      .optional()
+  ),
 })
+
+async function isEmailVerifyEnabled(): Promise<boolean> {
+  const config = await prisma.system_configs.findUnique({
+    where: { config_key: "registration.email_verify" },
+    select: { config_value: true },
+  })
+  return config?.config_value === "true"
+}
+
+function normalizeEmail(email: string): string {
+  return email.trim().toLowerCase()
+}
 
 export async function POST(request: Request) {
   const json = await request.json().catch(() => null)
@@ -43,7 +69,8 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "参数不合法" }, { status: 400 })
   }
 
-  const { email, password, username } = result.data
+  const { password, username, emailCode } = result.data
+  const email = normalizeEmail(result.data.email)
 
   const exists = await prisma.users.findUnique({
     where: { email },
@@ -51,6 +78,24 @@ export async function POST(request: Request) {
 
   if (exists) {
     return NextResponse.json({ error: "邮箱已被注册" }, { status: 409 })
+  }
+
+  if (await isEmailVerifyEnabled()) {
+    if (!emailCode) {
+      return NextResponse.json({ error: "请输入邮箱验证码" }, { status: 400 })
+    }
+    try {
+      const isValid = await verifyEmailCode(email, emailCode)
+      if (!isValid) {
+        return NextResponse.json(
+          { error: "邮箱验证码无效或已过期" },
+          { status: 400 }
+        )
+      }
+    } catch (error) {
+      console.error("Email code verification failed:", error)
+      return NextResponse.json({ error: "邮箱验证码验证失败" }, { status: 500 })
+    }
   }
 
   const hash = await bcrypt.hash(password, 12)

@@ -1,12 +1,15 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useMemo, useRef, useState } from "react"
+import Link from "next/link"
+import Image from "next/image"
 import { useRouter } from "next/navigation"
 import { useTranslations } from "next-intl"
+import { signIn } from "next-auth/react"
 import { z } from "zod"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
-import { signIn } from "next-auth/react"
+import { Loader2 } from "lucide-react"
 import {
   Form,
   FormControl,
@@ -17,42 +20,23 @@ import {
 } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
-import Link from "next/link"
-import Image from "next/image"
-import { Loader2 } from "lucide-react"
 import { AuthBranding } from "@/components/auth/auth-branding"
 import { OAuthButtons } from "@/components/auth/oauth-buttons"
 import { useConfig } from "@/components/providers/config-provider"
 
-const schema = z.object({
-  email: z.email(),
-  password: z.string().min(8).max(72),
-  username: z
-    .string()
-    .min(2)
-    .max(32)
-    .regex(
-      /^[a-zA-Z0-9_\u4e00-\u9fa5-]+$/,
-      "用户名只能包含字母、数字、下划线、中文和连字符"
-    )
-    .refine(
-      (val) => {
-        // 禁止URL路径分隔符和特殊字符
-        const dangerousChars = /[\/\\?#@%&=+\s.,:;'"<>{}\[\]|`~!$^*()]/
-        if (dangerousChars.test(val)) return false
-        // 禁止以连字符开头或结尾(避免命令行参数注入)
-        if (val.startsWith("-") || val.endsWith("-")) return false
-        // 禁止连续连字符
-        if (/--/.test(val)) return false
-        return true
-      },
-      {
-        message: "用户名包含不允许的字符或格式不正确",
-      }
-    ),
-})
+type RegisterValues = {
+  email: string
+  password: string
+  username: string
+  emailCode: string
+}
 
-type RegisterValues = z.infer<typeof schema>
+type RegisterSubmitValues = {
+  email: string
+  password: string
+  username: string
+  emailCode?: string
+}
 
 type ApiResponse = { success: true; email: string } | { error: string }
 
@@ -61,24 +45,146 @@ export default function RegisterPage() {
   const t = useTranslations("Auth.Register")
   const tLogin = useTranslations("Auth.Login")
   const [serverError, setServerError] = useState<string | null>(null)
+  const [codeError, setCodeError] = useState<string | null>(null)
+  const [sendingCode, setSendingCode] = useState(false)
+  const [codeCooldown, setCodeCooldown] = useState(0)
+  const [codeSent, setCodeSent] = useState(false)
   const { configs } = useConfig()
 
   const logoSrc = configs?.["basic.logo"] || "/nextbb-logo.png"
   const siteName = configs?.["basic.name"] || "NextBB"
+  const emailVerifyEnabled = configs?.["registration.email_verify"] === true
+
+  const schema = useMemo<z.ZodType<RegisterValues>>(() => {
+    return z
+      .object({
+        email: z.email(t("error.emailInvalid")),
+        password: z.string().min(8).max(72),
+        username: z
+          .string()
+          .min(2)
+          .max(32)
+          .regex(
+            /^[a-zA-Z0-9_\u4e00-\u9fa5-]+$/,
+            "用户名只能包含字母、数字、下划线、中文和连字符"
+          )
+          .refine(
+            (val) => {
+              // 禁止URL路径分隔符和特殊字符
+              const dangerousChars = /[\/\\?#@%&=+\s.,:;'"<>{}\[\]|`~!$^*()]/
+              if (dangerousChars.test(val)) return false
+              // 禁止以连字符开头或结尾(避免命令行参数注入)
+              if (val.startsWith("-") || val.endsWith("-")) return false
+              // 禁止连续连字符
+              if (/--/.test(val)) return false
+              return true
+            },
+            {
+              message: "用户名包含不允许的字符或格式不正确",
+            }
+          ),
+        emailCode: z.union([
+          z.literal(""),
+          z
+            .string()
+            .trim()
+            .regex(/^\d{6}$/, { message: t("error.codeInvalid") }),
+        ]),
+      })
+      .superRefine((data, ctx) => {
+        if (emailVerifyEnabled && !data.emailCode) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            path: ["emailCode"],
+            message: t("error.codeRequired"),
+          })
+        }
+      })
+  }, [emailVerifyEnabled, t])
 
   const form = useForm<RegisterValues>({
     resolver: zodResolver(schema),
-    defaultValues: { email: "", password: "", username: "" },
+    defaultValues: { email: "", password: "", username: "", emailCode: "" },
     mode: "onChange",
   })
 
-  const onSubmit = async (values: RegisterValues) => {
+  const emailValue = form.watch("email")
+  const lastEmailRef = useRef("")
+
+  useEffect(() => {
+    if (!emailVerifyEnabled) return
+    if (lastEmailRef.current !== emailValue) {
+      if (lastEmailRef.current) {
+        setCodeCooldown(0)
+        setCodeSent(false)
+        setCodeError(null)
+        form.setValue("emailCode", "")
+      }
+      lastEmailRef.current = emailValue
+    }
+  }, [emailValue, emailVerifyEnabled, form])
+
+  useEffect(() => {
+    if (codeCooldown <= 0) return
+    const timer = setTimeout(() => {
+      setCodeCooldown((prev) => (prev > 0 ? prev - 1 : 0))
+    }, 1000)
+    return () => clearTimeout(timer)
+  }, [codeCooldown])
+
+  const handleSendCode = async (): Promise<void> => {
+    setCodeError(null)
+    const isValid = await form.trigger("email")
+    if (!isValid) return
+    const email = form.getValues("email").trim()
+    if (!email) return
+
+    setSendingCode(true)
+    try {
+      const res = await fetch("/api/auth/register/send-code", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email }),
+      })
+      const data = (await res.json().catch(() => null)) as
+        | { success: true; cooldown?: number; retryAfter?: number }
+        | { error: string; retryAfter?: number }
+        | null
+
+      if (!res.ok || !data || "error" in data) {
+        const errorMessage =
+          data && "error" in data ? data.error : t("error.sendCodeFailed")
+        if (res.status === 409 || res.status === 400) {
+          form.setError("email", { message: errorMessage })
+        } else {
+          setCodeError(errorMessage)
+        }
+        if (data && "retryAfter" in data && data.retryAfter) {
+          setCodeCooldown(data.retryAfter)
+        }
+        return
+      }
+
+      setCodeSent(true)
+      setCodeCooldown(data.cooldown ?? 60)
+    } catch (error) {
+      console.error("Send code error:", error)
+      setCodeError(t("error.sendCodeFailed"))
+    } finally {
+      setSendingCode(false)
+    }
+  }
+
+  const onSubmit = async (values: RegisterValues): Promise<void> => {
     setServerError(null)
+    setCodeError(null)
+    const trimmedEmailCode = values.emailCode.trim()
     const payload = {
       email: values.email,
       password: values.password,
       username: values.username,
-    }
+      emailCode: trimmedEmailCode ? trimmedEmailCode : undefined,
+    } satisfies RegisterSubmitValues
     const res = await fetch("/api/auth/register", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -158,6 +264,63 @@ export default function RegisterPage() {
                     </FormItem>
                   )}
                 />
+                {emailVerifyEnabled ? (
+                  <FormField
+                    control={form.control}
+                    name="emailCode"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-sm font-medium">
+                          {t("emailCode")}
+                        </FormLabel>
+                        <FormControl>
+                          <div className="flex gap-2">
+                            <Input
+                              placeholder={t("emailCodePlaceholder")}
+                              className="h-11"
+                              inputMode="numeric"
+                              autoComplete="one-time-code"
+                              {...field}
+                            />
+                            <Button
+                              type="button"
+                              variant="outline"
+                              className="h-11 whitespace-nowrap"
+                              disabled={
+                                sendingCode ||
+                                codeCooldown > 0 ||
+                                !emailValue ||
+                                !!form.formState.errors.email ||
+                                form.formState.isSubmitting
+                              }
+                              onClick={handleSendCode}
+                            >
+                              {sendingCode ? (
+                                <Loader2 className="w-4 h-4 animate-spin" />
+                              ) : codeCooldown > 0 ? (
+                                t("codeCooldown", { seconds: codeCooldown })
+                              ) : codeSent ? (
+                                t("resendCode")
+                              ) : (
+                                t("sendCode")
+                              )}
+                            </Button>
+                          </div>
+                        </FormControl>
+                        <FormMessage />
+                        {codeError ? (
+                          <div className="text-sm text-destructive">
+                            {codeError}
+                          </div>
+                        ) : (
+                          <div className="text-sm text-muted-foreground">
+                            {t("codeHint")}
+                          </div>
+                        )}
+                      </FormItem>
+                    )}
+                  />
+                ) : null}
                 <FormField
                   control={form.control}
                   name="password"
