@@ -578,16 +578,48 @@
       "title": "Sign Up",
       "email": "Email",
       "emailPlaceholder": "name@example.com",
+      "emailCode": "Email Code",
+      "emailCodePlaceholder": "Enter 6-digit code",
       "password": "Password",
       "passwordPlaceholder": "Enter your password",
       "username": "Username",
       "usernamePlaceholder": "Enter your username",
+      "sendCode": "Send Code",
+      "resendCode": "Resend",
+      "sendingCode": "Sending...",
+      "codeCooldown": "Resend in {seconds}s",
+      "codeHint": "Code expires in 10 minutes",
       "submit": "Sign Up",
       "hintTitle": "Sign up with social accounts",
       "questionHaveAccount": "Already have an account?",
       "toLogin": "Go to Sign In",
+      "verification": {
+        "subject": "Registration Verification Code",
+        "textBody": "Your registration verification code is: {code}, valid for {minutes} minutes.",
+        "htmlBody": "<p>Your registration verification code is: <strong>{code}</strong></p><p>Valid for {minutes} minutes.</p>"
+      },
       "error": {
-        "failed": "Sign up failed"
+        "failed": "Sign up failed",
+        "emailInvalid": "Invalid email format",
+        "passwordMin": "Password must be at least 8 characters",
+        "passwordMax": "Password must be at most 72 characters",
+        "usernameMin": "Username must be at least {min} characters",
+        "usernameMax": "Username must be at most {max} characters",
+        "usernameFormat": "Username can only contain letters, numbers, underscores, Chinese characters, and hyphens",
+        "usernameInvalid": "Username contains invalid characters or format",
+        "codeRequired": "Email code is required",
+        "codeInvalid": "Invalid code format",
+        "sendCodeFailed": "Failed to send code",
+        "emailExists": "Email already registered",
+        "usernameExists": "Username already taken",
+        "invalidParams": "Invalid parameters",
+        "codeVerificationFailed": "Email code verification failed",
+        "codeInvalidOrExpired": "Email code is invalid or expired",
+        "registrationFailed": "Registration failed, please try again later",
+        "registrationNotEnabled": "Registration is currently closed, please contact administrator",
+        "emailVerificationNotEnabled": "Email verification is not enabled",
+        "sendTooFrequent": "Sending too frequently, please try again later",
+        "codeExpired": "Failed to send verification code"
       }
     }
   },
@@ -751,6 +783,7 @@
       "registration": "Registration",
       "content": "Content",
       "system": "System",
+      "smtp": "SMTP",
       "message": {
         "saveSuccess": "Settings saved successfully",
         "saveError": "Failed to save settings",
@@ -1537,6 +1570,36 @@
           "label": "Enabled Translation Languages",
           "description": "Select target languages for automatic translation tasks, multiple selection supported"
         }
+      }
+    },
+    "smtp": {
+      "host": {
+        "label": "SMTP Host",
+        "description": "SMTP server hostname or IP address"
+      },
+      "port": {
+        "label": "SMTP Port",
+        "description": "SMTP server port"
+      },
+      "secure": {
+        "label": "Use TLS/SSL",
+        "description": "Whether to enable TLS/SSL encrypted connection"
+      },
+      "auth_user": {
+        "label": "SMTP Username",
+        "description": "SMTP login username"
+      },
+      "auth_pass": {
+        "label": "SMTP Password",
+        "description": "SMTP login password"
+      },
+      "from_name": {
+        "label": "From Name",
+        "description": "Sender name shown in emails"
+      },
+      "from_email": {
+        "label": "From Email",
+        "description": "Sender email address shown in emails"
       }
     }
   },

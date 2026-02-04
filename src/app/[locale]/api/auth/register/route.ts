@@ -1,19 +1,22 @@
+import { createHash } from "crypto"
 import { NextResponse } from "next/server"
-import { z } from "zod"
 import bcrypt from "bcryptjs"
+import { z } from "zod"
 import { prisma } from "@/lib/prisma"
 import { generateId } from "@/lib/id"
 import { recordLogin } from "@/lib/auth"
-import { createHash } from "crypto"
 import { AutomationEvents } from "@/lib/automation/event-bus"
+import { verifyEmailCode } from "@/lib/email-verification"
+import { getTranslations } from "next-intl/server"
+import { getConfigValue } from "@/lib/services/config-service"
 
 const schema = z.object({
   email: z.email(),
   password: z.string().min(8).max(72),
   username: z
     .string()
-    .min(2)
-    .max(32)
+    .min(1)
+    .max(64)
     .regex(
       /^[a-zA-Z0-9_\u4e00-\u9fa5-]+$/,
       "用户名只能包含字母、数字、下划线、中文和连字符"
@@ -33,24 +36,101 @@ const schema = z.object({
         message: "用户名包含不允许的字符或格式不正确",
       }
     ),
+  emailCode: z.preprocess(
+    (value) => {
+      if (typeof value === "string" && value.trim().length === 0) {
+        return undefined
+      }
+      return value
+    },
+    z
+      .string()
+      .trim()
+      .regex(/^\d{6}$/)
+      .optional()
+  ),
 })
 
+async function isRegistrationEnabled(): Promise<boolean> {
+  const config = await prisma.system_configs.findUnique({
+    where: { config_key: "registration.enabled" },
+    select: { config_value: true },
+  })
+  return config?.config_value === "true"
+}
+
+async function isEmailVerifyEnabled(): Promise<boolean> {
+  const config = await prisma.system_configs.findUnique({
+    where: { config_key: "registration.email_verify" },
+    select: { config_value: true },
+  })
+  return config?.config_value === "true"
+}
+
+function normalizeEmail(email: string): string {
+  return email.trim().toLowerCase()
+}
+
 export async function POST(request: Request) {
+  const t = await getTranslations("Auth.Register.error")
+
+  // 检查是否开放注册
+  if (!(await isRegistrationEnabled())) {
+    return NextResponse.json(
+      { error: t("registrationNotEnabled") },
+      { status: 403 }
+    )
+  }
+
   const json = await request.json().catch(() => null)
   const result = schema.safeParse(json)
 
   if (!result.success) {
-    return NextResponse.json({ error: "参数不合法" }, { status: 400 })
+    return NextResponse.json({ error: t("invalidParams") }, { status: 400 })
   }
 
-  const { email, password, username } = result.data
+  const { password, username, emailCode } = result.data
+  const email = normalizeEmail(result.data.email)
 
-  const exists = await prisma.users.findUnique({
-    where: { email },
-  })
+  // 从配置获取用户名长度限制
+  const [usernameMinLength, usernameMaxLength] = await Promise.all([
+    getConfigValue("registration.username_min_length"),
+    getConfigValue("registration.username_max_length"),
+  ])
 
-  if (exists) {
-    return NextResponse.json({ error: "邮箱已被注册" }, { status: 409 })
+  if (username.length < usernameMinLength) {
+    return NextResponse.json(
+      { error: t("usernameMin", { min: usernameMinLength }) },
+      { status: 400 }
+    )
+  }
+
+  if (username.length > usernameMaxLength) {
+    return NextResponse.json(
+      { error: t("usernameMax", { max: usernameMaxLength }) },
+      { status: 400 }
+    )
+  }
+
+  if (await isEmailVerifyEnabled()) {
+    if (!emailCode) {
+      return NextResponse.json({ error: t("codeRequired") }, { status: 400 })
+    }
+    try {
+      const isValid = await verifyEmailCode(email, emailCode)
+      if (!isValid) {
+        return NextResponse.json(
+          { error: t("codeInvalidOrExpired") },
+          { status: 400 }
+        )
+      }
+    } catch (error) {
+      console.error("Email code verification failed:", error)
+      return NextResponse.json(
+        { error: t("codeVerificationFailed") },
+        { status: 500 }
+      )
+    }
   }
 
   const hash = await bcrypt.hash(password, 12)
@@ -62,37 +142,73 @@ export async function POST(request: Request) {
     .digest("hex")
   const avatarUrl = `https://www.gravatar.com/avatar/${emailHash}`
 
-  // 检查是否是第一个用户
-  const userCount = await prisma.users.count()
-  const isFirstUser = userCount === 0
+  try {
+    const user = await prisma.$transaction(async (tx) => {
+      // 检查邮箱和用户名是否已存在
+      const [emailExists, usernameExists] = await Promise.all([
+        tx.users.findUnique({ where: { email } }),
+        tx.users.findFirst({ where: { name: username } }),
+      ])
 
-  const user = await prisma.users.create({
-    data: {
-      id,
-      email,
-      name: username,
-      avatar: avatarUrl,
-      password: hash,
-      status: 1,
-      is_deleted: false,
-      is_admin: isFirstUser,
-    },
-  })
+      if (emailExists) {
+        throw new Error("EMAIL_EXISTS")
+      }
 
-  // 触发用户注册事件
-  await AutomationEvents.userRegister({
-    userId: user.id,
-    email: user.email,
-  })
+      if (usernameExists) {
+        throw new Error("USERNAME_EXISTS")
+      }
 
-  await recordLogin(user.id, "SUCCESS", "FORM")
+      // 检查是否是第一个用户
+      const userCount = await tx.users.count()
+      const isFirstUser = userCount === 0
 
-  // 返回成功，让客户端调用 signIn
-  return NextResponse.json(
-    {
-      success: true,
+      // 创建用户
+      return await tx.users.create({
+        data: {
+          id,
+          email,
+          name: username,
+          avatar: avatarUrl,
+          password: hash,
+          status: 1,
+          is_deleted: false,
+          is_admin: isFirstUser,
+        },
+      })
+    })
+
+    // 触发用户注册事件
+    await AutomationEvents.userRegister({
+      userId: user.id,
       email: user.email,
-    },
-    { status: 201 }
-  )
+    })
+
+    await recordLogin(user.id, "SUCCESS", "FORM")
+
+    // 返回成功，让客户端调用 signIn
+    return NextResponse.json(
+      {
+        success: true,
+        email: user.email,
+      },
+      { status: 201 }
+    )
+  } catch (error) {
+    if (error instanceof Error) {
+      if (error.message === "EMAIL_EXISTS") {
+        return NextResponse.json({ error: t("emailExists") }, { status: 409 })
+      }
+      if (error.message === "USERNAME_EXISTS") {
+        return NextResponse.json(
+          { error: t("usernameExists") },
+          { status: 409 }
+        )
+      }
+    }
+    console.error("User registration failed:", error)
+    return NextResponse.json(
+      { error: t("registrationFailed") },
+      { status: 500 }
+    )
+  }
 }

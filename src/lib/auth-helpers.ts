@@ -6,6 +6,7 @@ import { AutomationEvents } from "@/lib/automation/event-bus"
 import { recordLogin } from "@/lib/auth"
 import { encodeUsername } from "@/lib/utils"
 import { SOCIAL_LINK_COOKIE } from "@/lib/auth-options"
+import { getConfigValue } from "@/lib/services/config-service"
 import type { Account, Profile } from "next-auth"
 
 /**
@@ -216,6 +217,15 @@ export async function createNewOAuthUser(
   account: Account,
   profile: Profile
 ): Promise<boolean> {
+  // 检查是否允许注册
+  const registrationEnabled = await getConfigValue("registration.enabled")
+  if (!registrationEnabled) {
+    console.log(
+      `[OAuth] 注册已关闭，拒绝创建新用户: ${email} (provider: ${provider})`
+    )
+    return false
+  }
+
   const id = generateId()
 
   let name: string =
