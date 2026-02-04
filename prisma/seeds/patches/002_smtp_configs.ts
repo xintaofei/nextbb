@@ -34,7 +34,7 @@ const patch: SeedPatch = {
       },
       {
         key: "smtp.secure",
-        value: "false",
+        value: "true",
         type: "boolean",
         cat: "smtp",
         desc: "是否启用 TLS/SSL",
