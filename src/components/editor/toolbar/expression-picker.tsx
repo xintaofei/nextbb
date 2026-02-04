@@ -202,15 +202,15 @@ export const ExpressionPicker: React.FC<ExpressionPickerProps> = ({
 
           <div className="flex-1 overflow-hidden">
             {isLoading ? (
-              <div className="flex-1 flex items-center justify-center">
+              <div className="h-full flex-1 flex items-center justify-center">
                 <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
               </div>
             ) : error ? (
-              <div className="flex-1 flex items-center justify-center text-sm text-destructive">
+              <div className="h-full flex-1 flex items-center justify-center text-sm text-destructive">
                 {t("error")}
               </div>
             ) : !filteredGroups || filteredGroups.length === 0 ? (
-              <div className="flex-1 flex items-center justify-center text-sm text-muted-foreground">
+              <div className="h-full flex-1 flex items-center justify-center text-sm text-muted-foreground">
                 {t("noResults")}
               </div>
             ) : !activeGroup ? null : (
