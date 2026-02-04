@@ -10,6 +10,7 @@ import {
   clearEmailCode,
 } from "@/lib/email-verification"
 import { getTranslations } from "next-intl/server"
+import { getConfigValue } from "@/lib/services/config-service"
 
 const schema = z.object({
   email: z.email(),
@@ -17,6 +18,10 @@ const schema = z.object({
 
 function normalizeEmail(email: string): string {
   return email.trim().toLowerCase()
+}
+
+async function isRegistrationEnabled(): Promise<boolean> {
+  return await getConfigValue("registration.enabled")
 }
 
 async function isEmailVerifyEnabled(): Promise<boolean> {
@@ -35,6 +40,13 @@ export async function POST(request: Request) {
 
   if (!result.success) {
     return NextResponse.json({ error: t("invalidParams") }, { status: 400 })
+  }
+
+  if (!(await isRegistrationEnabled())) {
+    return NextResponse.json(
+      { error: t("registrationNotEnabled") },
+      { status: 403 }
+    )
   }
 
   if (!(await isEmailVerifyEnabled())) {
