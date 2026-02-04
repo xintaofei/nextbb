@@ -22,7 +22,8 @@ NextBB 是一个现代化的论坛应用，采用响应式设计，适配桌面�
 
 ```bash
 pnpm dev          # 启动开发服务器
-pnpm build        # 构建生产版本（包含 prisma generate）
+pnpm build        # 构建生产版本（包含 prisma generate和数据库迁移）
+pnpm build:code   # 只构建代码（包含 prisma generate）
 pnpm lint         # 运行 ESLint 检查
 ```
 
