@@ -751,6 +751,7 @@
       "registration": "用户注册",
       "content": "内容管理",
       "system": "系统运行",
+      "smtp": "邮件服务",
       "message": {
         "saveSuccess": "配置保存成功",
         "saveError": "配置保存失败",
@@ -1537,6 +1538,36 @@
           "label": "启用自动翻译的语言",
           "description": "选择自动翻译任务需要生成的目标语言，可多选"
         }
+      }
+    },
+    "smtp": {
+      "host": {
+        "label": "SMTP 服务器地址",
+        "description": "SMTP 服务器主机名或 IP 地址"
+      },
+      "port": {
+        "label": "SMTP 端口",
+        "description": "SMTP 服务器端口号"
+      },
+      "secure": {
+        "label": "使用 TLS/SSL",
+        "description": "是否启用 TLS/SSL 加密连接"
+      },
+      "auth_user": {
+        "label": "SMTP 用户名",
+        "description": "SMTP 登录用户名"
+      },
+      "auth_pass": {
+        "label": "SMTP 密码",
+        "description": "SMTP 登录密码"
+      },
+      "from_name": {
+        "label": "发件人名称",
+        "description": "邮件显示的发件人名称"
+      },
+      "from_email": {
+        "label": "发件人邮箱",
+        "description": "邮件显示的发件人邮箱地址"
       }
     }
   },

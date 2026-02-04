@@ -19,8 +19,18 @@ type TxClient = Parameters<
   >[0]
 >[0]
 
+type SeedConfig = {
+  key: string
+  value: string
+  type: string
+  cat: string
+  desc: string
+  pub: boolean
+  sensitive?: boolean
+}
+
 async function seedSystemConfigs(tx: TxClient): Promise<void> {
-  const configs = [
+  const configs: SeedConfig[] = [
     {
       key: "basic.name",
       value: "NextBB",
@@ -181,6 +191,63 @@ async function seedSystemConfigs(tx: TxClient): Promise<void> {
       desc: "自动翻译启用的语言列表",
       pub: false,
     },
+    {
+      key: "smtp.host",
+      value: "",
+      type: "string",
+      cat: "smtp",
+      desc: "SMTP 服务器地址",
+      pub: false,
+    },
+    {
+      key: "smtp.port",
+      value: "587",
+      type: "number",
+      cat: "smtp",
+      desc: "SMTP 端口",
+      pub: false,
+    },
+    {
+      key: "smtp.secure",
+      value: "false",
+      type: "boolean",
+      cat: "smtp",
+      desc: "是否启用 TLS/SSL",
+      pub: false,
+    },
+    {
+      key: "smtp.auth_user",
+      value: "",
+      type: "string",
+      cat: "smtp",
+      desc: "SMTP 用户名",
+      pub: false,
+    },
+    {
+      key: "smtp.auth_pass",
+      value: "",
+      type: "string",
+      cat: "smtp",
+      desc: "SMTP 密码",
+      pub: false,
+      sensitive: true,
+    },
+    {
+      key: "smtp.from_name",
+      value: "",
+      type: "string",
+      cat: "smtp",
+      desc: "发件人名称",
+      pub: false,
+    },
+    {
+      key: "smtp.from_email",
+      value: "",
+      type: "string",
+      cat: "smtp",
+      desc: "发件人邮箱",
+      pub: false,
+    },
   ]
 
   for (const c of configs) {
@@ -193,7 +260,7 @@ async function seedSystemConfigs(tx: TxClient): Promise<void> {
         category: c.cat,
         description: c.desc,
         is_public: c.pub,
-        is_sensitive: false,
+        is_sensitive: c.sensitive ?? false,
         default_value: c.value,
       },
     })

@@ -368,11 +368,12 @@ export default function SettingsPage() {
 
       <AdminPageSection delay={0.1}>
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="grid w-full grid-cols-4">
+          <TabsList className="grid w-full grid-cols-5">
             <TabsTrigger value="basic">{t("basic")}</TabsTrigger>
             <TabsTrigger value="registration">{t("registration")}</TabsTrigger>
             <TabsTrigger value="content">{t("content")}</TabsTrigger>
             <TabsTrigger value="system">{t("system")}</TabsTrigger>
+            <TabsTrigger value="smtp">{t("smtp")}</TabsTrigger>
           </TabsList>
 
           {Object.entries(configsByCategory).map(([category, configs]) => (

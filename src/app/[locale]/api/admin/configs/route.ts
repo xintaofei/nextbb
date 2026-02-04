@@ -53,7 +53,7 @@ export async function GET(request: NextRequest) {
     const [items, total] = await Promise.all([
       prisma.system_configs.findMany({
         where,
-        orderBy: [{ category: "asc" }, { config_key: "asc" }],
+        orderBy: [{ category: "asc" }, { id: "asc" }],
         skip: (page - 1) * pageSize,
         take: pageSize,
       }),
@@ -115,6 +115,10 @@ export async function PUT(request: NextRequest) {
 
         if (!existing) {
           failed.push({ key: config.configKey, error: "Config not found" })
+          continue
+        }
+
+        if (existing.is_sensitive && config.configValue === "") {
           continue
         }
 

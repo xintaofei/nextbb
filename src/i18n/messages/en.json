@@ -751,6 +751,7 @@
       "registration": "Registration",
       "content": "Content",
       "system": "System",
+      "smtp": "SMTP",
       "message": {
         "saveSuccess": "Settings saved successfully",
         "saveError": "Failed to save settings",
@@ -1537,6 +1538,36 @@
           "label": "Enabled Translation Languages",
           "description": "Select target languages for automatic translation tasks, multiple selection supported"
         }
+      }
+    },
+    "smtp": {
+      "host": {
+        "label": "SMTP Host",
+        "description": "SMTP server hostname or IP address"
+      },
+      "port": {
+        "label": "SMTP Port",
+        "description": "SMTP server port"
+      },
+      "secure": {
+        "label": "Use TLS/SSL",
+        "description": "Whether to enable TLS/SSL encrypted connection"
+      },
+      "auth_user": {
+        "label": "SMTP Username",
+        "description": "SMTP login username"
+      },
+      "auth_pass": {
+        "label": "SMTP Password",
+        "description": "SMTP login password"
+      },
+      "from_name": {
+        "label": "From Name",
+        "description": "Sender name shown in emails"
+      },
+      "from_email": {
+        "label": "From Email",
+        "description": "Sender email address shown in emails"
       }
     }
   },
