@@ -4,12 +4,13 @@ import { useMemo } from "react"
 import { useTranslations } from "next-intl"
 import { usePathname } from "next/navigation"
 import {
+  Bell,
   BookUser,
   CalendarCheck,
   ChartColumn,
   Heart,
-  Inbox,
   Layers,
+  MessageCircle,
 } from "lucide-react"
 import Link from "next/link"
 import { cn, encodeUsername } from "@/lib/utils"
@@ -51,13 +52,20 @@ export function NavMain({ className, onLinkClick }: NavMainProps) {
       ),
     },
     {
-      id: "myMessages",
-      title: t("myMessages"),
+      id: "notifications",
+      title: t("notifications"),
       url: encodedUsername ? `/u/${encodedUsername}/notifications` : "/login",
-      icon: Inbox,
+      icon: Bell,
       isActive: pathname.startsWith(
         encodedUsername ? `/u/${encodedUsername}/notifications` : "/login"
       ),
+    },
+    {
+      id: "conversations",
+      title: t("conversations"),
+      url: user ? "/conversations" : "/login",
+      icon: MessageCircle,
+      isActive: pathname.startsWith("/conversations"),
     },
     {
       id: "checkin",

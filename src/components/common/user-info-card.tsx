@@ -5,6 +5,7 @@ import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useTranslations } from "next-intl"
 import { useSession } from "next-auth/react"
+import { ConversationType } from "@prisma/client"
 import useSWR, { mutate } from "swr"
 import { toast } from "sonner"
 import {
@@ -57,6 +58,19 @@ type BadgeListResponse = {
   items: BadgeItem[]
 }
 
+type CreateConversationPayload = {
+  type: ConversationType
+  targetUserId: string
+}
+
+type CreateConversationResponse = {
+  conversation?: {
+    id: string
+  }
+  conversationId?: string
+  id?: string
+}
+
 type UserStatistics = {
   topicsCount: number
   postsCount: number
@@ -92,6 +106,7 @@ export function UserInfoCard({
   const isMobile = useIsMobile()
   const [open, setOpen] = useState(false)
   const [isFollowLoading, setIsFollowLoading] = useState(false)
+  const [isMessageLoading, setIsMessageLoading] = useState(false)
 
   // 获取当前用户信息
   const { data: session } = useSession()
@@ -186,30 +201,52 @@ export function UserInfoCard({
   }
 
   // 处理私信点击
-  const handleMessageClick = async () => {
+  const handleMessageClick = async (): Promise<void> => {
+    if (!currentUserId) {
+      toast.error(t("messageLoginRequired"))
+      return
+    }
+
+    if (isMessageLoading) {
+      return
+    }
+
+    setIsMessageLoading(true)
     try {
+      const payload: CreateConversationPayload = {
+        type: ConversationType.SINGLE,
+        targetUserId: userId,
+      }
+
       // 创建或获取会话
-      const response = await fetch("/api/conversations", {
+      const response: Response = await fetch("/api/conversations", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ targetUserId: userId }),
+        body: JSON.stringify(payload),
       })
 
       if (!response.ok) {
         throw new Error("Failed to create conversation")
       }
 
-      const data = await response.json()
-      const conversationId = data.conversation.id
+      const data: CreateConversationResponse = await response.json()
+      const conversationId =
+        data.conversation?.id ?? data.conversationId ?? data.id
+
+      if (!conversationId) {
+        throw new Error("Conversation id is missing")
+      }
 
       // 跳转到私信页面
-      router.push(`/messages/${conversationId}`)
+      router.push(`/conversations/${conversationId}`)
       setOpen(false)
     } catch (error) {
       console.error("Error creating conversation:", error)
       toast.error(t("messageError"))
+    } finally {
+      setIsMessageLoading(false)
     }
   }
 
@@ -293,7 +330,7 @@ export function UserInfoCard({
                     title={t("location")}
                   >
                     <MapPin className="h-3 w-3 shrink-0" />
-                    <span className="truncate max-w-[120px]">
+                    <span className="truncate max-w-30">
                       {profileData.location}
                     </span>
                   </div>
@@ -312,7 +349,7 @@ export function UserInfoCard({
                     title={t("website")}
                   >
                     <LinkIcon className="h-3 w-3 shrink-0" />
-                    <span className="truncate max-w-[120px]">
+                    <span className="truncate max-w-30">
                       {profileData.website.replace(/^https?:\/\//, "")}
                     </span>
                   </a>
@@ -474,6 +511,7 @@ export function UserInfoCard({
                     handleMessageClick()
                   }}
                   className="w-full"
+                  disabled={!currentUserId || isMessageLoading}
                 >
                   <MessageCircle className="h-4 w-4 mr-1" />
                   {t("message")}

@@ -1,205 +1,158 @@
 import { NextResponse } from "next/server"
+import { getLocale } from "next-intl/server"
 import { prisma } from "@/lib/prisma"
 import { getServerSessionUser } from "@/lib/server-auth"
-import { generateId } from "@/lib/id"
+import { getTranslationsQuery } from "@/lib/locale"
+import { getMessageHtmlWithLocale } from "@/lib/message-translation"
 
-type Params = Promise<{ id: string }>
-
-/**
- * 获取会话的消息列表
- * GET /api/conversations/:id/messages
- */
-export async function GET(req: Request, props: { params: Params }) {
-  const params = await props.params
-  const conversationId = BigInt(params.id)
-
-  try {
-    const sessionUser = await getServerSessionUser()
-    if (!sessionUser) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
-    }
-
-    const userId = sessionUser.userId
-
-    // 验证会话是否存在且用户有权限访问
-    const conversation = await prisma.conversations.findFirst({
-      where: {
-        id: conversationId,
-        OR: [{ user1_id: userId }, { user2_id: userId }],
-        is_deleted: false,
-      },
-      include: {
-        user1: {
-          select: { id: true, name: true, avatar: true },
-        },
-        user2: {
-          select: { id: true, name: true, avatar: true },
-        },
-      },
-    })
-
-    if (!conversation) {
-      return NextResponse.json(
-        { error: "Conversation not found" },
-        { status: 404 }
-      )
-    }
-
-    // 获取消息列表
-    const messages = await prisma.messages.findMany({
-      where: {
-        conversation_id: conversationId,
-        is_deleted: false,
-      },
-      orderBy: { created_at: "asc" },
-      select: {
-        id: true,
-        content: true,
-        sender_id: true,
-        is_read: true,
-        created_at: true,
-        sender: {
-          select: {
-            id: true,
-            name: true,
-            avatar: true,
-          },
-        },
-      },
-    })
-
-    // 标记对方发送的消息为已读
-    await prisma.messages.updateMany({
-      where: {
-        conversation_id: conversationId,
-        sender_id: { not: userId },
-        is_read: false,
-        is_deleted: false,
-      },
-      data: {
-        is_read: true,
-      },
-    })
-
-    const formattedMessages = messages.map((msg) => ({
-      id: String(msg.id),
-      content: msg.content,
-      sender: {
-        id: String(msg.sender.id),
-        name: msg.sender.name,
-        avatar: msg.sender.avatar,
-      },
-      isSentByMe: msg.sender_id === userId,
-      isRead: msg.is_read,
-      createdAt: msg.created_at.toISOString(),
-    }))
-
-    // 确定对方用户
-    const otherUser =
-      conversation.user1_id === userId ? conversation.user2 : conversation.user1
-
-    return NextResponse.json({
-      messages: formattedMessages,
-      otherUser: {
-        id: String(otherUser.id),
-        name: otherUser.name,
-        avatar: otherUser.avatar,
-      },
-    })
-  } catch (error) {
-    console.error("Error fetching messages:", error)
-    return NextResponse.json(
-      { error: "Failed to fetch messages" },
-      { status: 500 }
-    )
+type MessageItem = {
+  id: string
+  content: string
+  contentHtml: string
+  contentLocale: string
+  sourceLocale: string
+  createdAt: string
+  isMine: boolean
+  sender: {
+    id: string
+    name: string
+    avatar: string | null
+    isDeleted: boolean
   }
 }
 
-/**
- * 发送消息
- * POST /api/conversations/:id/messages
- */
-export async function POST(req: Request, props: { params: Params }) {
-  const params = await props.params
-  const conversationId = BigInt(params.id)
+type MessageListResult = {
+  items: MessageItem[]
+  page: number
+  pageSize: number
+  total: number
+  hasMore: boolean
+}
 
+const parsePageNumber = (value: string | null, fallback: number) => {
+  if (!value) return fallback
+  const parsed = Number(value)
+  if (!Number.isFinite(parsed) || parsed <= 0) return fallback
+  return Math.floor(parsed)
+}
+
+export async function GET(
+  req: Request,
+  context: { params: Promise<{ id: string }> }
+) {
+  const session = await getServerSessionUser()
+  if (!session) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+  }
+
+  const { id } = await context.params
+  let conversationId: bigint
   try {
-    const sessionUser = await getServerSessionUser()
-    if (!sessionUser) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
-    }
+    conversationId = BigInt(id)
+  } catch {
+    return NextResponse.json({ error: "Invalid id" }, { status: 400 })
+  }
 
-    const userId = sessionUser.userId
-    const body = await req.json()
-    const { content } = body
+  const { searchParams } = new URL(req.url)
+  const page = parsePageNumber(searchParams.get("page"), 1)
+  const pageSize = parsePageNumber(searchParams.get("pageSize"), 30)
+  const skip = (page - 1) * pageSize
 
-    if (!content || typeof content !== "string" || content.trim() === "") {
-      return NextResponse.json(
-        { error: "Content is required" },
-        { status: 400 }
-      )
-    }
+  const conversation = await prisma.conversations.findFirst({
+    where: {
+      id: conversationId,
+      is_deleted: false,
+    },
+    select: {
+      id: true,
+    },
+  })
 
-    // 验证会话是否存在且用户有权限
-    const conversation = await prisma.conversations.findFirst({
+  if (!conversation) {
+    return NextResponse.json({ error: "Not found" }, { status: 404 })
+  }
+
+  const member = await prisma.conversation_members.findFirst({
+    where: {
+      conversation_id: conversationId,
+      user_id: session.userId,
+      is_deleted: false,
+    },
+    select: { conversation_id: true },
+  })
+
+  if (!member) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 })
+  }
+
+  const locale = await getLocale()
+
+  const [total, messages] = await Promise.all([
+    prisma.messages.count({
       where: {
-        id: conversationId,
-        OR: [{ user1_id: userId }, { user2_id: userId }],
+        conversation_id: conversationId,
         is_deleted: false,
       },
-    })
-
-    if (!conversation) {
-      return NextResponse.json(
-        { error: "Conversation not found" },
-        { status: 404 }
-      )
-    }
-
-    // 创建消息
-    const message = await prisma.messages.create({
-      data: {
-        id: generateId(),
+    }),
+    prisma.messages.findMany({
+      where: {
         conversation_id: conversationId,
-        sender_id: userId,
-        content: content.trim(),
+        is_deleted: false,
       },
-      include: {
+      orderBy: { created_at: "desc" },
+      skip,
+      take: pageSize,
+      select: {
+        id: true,
+        content: true,
+        source_locale: true,
+        created_at: true,
+        sender_id: true,
         sender: {
           select: {
             id: true,
             name: true,
             avatar: true,
+            is_deleted: true,
           },
         },
+        translations: getTranslationsQuery(locale, { content_html: true }),
       },
-    })
+    }),
+  ])
 
-    // 更新会话的 updated_at 时间
-    await prisma.conversations.update({
-      where: { id: conversationId },
-      data: { updated_at: new Date() },
-    })
+  const items: MessageItem[] = messages
+    .map((message) => {
+      const { contentHtml, contentLocale } = getMessageHtmlWithLocale(
+        message.translations,
+        locale
+      )
 
-    return NextResponse.json({
-      message: {
+      return {
         id: String(message.id),
         content: message.content,
+        contentHtml,
+        contentLocale,
+        sourceLocale: message.source_locale,
+        createdAt: message.created_at.toISOString(),
+        isMine: message.sender_id === session.userId,
         sender: {
           id: String(message.sender.id),
           name: message.sender.name,
           avatar: message.sender.avatar,
+          isDeleted: message.sender.is_deleted,
         },
-        isSentByMe: true,
-        isRead: message.is_read,
-        createdAt: message.created_at.toISOString(),
-      },
+      }
     })
-  } catch (error) {
-    console.error("Error sending message:", error)
-    return NextResponse.json(
-      { error: "Failed to send message" },
-      { status: 500 }
-    )
+    .reverse()
+
+  const result: MessageListResult = {
+    items,
+    page,
+    pageSize,
+    total,
+    hasMore: page * pageSize < total,
   }
+
+  return NextResponse.json(result)
 }

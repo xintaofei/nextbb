@@ -1,42 +1,66 @@
 import { NextResponse } from "next/server"
+import { getLocale } from "next-intl/server"
+import { ConversationType, Prisma } from "@prisma/client"
+import { z } from "zod"
+import { createHash } from "crypto"
+import { generateId } from "@/lib/id"
 import { prisma } from "@/lib/prisma"
 import { getServerSessionUser } from "@/lib/server-auth"
-import { generateId } from "@/lib/id"
+
+const CreateConversationSchema = z.object({
+  type: z.enum(ConversationType).optional().default(ConversationType.SINGLE),
+  targetUserId: z.string().optional(),
+})
+
+const buildSingleHash = (userIdA: bigint, userIdB: bigint): string => {
+  const [lowId, highId] =
+    userIdA < userIdB ? [userIdA, userIdB] : [userIdB, userIdA]
+  const raw = `SINGLE:${lowId.toString()}:${highId.toString()}`
+  return createHash("sha256").update(raw).digest("hex")
+}
 
 /**
  * 获取当前用户的会话列表
  * GET /api/conversations
  */
-export async function GET() {
+export async function GET(req: Request) {
   try {
     const sessionUser = await getServerSessionUser()
     if (!sessionUser) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
-    const userId = sessionUser.userId
+    const userId: bigint = sessionUser.userId
+    const locale: string = await getLocale()
+
+    const { searchParams } = new URL(req.url)
+    const highlightId = searchParams.get("highlightId")
 
     // 查询用户参与的所有会话
     const conversations = await prisma.conversations.findMany({
       where: {
-        OR: [{ user1_id: userId }, { user2_id: userId }],
         is_deleted: false,
-      },
-      include: {
-        user1: {
-          select: {
-            id: true,
-            name: true,
-            avatar: true,
-            is_deleted: true,
+        members: {
+          some: {
+            user_id: userId,
+            is_deleted: false,
           },
         },
-        user2: {
+      },
+      include: {
+        members: {
+          where: { is_deleted: false },
           select: {
-            id: true,
-            name: true,
-            avatar: true,
-            is_deleted: true,
+            user_id: true,
+            last_read_message_id: true,
+            user: {
+              select: {
+                id: true,
+                name: true,
+                avatar: true,
+                is_deleted: true,
+              },
+            },
           },
         },
         messages: {
@@ -46,9 +70,18 @@ export async function GET() {
           select: {
             id: true,
             content: true,
-            is_read: true,
             created_at: true,
             sender_id: true,
+          },
+        },
+        translations: {
+          where: {
+            OR: [{ locale }, { is_source: true }],
+          },
+          select: {
+            locale: true,
+            title: true,
+            is_source: true,
           },
         },
       },
@@ -57,30 +90,71 @@ export async function GET() {
 
     // 格式化会话列表
     const formattedConversations = conversations.map((conv) => {
-      // 确定对方用户
-      const otherUser = conv.user1_id === userId ? conv.user2 : conv.user1
       const lastMessage = conv.messages[0] || null
+      const currentMember =
+        conv.members.find((member) => member.user_id === userId) || null
+      const lastReadMessageId: bigint | null =
+        currentMember?.last_read_message_id || null
+      const isRead = lastMessage
+        ? lastMessage.sender_id === userId ||
+          (lastReadMessageId !== null && lastReadMessageId >= lastMessage.id)
+        : true
+      const formattedLastMessage = lastMessage
+        ? {
+            id: String(lastMessage.id),
+            content: lastMessage.content,
+            isRead,
+            isSentByMe: lastMessage.sender_id === userId,
+            createdAt: lastMessage.created_at.toISOString(),
+          }
+        : null
+
+      if (conv.type === ConversationType.SINGLE) {
+        const otherMember =
+          conv.members.find((member) => member.user_id !== userId) || null
+        const otherUser = otherMember?.user || null
+
+        return {
+          id: String(conv.id),
+          type: conv.type,
+          otherUser: otherUser
+            ? {
+                id: String(otherUser.id),
+                name: otherUser.name,
+                avatar: otherUser.avatar,
+                isDeleted: otherUser.is_deleted,
+              }
+            : null,
+          lastMessage: formattedLastMessage,
+          updatedAt: conv.updated_at.toISOString(),
+        }
+      }
+
+      const titleTranslation =
+        conv.translations.find((item) => item.locale === locale) ||
+        conv.translations.find((item) => item.is_source) ||
+        null
 
       return {
         id: String(conv.id),
-        otherUser: {
-          id: String(otherUser.id),
-          name: otherUser.name,
-          avatar: otherUser.avatar,
-          isDeleted: otherUser.is_deleted,
-        },
-        lastMessage: lastMessage
-          ? {
-              id: String(lastMessage.id),
-              content: lastMessage.content,
-              isRead: lastMessage.is_read,
-              isSentByMe: lastMessage.sender_id === userId,
-              createdAt: lastMessage.created_at.toISOString(),
-            }
-          : null,
+        type: conv.type,
+        title: titleTranslation ? titleTranslation.title : null,
+        avatar: conv.avatar,
+        memberCount: conv.members.length,
+        lastMessage: formattedLastMessage,
         updatedAt: conv.updated_at.toISOString(),
       }
     })
+
+    if (highlightId) {
+      const index = formattedConversations.findIndex(
+        (item) => item.id === highlightId
+      )
+      if (index > 0) {
+        const [target] = formattedConversations.splice(index, 1)
+        formattedConversations.unshift(target)
+      }
+    }
 
     return NextResponse.json({ conversations: formattedConversations })
   } catch (error) {
@@ -103,8 +177,24 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
-    const body = await req.json()
-    const { targetUserId } = body
+    const body: unknown = await req.json()
+    const parsedResult = CreateConversationSchema.safeParse(body)
+
+    if (!parsedResult.success) {
+      return NextResponse.json(
+        { error: "Invalid request body" },
+        { status: 400 }
+      )
+    }
+
+    const { type, targetUserId } = parsedResult.data
+
+    if (type !== ConversationType.SINGLE) {
+      return NextResponse.json(
+        { error: "Only single conversations are supported" },
+        { status: 400 }
+      )
+    }
 
     if (!targetUserId) {
       return NextResponse.json(
@@ -113,8 +203,9 @@ export async function POST(req: Request) {
       )
     }
 
-    const currentUserId = sessionUser.userId
-    const targetUserIdBigInt = BigInt(targetUserId)
+    const currentUserId: bigint = sessionUser.userId
+    const targetUserIdBigInt: bigint = BigInt(targetUserId)
+    const dmHash: string = buildSingleHash(currentUserId, targetUserIdBigInt)
 
     // 不能和自己创建会话
     if (currentUserId === targetUserIdBigInt) {
@@ -139,21 +230,13 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "User not found" }, { status: 404 })
     }
 
-    // 检查是否已存在会话
     const existingConversation = await prisma.conversations.findFirst({
       where: {
-        OR: [
-          {
-            user1_id: currentUserId,
-            user2_id: targetUserIdBigInt,
-          },
-          {
-            user1_id: targetUserIdBigInt,
-            user2_id: currentUserId,
-          },
-        ],
+        type: ConversationType.SINGLE,
+        hash: dmHash,
         is_deleted: false,
       },
+      select: { id: true },
     })
 
     if (existingConversation) {
@@ -169,18 +252,52 @@ export async function POST(req: Request) {
       })
     }
 
-    // 创建新会话
-    const newConversation = await prisma.conversations.create({
-      data: {
-        id: generateId(),
-        user1_id: currentUserId,
-        user2_id: targetUserIdBigInt,
-      },
-    })
+    let conversationId: bigint
+
+    try {
+      const newConversation = await prisma.conversations.create({
+        data: {
+          id: generateId(),
+          type: "SINGLE",
+          hash: dmHash,
+          members: {
+            create: [
+              { user_id: currentUserId },
+              { user_id: targetUserIdBigInt },
+            ],
+          },
+        },
+        select: { id: true },
+      })
+
+      conversationId = newConversation.id
+    } catch (error) {
+      if (
+        error instanceof Prisma.PrismaClientKnownRequestError &&
+        error.code === "P2002"
+      ) {
+        const racedConversation = await prisma.conversations.findFirst({
+          where: {
+            type: ConversationType.SINGLE,
+            hash: dmHash,
+            is_deleted: false,
+          },
+          select: { id: true },
+        })
+
+        if (!racedConversation) {
+          throw error
+        }
+
+        conversationId = racedConversation.id
+      } else {
+        throw error
+      }
+    }
 
     return NextResponse.json({
       conversation: {
-        id: String(newConversation.id),
+        id: String(conversationId),
         otherUser: {
           id: String(targetUser.id),
           name: targetUser.name,
