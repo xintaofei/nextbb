@@ -40,6 +40,7 @@ import { ImageView } from "./plugins/image/view"
 import { expressionNode } from "./plugins/expression/node"
 import { ExpressionView } from "./plugins/expression/view"
 import { EditorToolbar } from "./toolbar/editor-toolbar"
+import { cn } from "@/lib/utils"
 
 type EditorType = ReturnType<typeof Editor.make>
 type ConfigFn = Parameters<EditorType["config"]>[0]
@@ -50,6 +51,7 @@ interface MilkdownEditorProps {
   placeholder?: string
   slashPlaceholder?: string
   autoFocus?: boolean
+  isBorder?: boolean
   onChange?: (
     value: string,
     json?: Record<string, unknown>,
@@ -577,11 +579,20 @@ const MilkdownEditor: React.FC<MilkdownEditorProps> = ({
   )
 }
 
-export const MilkdownEditorWrapper: React.FC<MilkdownEditorProps> = (props) => {
+export const MilkdownEditorWrapper: React.FC<MilkdownEditorProps> = ({
+  isBorder = true,
+  ...props
+}) => {
   return (
     <MilkdownProvider>
       <ProsemirrorAdapterProvider>
-        <div className="w-full overflow-hidden prose dark:prose-invert border rounded-lg focus-within:ring-[3px] focus-within:ring-ring/50 focus-within:border-ring transition-all">
+        <div
+          className={cn(
+            "w-full overflow-hidden prose dark:prose-invert transition-all",
+            isBorder &&
+              "border rounded-lg focus-within:ring-[3px] focus-within:ring-ring/50 focus-within:border-ring"
+          )}
+        >
           <MilkdownEditor {...props} />
         </div>
       </ProsemirrorAdapterProvider>

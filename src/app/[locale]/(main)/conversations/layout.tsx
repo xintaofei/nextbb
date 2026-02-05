@@ -16,7 +16,7 @@ export default async function ConversationsLayout({
   }
 
   return (
-    <div className="flex flex-1 w-full min-h-[calc(100vh-56px)] max-lg:flex-col">
+    <div className="flex flex-1 w-full h-full min-h-[calc(100vh-56px)] max-lg:flex-col">
       <ConversationsSidebar />
       <div className="flex-1 min-w-0 border-l max-lg:border-l-0 max-lg:border-t">
         {children}

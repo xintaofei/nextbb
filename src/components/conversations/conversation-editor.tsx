@@ -125,35 +125,34 @@ export function ConversationEditor({
 
       {/* Desktop: Fixed bottom editor */}
       <div className="hidden md:block border-t bg-background">
-        <div className="p-4">
-          <MilkdownEditorWrapper
-            value={value}
-            placeholder={t("placeholder")}
-            slashPlaceholder={t("slashPlaceholder")}
-            onChange={(val, json, h) => {
-              setValue(val)
-              setHtml(h || "")
+        <MilkdownEditorWrapper
+          value={value}
+          placeholder={t("placeholder")}
+          slashPlaceholder={t("slashPlaceholder")}
+          isBorder={false}
+          onChange={(val, json, h) => {
+            setValue(val)
+            setHtml(h || "")
+          }}
+          onPendingChange={setIsSyncing}
+        />
+        <div className="flex justify-end gap-2 p-2">
+          <Button
+            variant="outline"
+            onClick={() => {
+              setValue("")
+              setHtml("")
             }}
-            onPendingChange={setIsSyncing}
-          />
-          <div className="flex justify-end gap-2 mt-2">
-            <Button
-              variant="outline"
-              onClick={() => {
-                setValue("")
-                setHtml("")
-              }}
-              disabled={submitting || !value.trim()}
-            >
-              {t("cancel")}
-            </Button>
-            <Button
-              onClick={() => handleSubmit(value, html)}
-              disabled={submitting || isSyncing || !value.trim()}
-            >
-              {submitting ? t("sending") : t("send")}
-            </Button>
-          </div>
+            disabled={submitting || !value.trim()}
+          >
+            {t("cancel")}
+          </Button>
+          <Button
+            onClick={() => handleSubmit(value, html)}
+            disabled={submitting || isSyncing || !value.trim()}
+          >
+            {submitting ? t("sending") : t("send")}
+          </Button>
         </div>
       </div>
     </>
