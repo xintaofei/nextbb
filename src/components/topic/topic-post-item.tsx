@@ -286,10 +286,10 @@ export const TopicPostItem = memo(function TopicPostItem({
         {post.isFirstUserPost && !post.isDeleted && (
           <ShinyText
             text={"✨" + tPost("firstUserPost", { name: post.author.name })}
-            speed={2}
-            delay={2}
-            color="var(--chart-4)"
-            shineColor="var(--background)"
+            speed={3}
+            delay={0}
+            color="var(--chart-3)"
+            shineColor="var(--chart-4)"
             spread={120}
             direction="left"
             yoyo={false}
