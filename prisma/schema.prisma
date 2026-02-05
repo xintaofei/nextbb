@@ -34,8 +34,8 @@ model users {
   awarded_badges          user_badges[]          @relation("user_badges_awarder")
   followers               user_follows[]         @relation("user_follows_following")
   following               user_follows[]         @relation("user_follows_follower")
-  conversations_initiated conversations[]        @relation("conversations_user1")
-  conversations_received  conversations[]        @relation("conversations_user2")
+  conversations_created   conversations[]        @relation("conversations_created_by")
+  conversation_members    conversation_members[] @relation("conversation_members_user")
   messages                messages[]             @relation("messages_sender")
   poll_votes              poll_votes[]           @relation("poll_votes_user")
   lottery_participants    lottery_participants[] @relation("lottery_participants_user")
@@ -191,18 +191,18 @@ model topic_translations {
 }
 
 model posts {
-  id               BigInt   @id @db.BigInt
-  topic_id         BigInt   @db.BigInt
-  user_id          BigInt   @db.BigInt
-  parent_id        BigInt   @default(0) @db.BigInt
-  reply_to_user_id BigInt   @default(0) @db.BigInt
-  floor_number     Int
-  content          String   @db.Text
-  source_locale    String   @default("zh") @db.VarChar(8)
+  id                 BigInt   @id @db.BigInt
+  topic_id           BigInt   @db.BigInt
+  user_id            BigInt   @db.BigInt
+  parent_id          BigInt   @default(0) @db.BigInt
+  reply_to_user_id   BigInt   @default(0) @db.BigInt
+  floor_number       Int
+  content            String   @db.Text
+  source_locale      String   @default("zh") @db.VarChar(8)
   is_first_user_post Boolean  @default(false)
-  is_deleted       Boolean
-  created_at       DateTime @default(now())
-  updated_at       DateTime @updatedAt
+  is_deleted         Boolean
+  created_at         DateTime @default(now())
+  updated_at         DateTime @updatedAt
 
   topic               topics                @relation(fields: [topic_id], references: [id])
   user                users                 @relation(fields: [user_id], references: [id])
@@ -371,21 +371,58 @@ model user_follows {
 }
 
 model conversations {
-  id         BigInt   @id @db.BigInt
-  user1_id   BigInt   @db.BigInt
-  user2_id   BigInt   @db.BigInt
-  is_deleted Boolean  @default(false)
-  created_at DateTime @default(now())
-  updated_at DateTime @updatedAt
+  id            BigInt   @id @db.BigInt
+  type          String   @default("DM") @db.VarChar(16)
+  source_locale String   @default("zh") @db.VarChar(8)
+  avatar        String?  @db.VarChar(256)
+  created_by_id BigInt?  @db.BigInt
+  is_deleted    Boolean  @default(false)
+  created_at    DateTime @default(now())
+  updated_at    DateTime @updatedAt
 
-  user1    users      @relation("conversations_user1", fields: [user1_id], references: [id])
-  user2    users      @relation("conversations_user2", fields: [user2_id], references: [id])
-  messages messages[] @relation("messages_conversation")
+  created_by   users?                      @relation("conversations_created_by", fields: [created_by_id], references: [id])
+  members      conversation_members[]      @relation("conversation_members_conversation")
+  messages     messages[]                  @relation("messages_conversation")
+  translations conversation_translations[]
 
-  @@index([user1_id], map: "conversations_user1_index")
-  @@index([user2_id], map: "conversations_user2_index")
-  @@index([user1_id, user2_id], map: "conversations_users_index")
+  @@index([type], map: "conversations_type_index")
+  @@index([created_by_id], map: "conversations_created_by_index")
   @@map("conversations")
+}
+
+model conversation_translations {
+  conversation_id BigInt   @db.BigInt
+  locale          String   @db.VarChar(8)
+  title           String   @db.VarChar(64)
+  is_source       Boolean  @default(false)
+  version         Int      @default(0)
+  created_at      DateTime @default(now())
+  updated_at      DateTime @updatedAt
+
+  conversation conversations @relation(fields: [conversation_id], references: [id], onDelete: Cascade)
+
+  @@id([conversation_id, locale])
+  @@index([locale, is_source], map: "conversation_translations_locale_source_index")
+  @@index([conversation_id, is_source], map: "conversation_translations_conversation_source_index")
+  @@map("conversation_translations")
+}
+
+model conversation_members {
+  conversation_id      BigInt    @db.BigInt
+  user_id              BigInt    @db.BigInt
+  joined_at            DateTime  @default(now())
+  is_muted             Boolean   @default(false)
+  is_deleted           Boolean   @default(false)
+  last_read_message_id BigInt?   @db.BigInt
+  last_read_at         DateTime?
+
+  conversation conversations @relation("conversation_members_conversation", fields: [conversation_id], references: [id])
+  user         users         @relation("conversation_members_user", fields: [user_id], references: [id])
+
+  @@id([conversation_id, user_id])
+  @@index([user_id], map: "conversation_members_user_index")
+  @@index([conversation_id], map: "conversation_members_conversation_index")
+  @@map("conversation_members")
 }
 
 model messages {
@@ -393,18 +430,37 @@ model messages {
   conversation_id BigInt   @db.BigInt
   sender_id       BigInt   @db.BigInt
   content         String   @db.Text
+  source_locale   String   @default("zh") @db.VarChar(8)
   is_read         Boolean  @default(false)
   is_deleted      Boolean  @default(false)
   created_at      DateTime @default(now())
   updated_at      DateTime @updatedAt
 
-  conversation conversations @relation("messages_conversation", fields: [conversation_id], references: [id])
-  sender       users         @relation("messages_sender", fields: [sender_id], references: [id])
+  conversation conversations          @relation("messages_conversation", fields: [conversation_id], references: [id])
+  sender       users                  @relation("messages_sender", fields: [sender_id], references: [id])
+  translations message_translations[]
 
   @@index([conversation_id], map: "messages_conversation_index")
   @@index([sender_id], map: "messages_sender_index")
   @@index([is_read], map: "messages_read_index")
   @@map("messages")
+}
+
+model message_translations {
+  message_id   BigInt   @db.BigInt
+  locale       String   @db.VarChar(8)
+  content_html String   @db.Text
+  is_source    Boolean  @default(false)
+  version      Int      @default(0)
+  created_at   DateTime @default(now())
+  updated_at   DateTime @updatedAt
+
+  message messages @relation(fields: [message_id], references: [id], onDelete: Cascade)
+
+  @@id([message_id, locale])
+  @@index([locale, is_source], map: "message_translations_locale_source_index")
+  @@index([message_id, is_source], map: "message_translations_message_source_index")
+  @@map("message_translations")
 }
 
 model poll_options {
@@ -1114,16 +1170,16 @@ model user_two_factor {
 // ==================== 表情系统 ====================
 
 model expression_groups {
-  id            BigInt   @id @db.BigInt
-  source_locale String   @default("zh") @db.VarChar(8)
-  code          String   @unique @db.VarChar(32) // e.g. "default", "onion"
-  icon_id       BigInt?  @db.BigInt // Reference to expression ID for group icon
+  id              BigInt              @id @db.BigInt
+  source_locale   String              @default("zh") @db.VarChar(8)
+  code            String              @unique @db.VarChar(32) // e.g. "default", "onion"
+  icon_id         BigInt?             @db.BigInt // Reference to expression ID for group icon
   expression_size ExpressionGroupSize @default(SMALL) // 表情展示大小
-  sort          Int      @default(0)
-  is_enabled    Boolean  @default(true)
-  is_deleted    Boolean  @default(false)
-  created_at    DateTime @default(now())
-  updated_at    DateTime @updatedAt
+  sort            Int                 @default(0)
+  is_enabled      Boolean             @default(true)
+  is_deleted      Boolean             @default(false)
+  created_at      DateTime            @default(now())
+  updated_at      DateTime            @updatedAt
 
   icon_expression expressions?                    @relation("GroupIcon", fields: [icon_id], references: [id], onDelete: SetNull)
   expressions     expressions[]                   @relation("GroupExpressions")

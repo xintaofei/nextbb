@@ -57,6 +57,19 @@ type BadgeListResponse = {
   items: BadgeItem[]
 }
 
+type CreateConversationPayload = {
+  type: "DM"
+  targetUserId: string
+}
+
+type CreateConversationResponse = {
+  conversation?: {
+    id: string
+  }
+  conversationId?: string
+  id?: string
+}
+
 type UserStatistics = {
   topicsCount: number
   postsCount: number
@@ -186,26 +199,36 @@ export function UserInfoCard({
   }
 
   // 处理私信点击
-  const handleMessageClick = async () => {
+  const handleMessageClick = async (): Promise<void> => {
     try {
+      const payload: CreateConversationPayload = {
+        type: "DM",
+        targetUserId: userId,
+      }
+
       // 创建或获取会话
-      const response = await fetch("/api/conversations", {
+      const response: Response = await fetch("/api/conversations", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ targetUserId: userId }),
+        body: JSON.stringify(payload),
       })
 
       if (!response.ok) {
         throw new Error("Failed to create conversation")
       }
 
-      const data = await response.json()
-      const conversationId = data.conversation.id
+      const data: CreateConversationResponse = await response.json()
+      const conversationId =
+        data.conversation?.id ?? data.conversationId ?? data.id
+
+      if (!conversationId) {
+        throw new Error("Conversation id is missing")
+      }
 
       // 跳转到私信页面
-      router.push(`/messages/${conversationId}`)
+      router.push(`/conversations/${conversationId}`)
       setOpen(false)
     } catch (error) {
       console.error("Error creating conversation:", error)
