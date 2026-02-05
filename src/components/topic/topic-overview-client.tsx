@@ -819,10 +819,12 @@ export default function TopicOverviewClient({
 
     // 找到目标帖子，滚动到该位置
     const anchorId = `post-${targetIndex + 1}`
+    let cancelled = false
 
     // 使用 requestAnimationFrame 确保 DOM 准备就绪
-    requestAnimationFrame(() => {
-      requestAnimationFrame(() => {
+    const rafId1 = requestAnimationFrame(() => {
+      const rafId2 = requestAnimationFrame(() => {
+        if (cancelled) return
         const element = document.getElementById(anchorId)
         if (element) {
           element.scrollIntoView({ behavior: "smooth", block: "center" })
@@ -834,7 +836,13 @@ export default function TopicOverviewClient({
         setTargetFloor(null)
         setIsLoadingFloor(false)
       })
+      if (cancelled) cancelAnimationFrame(rafId2)
     })
+
+    return () => {
+      cancelled = true
+      cancelAnimationFrame(rafId1)
+    }
   }, [targetFloor, posts, loadingPosts, totalPosts, t])
 
   // 使用 ref 存储最新状态，避免频繁重建 IntersectionObserver
