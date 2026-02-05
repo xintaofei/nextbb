@@ -2,7 +2,7 @@
 
 import { memo, useMemo, useState } from "react"
 import Link from "next/link"
-import { useRouter } from "next/navigation"
+import { useParams, useRouter } from "next/navigation"
 import useSWR, { mutate } from "swr"
 import { useTranslations } from "next-intl"
 import { Users, MessageCircle } from "lucide-react"
@@ -69,17 +69,14 @@ const fetcher = async <T,>(url: string): Promise<T> => {
   return res.json()
 }
 
-interface ConversationsSidebarProps {
-  selectedId: string | null
-}
-
-export const ConversationsSidebar = memo(function ConversationsSidebar({
-  selectedId,
-}: ConversationsSidebarProps) {
+export const ConversationsSidebar = memo(function ConversationsSidebar() {
   const t = useTranslations("Conversations")
   const router = useRouter()
+  const params = useParams()
   const [tab, setTab] = useState("mine")
   const [joiningId, setJoiningId] = useState<string | null>(null)
+  const selectedId =
+    typeof params?.id === "string" ? (params.id as string) : null
 
   const conversationsUrl = useMemo(() => {
     if (!selectedId) return "/api/conversations"
