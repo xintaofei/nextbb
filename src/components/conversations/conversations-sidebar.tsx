@@ -121,14 +121,14 @@ export const ConversationsSidebar = memo(function ConversationsSidebar({
   }
 
   return (
-    <aside className="w-full max-lg:border-b lg:w-80 xl:w-96 bg-background">
+    <aside className="w-full max-lg:border-b lg:w-64 bg-background">
       <div className="flex items-center justify-between px-4 py-4 border-b">
         <div className="flex items-center gap-2 font-semibold text-lg">
           <MessageCircle className="size-5 text-muted-foreground" />
           {t("title")}
         </div>
       </div>
-      <Tabs value={tab} onValueChange={setTab} className="w-full">
+      <Tabs value={tab} onValueChange={setTab} className="w-full gap-0">
         <div className="px-4 py-3 border-b">
           <TabsList className="w-full grid grid-cols-2">
             <TabsTrigger value="mine">{t("tabs.mine")}</TabsTrigger>
