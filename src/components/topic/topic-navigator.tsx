@@ -57,6 +57,7 @@ export function TopicNavigator({
   const isDraggingRef = useRef(false)
   const sliderAnimRef = useRef<number | null>(null)
   const scrollerRef = useRef<HTMLElement | null>(null)
+  const displayCurrent: number = Math.max(current, 1)
   // 尾部楼层覆盖策略常量
   const RESERVE_PX = 24 // 尾部保留像素
   const TAIL_THRESHOLD_FLOORS = 5 // 触发尾部特殊处理的剩余楼层阈值
@@ -608,7 +609,7 @@ export function TopicNavigator({
                     ref={labelRef}
                   >
                     <span className="font-bold">
-                      {current} / {totalFloors}
+                      {displayCurrent} / {totalFloors}
                     </span>
                     <span className="text-muted-foreground max-w-[120px] truncate whitespace-nowrap">
                       {author || "-"}
