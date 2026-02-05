@@ -57,6 +57,7 @@ export function TopicNavigator({
   const isDraggingRef = useRef(false)
   const sliderAnimRef = useRef<number | null>(null)
   const scrollerRef = useRef<HTMLElement | null>(null)
+  const isNavigatingRef = useRef(false)
   const displayCurrent: number = Math.max(current, 1)
   // 尾部楼层覆盖策略常量
   const RESERVE_PX = 24 // 尾部保留像素
@@ -89,6 +90,8 @@ export function TopicNavigator({
   const updateFloorHash = (floor: number) => {
     if (typeof window === "undefined") return
     if (!Number.isFinite(floor)) return
+    // 如果用户正在导航离开页面，不要更新 hash
+    if (isNavigatingRef.current) return
     const safeFloor = Math.max(1, Math.floor(floor))
     const hash = `#floor-${safeFloor}`
     if (window.location.hash === hash) return
@@ -102,6 +105,30 @@ export function TopicNavigator({
   useEffect(() => {
     authorRef.current = author
   }, [author])
+
+  // 监听页面卸载和链接点击，防止导航时更新 hash
+  useEffect(() => {
+    const handleBeforeUnload = () => {
+      isNavigatingRef.current = true
+    }
+
+    const handleLinkClick = (e: MouseEvent) => {
+      const target = e.target as HTMLElement
+      const anchor = target.closest("a")
+      if (anchor && anchor.href && !anchor.href.startsWith("#")) {
+        // 用户点击了外部链接，准备导航
+        isNavigatingRef.current = true
+      }
+    }
+
+    window.addEventListener("beforeunload", handleBeforeUnload)
+    document.addEventListener("click", handleLinkClick, true)
+
+    return () => {
+      window.removeEventListener("beforeunload", handleBeforeUnload)
+      document.removeEventListener("click", handleLinkClick, true)
+    }
+  }, [])
 
   const updateLabelPos = () => {
     const wrap = sliderWrapRef.current
