@@ -208,9 +208,21 @@ export const ConversationsSidebar = memo(function ConversationsSidebar() {
           <ScrollArea className="h-full">
             <div className="px-4 py-4 space-y-2">
               {conversationsLoading && (
-                <div className="space-y-3">
+                <div className="space-y-2">
                   {Array.from({ length: 6 }).map((_, idx) => (
-                    <Skeleton key={idx} className="h-16 w-full rounded-xl" />
+                    <div
+                      key={idx}
+                      className="flex items-center gap-3 rounded-xl border px-3 py-3"
+                    >
+                      <Skeleton className="size-10 rounded-full shrink-0" />
+                      <div className="flex-1 min-w-0 space-y-2">
+                        <div className="flex items-center justify-between gap-2">
+                          <Skeleton className="h-4 w-24" />
+                          <Skeleton className="h-3 w-12" />
+                        </div>
+                        <Skeleton className="h-3 w-full" />
+                      </div>
+                    </div>
                   ))}
                 </div>
               )}
@@ -300,7 +312,21 @@ export const ConversationsSidebar = memo(function ConversationsSidebar() {
               {discoverLoading && (
                 <div className="space-y-3">
                   {Array.from({ length: 5 }).map((_, idx) => (
-                    <Skeleton key={idx} className="h-20 w-full rounded-xl" />
+                    <div
+                      key={idx}
+                      className="flex items-center gap-3 rounded-xl border px-3 py-3"
+                    >
+                      <Skeleton className="size-10 rounded-full shrink-0" />
+                      <div className="flex-1 min-w-0 space-y-2">
+                        <div className="flex items-center justify-between gap-2">
+                          <Skeleton className="h-4 w-20" />
+                          <Skeleton className="h-3 w-10" />
+                        </div>
+                        <Skeleton className="h-3 w-16" />
+                        <Skeleton className="h-3 w-3/4" />
+                      </div>
+                      <Skeleton className="h-8 w-12 rounded-md shrink-0" />
+                    </div>
                   ))}
                 </div>
               )}
