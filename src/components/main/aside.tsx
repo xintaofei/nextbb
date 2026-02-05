@@ -24,6 +24,7 @@ export function Aside() {
   const segments = pathname.split("/").filter(Boolean)
   const isMainListPage = parseRouteSegments(segments).valid
   const isTopicPage = pathname.includes("/topic/")
+  const isConversationPage = pathname.includes("/conversations")
   const t = useTranslations("Index")
   const tc = useTranslations("Common")
   const locale = useLocale()
@@ -51,6 +52,11 @@ export function Aside() {
       return await res.json()
     }
   )
+
+  // Hide aside in conversation pages
+  if (isConversationPage) {
+    return null
+  }
 
   return (
     <aside className="hidden lg:flex w-64 flex-col gap-4 ml-7 max-xl:mr-7 py-8 px-1 sticky top-0 h-screen overflow-y-auto scrollbar-none">

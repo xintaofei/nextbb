@@ -940,6 +940,7 @@ enum TranslationEntityType {
   POST // 帖子
   EXPRESSION_GROUP // 表情分组
   EXPRESSION // 表情
+  MESSAGE // 消息
 }
 
 // 翻译任务状态枚举

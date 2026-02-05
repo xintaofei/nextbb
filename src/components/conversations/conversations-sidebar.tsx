@@ -1,6 +1,6 @@
 "use client"
 
-import { memo, useMemo, useState } from "react"
+import { memo, useMemo, useRef, useState } from "react"
 import Link from "next/link"
 import { useParams, useRouter } from "next/navigation"
 import useSWRInfinite from "swr/infinite"
@@ -83,14 +83,17 @@ export const ConversationsSidebar = memo(function ConversationsSidebar() {
   const selectedId =
     typeof params?.id === "string" ? (params.id as string) : null
 
+  // 使用 ref 保存初始选中的会话 ID，避免切换会话时触发列表刷新
+  const initialSelectedIdRef = useRef(selectedId)
+
   const getConversationsKey = (
     pageIndex: number,
     previousPageData: ConversationListResult | null
   ) => {
     if (previousPageData && !previousPageData.hasMore) return null
     const page = pageIndex + 1
-    const highlight =
-      page === 1 && selectedId ? `&highlightId=${selectedId}` : ""
+    const initialId = initialSelectedIdRef.current
+    const highlight = page === 1 && initialId ? `&highlightId=${initialId}` : ""
     return `/api/conversations?page=${page}&pageSize=30${highlight}`
   }
 
@@ -183,7 +186,7 @@ export const ConversationsSidebar = memo(function ConversationsSidebar() {
   }
 
   return (
-    <aside className="w-full max-lg:border-b lg:w-64 bg-background">
+    <aside className="w-full max-lg:border-b lg:w-80 bg-background">
       <div className="flex items-center justify-between px-4 py-4 border-b">
         <div className="flex items-center gap-2 font-semibold text-lg">
           <MessageCircle className="size-5 text-muted-foreground" />

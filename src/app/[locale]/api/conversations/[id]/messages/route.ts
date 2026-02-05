@@ -4,6 +4,10 @@ import { prisma } from "@/lib/prisma"
 import { getServerSessionUser } from "@/lib/server-auth"
 import { getTranslationsQuery } from "@/lib/locale"
 import { getMessageHtmlWithLocale } from "@/lib/message-translation"
+import { z } from "zod"
+import { generateId } from "@/lib/id"
+import { TranslationEntityType } from "@prisma/client"
+import { createTranslationTasks } from "@/lib/services/translation-task"
 
 type MessageItem = {
   id: string
@@ -155,4 +159,119 @@ export async function GET(
   }
 
   return NextResponse.json(result)
+}
+
+const MessageCreateSchema = z.object({
+  content: z.string().min(1).max(10000),
+  content_html: z.string(),
+})
+
+type MessageCreateDTO = z.infer<typeof MessageCreateSchema>
+
+export async function POST(
+  req: Request,
+  ctx: { params: Promise<{ id: string }> }
+) {
+  const auth = await getServerSessionUser()
+  if (!auth) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+  }
+
+  const { id: idStr } = await ctx.params
+  const locale = await getLocale()
+  let conversationId: bigint
+  try {
+    conversationId = BigInt(idStr)
+  } catch {
+    return NextResponse.json({ error: "Invalid id" }, { status: 400 })
+  }
+
+  let body: MessageCreateDTO
+  try {
+    const json = await req.json()
+    body = MessageCreateSchema.parse(json)
+  } catch {
+    return NextResponse.json({ error: "Invalid body" }, { status: 400 })
+  }
+
+  // Check if conversation exists and is not deleted
+  const conversation = await prisma.conversations.findFirst({
+    where: { id: conversationId, is_deleted: false },
+    select: { id: true },
+  })
+  if (!conversation) {
+    return NextResponse.json(
+      { error: "Conversation not found" },
+      { status: 404 }
+    )
+  }
+
+  // Check if user is a member of the conversation
+  const member = await prisma.conversation_members.findUnique({
+    where: {
+      conversation_id_user_id: {
+        conversation_id: conversationId,
+        user_id: auth.userId,
+      },
+    },
+  })
+  if (!member) {
+    return NextResponse.json(
+      { error: "Forbidden: not a conversation member" },
+      { status: 403 }
+    )
+  }
+
+  // Create message in transaction
+  const result = await prisma.$transaction(async (tx) => {
+    // Create message with translation
+    const message = await tx.messages.create({
+      data: {
+        id: generateId(),
+        conversation_id: conversationId,
+        sender_id: auth.userId,
+        content: body.content,
+        source_locale: locale,
+        translations: {
+          create: {
+            locale: locale,
+            content_html: body.content_html,
+            is_source: true,
+            version: 1,
+          },
+        },
+        is_deleted: false,
+      },
+      select: { id: true, created_at: true },
+    })
+
+    // Update conversation last_message_id and updated_at
+    await tx.conversations.update({
+      where: { id: conversationId },
+      data: {
+        last_message_id: message.id,
+        updated_at: new Date(),
+      },
+    })
+
+    return {
+      messageId: String(message.id),
+      createdAt: message.created_at.toISOString(),
+    }
+  })
+
+  // Create translation tasks outside transaction
+  try {
+    const messageId = BigInt(result.messageId)
+    await createTranslationTasks(
+      TranslationEntityType.MESSAGE,
+      messageId,
+      locale,
+      1
+    )
+  } catch (error) {
+    console.error("Failed to create translation tasks:", error)
+  }
+
+  return NextResponse.json(result, { status: 201 })
 }

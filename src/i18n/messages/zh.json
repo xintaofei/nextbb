@@ -680,6 +680,21 @@
     "error": {
       "notFound": "会话不存在",
       "notFoundDescription": "该会话可能已被删除或无访问权限"
+    },
+    "editor": {
+      "placeholder": "输入消息...",
+      "slashPlaceholder": "输入 / 查看命令",
+      "send": "发送",
+      "sending": "发送中...",
+      "cancel": "取消",
+      "writeMessage": "写消息",
+      "title": "发送消息",
+      "emptyError": "消息不能为空",
+      "tooLongError": "消息过长 (最多 10000 字)",
+      "sendSuccess": "消息已发送",
+      "sendError": "发送失败，请重试",
+      "networkError": "网络连接失败",
+      "syncingHint": "正在同步..."
     }
   },
   "AdminOverview": {

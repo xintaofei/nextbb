@@ -1,6 +1,6 @@
 "use client"
 
-import { memo, useMemo, useState } from "react"
+import { memo, useMemo, useState, useRef, useEffect } from "react"
 import useSWR from "swr"
 import { useTranslations } from "next-intl"
 import { MessageCircle, Users } from "lucide-react"
@@ -12,6 +12,7 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { RelativeTime } from "@/components/common/relative-time"
 import { parseOptions } from "@/components/topic/post-parts"
+import { ConversationEditor } from "./conversation-editor"
 
 type ConversationDetail = {
   id: string
@@ -136,6 +137,8 @@ export const ConversationThread = memo(function ConversationThread({
 }: ConversationThreadProps) {
   const t = useTranslations("Conversations")
   const [joining, setJoining] = useState(false)
+  const messagesEndRef = useRef<HTMLDivElement>(null)
+  const previousLengthRef = useRef(0)
 
   const {
     data: detail,
@@ -180,6 +183,18 @@ export const ConversationThread = memo(function ConversationThread({
     conversation?.type === "SINGLE"
       ? conversation.otherUser?.avatar || undefined
       : conversation?.avatar || undefined
+
+  // Auto-scroll to new messages
+  useEffect(() => {
+    const currentLength = messagesData?.items.length || 0
+    if (currentLength > previousLengthRef.current) {
+      messagesEndRef.current?.scrollIntoView({
+        behavior: "smooth",
+        block: "end",
+      })
+    }
+    previousLengthRef.current = currentLength
+  }, [messagesData?.items.length])
 
   const handleJoin = async () => {
     if (joining) return
@@ -267,7 +282,7 @@ export const ConversationThread = memo(function ConversationThread({
           </p>
         </div>
       ) : (
-        <ScrollArea className="flex-1">
+        <ScrollArea className="flex-1 min-h-0">
           <div className="flex flex-col gap-4 px-6 py-6">
             {messagesLoading && (
               <div className="space-y-3">
@@ -289,8 +304,19 @@ export const ConversationThread = memo(function ConversationThread({
                 deletedUserLabel={deletedUserLabel}
               />
             ))}
+            <div ref={messagesEndRef} />
           </div>
         </ScrollArea>
+      )}
+
+      {/* Editor (only visible to members) */}
+      {isMember && !showJoinPrompt && (
+        <ConversationEditor
+          conversationId={conversationId}
+          onMessageSent={() => {
+            mutateMessages()
+          }}
+        />
       )}
     </div>
   )

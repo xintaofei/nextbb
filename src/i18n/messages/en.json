@@ -680,6 +680,21 @@
     "error": {
       "notFound": "Conversation not found",
       "notFoundDescription": "This conversation may have been removed or you don't have access."
+    },
+    "editor": {
+      "placeholder": "Type a message...",
+      "slashPlaceholder": "Type / to see commands",
+      "send": "Send",
+      "sending": "Sending...",
+      "cancel": "Cancel",
+      "writeMessage": "Write message",
+      "title": "Send Message",
+      "emptyError": "Message cannot be empty",
+      "tooLongError": "Message too long (max 10000 chars)",
+      "sendSuccess": "Message sent",
+      "sendError": "Failed to send message",
+      "networkError": "Network connection failed",
+      "syncingHint": "Syncing..."
     }
   },
   "AdminOverview": {
