@@ -375,7 +375,9 @@ model conversations {
   type          String   @default("DM") @db.VarChar(16)
   source_locale String   @default("zh") @db.VarChar(8)
   avatar        String?  @db.VarChar(256)
+  hash          String   @db.VarChar(64)
   created_by_id BigInt?  @db.BigInt
+  last_message_id BigInt? @db.BigInt
   is_deleted    Boolean  @default(false)
   created_at    DateTime @default(now())
   updated_at    DateTime @updatedAt
@@ -385,8 +387,10 @@ model conversations {
   messages     messages[]                  @relation("messages_conversation")
   translations conversation_translations[]
 
+  @@unique([hash], map: "conversations_hash_unique")
   @@index([type], map: "conversations_type_index")
   @@index([created_by_id], map: "conversations_created_by_index")
+  @@index([last_message_id], map: "conversations_last_message_index")
   @@map("conversations")
 }
 
@@ -441,6 +445,7 @@ model messages {
   translations message_translations[]
 
   @@index([conversation_id], map: "messages_conversation_index")
+  @@index([conversation_id, created_at], map: "messages_conversation_created_index")
   @@index([sender_id], map: "messages_sender_index")
   @@index([is_read], map: "messages_read_index")
   @@map("messages")

@@ -105,6 +105,7 @@ export function UserInfoCard({
   const isMobile = useIsMobile()
   const [open, setOpen] = useState(false)
   const [isFollowLoading, setIsFollowLoading] = useState(false)
+  const [isMessageLoading, setIsMessageLoading] = useState(false)
 
   // 获取当前用户信息
   const { data: session } = useSession()
@@ -200,6 +201,16 @@ export function UserInfoCard({
 
   // 处理私信点击
   const handleMessageClick = async (): Promise<void> => {
+    if (!currentUserId) {
+      toast.error(t("messageLoginRequired"))
+      return
+    }
+
+    if (isMessageLoading) {
+      return
+    }
+
+    setIsMessageLoading(true)
     try {
       const payload: CreateConversationPayload = {
         type: "DM",
@@ -233,6 +244,8 @@ export function UserInfoCard({
     } catch (error) {
       console.error("Error creating conversation:", error)
       toast.error(t("messageError"))
+    } finally {
+      setIsMessageLoading(false)
     }
   }
 
@@ -497,6 +510,7 @@ export function UserInfoCard({
                     handleMessageClick()
                   }}
                   className="w-full"
+                  disabled={!currentUserId || isMessageLoading}
                 >
                   <MessageCircle className="h-4 w-4 mr-1" />
                   {t("message")}

@@ -1908,6 +1908,7 @@
     "followSuccess": "Followed successfully",
     "unfollowSuccess": "Unfollowed successfully",
     "followError": "Operation failed, please try again later",
+    "messageLoginRequired": "Please sign in to send a message",
     "messageError": "Failed to create conversation, please try again later",
     "website": "Website",
     "location": "Location",

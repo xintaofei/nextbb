@@ -1908,6 +1908,7 @@
     "followSuccess": "关注成功",
     "unfollowSuccess": "已取消关注",
     "followError": "操作失败，请稍后再试",
+    "messageLoginRequired": "请先登录后再发送私信",
     "messageError": "创建会话失败，请稍后再试",
     "website": "个人网站",
     "location": "所在地",

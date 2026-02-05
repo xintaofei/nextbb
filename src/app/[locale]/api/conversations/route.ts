@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server"
 import { getLocale } from "next-intl/server"
+import { Prisma } from "@prisma/client"
 import { z } from "zod"
+import { createHash } from "crypto"
 import { generateId } from "@/lib/id"
 import { prisma } from "@/lib/prisma"
 import { getServerSessionUser } from "@/lib/server-auth"
@@ -9,6 +11,13 @@ const CreateConversationSchema = z.object({
   type: z.enum(["DM", "GROUP"]).optional().default("DM"),
   targetUserId: z.string().optional(),
 })
+
+const buildDmHash = (userIdA: bigint, userIdB: bigint): string => {
+  const [lowId, highId] =
+    userIdA < userIdB ? [userIdA, userIdB] : [userIdB, userIdA]
+  const raw = `DM:${lowId.toString()}:${highId.toString()}`
+  return createHash("sha256").update(raw).digest("hex")
+}
 
 /**
  * 获取当前用户的会话列表
@@ -183,6 +192,7 @@ export async function POST(req: Request) {
 
     const currentUserId: bigint = sessionUser.userId
     const targetUserIdBigInt: bigint = BigInt(targetUserId)
+    const dmHash: string = buildDmHash(currentUserId, targetUserIdBigInt)
 
     // 不能和自己创建会话
     if (currentUserId === targetUserIdBigInt) {
@@ -207,41 +217,36 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "User not found" }, { status: 404 })
     }
 
-    const result = await prisma.$transaction(async (tx) => {
-      const existingConversation = await tx.conversations.findFirst({
-        where: {
-          type: "DM",
-          is_deleted: false,
-          AND: [
-            {
-              members: {
-                some: {
-                  user_id: currentUserId,
-                  is_deleted: false,
-                },
-              },
-            },
-            {
-              members: {
-                some: {
-                  user_id: targetUserIdBigInt,
-                  is_deleted: false,
-                },
-              },
-            },
-          ],
+    const existingConversation = await prisma.conversations.findFirst({
+      where: {
+        type: "DM",
+        hash: dmHash,
+        is_deleted: false,
+      },
+      select: { id: true },
+    })
+
+    if (existingConversation) {
+      return NextResponse.json({
+        conversation: {
+          id: String(existingConversation.id),
+          otherUser: {
+            id: String(targetUser.id),
+            name: targetUser.name,
+            avatar: targetUser.avatar,
+          },
         },
-        select: { id: true },
       })
+    }
 
-      if (existingConversation) {
-        return { conversationId: existingConversation.id }
-      }
+    let conversationId: bigint
 
-      const newConversation = await tx.conversations.create({
+    try {
+      const newConversation = await prisma.conversations.create({
         data: {
           id: generateId(),
           type: "DM",
+          hash: dmHash,
           members: {
             create: [
               { user_id: currentUserId },
@@ -252,12 +257,34 @@ export async function POST(req: Request) {
         select: { id: true },
       })
 
-      return { conversationId: newConversation.id }
-    })
+      conversationId = newConversation.id
+    } catch (error) {
+      if (
+        error instanceof Prisma.PrismaClientKnownRequestError &&
+        error.code === "P2002"
+      ) {
+        const racedConversation = await prisma.conversations.findFirst({
+          where: {
+            type: "DM",
+            hash: dmHash,
+            is_deleted: false,
+          },
+          select: { id: true },
+        })
+
+        if (!racedConversation) {
+          throw error
+        }
+
+        conversationId = racedConversation.id
+      } else {
+        throw error
+      }
+    }
 
     return NextResponse.json({
       conversation: {
-        id: String(result.conversationId),
+        id: String(conversationId),
         otherUser: {
           id: String(targetUser.id),
           name: targetUser.name,
