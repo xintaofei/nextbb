@@ -48,6 +48,8 @@ type ExpressionGroupListItemProps = {
   children: React.ReactNode
   sortableId: string
   disabled?: boolean
+  isOpen?: boolean
+  onOpenChange?: (open: boolean) => void
 }
 
 export function ExpressionGroupContent({
@@ -63,6 +65,8 @@ export function ExpressionGroupContent({
   listeners,
   isDragging,
   disabled,
+  isOpen: controlledIsOpen,
+  onOpenChange: controlledOnOpenChange,
 }: ExpressionGroupListItemProps & {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   attributes?: any
@@ -72,7 +76,11 @@ export function ExpressionGroupContent({
 }) {
   const t = useTranslations("AdminExpressions")
   const tAdmin = useTranslations("Admin")
-  const [isOpen, setIsOpen] = useState(true)
+  const [internalIsOpen, setInternalIsOpen] = useState(false)
+
+  // 支持受控和非受控两种模式
+  const isOpen = controlledIsOpen ?? internalIsOpen
+  const setIsOpen = controlledOnOpenChange ?? setInternalIsOpen
 
   // 根据 iconId 查找对应的表情
   const iconExpression = group.iconId

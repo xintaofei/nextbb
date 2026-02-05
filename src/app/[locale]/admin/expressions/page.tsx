@@ -66,11 +66,36 @@ const fetcher = async <T,>(url: string): Promise<T> => {
   return res.json()
 }
 
+// Hook for fetching expressions by group ID
+function useGroupExpressions(
+  groupId: string | null,
+  enabled: string | undefined,
+  sortBy: string
+) {
+  const query = useMemo(() => {
+    if (!groupId) return null
+    const params = new URLSearchParams()
+    params.set("pageSize", "1000")
+    params.set("groupId", groupId)
+    if (typeof enabled === "string") params.set("enabled", enabled)
+    params.set("sortBy", sortBy)
+    return `/api/admin/expressions?${params.toString()}`
+  }, [groupId, enabled, sortBy])
+
+  return useSWR<ExpressionListResult>(query, fetcher<ExpressionListResult>, {
+    revalidateOnFocus: false,
+    revalidateOnReconnect: false,
+  })
+}
+
 export default function AdminExpressionsPage() {
   const t = useTranslations("AdminExpressions")
   const [q, setQ] = useState("")
   const [enabled, setEnabled] = useState<string | undefined>(undefined)
   const [sortBy, setSortBy] = useState("sort")
+
+  // 管理展开的分组
+  const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set())
 
   // Dialog states
   const [groupDialogOpen, setGroupDialogOpen] = useState(false)
@@ -131,23 +156,25 @@ export default function AdminExpressionsPage() {
     fetcher<ExpressionGroupListResult>
   )
 
-  // Fetch all expressions
-  const expressionsQuery = useMemo(() => {
+  // 只为统计数据获取表情总数
+  const statsQuery = useMemo(() => {
     const params = new URLSearchParams()
-    params.set("pageSize", "1000")
+    params.set("pageSize", "1")
     if (typeof enabled === "string") params.set("enabled", enabled)
-    params.set("sortBy", sortBy)
     return `/api/admin/expressions?${params.toString()}`
-  }, [enabled, sortBy])
+  }, [enabled])
 
-  const { data: expressionsData, mutate: mutateExpressions } =
-    useSWR<ExpressionListResult>(
-      expressionsQuery,
-      fetcher<ExpressionListResult>
-    )
+  const { data: statsData } = useSWR<ExpressionListResult>(
+    statsQuery,
+    fetcher<ExpressionListResult>,
+    {
+      revalidateOnFocus: false,
+      revalidateOnReconnect: false,
+    }
+  )
 
   const stats = useMemo(() => {
-    if (!groupsData || !expressionsData) {
+    if (!groupsData) {
       return {
         totalGroups: 0,
         totalExpressions: 0,
@@ -158,11 +185,11 @@ export default function AdminExpressionsPage() {
 
     return {
       totalGroups: groupsData.total,
-      totalExpressions: expressionsData.total,
-      imageExpressions: expressionsData.total,
+      totalExpressions: statsData?.total ?? 0,
+      imageExpressions: statsData?.total ?? 0,
       textExpressions: 0,
     }
-  }, [groupsData, expressionsData])
+  }, [groupsData, statsData])
 
   // Group handlers
   const handleCreateGroup = () => {
@@ -287,11 +314,16 @@ export default function AdminExpressionsPage() {
     setExpressionDialogOpen(true)
   }
 
-  const handleEditExpression = (id: string) => {
-    const expression = expressionsData?.items.find((e) => e.id === id)
-    if (expression) {
-      setEditingExpression(expression)
-      setExpressionDialogOpen(true)
+  const handleEditExpression = async (id: string) => {
+    try {
+      const res = await fetch(`/api/admin/expressions/${id}`)
+      if (res.ok) {
+        const expression = (await res.json()) as Expression
+        setEditingExpression(expression)
+        setExpressionDialogOpen(true)
+      }
+    } catch {
+      toast.error(t("message.fetchExpressionError"))
     }
   }
 
@@ -318,7 +350,19 @@ export default function AdminExpressionsPage() {
 
       if (res.ok) {
         toast.success(t("message.deleteExpressionSuccess"))
-        await mutateExpressions()
+        // 刷新所有展开的分组
+        const { mutate: globalMutate } = await import("swr")
+        await Promise.all(
+          Array.from(expandedGroups).map((groupId) => {
+            const params = new URLSearchParams()
+            params.set("pageSize", "1000")
+            params.set("groupId", groupId)
+            if (typeof enabled === "string") params.set("enabled", enabled)
+            params.set("sortBy", sortBy)
+            const query = `/api/admin/expressions?${params.toString()}`
+            return globalMutate(query)
+          })
+        )
         await mutateGroups()
         setDeleteExpressionDialogOpen(false)
         setDeletingExpressionId(null)
@@ -349,7 +393,19 @@ export default function AdminExpressionsPage() {
             ? t("message.updateExpressionSuccess")
             : t("message.createExpressionSuccess")
         )
-        await mutateExpressions()
+        // 刷新所有展开的分组
+        const { mutate: globalMutate } = await import("swr")
+        await Promise.all(
+          Array.from(expandedGroups).map((groupId) => {
+            const params = new URLSearchParams()
+            params.set("pageSize", "1000")
+            params.set("groupId", groupId)
+            if (typeof enabled === "string") params.set("enabled", enabled)
+            params.set("sortBy", sortBy)
+            const query = `/api/admin/expressions?${params.toString()}`
+            return globalMutate(query)
+          })
+        )
         await mutateGroups()
         setExpressionDialogOpen(false)
       } else {
@@ -368,10 +424,135 @@ export default function AdminExpressionsPage() {
     }
   }
 
-  // Get expressions for each group
-  const getGroupExpressions = (groupId: string): Expression[] => {
-    if (!expressionsData) return []
-    return expressionsData.items.filter((e) => e.groupId === groupId)
+  // 切换分组展开状态
+  const handleToggleGroup = (groupId: string, isOpen: boolean) => {
+    setExpandedGroups((prev) => {
+      const next = new Set(prev)
+      if (isOpen) {
+        next.add(groupId)
+      } else {
+        next.delete(groupId)
+      }
+      return next
+    })
+  }
+
+  // 用于表情排序的组件
+  function GroupExpressionsContent({ groupId }: { groupId: string }) {
+    const {
+      data: expressionsData,
+      mutate: mutateGroupExpressions,
+      isLoading,
+    } = useGroupExpressions(
+      expandedGroups.has(groupId) ? groupId : null,
+      enabled,
+      sortBy
+    )
+
+    const expressions = expressionsData?.items ?? []
+
+    const handleDragEndLocal = async (event: DragEndEvent) => {
+      const { active, over } = event
+      if (!over || active.id === over.id) return
+
+      const activeId = String(active.id)
+      const overId = String(over.id)
+
+      // Expression Reorder
+      if (activeId.startsWith("expr-") && overId.startsWith("expr-")) {
+        const oldIndex =
+          expressions.findIndex((e) => `expr-${e.id}` === activeId) ?? -1
+        const newIndex =
+          expressions.findIndex((e) => `expr-${e.id}` === overId) ?? -1
+
+        if (oldIndex !== -1 && newIndex !== -1) {
+          const activeExpr = expressions[oldIndex]
+          const overExpr = expressions[newIndex]
+
+          // Only allow reordering within the same group
+          if (activeExpr.groupId !== overExpr.groupId) return
+
+          const newExpressions = arrayMove(expressions, oldIndex, newIndex)
+
+          try {
+            // Optimistic update
+            await mutateGroupExpressions(
+              {
+                ...expressionsData,
+                items: newExpressions,
+              } as ExpressionListResult,
+              false
+            )
+
+            const itemsWithSort = newExpressions.map((item, index) => ({
+              id: item.id,
+              sort: index,
+            }))
+
+            const res = await fetch("/api/admin/expressions/reorder", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ items: itemsWithSort }),
+            })
+
+            if (res.ok) {
+              toast.success(t("message.reorderExpressionSuccess"))
+              await mutateGroupExpressions()
+            } else {
+              toast.error(t("message.reorderExpressionError"))
+              await mutateGroupExpressions() // Revert
+            }
+          } catch {
+            toast.error(t("message.reorderExpressionError"))
+            await mutateGroupExpressions() // Revert
+          }
+        }
+      }
+    }
+
+    // 显示 loading 状态
+    if (isLoading) {
+      return (
+        <div className="text-center py-8 text-muted-foreground text-sm">
+          {t("loading")}
+        </div>
+      )
+    }
+
+    // 数据加载完成但没有表情
+    if (expressions.length === 0) {
+      return (
+        <div className="text-center py-8 text-muted-foreground text-sm">
+          {t("empty")}
+        </div>
+      )
+    }
+
+    return (
+      <DndContext
+        sensors={sensors}
+        collisionDetection={closestCenter}
+        onDragEnd={handleDragEndLocal}
+      >
+        <SortableContext
+          items={expressions.map((e) => `expr-${e.id}`)}
+          strategy={rectSortingStrategy}
+        >
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
+            {expressions.map((expression) => (
+              <ExpressionCard
+                key={expression.id}
+                sortableId={`expr-${expression.id}`}
+                expression={expression}
+                onEdit={handleEditExpression}
+                onDelete={handleDeleteExpression}
+                onManageTranslations={handleManageExpressionTranslations}
+              />
+            ))}
+          </div>
+        </SortableContext>
+      </DndContext>
+    )
   }
 
   const handleDragEnd = async (event: DragEndEvent) => {
@@ -422,77 +603,6 @@ export default function AdminExpressionsPage() {
         } catch {
           toast.error(t("message.reorderGroupError"))
           await mutateGroups() // Revert
-        }
-      }
-    }
-
-    // Expression Reorder
-    if (activeId.startsWith("expr-") && overId.startsWith("expr-")) {
-      const oldIndex =
-        expressionsData?.items.findIndex((e) => `expr-${e.id}` === activeId) ??
-        -1
-      const newIndex =
-        expressionsData?.items.findIndex((e) => `expr-${e.id}` === overId) ?? -1
-
-      if (oldIndex !== -1 && newIndex !== -1 && expressionsData) {
-        const activeExpr = expressionsData.items[oldIndex]
-        const overExpr = expressionsData.items[newIndex]
-
-        // Only allow reordering within the same group for now
-        if (activeExpr.groupId !== overExpr.groupId) return
-
-        const groupExpressions = expressionsData.items.filter(
-          (e) => e.groupId === activeExpr.groupId
-        )
-        const oldGroupIndex = groupExpressions.findIndex(
-          (e) => e.id === activeExpr.id
-        )
-        const newGroupIndex = groupExpressions.findIndex(
-          (e) => e.id === overExpr.id
-        )
-
-        const newGroupExpressions = arrayMove(
-          groupExpressions,
-          oldGroupIndex,
-          newGroupIndex
-        )
-
-        try {
-          // Optimistic update
-          const otherExpressions = expressionsData.items.filter(
-            (e) => e.groupId !== activeExpr.groupId
-          )
-          const newGlobalItems = [...otherExpressions, ...newGroupExpressions]
-
-          await mutateExpressions(
-            {
-              ...expressionsData,
-              items: newGlobalItems,
-            },
-            false
-          )
-
-          const itemsWithSort = newGroupExpressions.map((item, index) => ({
-            id: item.id,
-            sort: index,
-          }))
-
-          const res = await fetch("/api/admin/expressions/reorder", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ items: itemsWithSort }),
-          })
-
-          if (res.ok) {
-            toast.success(t("message.reorderExpressionSuccess"))
-            await mutateExpressions()
-          } else {
-            toast.error(t("message.reorderExpressionError"))
-            await mutateExpressions() // Revert
-          }
-        } catch {
-          toast.error(t("message.reorderExpressionError"))
-          await mutateExpressions() // Revert
         }
       }
     }
@@ -593,44 +703,23 @@ export default function AdminExpressionsPage() {
                 strategy={verticalListSortingStrategy}
               >
                 {groupsData.items.map((group) => {
-                  const expressions = getGroupExpressions(group.id)
                   return (
                     <ExpressionGroupListItem
                       key={group.id}
                       sortableId={`group-${group.id}`}
                       group={group}
-                      expressions={expressions}
+                      expressions={[]}
                       onEdit={handleEditGroup}
                       onDelete={handleDeleteGroup}
                       onToggleEnabled={handleToggleGroupEnabled}
                       onManageTranslations={handleManageGroupTranslations}
                       onAddExpression={handleAddExpression}
+                      isOpen={expandedGroups.has(group.id)}
+                      onOpenChange={(isOpen) =>
+                        handleToggleGroup(group.id, isOpen)
+                      }
                     >
-                      {expressions.length > 0 ? (
-                        <SortableContext
-                          items={expressions.map((e) => `expr-${e.id}`)}
-                          strategy={rectSortingStrategy}
-                        >
-                          <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
-                            {expressions.map((expression) => (
-                              <ExpressionCard
-                                key={expression.id}
-                                sortableId={`expr-${expression.id}`}
-                                expression={expression}
-                                onEdit={handleEditExpression}
-                                onDelete={handleDeleteExpression}
-                                onManageTranslations={
-                                  handleManageExpressionTranslations
-                                }
-                              />
-                            ))}
-                          </div>
-                        </SortableContext>
-                      ) : (
-                        <div className="text-center py-8 text-muted-foreground text-sm">
-                          {t("empty")}
-                        </div>
-                      )}
+                      <GroupExpressionsContent groupId={group.id} />
                     </ExpressionGroupListItem>
                   )
                 })}
@@ -649,7 +738,7 @@ export default function AdminExpressionsPage() {
         open={groupDialogOpen}
         onOpenChange={setGroupDialogOpen}
         group={editingGroup}
-        expressions={editingGroup ? getGroupExpressions(editingGroup.id) : []}
+        expressions={[]}
         onSubmit={handleSubmitGroup}
       />
 
