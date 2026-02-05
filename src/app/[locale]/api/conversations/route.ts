@@ -23,7 +23,7 @@ const buildSingleHash = (userIdA: bigint, userIdB: bigint): string => {
  * 获取当前用户的会话列表
  * GET /api/conversations
  */
-export async function GET() {
+export async function GET(req: Request) {
   try {
     const sessionUser = await getServerSessionUser()
     if (!sessionUser) {
@@ -32,6 +32,9 @@ export async function GET() {
 
     const userId: bigint = sessionUser.userId
     const locale: string = await getLocale()
+
+    const { searchParams } = new URL(req.url)
+    const highlightId = searchParams.get("highlightId")
 
     // 查询用户参与的所有会话
     const conversations = await prisma.conversations.findMany({
@@ -142,6 +145,16 @@ export async function GET() {
         updatedAt: conv.updated_at.toISOString(),
       }
     })
+
+    if (highlightId) {
+      const index = formattedConversations.findIndex(
+        (item) => item.id === highlightId
+      )
+      if (index > 0) {
+        const [target] = formattedConversations.splice(index, 1)
+        formattedConversations.unshift(target)
+      }
+    }
 
     return NextResponse.json({ conversations: formattedConversations })
   } catch (error) {

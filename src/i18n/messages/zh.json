@@ -632,6 +632,7 @@
       "topics": "话题",
       "myPosts": "帖子",
       "myMessages": "消息",
+      "conversations": "会话",
       "checkin": "签到",
       "donation": "捐赠",
       "leaderboard": "排行榜",
@@ -645,6 +646,39 @@
       "notifications": "我的通知",
       "settings": "个人设置",
       "logout": "退出登录"
+    }
+  },
+  "Conversations": {
+    "title": "会话",
+    "tabs": {
+      "mine": "我的会话",
+      "discover": "发现群聊"
+    },
+    "actions": {
+      "join": "加入",
+      "joining": "加入中"
+    },
+    "meta": {
+      "members": "{count} 位成员",
+      "you": "你",
+      "privateChat": "私聊",
+      "unknownUser": "未知用户",
+      "deletedUser": "已注销用户",
+      "untitledGroup": "未命名群聊"
+    },
+    "empty": {
+      "mine": "暂无会话",
+      "discover": "暂无可加入的群聊",
+      "noMessages": "暂无消息",
+      "messages": "还没有消息，开始你的第一条吧",
+      "select": "选择一个会话",
+      "selectDescription": "从左侧选择一个会话开始聊天",
+      "joinTitle": "加入群聊查看消息",
+      "joinDescription": "加入后即可查看并参与群聊"
+    },
+    "error": {
+      "notFound": "会话不存在",
+      "notFoundDescription": "该会话可能已被删除或无访问权限"
     }
   },
   "AdminOverview": {

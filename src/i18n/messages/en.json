@@ -632,6 +632,7 @@
       "topics": "Topics",
       "myPosts": "Posts",
       "myMessages": "Messages",
+      "conversations": "Conversations",
       "checkin": "Check-in",
       "donation": "Donation",
       "leaderboard": "Leaderboard",
@@ -645,6 +646,39 @@
       "notifications": "My Notifications",
       "settings": "Settings",
       "logout": "Log out"
+    }
+  },
+  "Conversations": {
+    "title": "Conversations",
+    "tabs": {
+      "mine": "My Conversations",
+      "discover": "Discover Groups"
+    },
+    "actions": {
+      "join": "Join",
+      "joining": "Joining"
+    },
+    "meta": {
+      "members": "{count} members",
+      "you": "You",
+      "privateChat": "Private chat",
+      "unknownUser": "Unknown user",
+      "deletedUser": "Deleted user",
+      "untitledGroup": "Untitled group"
+    },
+    "empty": {
+      "mine": "No conversations yet",
+      "discover": "No groups to join",
+      "noMessages": "No messages yet",
+      "messages": "No messages yet. Start the first one.",
+      "select": "Select a conversation",
+      "selectDescription": "Choose a conversation from the left to start chatting.",
+      "joinTitle": "Join to view messages",
+      "joinDescription": "Join this group to view and participate in the chat."
+    },
+    "error": {
+      "notFound": "Conversation not found",
+      "notFoundDescription": "This conversation may have been removed or you don't have access."
     }
   },
   "AdminOverview": {

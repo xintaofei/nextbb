@@ -10,6 +10,7 @@ import {
   Heart,
   Inbox,
   Layers,
+  MessageCircle,
 } from "lucide-react"
 import Link from "next/link"
 import { cn, encodeUsername } from "@/lib/utils"
@@ -58,6 +59,13 @@ export function NavMain({ className, onLinkClick }: NavMainProps) {
       isActive: pathname.startsWith(
         encodedUsername ? `/u/${encodedUsername}/notifications` : "/login"
       ),
+    },
+    {
+      id: "conversations",
+      title: t("conversations"),
+      url: user ? "/conversations" : "/login",
+      icon: MessageCircle,
+      isActive: pathname.startsWith("/conversations"),
     },
     {
       id: "checkin",
