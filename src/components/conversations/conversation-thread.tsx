@@ -64,6 +64,69 @@ const fetcher = async <T,>(url: string): Promise<T> => {
   return res.json()
 }
 
+type MessageBubbleProps = {
+  message: MessageItem
+  isGroup: boolean
+  deletedUserLabel: string
+}
+
+const MessageBubble = memo(function MessageBubble({
+  message,
+  isGroup,
+  deletedUserLabel,
+}: MessageBubbleProps) {
+  const parsedContent = useMemo(() => {
+    if (!message.contentHtml) return null
+    return parse(message.contentHtml, parseOptions)
+  }, [message.contentHtml])
+
+  return (
+    <div
+      className={cn(
+        "flex items-start gap-3",
+        message.isMine && "flex-row-reverse"
+      )}
+    >
+      <Avatar className="size-8">
+        <AvatarImage
+          src={message.sender.avatar || undefined}
+          alt={message.sender.name}
+        />
+        <AvatarFallback>{message.sender.name.slice(0, 2)}</AvatarFallback>
+      </Avatar>
+      <div
+        className={cn(
+          "max-w-[75%] rounded-2xl border px-4 py-3 text-sm",
+          message.isMine
+            ? "bg-primary text-primary-foreground border-primary/30"
+            : "bg-muted/40"
+        )}
+      >
+        {isGroup && !message.isMine && (
+          <div className="mb-1 text-xs text-muted-foreground">
+            {message.sender.isDeleted ? deletedUserLabel : message.sender.name}
+          </div>
+        )}
+        {parsedContent ? (
+          <div className="prose prose-sm dark:prose-invert max-w-none">
+            {parsedContent}
+          </div>
+        ) : (
+          <div className="whitespace-pre-wrap">{message.content}</div>
+        )}
+        <div
+          className={cn(
+            "mt-2 text-[11px] text-muted-foreground",
+            message.isMine && "text-primary-foreground/70"
+          )}
+        >
+          <RelativeTime date={message.createdAt} />
+        </div>
+      </div>
+    </div>
+  )
+})
+
 interface ConversationThreadProps {
   conversationId: string
 }
@@ -111,6 +174,7 @@ export const ConversationThread = memo(function ConversationThread({
     }
     return conversation.title || t("meta.untitledGroup")
   }, [conversation, t])
+  const deletedUserLabel = useMemo(() => t("meta.deletedUser"), [t])
 
   const avatarSrc =
     conversation?.type === "SINGLE"
@@ -217,61 +281,14 @@ export const ConversationThread = memo(function ConversationThread({
                 {t("empty.messages")}
               </div>
             )}
-            {messagesData?.items.map((message) => {
-              const contentHtml = message.contentHtml
-              return (
-                <div
-                  key={message.id}
-                  className={cn(
-                    "flex items-start gap-3",
-                    message.isMine && "flex-row-reverse"
-                  )}
-                >
-                  <Avatar className="size-8">
-                    <AvatarImage
-                      src={message.sender.avatar || undefined}
-                      alt={message.sender.name}
-                    />
-                    <AvatarFallback>
-                      {message.sender.name.slice(0, 2)}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div
-                    className={cn(
-                      "max-w-[75%] rounded-2xl border px-4 py-3 text-sm",
-                      message.isMine
-                        ? "bg-primary text-primary-foreground border-primary/30"
-                        : "bg-muted/40"
-                    )}
-                  >
-                    {conversation.type === "GROUP" && !message.isMine && (
-                      <div className="mb-1 text-xs text-muted-foreground">
-                        {message.sender.isDeleted
-                          ? t("meta.deletedUser")
-                          : message.sender.name}
-                      </div>
-                    )}
-                    {contentHtml ? (
-                      <div className="prose prose-sm dark:prose-invert max-w-none">
-                        {parse(contentHtml, parseOptions)}
-                      </div>
-                    ) : (
-                      <div className="whitespace-pre-wrap">
-                        {message.content}
-                      </div>
-                    )}
-                    <div
-                      className={cn(
-                        "mt-2 text-[11px] text-muted-foreground",
-                        message.isMine && "text-primary-foreground/70"
-                      )}
-                    >
-                      <RelativeTime date={message.createdAt} />
-                    </div>
-                  </div>
-                </div>
-              )
-            })}
+            {messagesData?.items.map((message) => (
+              <MessageBubble
+                key={message.id}
+                message={message}
+                isGroup={conversation.type === "GROUP"}
+                deletedUserLabel={deletedUserLabel}
+              />
+            ))}
           </div>
         </ScrollArea>
       )}

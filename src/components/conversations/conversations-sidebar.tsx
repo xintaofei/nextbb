@@ -2,8 +2,9 @@
 
 import { memo, useMemo, useState } from "react"
 import Link from "next/link"
-import { useRouter } from "next/navigation"
-import useSWR, { mutate } from "swr"
+import { useParams, useRouter } from "next/navigation"
+import useSWRInfinite from "swr/infinite"
+import { mutate } from "swr"
 import { useTranslations } from "next-intl"
 import { Users, MessageCircle } from "lucide-react"
 import { cn, stripHtmlAndTruncate } from "@/lib/utils"
@@ -37,7 +38,11 @@ type ConversationListItem = {
 }
 
 type ConversationListResult = {
-  conversations: ConversationListItem[]
+  items: ConversationListItem[]
+  page: number
+  pageSize: number
+  total: number
+  hasMore: boolean
 }
 
 type DiscoverItem = {
@@ -69,34 +74,82 @@ const fetcher = async <T,>(url: string): Promise<T> => {
   return res.json()
 }
 
-interface ConversationsSidebarProps {
-  selectedId: string | null
-}
-
-export const ConversationsSidebar = memo(function ConversationsSidebar({
-  selectedId,
-}: ConversationsSidebarProps) {
+export const ConversationsSidebar = memo(function ConversationsSidebar() {
   const t = useTranslations("Conversations")
   const router = useRouter()
+  const params = useParams()
   const [tab, setTab] = useState("mine")
   const [joiningId, setJoiningId] = useState<string | null>(null)
+  const selectedId =
+    typeof params?.id === "string" ? (params.id as string) : null
 
-  const conversationsUrl = useMemo(() => {
-    if (!selectedId) return "/api/conversations"
-    return `/api/conversations?highlightId=${selectedId}`
-  }, [selectedId])
+  const getConversationsKey = (
+    pageIndex: number,
+    previousPageData: ConversationListResult | null
+  ) => {
+    if (previousPageData && !previousPageData.hasMore) return null
+    const page = pageIndex + 1
+    const highlight =
+      page === 1 && selectedId ? `&highlightId=${selectedId}` : ""
+    return `/api/conversations?page=${page}&pageSize=30${highlight}`
+  }
 
-  const { data, isLoading } = useSWR<ConversationListResult>(
-    conversationsUrl,
-    fetcher
-  )
+  const {
+    data: conversationPages,
+    isLoading: conversationsLoading,
+    size: conversationSize,
+    setSize: setConversationSize,
+  } = useSWRInfinite<ConversationListResult>(getConversationsKey, fetcher)
 
-  const discoverKey = tab === "discover" ? "/api/conversations/discover" : null
-  const { data: discoverData, isLoading: discoverLoading } =
-    useSWR<DiscoverResult>(discoverKey, fetcher)
+  const getDiscoverKey = (
+    pageIndex: number,
+    previousPageData: DiscoverResult | null
+  ) => {
+    if (tab !== "discover") return null
+    if (previousPageData && !previousPageData.hasMore) return null
+    const page = pageIndex + 1
+    return `/api/conversations/discover?page=${page}&pageSize=20`
+  }
 
-  const conversations = data?.conversations || []
-  const discoverItems = discoverData?.items || []
+  const {
+    data: discoverPages,
+    isLoading: discoverLoading,
+    size: discoverSize,
+    setSize: setDiscoverSize,
+  } = useSWRInfinite<DiscoverResult>(getDiscoverKey, fetcher)
+
+  const conversations = useMemo(() => {
+    if (!conversationPages) return []
+    const seen = new Set<string>()
+    const items: ConversationListItem[] = []
+    for (const page of conversationPages) {
+      for (const item of page.items) {
+        if (seen.has(item.id)) continue
+        seen.add(item.id)
+        items.push(item)
+      }
+    }
+    return items
+  }, [conversationPages])
+
+  const discoverItems = useMemo(() => {
+    if (!discoverPages) return []
+    const seen = new Set<string>()
+    const items: DiscoverItem[] = []
+    for (const page of discoverPages) {
+      for (const item of page.items) {
+        if (seen.has(item.id)) continue
+        seen.add(item.id)
+        items.push(item)
+      }
+    }
+    return items
+  }, [discoverPages])
+
+  const hasMoreConversations =
+    conversationPages?.[conversationPages.length - 1]?.hasMore ?? false
+  const hasMoreDiscover =
+    discoverPages?.[discoverPages.length - 1]?.hasMore ?? false
 
   const handleJoin = async (conversationId: string) => {
     if (joiningId) return
@@ -109,8 +162,17 @@ export const ConversationsSidebar = memo(function ConversationsSidebar({
         throw new Error("failed")
       }
       await Promise.all([
-        mutate(conversationsUrl),
-        mutate("/api/conversations/discover"),
+        mutate((key) =>
+          typeof key === "string" && key.startsWith("/api/conversations?")
+            ? key
+            : null
+        ),
+        mutate((key) =>
+          typeof key === "string" &&
+          key.startsWith("/api/conversations/discover")
+            ? key
+            : null
+        ),
       ])
       router.push(`/conversations/${conversationId}`)
     } catch (error) {
@@ -138,14 +200,14 @@ export const ConversationsSidebar = memo(function ConversationsSidebar({
         <TabsContent value="mine" className="mt-0">
           <ScrollArea className="h-[calc(100vh-210px)] max-lg:h-auto max-lg:max-h-[45vh]">
             <div className="px-4 py-4 space-y-2">
-              {isLoading && (
+              {conversationsLoading && (
                 <div className="space-y-3">
                   {Array.from({ length: 6 }).map((_, idx) => (
                     <Skeleton key={idx} className="h-16 w-full rounded-xl" />
                   ))}
                 </div>
               )}
-              {!isLoading && conversations.length === 0 && (
+              {!conversationsLoading && conversations.length === 0 && (
                 <div className="text-sm text-muted-foreground py-10 text-center">
                   {t("empty.mine")}
                 </div>
@@ -210,6 +272,18 @@ export const ConversationsSidebar = memo(function ConversationsSidebar({
                   </Link>
                 )
               })}
+              {hasMoreConversations && (
+                <div className="pt-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="w-full"
+                    onClick={() => setConversationSize(conversationSize + 1)}
+                  >
+                    {t("actions.loadMore")}
+                  </Button>
+                </div>
+              )}
             </div>
           </ScrollArea>
         </TabsContent>
@@ -271,6 +345,18 @@ export const ConversationsSidebar = memo(function ConversationsSidebar({
                   </Button>
                 </div>
               ))}
+              {hasMoreDiscover && (
+                <div className="pt-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="w-full"
+                    onClick={() => setDiscoverSize(discoverSize + 1)}
+                  >
+                    {t("actions.loadMore")}
+                  </Button>
+                </div>
+              )}
             </div>
           </ScrollArea>
         </TabsContent>

@@ -656,7 +656,8 @@
     },
     "actions": {
       "join": "Join",
-      "joining": "Joining"
+      "joining": "Joining",
+      "loadMore": "Load more"
     },
     "meta": {
       "members": "{count} members",
