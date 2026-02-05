@@ -5,6 +5,7 @@ import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useTranslations } from "next-intl"
 import { useSession } from "next-auth/react"
+import { ConversationType } from "@prisma/client"
 import useSWR, { mutate } from "swr"
 import { toast } from "sonner"
 import {
@@ -58,7 +59,7 @@ type BadgeListResponse = {
 }
 
 type CreateConversationPayload = {
-  type: "DM"
+  type: ConversationType
   targetUserId: string
 }
 
@@ -213,7 +214,7 @@ export function UserInfoCard({
     setIsMessageLoading(true)
     try {
       const payload: CreateConversationPayload = {
-        type: "DM",
+        type: ConversationType.SINGLE,
         targetUserId: userId,
       }
 
@@ -329,7 +330,7 @@ export function UserInfoCard({
                     title={t("location")}
                   >
                     <MapPin className="h-3 w-3 shrink-0" />
-                    <span className="truncate max-w-[120px]">
+                    <span className="truncate max-w-30">
                       {profileData.location}
                     </span>
                   </div>
@@ -348,7 +349,7 @@ export function UserInfoCard({
                     title={t("website")}
                   >
                     <LinkIcon className="h-3 w-3 shrink-0" />
-                    <span className="truncate max-w-[120px]">
+                    <span className="truncate max-w-30">
                       {profileData.website.replace(/^https?:\/\//, "")}
                     </span>
                   </a>

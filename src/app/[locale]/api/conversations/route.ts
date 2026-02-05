@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server"
 import { getLocale } from "next-intl/server"
-import { Prisma } from "@prisma/client"
+import { ConversationType, Prisma } from "@prisma/client"
 import { z } from "zod"
 import { createHash } from "crypto"
 import { generateId } from "@/lib/id"
@@ -8,14 +8,14 @@ import { prisma } from "@/lib/prisma"
 import { getServerSessionUser } from "@/lib/server-auth"
 
 const CreateConversationSchema = z.object({
-  type: z.enum(["DM", "GROUP"]).optional().default("DM"),
+  type: z.enum(ConversationType).optional().default(ConversationType.SINGLE),
   targetUserId: z.string().optional(),
 })
 
-const buildDmHash = (userIdA: bigint, userIdB: bigint): string => {
+const buildSingleHash = (userIdA: bigint, userIdB: bigint): string => {
   const [lowId, highId] =
     userIdA < userIdB ? [userIdA, userIdB] : [userIdB, userIdA]
-  const raw = `DM:${lowId.toString()}:${highId.toString()}`
+  const raw = `SINGLE:${lowId.toString()}:${highId.toString()}`
   return createHash("sha256").update(raw).digest("hex")
 }
 
@@ -106,7 +106,7 @@ export async function GET() {
           }
         : null
 
-      if (conv.type === "DM") {
+      if (conv.type === ConversationType.SINGLE) {
         const otherMember =
           conv.members.find((member) => member.user_id !== userId) || null
         const otherUser = otherMember?.user || null
@@ -176,9 +176,9 @@ export async function POST(req: Request) {
 
     const { type, targetUserId } = parsedResult.data
 
-    if (type !== "DM") {
+    if (type !== ConversationType.SINGLE) {
       return NextResponse.json(
-        { error: "Only DM conversations are supported" },
+        { error: "Only single conversations are supported" },
         { status: 400 }
       )
     }
@@ -192,7 +192,7 @@ export async function POST(req: Request) {
 
     const currentUserId: bigint = sessionUser.userId
     const targetUserIdBigInt: bigint = BigInt(targetUserId)
-    const dmHash: string = buildDmHash(currentUserId, targetUserIdBigInt)
+    const dmHash: string = buildSingleHash(currentUserId, targetUserIdBigInt)
 
     // 不能和自己创建会话
     if (currentUserId === targetUserIdBigInt) {
@@ -219,7 +219,7 @@ export async function POST(req: Request) {
 
     const existingConversation = await prisma.conversations.findFirst({
       where: {
-        type: "DM",
+        type: ConversationType.SINGLE,
         hash: dmHash,
         is_deleted: false,
       },
@@ -245,7 +245,7 @@ export async function POST(req: Request) {
       const newConversation = await prisma.conversations.create({
         data: {
           id: generateId(),
-          type: "DM",
+          type: "SINGLE",
           hash: dmHash,
           members: {
             create: [
@@ -265,7 +265,7 @@ export async function POST(req: Request) {
       ) {
         const racedConversation = await prisma.conversations.findFirst({
           where: {
-            type: "DM",
+            type: ConversationType.SINGLE,
             hash: dmHash,
             is_deleted: false,
           },

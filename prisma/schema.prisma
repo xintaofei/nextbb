@@ -372,7 +372,7 @@ model user_follows {
 
 model conversations {
   id            BigInt   @id @db.BigInt
-  type          String   @default("DM") @db.VarChar(16)
+  type          ConversationType @default(SINGLE)
   source_locale String   @default("zh") @db.VarChar(8)
   avatar        String?  @db.VarChar(256)
   hash          String   @db.VarChar(64)
@@ -676,6 +676,11 @@ model user_login_logs {
   @@index([login_at], map: "user_login_logs_time_index")
   @@index([status], map: "user_login_logs_status_index")
   @@map("user_login_logs")
+}
+
+enum ConversationType {
+  SINGLE
+  GROUP
 }
 
 enum CreditLogType {
