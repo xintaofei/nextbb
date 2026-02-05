@@ -45,7 +45,7 @@ export function NotificationItem({ notification }: NotificationItemProps) {
   if (topic) {
     href = `/topic/${topic.id}`
     if (post) {
-      href += `#post-${post.id}`
+      href += `#floor-${post.floor_number}`
     }
   } else if (type === "BADGE_AWARD") {
     href = `/u/${sender?.name}/badges` // 这里假设 sender 是本人，或者是系统
@@ -82,7 +82,7 @@ export function NotificationItem({ notification }: NotificationItemProps) {
         <div className="flex justify-between items-start gap-2">
           <p
             className={cn(
-              "text-sm leading-relaxed break-words",
+              "text-sm leading-relaxed wrap-break-word",
               !read && "font-medium text-foreground"
             )}
           >
