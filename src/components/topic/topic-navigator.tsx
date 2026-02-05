@@ -115,10 +115,35 @@ export function TopicNavigator({
     const handleLinkClick = (e: MouseEvent) => {
       const target = e.target as HTMLElement
       const anchor = target.closest("a")
-      if (anchor && anchor.href && !anchor.href.startsWith("#")) {
-        // 用户点击了外部链接，准备导航
-        isNavigatingRef.current = true
+      if (!anchor || !anchor.href) return
+
+      // 忽略以下情况：
+      // 1. 锚点链接（同页面内跳转）
+      // 2. 新标签页打开（不影响当前页面）
+      // 3. 下载链接
+      if (
+        anchor.href.startsWith("#") ||
+        anchor.target === "_blank" ||
+        anchor.hasAttribute("download")
+      ) {
+        return
       }
+
+      // 检查是否是真正的跨页面导航（非当前页面的 hash 变化）
+      const currentUrl = new URL(window.location.href)
+      const targetUrl = new URL(anchor.href, window.location.href)
+
+      // 如果只是 hash 不同，路径相同，不算导航
+      if (
+        currentUrl.origin === targetUrl.origin &&
+        currentUrl.pathname === targetUrl.pathname &&
+        currentUrl.search === targetUrl.search
+      ) {
+        return
+      }
+
+      // 用户点击了跨页面链接，准备导航
+      isNavigatingRef.current = true
     }
 
     window.addEventListener("beforeunload", handleBeforeUnload)
@@ -261,19 +286,27 @@ export function TopicNavigator({
 
       // 定位当前楼层的锚点索引
       const currentFloor = Math.round(floorFloat)
-      const anchorIndex = currentFloor // anchors[i] 对应 i 楼
-      const el = anchors[anchorIndex]
-      const name =
-        el?.querySelector<HTMLElement>("[data-slot=timeline-steps-title]")
-          ?.textContent || ""
 
       // 仅在楼层变化时更新状态（性能优化）
       if (currentFloor !== currentRef.current) {
         currentRef.current = currentFloor
         setCurrent(currentFloor)
         updateFloorHash(currentFloor)
+
+        // 只在楼层变化时查询作者信息（避免每次滚动都查询 DOM）
+        const anchorIndex = currentFloor // anchors[i] 对应 i 楼
+        const el = anchors[anchorIndex]
+        const name =
+          el?.querySelector<HTMLElement>("[data-slot=timeline-steps-title]")
+            ?.textContent || ""
         setAuthor(name)
       } else if (!authorRef.current) {
+        // 首次加载时设置作者信息
+        const anchorIndex = currentFloor
+        const el = anchors[anchorIndex]
+        const name =
+          el?.querySelector<HTMLElement>("[data-slot=timeline-steps-title]")
+            ?.textContent || ""
         setAuthor(name)
       }
 
