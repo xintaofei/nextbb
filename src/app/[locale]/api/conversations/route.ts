@@ -241,7 +241,10 @@ export async function GET(req: Request) {
       string,
       { id: bigint; name: string; avatar: string | null; is_deleted: boolean }
     >(
-      otherMembers.map((member) => [String(member.conversation_id), member.user])
+      otherMembers.map((member) => [
+        String(member.conversation_id),
+        member.user,
+      ])
     )
 
     // 格式化会话列表
