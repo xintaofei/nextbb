@@ -38,6 +38,7 @@ export function Aside() {
       id: string
       content: string
       contentHtml?: string
+      floorNumber: number
       createdAt: string
       user: { id: string; name: string; avatar: string }
       topic: { id: string; title: string }
@@ -142,7 +143,7 @@ export function Aside() {
                           </span>
                         </div>
                         <Link
-                          href={`/topic/${comment.topic.id}#post-${comment.id}`}
+                          href={`/topic/${comment.topic.id}#floor-${comment.floorNumber}`}
                           className="text-xs text-foreground line-clamp-2 hover:text-foreground transition-colors break-all"
                         >
                           {stripHtmlAndTruncate(

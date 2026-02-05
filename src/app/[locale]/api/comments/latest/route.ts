@@ -12,6 +12,7 @@ import {
 interface Comment {
   id: bigint
   content: string
+  floor_number: number
   created_at: Date
   translations: {
     locale: string
@@ -50,6 +51,7 @@ export async function GET() {
     select: {
       id: true,
       content: true,
+      floor_number: true,
       created_at: true,
       translations: getTranslationsQuery(locale, { content_html: true }),
       user: {
@@ -84,6 +86,7 @@ export async function GET() {
       content: comment.content,
       contentHtml: contentHtml || undefined,
       contentLocale: contentLocale || undefined,
+      floorNumber: comment.floor_number,
       createdAt: comment.created_at.toISOString(),
       user: {
         id: String(comment.user.id),
