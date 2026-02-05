@@ -3,7 +3,14 @@
 import { memo, useMemo, useState, useRef, useEffect, useCallback } from "react"
 import useSWR from "swr"
 import { useTranslations } from "next-intl"
-import { Languages, Loader2, MessageCircle, Users } from "lucide-react"
+import {
+  Languages,
+  Loader2,
+  MessageCircle,
+  Users,
+  Settings,
+  Upload,
+} from "lucide-react"
 import parse from "html-react-parser"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
@@ -23,6 +30,16 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { toast } from "sonner"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
 
 type ConversationDetail = {
   id: string
@@ -41,6 +58,7 @@ type ConversationDetail = {
 type ConversationDetailResponse = {
   conversation: ConversationDetail
   isMember: boolean
+  isCreator: boolean
 }
 
 type MessageItem = {
@@ -290,6 +308,14 @@ export const ConversationThread = memo(function ConversationThread({
 }: ConversationThreadProps) {
   const t = useTranslations("Conversations")
   const [joining, setJoining] = useState(false)
+  const [editDialogOpen, setEditDialogOpen] = useState(false)
+  const [editTitle, setEditTitle] = useState("")
+  const [editAvatar, setEditAvatar] = useState<File | null>(null)
+  const [editAvatarPreview, setEditAvatarPreview] = useState<string | null>(
+    null
+  )
+  const [saving, setSaving] = useState(false)
+  const editAvatarInputRef = useRef<HTMLInputElement>(null)
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const previousLengthRef = useRef(0)
 
@@ -336,6 +362,56 @@ export const ConversationThread = memo(function ConversationThread({
     conversation?.type === "SINGLE"
       ? conversation.otherUser?.avatar || undefined
       : conversation?.avatar || undefined
+
+  const isCreator = detail?.isCreator ?? false
+
+  const handleOpenEditDialog = useCallback(() => {
+    if (conversation) {
+      setEditTitle(conversation.title || "")
+      setEditAvatarPreview(conversation.avatar || null)
+      setEditAvatar(null)
+      setEditDialogOpen(true)
+    }
+  }, [conversation])
+
+  const handleEditAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    const allowedTypes = ["image/jpeg", "image/png", "image/webp", "image/gif"]
+    if (!allowedTypes.includes(file.type) || file.size > 5 * 1024 * 1024) return
+    setEditAvatar(file)
+    const reader = new FileReader()
+    reader.onload = (event) => {
+      setEditAvatarPreview(event.target?.result as string)
+    }
+    reader.readAsDataURL(file)
+  }
+
+  const handleSaveEdit = async () => {
+    if (saving) return
+    setSaving(true)
+    try {
+      const formData = new FormData()
+      if (editTitle.trim()) {
+        formData.append("title", editTitle.trim())
+      }
+      if (editAvatar) {
+        formData.append("avatar", editAvatar)
+      }
+      const res = await fetch(`/api/conversations/${conversationId}`, {
+        method: "PATCH",
+        body: formData,
+      })
+      if (!res.ok) throw new Error("failed")
+      await mutateDetail()
+      setEditDialogOpen(false)
+      toast.success(t("editGroup.saveSuccess"))
+    } catch {
+      toast.error(t("editGroup.saveError"))
+    } finally {
+      setSaving(false)
+    }
+  }
 
   // Auto-scroll to new messages
   useEffect(() => {
@@ -451,7 +527,74 @@ export const ConversationThread = memo(function ConversationThread({
             {joining ? t("actions.joining") : t("actions.join")}
           </Button>
         )}
+        {isCreator && conversation.type === "GROUP" && !showJoinPrompt && (
+          <Button variant="ghost" size="icon" onClick={handleOpenEditDialog}>
+            <Settings className="size-4" />
+          </Button>
+        )}
       </div>
+
+      {/* Edit Group Dialog */}
+      <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{t("editGroup.title")}</DialogTitle>
+            <DialogDescription>{t("editGroup.description")}</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="flex items-center gap-4">
+              <Avatar className="size-16">
+                <AvatarImage src={editAvatarPreview || undefined} />
+                <AvatarFallback>
+                  <Users className="size-6" />
+                </AvatarFallback>
+              </Avatar>
+              <div className="flex-1">
+                <Label>{t("editGroup.avatarLabel")}</Label>
+                <p className="text-sm text-muted-foreground mb-2">
+                  {t("editGroup.avatarHint")}
+                </p>
+                <input
+                  ref={editAvatarInputRef}
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp,image/gif"
+                  onChange={handleEditAvatarChange}
+                  className="hidden"
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => editAvatarInputRef.current?.click()}
+                >
+                  <Upload className="size-4 mr-2" />
+                  {t("editGroup.uploadAvatar")}
+                </Button>
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="edit-group-title">
+                {t("editGroup.nameLabel")}
+              </Label>
+              <Input
+                id="edit-group-title"
+                value={editTitle}
+                onChange={(e) => setEditTitle(e.target.value)}
+                placeholder={t("editGroup.namePlaceholder")}
+                maxLength={64}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setEditDialogOpen(false)}>
+              {t("editGroup.cancel")}
+            </Button>
+            <Button onClick={handleSaveEdit} disabled={saving}>
+              {saving ? t("editGroup.saving") : t("editGroup.save")}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {showJoinPrompt ? (
         <div className="flex flex-1 flex-col items-center justify-center text-center px-6">

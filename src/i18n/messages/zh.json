@@ -657,7 +657,8 @@
     "actions": {
       "join": "加入",
       "joining": "加入中",
-      "loadMore": "加载更多"
+      "loadMore": "加载更多",
+      "createGroup": "创建群聊"
     },
     "meta": {
       "members": "{count} 位成员",
@@ -701,6 +702,32 @@
       "originallyWrittenIn": "原文: {locale}",
       "source": "原文",
       "translationError": "加载翻译失败"
+    },
+    "createGroup": {
+      "title": "创建群聊",
+      "description": "创建一个新的群聊，邀请好友一起交流",
+      "avatarLabel": "群聊头像",
+      "avatarHint": "上传一张图片作为群聊头像",
+      "uploadAvatar": "上传头像",
+      "nameLabel": "群聊名称",
+      "namePlaceholder": "输入群聊名称",
+      "cancel": "取消",
+      "create": "创建",
+      "creating": "创建中..."
+    },
+    "editGroup": {
+      "title": "编辑群聊",
+      "description": "修改群聊名称和头像",
+      "avatarLabel": "群聊头像",
+      "avatarHint": "上传一张图片作为群聊头像",
+      "uploadAvatar": "上传头像",
+      "nameLabel": "群聊名称",
+      "namePlaceholder": "输入群聊名称",
+      "cancel": "取消",
+      "save": "保存",
+      "saving": "保存中...",
+      "saveSuccess": "保存成功",
+      "saveError": "保存失败"
     }
   },
   "AdminOverview": {

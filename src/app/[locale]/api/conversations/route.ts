@@ -3,13 +3,32 @@ import { getLocale } from "next-intl/server"
 import { ConversationType, Prisma } from "@prisma/client"
 import { z } from "zod"
 import { createHash } from "crypto"
+import { put } from "@vercel/blob"
 import { generateId } from "@/lib/id"
 import { prisma } from "@/lib/prisma"
 import { getServerSessionUser } from "@/lib/server-auth"
 
+const MAX_AVATAR_SIZE = 5 * 1024 * 1024 // 5MB
+const ALLOWED_AVATAR_TYPES = [
+  "image/jpeg",
+  "image/jpg",
+  "image/png",
+  "image/webp",
+  "image/gif",
+]
+
+function getExtFromContentType(ct: string): string {
+  if (ct.includes("png")) return "png"
+  if (ct.includes("jpeg") || ct.includes("jpg")) return "jpg"
+  if (ct.includes("webp")) return "webp"
+  if (ct.includes("gif")) return "gif"
+  return "jpg"
+}
+
 const CreateConversationSchema = z.object({
   type: z.enum(ConversationType).optional().default(ConversationType.SINGLE),
   targetUserId: z.string().optional(),
+  title: z.string().min(1).max(64).optional(),
 })
 
 const buildSingleHash = (userIdA: bigint, userIdB: bigint): string => {
@@ -348,25 +367,126 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
-    const body: unknown = await req.json()
-    const parsedResult = CreateConversationSchema.safeParse(body)
+    const contentType = req.headers.get("content-type") || ""
+    let type: string = ConversationType.SINGLE
+    let targetUserId: string | undefined
+    let title: string | undefined
+    let avatarFile: File | null = null
 
-    if (!parsedResult.success) {
-      return NextResponse.json(
-        { error: "Invalid request body" },
-        { status: 400 }
-      )
+    // 解析请求数据
+    if (contentType.includes("multipart/form-data")) {
+      const formData = await req.formData()
+      type = (formData.get("type") as string) || ConversationType.SINGLE
+      targetUserId = (formData.get("targetUserId") as string) || undefined
+      title = (formData.get("title") as string) || undefined
+      avatarFile = formData.get("avatar") as File | null
+    } else {
+      const body: unknown = await req.json()
+      const parsedResult = CreateConversationSchema.safeParse(body)
+      if (!parsedResult.success) {
+        return NextResponse.json(
+          { error: "Invalid request body" },
+          { status: 400 }
+        )
+      }
+      type = parsedResult.data.type
+      targetUserId = parsedResult.data.targetUserId
+      title = parsedResult.data.title
     }
 
-    const { type, targetUserId } = parsedResult.data
+    const currentUserId: bigint = sessionUser.userId
+    const locale: string = await getLocale()
 
-    if (type !== ConversationType.SINGLE) {
-      return NextResponse.json(
-        { error: "Only single conversations are supported" },
-        { status: 400 }
-      )
+    // 创建群聊
+    if (type === ConversationType.GROUP) {
+      if (!title) {
+        return NextResponse.json(
+          { error: "title is required for group" },
+          { status: 400 }
+        )
+      }
+
+      // 处理头像上传
+      let avatarUrl: string | null = null
+      if (avatarFile && avatarFile.size > 0) {
+        if (!ALLOWED_AVATAR_TYPES.includes(avatarFile.type)) {
+          return NextResponse.json(
+            { error: "Invalid avatar file type" },
+            { status: 400 }
+          )
+        }
+        if (avatarFile.size > MAX_AVATAR_SIZE) {
+          return NextResponse.json(
+            { error: "Avatar file too large" },
+            { status: 400 }
+          )
+        }
+        const arrayBuffer = await avatarFile.arrayBuffer()
+        const conversationId = generateId()
+        const ext = getExtFromContentType(avatarFile.type)
+        const key = `conversations/${conversationId.toString()}.${ext}`
+        const { url } = await put(key, arrayBuffer, {
+          access: "public",
+          contentType: avatarFile.type,
+          token: process.env.BLOB_READ_WRITE_TOKEN,
+        })
+        avatarUrl = url
+
+        const groupHash = `GROUP:${conversationId.toString()}`
+        const newConversation = await prisma.conversations.create({
+          data: {
+            id: conversationId,
+            type: ConversationType.GROUP,
+            hash: groupHash,
+            avatar: avatarUrl,
+            source_locale: locale,
+            created_by_id: currentUserId,
+            members: {
+              create: [{ user_id: currentUserId }],
+            },
+            translations: {
+              create: [{ locale, title, is_source: true }],
+            },
+          },
+          select: { id: true, avatar: true },
+        })
+
+        return NextResponse.json({
+          conversation: {
+            id: String(newConversation.id),
+            title,
+            avatar: newConversation.avatar,
+          },
+        })
+      }
+
+      const groupHash = `GROUP:${generateId().toString()}`
+      const newConversation = await prisma.conversations.create({
+        data: {
+          id: generateId(),
+          type: ConversationType.GROUP,
+          hash: groupHash,
+          source_locale: locale,
+          created_by_id: currentUserId,
+          members: {
+            create: [{ user_id: currentUserId }],
+          },
+          translations: {
+            create: [{ locale, title, is_source: true }],
+          },
+        },
+        select: { id: true },
+      })
+
+      return NextResponse.json({
+        conversation: {
+          id: String(newConversation.id),
+          title,
+        },
+      })
     }
 
+    // 创建单聊
     if (!targetUserId) {
       return NextResponse.json(
         { error: "targetUserId is required" },
@@ -374,7 +494,6 @@ export async function POST(req: Request) {
       )
     }
 
-    const currentUserId: bigint = sessionUser.userId
     const targetUserIdBigInt: bigint = BigInt(targetUserId)
     const dmHash: string = buildSingleHash(currentUserId, targetUserIdBigInt)
 

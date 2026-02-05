@@ -657,7 +657,8 @@
     "actions": {
       "join": "Join",
       "joining": "Joining",
-      "loadMore": "Load more"
+      "loadMore": "Load more",
+      "createGroup": "Create Group"
     },
     "meta": {
       "members": "{count} members",
@@ -701,6 +702,32 @@
       "originallyWrittenIn": "Originally written in: {locale}",
       "source": "Source",
       "translationError": "Failed to load translation"
+    },
+    "createGroup": {
+      "title": "Create Group",
+      "description": "Create a new group chat and invite friends to join",
+      "avatarLabel": "Group Avatar",
+      "avatarHint": "Upload an image as the group avatar",
+      "uploadAvatar": "Upload Avatar",
+      "nameLabel": "Group Name",
+      "namePlaceholder": "Enter group name",
+      "cancel": "Cancel",
+      "create": "Create",
+      "creating": "Creating..."
+    },
+    "editGroup": {
+      "title": "Edit Group",
+      "description": "Modify group name and avatar",
+      "avatarLabel": "Group Avatar",
+      "avatarHint": "Upload an image as the group avatar",
+      "uploadAvatar": "Upload Avatar",
+      "nameLabel": "Group Name",
+      "namePlaceholder": "Enter group name",
+      "cancel": "Cancel",
+      "save": "Save",
+      "saving": "Saving...",
+      "saveSuccess": "Saved successfully",
+      "saveError": "Failed to save"
     }
   },
   "AdminOverview": {

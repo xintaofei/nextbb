@@ -4,9 +4,8 @@ import { memo, useMemo, useRef, useState } from "react"
 import Link from "next/link"
 import { useParams, useRouter } from "next/navigation"
 import useSWRInfinite from "swr/infinite"
-import { mutate } from "swr"
 import { useTranslations } from "next-intl"
-import { Users, MessageCircle } from "lucide-react"
+import { Users, MessageCircle, Plus, Upload } from "lucide-react"
 import { cn, stripHtmlAndTruncate } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { ScrollArea } from "@/components/ui/scroll-area"
@@ -14,6 +13,17 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Skeleton } from "@/components/ui/skeleton"
 import { RelativeTime } from "@/components/common/relative-time"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog"
 
 type ConversationListItem = {
   id: string
@@ -80,6 +90,12 @@ export const ConversationsSidebar = memo(function ConversationsSidebar() {
   const params = useParams()
   const [tab, setTab] = useState("mine")
   const [joiningId, setJoiningId] = useState<string | null>(null)
+  const [createDialogOpen, setCreateDialogOpen] = useState(false)
+  const [groupTitle, setGroupTitle] = useState("")
+  const [groupAvatar, setGroupAvatar] = useState<File | null>(null)
+  const [avatarPreview, setAvatarPreview] = useState<string | null>(null)
+  const [creating, setCreating] = useState(false)
+  const avatarInputRef = useRef<HTMLInputElement>(null)
   const selectedId =
     typeof params?.id === "string" ? (params.id as string) : null
 
@@ -102,6 +118,7 @@ export const ConversationsSidebar = memo(function ConversationsSidebar() {
     isLoading: conversationsLoading,
     size: conversationSize,
     setSize: setConversationSize,
+    mutate: mutateConversations,
   } = useSWRInfinite<ConversationListResult>(getConversationsKey, fetcher)
 
   const getDiscoverKey = (
@@ -119,6 +136,7 @@ export const ConversationsSidebar = memo(function ConversationsSidebar() {
     isLoading: discoverLoading,
     size: discoverSize,
     setSize: setDiscoverSize,
+    mutate: mutateDiscover,
   } = useSWRInfinite<DiscoverResult>(getDiscoverKey, fetcher)
 
   const conversations = useMemo(() => {
@@ -164,24 +182,65 @@ export const ConversationsSidebar = memo(function ConversationsSidebar() {
       if (!res.ok) {
         throw new Error("failed")
       }
-      await Promise.all([
-        mutate((key) =>
-          typeof key === "string" && key.startsWith("/api/conversations?")
-            ? key
-            : null
-        ),
-        mutate((key) =>
-          typeof key === "string" &&
-          key.startsWith("/api/conversations/discover")
-            ? key
-            : null
-        ),
-      ])
+      await Promise.all([mutateConversations(), mutateDiscover()])
       router.push(`/conversations/${conversationId}`)
     } catch (error) {
       console.error("Failed to join conversation:", error)
     } finally {
       setJoiningId(null)
+    }
+  }
+
+  const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    const allowedTypes = ["image/jpeg", "image/png", "image/webp", "image/gif"]
+    if (!allowedTypes.includes(file.type)) {
+      return
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      return
+    }
+
+    setGroupAvatar(file)
+    const reader = new FileReader()
+    reader.onload = (event) => {
+      setAvatarPreview(event.target?.result as string)
+    }
+    reader.readAsDataURL(file)
+  }
+
+  const handleCreateGroup = async () => {
+    if (creating || !groupTitle.trim()) return
+    setCreating(true)
+    try {
+      const formData = new FormData()
+      formData.append("type", "GROUP")
+      formData.append("title", groupTitle.trim())
+      if (groupAvatar) {
+        formData.append("avatar", groupAvatar)
+      }
+
+      const res = await fetch("/api/conversations", {
+        method: "POST",
+        body: formData,
+      })
+      if (!res.ok) {
+        throw new Error("failed")
+      }
+      const data: { conversation: { id: string } } = await res.json()
+      await mutateConversations()
+      setCreateDialogOpen(false)
+      setGroupTitle("")
+      setGroupAvatar(null)
+      setAvatarPreview(null)
+      setTab("mine")
+      router.push(`/conversations/${data.conversation.id}`)
+    } catch (error) {
+      console.error("Failed to create group:", error)
+    } finally {
+      setCreating(false)
     }
   }
 
@@ -306,8 +365,11 @@ export const ConversationsSidebar = memo(function ConversationsSidebar() {
             </div>
           </ScrollArea>
         </TabsContent>
-        <TabsContent value="discover" className="mt-0 flex-1 min-h-0">
-          <ScrollArea className="h-full">
+        <TabsContent
+          value="discover"
+          className="mt-0 flex-1 min-h-0 flex flex-col"
+        >
+          <ScrollArea className="flex-1 min-h-0">
             <div className="px-4 py-4 space-y-3">
               {discoverLoading && (
                 <div className="space-y-3">
@@ -392,6 +454,84 @@ export const ConversationsSidebar = memo(function ConversationsSidebar() {
               )}
             </div>
           </ScrollArea>
+          <div className="px-4 py-3 border-t shrink-0">
+            <Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
+              <DialogTrigger asChild>
+                <Button className="w-full gap-2">
+                  <Plus className="size-4" />
+                  {t("actions.createGroup")}
+                </Button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>{t("createGroup.title")}</DialogTitle>
+                  <DialogDescription>
+                    {t("createGroup.description")}
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="space-y-4 py-4">
+                  <div className="flex items-center gap-4">
+                    <Avatar className="size-16">
+                      <AvatarImage src={avatarPreview || undefined} />
+                      <AvatarFallback>
+                        <Users className="size-6" />
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="flex-1">
+                      <Label>{t("createGroup.avatarLabel")}</Label>
+                      <p className="text-sm text-muted-foreground mb-2">
+                        {t("createGroup.avatarHint")}
+                      </p>
+                      <input
+                        ref={avatarInputRef}
+                        type="file"
+                        accept="image/jpeg,image/png,image/webp,image/gif"
+                        onChange={handleAvatarChange}
+                        className="hidden"
+                      />
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => avatarInputRef.current?.click()}
+                      >
+                        <Upload className="size-4 mr-2" />
+                        {t("createGroup.uploadAvatar")}
+                      </Button>
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="group-title">
+                      {t("createGroup.nameLabel")}
+                    </Label>
+                    <Input
+                      id="group-title"
+                      value={groupTitle}
+                      onChange={(e) => setGroupTitle(e.target.value)}
+                      placeholder={t("createGroup.namePlaceholder")}
+                      maxLength={64}
+                    />
+                  </div>
+                </div>
+                <DialogFooter>
+                  <Button
+                    variant="outline"
+                    onClick={() => setCreateDialogOpen(false)}
+                  >
+                    {t("createGroup.cancel")}
+                  </Button>
+                  <Button
+                    onClick={handleCreateGroup}
+                    disabled={creating || !groupTitle.trim()}
+                  >
+                    {creating
+                      ? t("createGroup.creating")
+                      : t("createGroup.create")}
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
+          </div>
         </TabsContent>
       </Tabs>
     </aside>
