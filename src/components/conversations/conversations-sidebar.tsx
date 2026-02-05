@@ -211,6 +211,15 @@ export const ConversationsSidebar = memo(function ConversationsSidebar() {
     reader.readAsDataURL(file)
   }
 
+  const handleTabChange = (value: string) => {
+    setTab(value)
+    if (value === "mine") {
+      mutateConversations()
+    } else if (value === "discover") {
+      mutateDiscover()
+    }
+  }
+
   const handleCreateGroup = async () => {
     if (creating || !groupTitle.trim()) return
     setCreating(true)
@@ -254,7 +263,7 @@ export const ConversationsSidebar = memo(function ConversationsSidebar() {
       </div>
       <Tabs
         value={tab}
-        onValueChange={setTab}
+        onValueChange={handleTabChange}
         className="flex flex-col flex-1 min-h-0 w-full gap-0"
       >
         <div className="px-4 py-3 border-b shrink-0">
