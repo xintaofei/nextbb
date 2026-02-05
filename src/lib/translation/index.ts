@@ -8,6 +8,7 @@ import {
   PostTranslationHandler,
   ExpressionGroupTranslationHandler,
   ExpressionTranslationHandler,
+  MessageTranslationHandler,
 } from "./handlers"
 import {
   TranslationCategoryCreatedEvent,
@@ -17,6 +18,7 @@ import {
   TranslationPostCreatedEvent,
   TranslationExpressionGroupCreatedEvent,
   TranslationExpressionCreatedEvent,
+  TranslationMessageCreatedEvent,
 } from "./types"
 
 /**
@@ -48,6 +50,7 @@ function registerEventListeners(): void {
   const postHandler = new PostTranslationHandler()
   const expressionGroupHandler = new ExpressionGroupTranslationHandler()
   const expressionHandler = new ExpressionTranslationHandler()
+  const messageHandler = new MessageTranslationHandler()
 
   // 注册分类事件
   TranslationEvents.on(
@@ -90,6 +93,14 @@ function registerEventListeners(): void {
     "expression",
     async (data: TranslationExpressionCreatedEvent) => {
       await expressionHandler.handle(data)
+    }
+  )
+
+  // 注册消息事件
+  TranslationEvents.on(
+    "message",
+    async (data: TranslationMessageCreatedEvent) => {
+      await messageHandler.handle(data)
     }
   )
 }

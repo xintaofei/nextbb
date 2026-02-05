@@ -8,6 +8,7 @@ import {
   TranslationPostCreatedEvent,
   TranslationExpressionGroupCreatedEvent,
   TranslationExpressionCreatedEvent,
+  TranslationMessageCreatedEvent,
   BaseTranslationCreatedEvent,
 } from "./types"
 import { translationService } from "@/lib/services/translation-service"
@@ -518,6 +519,66 @@ export class ExpressionTranslationHandler extends BaseTranslationHandler<Transla
         expression_id: id,
         locale: targetLocale,
         name: result.name,
+        version: 1,
+        is_source: false,
+      },
+    })
+  }
+}
+
+/**
+ * 消息翻译处理器
+ */
+export class MessageTranslationHandler extends BaseTranslationHandler<TranslationMessageCreatedEvent> {
+  protected async execute(
+    event: TranslationMessageCreatedEvent
+  ): Promise<void> {
+    const { entityId, targetLocale } = event
+    const id = BigInt(entityId)
+
+    const message = await prisma.messages.findUnique({
+      where: { id },
+      include: {
+        translations: {
+          where: { is_source: true },
+        },
+      },
+    })
+
+    if (!message) throw new Error(`Message ${entityId} not found`)
+
+    // Ensure we have the source translation (HTML)
+    const sourceTranslation = message.translations[0]
+    if (!sourceTranslation) {
+      throw new Error(`No source translation found for Message ${entityId}`)
+    }
+
+    const sourceLocale = message.source_locale
+    const sourceData = {
+      content_html: sourceTranslation.content_html,
+    }
+
+    const result = await translationService.translateMessage(
+      sourceData,
+      sourceLocale,
+      targetLocale
+    )
+
+    await prisma.message_translations.upsert({
+      where: {
+        message_id_locale: {
+          message_id: id,
+          locale: targetLocale,
+        },
+      },
+      update: {
+        content_html: result.content_html,
+        version: { increment: 1 },
+      },
+      create: {
+        message_id: id,
+        locale: targetLocale,
+        content_html: result.content_html,
         version: 1,
         is_source: false,
       },

@@ -19,6 +19,12 @@ const PostTranslationSchema = z.object({
   content_html: z.string().describe("The translated content in HTML format"),
 })
 
+const MessageTranslationSchema = z.object({
+  content_html: z
+    .string()
+    .describe("The translated message content in HTML format"),
+})
+
 export class TranslationService {
   /**
    * Retrieves the active LLM configuration for translation.
@@ -79,6 +85,16 @@ For Posts (Replies):
 - DO NOT translate any HTML tags, attributes, or classes.
 - DO NOT change the HTML structure in any way.
 - Maintain the original tone of the user.`
+
+      case "MESSAGE":
+        return `${basePrompt}
+For Messages (Direct/Private Messages):
+- The input content is HTML format (serialized from ProseMirror/Milkdown).
+- Your task is to translate the visible text content ONLY.
+- DO NOT translate any HTML tags, attributes, or classes.
+- DO NOT change the HTML structure in any way.
+- Keep the translation natural and conversational.
+- Maintain the original tone and formality level.`
 
       default:
         return basePrompt
@@ -151,6 +167,29 @@ ${data.content_html}`
       model,
       output: Output.object({ schema: PostTranslationSchema }),
       system: this.getSystemPrompt("POST", sourceLocale, targetLocale),
+      prompt,
+    })
+
+    return output
+  }
+
+  /**
+   * Translates a Message.
+   */
+  async translateMessage(
+    data: { content_html: string },
+    sourceLocale: string,
+    targetLocale: string
+  ) {
+    const model = await this.getTranslationModel()
+    const prompt = `Translate the following message content (HTML):
+
+${data.content_html}`
+
+    const { output } = await generateText({
+      model,
+      output: Output.object({ schema: MessageTranslationSchema }),
+      system: this.getSystemPrompt("MESSAGE", sourceLocale, targetLocale),
       prompt,
     })
 

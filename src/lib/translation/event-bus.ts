@@ -69,6 +69,9 @@ export class TranslationEvents {
       case TranslationEntityType.EXPRESSION:
         await bus.emit("expression", data)
         break
+      case TranslationEntityType.MESSAGE:
+        await bus.emit("message", data)
+        break
     }
   }
 }

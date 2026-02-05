@@ -20,6 +20,7 @@ export type TranslationTopicCreatedEvent = BaseTranslationCreatedEvent
 export type TranslationPostCreatedEvent = BaseTranslationCreatedEvent
 export type TranslationExpressionGroupCreatedEvent = BaseTranslationCreatedEvent
 export type TranslationExpressionCreatedEvent = BaseTranslationCreatedEvent
+export type TranslationMessageCreatedEvent = BaseTranslationCreatedEvent
 
 /**
  * 翻译系统事件映射
@@ -33,4 +34,5 @@ export interface TranslationEventMap extends Record<string, unknown> {
   post: TranslationPostCreatedEvent
   expression_group: TranslationExpressionGroupCreatedEvent
   expression: TranslationExpressionCreatedEvent
+  message: TranslationMessageCreatedEvent
 }
