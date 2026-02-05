@@ -227,7 +227,7 @@ export async function POST(
         where: {
           topic_id: topicId,
           is_deleted: false,
-          floor_number: { gt: 1 }, // Exclude first floor (topic post)
+          floor_number: { gt: 0 }, // Exclude first floor (topic post)
         },
       })
 
@@ -379,12 +379,12 @@ async function executeThresholdDraw(
   fixedFloorsJson: string | null,
   winnerCount: number | null
 ): Promise<void> {
-  // Get all eligible posts (exclude floor 1)
+  // Get all eligible posts (exclude floor 0)
   const posts = await tx.posts.findMany({
     where: {
       topic_id: topicId,
       is_deleted: false,
-      floor_number: { gt: 1 },
+      floor_number: { gt: 0 },
     },
     select: {
       id: true,

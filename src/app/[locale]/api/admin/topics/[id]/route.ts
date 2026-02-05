@@ -109,7 +109,7 @@ export async function GET(
         },
         posts: {
           where: {
-            floor_number: 1,
+            floor_number: 0,
           },
           select: {
             content: true,

@@ -40,7 +40,7 @@ export async function GET() {
     where: {
       is_deleted: false,
       floor_number: {
-        gt: 1,
+        gt: 0,
       },
     },
     orderBy: {

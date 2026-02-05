@@ -482,7 +482,7 @@ export default function TopicOverviewClient({
         const tempId = `temp-${Date.now()}`
         const optimistic: PostItem = {
           id: tempId,
-          floorNumber: postsRef.current.length + 1,
+          floorNumber: postsRef.current.length,
           author: {
             id: currentUserId ?? "0",
             name: currentUserProfile?.name ?? "",
@@ -752,7 +752,7 @@ export default function TopicOverviewClient({
     const match = hash.match(/^#floor-(\d+)$/)
     if (!match) return null
     const floor = Number.parseInt(match[1], 10)
-    if (!Number.isFinite(floor) || floor < 1) return null
+    if (!Number.isFinite(floor) || floor < 0) return null
     return floor
   }, [])
 
@@ -780,9 +780,8 @@ export default function TopicOverviewClient({
     if (targetFloor === null || !postsPages) return
 
     // 计算需要加载的页数
-    // 楼层 = 回复序号，帖子楼层 = 楼层 + 主楼
-    const targetPostFloor: number = targetFloor + 1
-    const pagesNeeded: number = Math.ceil(targetPostFloor / pageSize)
+    const postsNeeded: number = targetFloor + 1
+    const pagesNeeded: number = Math.ceil(postsNeeded / pageSize)
     const currentPages: number = postsPages.length
 
     if (currentPages < pagesNeeded) {
@@ -794,11 +793,9 @@ export default function TopicOverviewClient({
   useEffect(() => {
     if (targetFloor === null || !posts.length || loadingPosts) return
 
-    const targetPostFloor: number = targetFloor + 1
-
     // 查找目标楼层的帖子
     const targetPost = posts.find(
-      (p: PostItem) => p.floorNumber === targetPostFloor
+      (p: PostItem) => p.floorNumber === targetFloor
     )
     if (!targetPost) {
       // 所有数据加载完毕但未找到目标楼层
@@ -869,9 +866,6 @@ export default function TopicOverviewClient({
               {posts.map((post, index) => {
                 const isBountyTopic = topicInfo?.type === TopicType.BOUNTY
                 const isQuestionTopic = topicInfo?.type === TopicType.QUESTION
-                const displayFloor: number = post.floorNumber - 1
-                const floorAnchorId: string | undefined =
-                  displayFloor > 0 ? `floor-${displayFloor}` : undefined
                 // 通过第一个帖子的作者判断是否为主题作者
                 const topicAuthorId = posts[0]?.author.id
                 const isTopicOwner =
@@ -918,7 +912,7 @@ export default function TopicOverviewClient({
                     post={post}
                     index={index}
                     anchorId={`post-${index + 1}`}
-                    floorAnchorId={floorAnchorId}
+                    floorAnchorId={`floor-${post.floorNumber}`}
                     currentUserId={currentUserId}
                     mutatingPostId={mutatingPostId}
                     likeMutating={likeMutating}

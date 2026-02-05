@@ -191,7 +191,7 @@ export async function POST(
         }
 
         // 验证不是首楼
-        if (post.floor_number === 1) {
+        if (post.floor_number === 0) {
           throw new Error("Cannot accept the first floor")
         }
 

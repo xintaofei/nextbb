@@ -46,12 +46,12 @@ export async function GET(
     )
   }
 
-  // Count replies (exclude floor 1)
+  // Count replies (exclude floor 0)
   const replyCount = await prisma.posts.count({
     where: {
       topic_id: topicId,
       is_deleted: false,
-      floor_number: { gt: 1 },
+      floor_number: { gt: 0 },
     },
   })
 
@@ -64,7 +64,7 @@ export async function GET(
         topic_id: topicId,
         user_id: auth.userId,
         is_deleted: false,
-        floor_number: { gt: 1 },
+        floor_number: { gt: 0 },
       },
       select: { id: true },
     })
