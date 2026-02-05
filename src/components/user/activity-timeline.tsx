@@ -121,7 +121,6 @@ function ActivityTimeline({
   const renderPostContent = (activity: ActivityItem) => {
     if (!activity.postData) return null
     const {
-      postId,
       floorNumber,
       contentPreview,
       topicId,
@@ -132,7 +131,7 @@ function ActivityTimeline({
 
     return (
       <Link
-        href={`/topic/${topicId}#post-${postId}`}
+        href={`/topic/${topicId}#floor-${floorNumber}`}
         className="block overflow-hidden"
       >
         <h3 className="font-medium hover:text-primary transition-colors line-clamp-2 mb-2 whitespace-normal wrap-break-word">
@@ -165,7 +164,6 @@ function ActivityTimeline({
   const renderLikeContent = (activity: ActivityItem) => {
     if (!activity.likeData) return null
     const {
-      postId,
       floorNumber,
       contentPreview,
       topicId,
@@ -176,7 +174,7 @@ function ActivityTimeline({
 
     return (
       <Link
-        href={`/topic/${topicId}#post-${postId}`}
+        href={`/topic/${topicId}#floor-${floorNumber}`}
         className="block overflow-hidden"
       >
         <h3 className="font-medium hover:text-primary transition-colors line-clamp-2 mb-2 whitespace-normal wrap-break-word">
@@ -212,7 +210,6 @@ function ActivityTimeline({
   const renderBookmarkContent = (activity: ActivityItem) => {
     if (!activity.bookmarkData) return null
     const {
-      postId,
       floorNumber,
       contentPreview,
       topicId,
@@ -223,7 +220,7 @@ function ActivityTimeline({
 
     return (
       <Link
-        href={`/topic/${topicId}#post-${postId}`}
+        href={`/topic/${topicId}#floor-${floorNumber}`}
         className="block overflow-hidden"
       >
         <h3 className="font-medium hover:text-primary transition-colors line-clamp-2 mb-2 whitespace-normal wrap-break-word">
