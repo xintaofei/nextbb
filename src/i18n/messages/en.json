@@ -2058,6 +2058,7 @@
       "badge": "Badge",
       "topic": "Topic",
       "post": "Post",
+      "message": "Message",
       "expression_group": "Expression Group",
       "expression": "Expression"
     },
