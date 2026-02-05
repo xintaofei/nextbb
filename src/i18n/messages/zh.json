@@ -656,7 +656,8 @@
     },
     "actions": {
       "join": "加入",
-      "joining": "加入中"
+      "joining": "加入中",
+      "loadMore": "加载更多"
     },
     "meta": {
       "members": "{count} 位成员",

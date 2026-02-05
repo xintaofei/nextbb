@@ -23,6 +23,44 @@ const buildSingleHash = (userIdA: bigint, userIdB: bigint): string => {
  * 获取当前用户的会话列表
  * GET /api/conversations
  */
+type ConversationListItem = {
+  id: string
+  type: ConversationType
+  otherUser?: {
+    id: string
+    name: string
+    avatar: string | null
+    isDeleted: boolean
+  } | null
+  title?: string | null
+  avatar?: string | null
+  memberCount?: number
+  lastMessage?: {
+    id: string
+    content: string
+    isRead: boolean
+    isSentByMe: boolean
+    createdAt: string
+  } | null
+  updatedAt: string
+}
+
+type ConversationListResult = {
+  items: ConversationListItem[]
+  conversations: ConversationListItem[]
+  page: number
+  pageSize: number
+  total: number
+  hasMore: boolean
+}
+
+const parsePageNumber = (value: string | null, fallback: number) => {
+  if (!value) return fallback
+  const parsed = Number(value)
+  if (!Number.isFinite(parsed) || parsed <= 0) return fallback
+  return Math.floor(parsed)
+}
+
 export async function GET(req: Request) {
   try {
     const sessionUser = await getServerSessionUser()
@@ -35,66 +73,182 @@ export async function GET(req: Request) {
 
     const { searchParams } = new URL(req.url)
     const highlightId = searchParams.get("highlightId")
+    const page = parsePageNumber(searchParams.get("page"), 1)
+    const pageSize = parsePageNumber(searchParams.get("pageSize"), 30)
+    const skip = (page - 1) * pageSize
 
-    // 查询用户参与的所有会话
-    const conversations = await prisma.conversations.findMany({
-      where: {
-        is_deleted: false,
-        members: {
-          some: {
-            user_id: userId,
-            is_deleted: false,
-          },
+    let highlightConversationId: bigint | null = null
+    if (highlightId) {
+      try {
+        highlightConversationId = BigInt(highlightId)
+      } catch {
+        highlightConversationId = null
+      }
+    }
+
+    const where = {
+      is_deleted: false,
+      members: {
+        some: {
+          user_id: userId,
+          is_deleted: false,
         },
       },
-      include: {
-        members: {
-          where: { is_deleted: false },
-          select: {
-            user_id: true,
-            last_read_message_id: true,
-            user: {
-              select: {
-                id: true,
-                name: true,
-                avatar: true,
-                is_deleted: true,
-              },
+    }
+
+    const [total, conversations] = await Promise.all([
+      prisma.conversations.count({ where }),
+      prisma.conversations.findMany({
+        where,
+        select: {
+          id: true,
+          type: true,
+          avatar: true,
+          updated_at: true,
+          translations: {
+            where: {
+              OR: [{ locale }, { is_source: true }],
+            },
+            select: {
+              locale: true,
+              title: true,
+              is_source: true,
+            },
+          },
+          _count: {
+            select: { members: true },
+          },
+          messages: {
+            where: { is_deleted: false },
+            orderBy: { created_at: "desc" },
+            take: 1,
+            select: {
+              id: true,
+              content: true,
+              created_at: true,
+              sender_id: true,
             },
           },
         },
-        messages: {
-          where: { is_deleted: false },
-          orderBy: { created_at: "desc" },
-          take: 1,
-          select: {
-            id: true,
-            content: true,
-            created_at: true,
-            sender_id: true,
-          },
+        orderBy: { updated_at: "desc" },
+        skip,
+        take: pageSize,
+      }),
+    ])
+
+    const highlightConversation =
+      highlightConversationId && page === 1
+        ? await prisma.conversations.findFirst({
+            where: {
+              id: highlightConversationId,
+              is_deleted: false,
+              members: {
+                some: {
+                  user_id: userId,
+                  is_deleted: false,
+                },
+              },
+            },
+            select: {
+              id: true,
+              type: true,
+              avatar: true,
+              updated_at: true,
+              translations: {
+                where: {
+                  OR: [{ locale }, { is_source: true }],
+                },
+                select: {
+                  locale: true,
+                  title: true,
+                  is_source: true,
+                },
+              },
+              _count: {
+                select: { members: true },
+              },
+              messages: {
+                where: { is_deleted: false },
+                orderBy: { created_at: "desc" },
+                take: 1,
+                select: {
+                  id: true,
+                  content: true,
+                  created_at: true,
+                  sender_id: true,
+                },
+              },
+            },
+          })
+        : null
+
+    const conversationsForMaps = highlightConversation
+      ? [highlightConversation, ...conversations]
+      : conversations
+    const conversationIds = Array.from(
+      new Set(conversationsForMaps.map((conv) => conv.id))
+    )
+    const singleConversationIds = Array.from(
+      new Set(
+        conversationsForMaps
+          .filter((conv) => conv.type === ConversationType.SINGLE)
+          .map((conv) => conv.id)
+      )
+    )
+
+    const [memberStates, otherMembers] = await Promise.all([
+      prisma.conversation_members.findMany({
+        where: {
+          conversation_id: { in: conversationIds },
+          user_id: userId,
+          is_deleted: false,
         },
-        translations: {
-          where: {
-            OR: [{ locale }, { is_source: true }],
-          },
-          select: {
-            locale: true,
-            title: true,
-            is_source: true,
-          },
+        select: {
+          conversation_id: true,
+          last_read_message_id: true,
         },
-      },
-      orderBy: { updated_at: "desc" },
-    })
+      }),
+      singleConversationIds.length > 0
+        ? prisma.conversation_members.findMany({
+            where: {
+              conversation_id: { in: singleConversationIds },
+              user_id: { not: userId },
+              is_deleted: false,
+            },
+            select: {
+              conversation_id: true,
+              user: {
+                select: {
+                  id: true,
+                  name: true,
+                  avatar: true,
+                  is_deleted: true,
+                },
+              },
+            },
+          })
+        : Promise.resolve([]),
+    ])
+
+    const lastReadMap = new Map<string, bigint | null>(
+      memberStates.map((member) => [
+        String(member.conversation_id),
+        member.last_read_message_id || null,
+      ])
+    )
+
+    const otherUserMap = new Map<
+      string,
+      { id: bigint; name: string; avatar: string | null; is_deleted: boolean }
+    >(
+      otherMembers.map((member) => [String(member.conversation_id), member.user])
+    )
 
     // 格式化会话列表
-    const formattedConversations = conversations.map((conv) => {
+    const formatConversation = (conv: (typeof conversations)[number]) => {
       const lastMessage = conv.messages[0] || null
-      const currentMember =
-        conv.members.find((member) => member.user_id === userId) || null
       const lastReadMessageId: bigint | null =
-        currentMember?.last_read_message_id || null
+        lastReadMap.get(String(conv.id)) || null
       const isRead = lastMessage
         ? lastMessage.sender_id === userId ||
           (lastReadMessageId !== null && lastReadMessageId >= lastMessage.id)
@@ -110,9 +264,7 @@ export async function GET(req: Request) {
         : null
 
       if (conv.type === ConversationType.SINGLE) {
-        const otherMember =
-          conv.members.find((member) => member.user_id !== userId) || null
-        const otherUser = otherMember?.user || null
+        const otherUser = otherUserMap.get(String(conv.id)) || null
 
         return {
           id: String(conv.id),
@@ -140,23 +292,39 @@ export async function GET(req: Request) {
         type: conv.type,
         title: titleTranslation ? titleTranslation.title : null,
         avatar: conv.avatar,
-        memberCount: conv.members.length,
+        memberCount: conv._count.members,
         lastMessage: formattedLastMessage,
         updatedAt: conv.updated_at.toISOString(),
       }
-    })
-
-    if (highlightId) {
-      const index = formattedConversations.findIndex(
-        (item) => item.id === highlightId
-      )
-      if (index > 0) {
-        const [target] = formattedConversations.splice(index, 1)
-        formattedConversations.unshift(target)
-      }
     }
 
-    return NextResponse.json({ conversations: formattedConversations })
+    let formattedConversations: ConversationListItem[] = conversations.map(
+      (conv) => formatConversation(conv)
+    )
+
+    if (highlightConversation) {
+      formattedConversations.unshift(formatConversation(highlightConversation))
+    }
+
+    if (highlightId) {
+      const seen = new Set<string>()
+      formattedConversations = formattedConversations.filter((item) => {
+        if (seen.has(item.id)) return false
+        seen.add(item.id)
+        return true
+      })
+    }
+
+    const result: ConversationListResult = {
+      items: formattedConversations,
+      conversations: formattedConversations,
+      page,
+      pageSize,
+      total,
+      hasMore: page * pageSize < total,
+    }
+
+    return NextResponse.json(result)
   } catch (error) {
     console.error("Error fetching conversations:", error)
     return NextResponse.json(
