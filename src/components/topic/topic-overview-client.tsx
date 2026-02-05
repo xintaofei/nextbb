@@ -156,18 +156,21 @@ export default function TopicOverviewClient({
 
   useEffect(() => {
     const previousLength = previousPostsLengthRef.current
-    // 只有在已有帖子且长度增加时才高亮（加载更多场景）
-    if (posts.length > previousLength && previousLength > 0) {
+    previousPostsLengthRef.current = posts.length
+
+    // 只在真正"加载更多"时高亮（而非初始加载或锚定加载）
+    if (
+      posts.length > previousLength &&
+      previousLength > 0 &&
+      targetFloor === null
+    ) {
       setHighlightIndex(previousLength)
       const timer = setTimeout(() => {
         setHighlightIndex(null)
       }, 2000)
-      previousPostsLengthRef.current = posts.length
       return () => clearTimeout(timer)
     }
-    // 更新长度记录
-    previousPostsLengthRef.current = posts.length
-  }, [posts.length])
+  }, [posts.length, targetFloor])
 
   const lastPage =
     postsPages && postsPages.length > 0
@@ -442,6 +445,12 @@ export default function TopicOverviewClient({
     [currentUserData]
   )
 
+  // 使用 ref 存储 locale，避免频繁触发 useCallback 重建
+  const localeRef = useRef(locale)
+  useEffect(() => {
+    localeRef.current = locale
+  }, [locale])
+
   // 获取悬赏配置
   const topicType = topicInfo?.type
   const { data: bountyData, mutate: mutateBounty } = useSWR(
@@ -480,6 +489,7 @@ export default function TopicOverviewClient({
       setSubmitting(true)
       try {
         const tempId = `temp-${Date.now()}`
+        const currentLocale = localeRef.current
         const optimistic: PostItem = {
           id: tempId,
           floorNumber: postsRef.current.length,
@@ -490,8 +500,8 @@ export default function TopicOverviewClient({
           },
           content,
           contentHtml,
-          sourceLocale: locale,
-          contentLocale: locale,
+          sourceLocale: currentLocale,
+          contentLocale: currentLocale,
           isFirstUserPost: false,
           createdAt: new Date().toISOString(),
           minutesAgo: 0,
@@ -544,7 +554,6 @@ export default function TopicOverviewClient({
       replyToPostId,
       mutatePosts,
       triggerReply,
-      locale,
     ]
   )
 
@@ -776,28 +785,29 @@ export default function TopicOverviewClient({
   }, [parseFloorFromHash])
 
   // Effect 2: 自动加载所需页面
+  const pagesLength = postsPages?.length ?? 0
+
   useEffect(() => {
-    if (targetFloor === null || !postsPages) return
+    if (targetFloor === null) return
 
     // 计算需要加载的页数
     const postsNeeded: number = targetFloor + 1
     const pagesNeeded: number = Math.ceil(postsNeeded / pageSize)
-    const currentPages: number = postsPages.length
 
-    if (currentPages < pagesNeeded) {
+    if (pagesLength < pagesNeeded) {
       setSize(pagesNeeded)
     }
-  }, [targetFloor, postsPages, setSize, pageSize])
+  }, [targetFloor, pagesLength, setSize, pageSize])
 
   // Effect 3: 滚动到目标楼层
   useEffect(() => {
     if (targetFloor === null || !posts.length || loadingPosts) return
 
-    // 查找目标楼层的帖子
-    const targetPost = posts.find(
+    // 使用 findIndex 一次遍历找到目标帖子的索引
+    const targetIndex = posts.findIndex(
       (p: PostItem) => p.floorNumber === targetFloor
     )
-    if (!targetPost) {
+    if (targetIndex === -1) {
       // 所有数据加载完毕但未找到目标楼层
       if (posts.length >= totalPosts) {
         toast.error(t("floor.notFound", { floor: targetFloor }))
@@ -808,37 +818,49 @@ export default function TopicOverviewClient({
     }
 
     // 找到目标帖子，滚动到该位置
-    const targetIndex = posts.indexOf(targetPost)
     const anchorId = `post-${targetIndex + 1}`
-    const element = document.getElementById(anchorId)
 
-    if (element) {
-      setTimeout(() => {
-        element.scrollIntoView({ behavior: "smooth", block: "center" })
-        setHighlightIndex(targetIndex)
+    // 使用 requestAnimationFrame 确保 DOM 准备就绪
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        const element = document.getElementById(anchorId)
+        if (element) {
+          element.scrollIntoView({ behavior: "smooth", block: "center" })
+          setHighlightIndex(targetIndex)
+        } else {
+          // Fallback: 元素未找到
+          console.warn(`Element ${anchorId} not found after render`)
+        }
         setTargetFloor(null)
         setIsLoadingFloor(false)
-      }, 100)
-    }
+      })
+    })
   }, [targetFloor, posts, loadingPosts, totalPosts, t])
+
+  // 使用 ref 存储最新状态，避免频繁重建 IntersectionObserver
+  const loadingStateRef = useRef({ hasMore, loadingPosts, validatingPosts })
+  useEffect(() => {
+    loadingStateRef.current = { hasMore, loadingPosts, validatingPosts }
+  }, [hasMore, loadingPosts, validatingPosts])
 
   useEffect(() => {
     const sentinel = sentinelRef.current
     if (!sentinel) return
     const observer = new IntersectionObserver((entries) => {
       const entry = entries[0]
+      const state = loadingStateRef.current
       if (
         entry.isIntersecting &&
-        hasMore &&
-        !loadingPosts &&
-        !validatingPosts
+        state.hasMore &&
+        !state.loadingPosts &&
+        !state.validatingPosts
       ) {
         setSize((s) => s + 1)
       }
     })
     observer.observe(sentinel)
     return () => observer.disconnect()
-  }, [hasMore, loadingPosts, validatingPosts, setSize, sentinelRef])
+  }, [setSize])
 
   return (
     <div className="flex min-h-screen w-full flex-col p-8 max-sm:p-4 gap-4">
