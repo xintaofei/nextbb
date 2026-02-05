@@ -31,6 +31,7 @@ import { Button } from "@/components/ui/button"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { ChevronUp, Crown, SmileIcon } from "lucide-react"
 import { useTranslations } from "next-intl"
+import ShinyText from "@/components/common/shiny-text"
 
 const repliesFetcher = async (url: string) => {
   const res = await fetch(url)
@@ -283,12 +284,18 @@ export const TopicPostItem = memo(function TopicPostItem({
       </TimelineStepsIcon>
       <TimelineStepsContent className={`border-b`}>
         {post.isFirstUserPost && !post.isDeleted && (
-          <Alert className="border-emerald-200 bg-emerald-50 text-emerald-800  dark:border-emerald-900/50 dark:bg-emerald-950/20 dark:text-emerald-300">
-            <SmileIcon />
-            <AlertDescription className="text-emerald-800 dark:text-emerald-300">
-              {tPost("firstUserPost", { name: post.author.name })}
-            </AlertDescription>
-          </Alert>
+          <ShinyText
+            text={"✨" + tPost("firstUserPost", { name: post.author.name })}
+            speed={2}
+            delay={2}
+            color="var(--chart-4)"
+            shineColor="var(--background)"
+            spread={120}
+            direction="left"
+            yoyo={false}
+            pauseOnHover={true}
+            disabled={false}
+          />
         )}
         <PostHeader
           post={post}
