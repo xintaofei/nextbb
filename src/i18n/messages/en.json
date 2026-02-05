@@ -695,6 +695,12 @@
       "sendError": "Failed to send message",
       "networkError": "Network connection failed",
       "syncingHint": "Syncing..."
+    },
+    "message": {
+      "languageSelection": "Select language",
+      "originallyWrittenIn": "Originally written in: {locale}",
+      "source": "Source",
+      "translationError": "Failed to load translation"
     }
   },
   "AdminOverview": {

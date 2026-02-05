@@ -695,6 +695,12 @@
       "sendError": "发送失败，请重试",
       "networkError": "网络连接失败",
       "syncingHint": "正在同步..."
+    },
+    "message": {
+      "languageSelection": "选择语言",
+      "originallyWrittenIn": "原文: {locale}",
+      "source": "原文",
+      "translationError": "加载翻译失败"
     }
   },
   "AdminOverview": {

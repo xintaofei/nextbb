@@ -186,22 +186,26 @@ export const ConversationsSidebar = memo(function ConversationsSidebar() {
   }
 
   return (
-    <aside className="w-full max-lg:border-b lg:w-80 bg-background">
-      <div className="flex items-center justify-between px-4 py-4 border-b">
+    <aside className="flex flex-col w-full max-lg:border-b max-lg:max-h-[40vh] lg:w-80 bg-background shrink-0">
+      <div className="flex items-center justify-between px-4 py-4 border-b shrink-0">
         <div className="flex items-center gap-2 font-semibold text-lg">
           <MessageCircle className="size-5 text-muted-foreground" />
           {t("title")}
         </div>
       </div>
-      <Tabs value={tab} onValueChange={setTab} className="w-full gap-0">
-        <div className="px-4 py-3 border-b">
+      <Tabs
+        value={tab}
+        onValueChange={setTab}
+        className="flex flex-col flex-1 min-h-0 w-full gap-0"
+      >
+        <div className="px-4 py-3 border-b shrink-0">
           <TabsList className="w-full grid grid-cols-2">
             <TabsTrigger value="mine">{t("tabs.mine")}</TabsTrigger>
             <TabsTrigger value="discover">{t("tabs.discover")}</TabsTrigger>
           </TabsList>
         </div>
-        <TabsContent value="mine" className="mt-0">
-          <ScrollArea className="h-[calc(100vh-210px)] max-lg:h-auto max-lg:max-h-[45vh]">
+        <TabsContent value="mine" className="mt-0 flex-1 min-h-0">
+          <ScrollArea className="h-full">
             <div className="px-4 py-4 space-y-2">
               {conversationsLoading && (
                 <div className="space-y-3">
@@ -290,8 +294,8 @@ export const ConversationsSidebar = memo(function ConversationsSidebar() {
             </div>
           </ScrollArea>
         </TabsContent>
-        <TabsContent value="discover" className="mt-0">
-          <ScrollArea className="h-[calc(100vh-210px)] max-lg:h-auto max-lg:max-h-[45vh]">
+        <TabsContent value="discover" className="mt-0 flex-1 min-h-0">
+          <ScrollArea className="h-full">
             <div className="px-4 py-4 space-y-3">
               {discoverLoading && (
                 <div className="space-y-3">

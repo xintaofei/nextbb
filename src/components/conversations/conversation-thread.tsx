@@ -1,9 +1,9 @@
 "use client"
 
-import { memo, useMemo, useState, useRef, useEffect } from "react"
+import { memo, useMemo, useState, useRef, useEffect, useCallback } from "react"
 import useSWR from "swr"
 import { useTranslations } from "next-intl"
-import { MessageCircle, Users } from "lucide-react"
+import { Languages, Loader2, MessageCircle, Users } from "lucide-react"
 import parse from "html-react-parser"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
@@ -13,6 +13,16 @@ import { ScrollArea } from "@/components/ui/scroll-area"
 import { RelativeTime } from "@/components/common/relative-time"
 import { parseOptions } from "@/components/topic/post-parts"
 import { ConversationEditor } from "./conversation-editor"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuLabel,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import { toast } from "sonner"
 
 type ConversationDetail = {
   id: string
@@ -76,10 +86,95 @@ const MessageBubble = memo(function MessageBubble({
   isGroup,
   deletedUserLabel,
 }: MessageBubbleProps) {
+  const t = useTranslations("Conversations.message")
+  const [languages, setLanguages] = useState<
+    { locale: string; isSource: boolean }[]
+  >([])
+  const [isLoadingLanguages, setIsLoadingLanguages] = useState(false)
+  const [isOpen, setIsOpen] = useState(false)
+  const [overrideLocale, setOverrideLocale] = useState<string | null>(null)
+  const [overrideContentHtml, setOverrideContentHtml] = useState<string | null>(
+    null
+  )
+  const [overrideContentRaw, setOverrideContentRaw] = useState<string | null>(
+    null
+  )
+  const latestRequestedLocale = useRef<string | null>(null)
+
+  const currentDisplayLocale =
+    overrideLocale ?? message.contentLocale ?? message.sourceLocale
+
+  const handleOpenChange = useCallback(
+    async (open: boolean) => {
+      setIsOpen(open)
+      if (open && languages.length === 0) {
+        setIsLoadingLanguages(true)
+        try {
+          const res = await fetch(`/api/messages/${message.id}/languages`)
+          if (res.ok) {
+            const data = await res.json()
+            setLanguages(data.languages)
+          }
+        } catch (e) {
+          console.error(e)
+        } finally {
+          setIsLoadingLanguages(false)
+        }
+      }
+    },
+    [languages.length, message.id]
+  )
+
+  const handleLanguageChange = useCallback(
+    async (locale: string) => {
+      const initialLocale = message.contentLocale ?? message.sourceLocale
+      if (locale === initialLocale) {
+        latestRequestedLocale.current = locale
+        setOverrideLocale(null)
+        setOverrideContentHtml(null)
+        setOverrideContentRaw(null)
+        return
+      }
+
+      latestRequestedLocale.current = locale
+      try {
+        const res = await fetch(
+          `/api/messages/${message.id}/translation?locale=${locale}`
+        )
+        if (res.ok) {
+          const data = await res.json()
+          if (latestRequestedLocale.current === locale) {
+            setOverrideContentHtml(data.contentHtml || null)
+            setOverrideContentRaw(data.content || null)
+            setOverrideLocale(locale)
+          }
+        } else {
+          if (latestRequestedLocale.current === locale) {
+            toast.error(t("translationError"))
+          }
+        }
+      } catch (e) {
+        console.error(e)
+        if (latestRequestedLocale.current === locale) {
+          toast.error(t("translationError"))
+        }
+      }
+    },
+    [message.id, message.sourceLocale, message.contentLocale, t]
+  )
+
   const parsedContent = useMemo(() => {
+    if (overrideContentHtml) {
+      return parse(overrideContentHtml, parseOptions)
+    }
+    if (overrideContentRaw) {
+      return null
+    }
     if (!message.contentHtml) return null
     return parse(message.contentHtml, parseOptions)
-  }, [message.contentHtml])
+  }, [message.contentHtml, overrideContentHtml, overrideContentRaw])
+
+  const displayContent = overrideContentRaw ?? message.content
 
   return (
     <div
@@ -88,7 +183,7 @@ const MessageBubble = memo(function MessageBubble({
         message.isMine && "flex-row-reverse"
       )}
     >
-      <Avatar className="size-8">
+      <Avatar className="size-8 shrink-0">
         <AvatarImage
           src={message.sender.avatar || undefined}
           alt={message.sender.name}
@@ -97,31 +192,89 @@ const MessageBubble = memo(function MessageBubble({
       </Avatar>
       <div
         className={cn(
-          "max-w-[75%] rounded-2xl border px-4 py-3 text-sm",
-          message.isMine
-            ? "bg-primary text-primary-foreground border-primary/30"
-            : "bg-muted/40"
+          "flex flex-col max-w-[75%]",
+          message.isMine ? "items-end" : "items-start"
         )}
       >
-        {isGroup && !message.isMine && (
-          <div className="mb-1 text-xs text-muted-foreground">
-            {message.sender.isDeleted ? deletedUserLabel : message.sender.name}
-          </div>
-        )}
-        {parsedContent ? (
-          <div className="prose prose-sm dark:prose-invert max-w-none">
-            {parsedContent}
-          </div>
-        ) : (
-          <div className="whitespace-pre-wrap">{message.content}</div>
-        )}
         <div
           className={cn(
-            "mt-2 text-[11px] text-muted-foreground",
-            message.isMine && "text-primary-foreground/70"
+            "rounded-2xl px-4 py-2.5 text-sm",
+            message.isMine
+              ? "bg-neutral-800 text-white dark:bg-neutral-700"
+              : "bg-neutral-100 dark:bg-neutral-800/50"
+          )}
+        >
+          {isGroup && !message.isMine && (
+            <div className="mb-1 text-xs opacity-70">
+              {message.sender.isDeleted
+                ? deletedUserLabel
+                : message.sender.name}
+            </div>
+          )}
+          {parsedContent ? (
+            <div
+              className={cn(
+                "prose prose-sm max-w-none",
+                message.isMine
+                  ? "**:text-white [&_a]:text-neutral-300 [&_a:hover]:text-white"
+                  : "dark:prose-invert"
+              )}
+            >
+              {parsedContent}
+            </div>
+          ) : (
+            <div className="whitespace-pre-wrap">{displayContent}</div>
+          )}
+        </div>
+        <div
+          className={cn(
+            "mt-1 px-1 text-[11px] text-muted-foreground flex items-center gap-1.5",
+            message.isMine && "flex-row-reverse"
           )}
         >
           <RelativeTime date={message.createdAt} />
+          <DropdownMenu open={isOpen} onOpenChange={handleOpenChange}>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-4 w-4 p-0 text-muted-foreground hover:text-foreground"
+                title={t("originallyWrittenIn", {
+                  locale: message.sourceLocale,
+                })}
+              >
+                <Languages className="size-3" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align={message.isMine ? "start" : "end"}>
+              <DropdownMenuLabel>{t("languageSelection")}</DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              {isLoadingLanguages ? (
+                <div className="p-2 flex justify-center items-center">
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                </div>
+              ) : (
+                <DropdownMenuRadioGroup
+                  value={currentDisplayLocale}
+                  onValueChange={handleLanguageChange}
+                >
+                  {languages.map((lang) => (
+                    <DropdownMenuRadioItem
+                      key={lang.locale}
+                      value={lang.locale}
+                    >
+                      {lang.locale}
+                      {lang.isSource && (
+                        <span className="ml-1 text-xs text-muted-foreground">
+                          {t("source")}
+                        </span>
+                      )}
+                    </DropdownMenuRadioItem>
+                  ))}
+                </DropdownMenuRadioGroup>
+              )}
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </div>
     </div>
@@ -216,9 +369,38 @@ export const ConversationThread = memo(function ConversationThread({
 
   if (detailLoading) {
     return (
-      <div className="p-6 space-y-4">
-        <Skeleton className="h-12 w-1/2" />
-        <Skeleton className="h-40 w-full" />
+      <div className="flex flex-col h-full">
+        {/* Header skeleton */}
+        <div className="flex items-center gap-3 px-6 py-4 border-b shrink-0">
+          <Skeleton className="size-10 rounded-full" />
+          <div className="space-y-2">
+            <Skeleton className="h-4 w-28" />
+            <Skeleton className="h-3 w-16" />
+          </div>
+        </div>
+        {/* Messages skeleton */}
+        <div className="flex-1 min-h-0 px-6 py-6 space-y-4 overflow-hidden">
+          <div className="flex items-start gap-3">
+            <Skeleton className="size-8 rounded-full shrink-0" />
+            <Skeleton className="h-16 w-48 rounded-2xl" />
+          </div>
+          <div className="flex items-start gap-3 flex-row-reverse">
+            <Skeleton className="size-8 rounded-full shrink-0" />
+            <Skeleton className="h-12 w-40 rounded-2xl" />
+          </div>
+          <div className="flex items-start gap-3">
+            <Skeleton className="size-8 rounded-full shrink-0" />
+            <Skeleton className="h-20 w-56 rounded-2xl" />
+          </div>
+          <div className="flex items-start gap-3 flex-row-reverse">
+            <Skeleton className="size-8 rounded-full shrink-0" />
+            <Skeleton className="h-14 w-36 rounded-2xl" />
+          </div>
+        </div>
+        {/* Editor skeleton */}
+        <div className="px-6 py-4 border-t shrink-0">
+          <Skeleton className="h-20 w-full rounded-xl" />
+        </div>
       </div>
     )
   }
@@ -243,7 +425,7 @@ export const ConversationThread = memo(function ConversationThread({
 
   return (
     <div className="flex flex-col h-full">
-      <div className="flex items-center justify-between gap-4 px-6 py-4 border-b">
+      <div className="flex items-center justify-between gap-4 px-6 py-4 border-b shrink-0">
         <div className="flex items-center gap-3 min-w-0">
           <Avatar className="size-10">
             <AvatarImage src={avatarSrc} alt={title} />
@@ -285,10 +467,27 @@ export const ConversationThread = memo(function ConversationThread({
         <ScrollArea className="flex-1 min-h-0">
           <div className="flex flex-col gap-4 px-6 py-6">
             {messagesLoading && (
-              <div className="space-y-3">
-                {Array.from({ length: 6 }).map((_, idx) => (
-                  <Skeleton key={idx} className="h-16 w-full rounded-xl" />
-                ))}
+              <div className="space-y-4">
+                <div className="flex items-start gap-3">
+                  <Skeleton className="size-8 rounded-full shrink-0" />
+                  <Skeleton className="h-14 w-44 rounded-2xl" />
+                </div>
+                <div className="flex items-start gap-3 flex-row-reverse">
+                  <Skeleton className="size-8 rounded-full shrink-0" />
+                  <Skeleton className="h-10 w-32 rounded-2xl" />
+                </div>
+                <div className="flex items-start gap-3">
+                  <Skeleton className="size-8 rounded-full shrink-0" />
+                  <Skeleton className="h-16 w-52 rounded-2xl" />
+                </div>
+                <div className="flex items-start gap-3 flex-row-reverse">
+                  <Skeleton className="size-8 rounded-full shrink-0" />
+                  <Skeleton className="h-12 w-40 rounded-2xl" />
+                </div>
+                <div className="flex items-start gap-3">
+                  <Skeleton className="size-8 rounded-full shrink-0" />
+                  <Skeleton className="h-10 w-36 rounded-2xl" />
+                </div>
               </div>
             )}
             {!messagesLoading && messagesData?.items.length === 0 && (
