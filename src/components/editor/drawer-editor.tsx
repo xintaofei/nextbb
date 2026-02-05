@@ -61,7 +61,7 @@ export function DrawerEditor({
             {description || "Editor"}
           </DrawerDescription>
         </DrawerHeader>
-        <div className="flex justify-center px-4">
+        <div className="flex justify-center px-4 w-full max-w-3xl mx-auto">
           <MilkdownEditorWrapper
             value={value}
             placeholder={placeholder}

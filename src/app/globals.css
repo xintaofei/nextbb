@@ -221,6 +221,10 @@
   -webkit-mask-repeat: no-repeat;
 }
 
+.prose {
+  max-width: none;
+}
+
 .prose img:hover {
   box-shadow: 1px 1px 10px var(--ring);
 }
