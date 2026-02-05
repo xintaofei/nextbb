@@ -108,7 +108,7 @@ async function getPostsActivities(
       user_id: userId,
       is_deleted: false,
       floor_number: {
-        gt: 1,
+        gt: 0,
       },
     },
     select: {
@@ -431,7 +431,7 @@ export async function GET(req: Request, props: { params: Params }) {
         where: {
           user_id: userId,
           is_deleted: false,
-          floor_number: { gt: 1 },
+          floor_number: { gt: 0 },
         },
       })
     } else if (type === "likes") {
@@ -494,7 +494,7 @@ export async function GET(req: Request, props: { params: Params }) {
             where: {
               user_id: userId,
               is_deleted: false,
-              floor_number: { gt: 1 },
+              floor_number: { gt: 0 },
             },
           }),
           prisma.post_likes.count({

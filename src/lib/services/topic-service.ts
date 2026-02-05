@@ -224,7 +224,7 @@ export async function getTopicList(
     const firstPostsData = await prisma.posts.findMany({
       where: {
         topic_id: { in: pinnedTopicIds },
-        floor_number: 1,
+        floor_number: 0,
         is_deleted: false,
       },
       select: {

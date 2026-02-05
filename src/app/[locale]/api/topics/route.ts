@@ -272,7 +272,7 @@ export async function POST(req: Request) {
           user_id: auth.userId,
           parent_id: BigInt(0),
           reply_to_user_id: BigInt(0),
-          floor_number: 1,
+          floor_number: 0,
           content: body.content,
           source_locale: locale,
           is_first_user_post: isFirstUserPost,

@@ -28,9 +28,9 @@ import { RelativeTime } from "@/components/common/relative-time"
 import parse from "html-react-parser"
 import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
-import { Alert, AlertDescription } from "@/components/ui/alert"
-import { ChevronUp, Crown, SmileIcon } from "lucide-react"
+import { ChevronUp, Crown } from "lucide-react"
 import { useTranslations } from "next-intl"
+import ShinyText from "@/components/common/shiny-text"
 
 const repliesFetcher = async (url: string) => {
   const res = await fetch(url)
@@ -115,6 +115,7 @@ interface TopicPostItemProps {
   post: PostItem
   index: number
   anchorId?: string
+  floorAnchorId?: string
   currentUserId: string | null
   mutatingPostId: string | null
   likeMutating: boolean
@@ -150,6 +151,7 @@ export const TopicPostItem = memo(function TopicPostItem({
   post,
   index,
   anchorId,
+  floorAnchorId,
   currentUserId,
   mutatingPostId,
   likeMutating,
@@ -251,6 +253,7 @@ export const TopicPostItem = memo(function TopicPostItem({
     <TimelineStepsItem
       id={anchorId}
       data-post-anchor
+      data-floor-anchor={floorAnchorId}
       className={highlight ? "animate-(--animate-highlight-fade)" : ""}
     >
       <TimelineStepsConnector variant="dashed" className="max-sm:hidden" />
@@ -280,12 +283,18 @@ export const TopicPostItem = memo(function TopicPostItem({
       </TimelineStepsIcon>
       <TimelineStepsContent className={`border-b`}>
         {post.isFirstUserPost && !post.isDeleted && (
-          <Alert className="border-emerald-200 bg-emerald-50 text-emerald-800  dark:border-emerald-900/50 dark:bg-emerald-950/20 dark:text-emerald-300">
-            <SmileIcon />
-            <AlertDescription className="text-emerald-800 dark:text-emerald-300">
-              {tPost("firstUserPost", { name: post.author.name })}
-            </AlertDescription>
-          </Alert>
+          <ShinyText
+            text={"✨" + tPost("firstUserPost", { name: post.author.name })}
+            speed={3}
+            delay={0}
+            color="var(--chart-2)"
+            shineColor="var(--chart-4)"
+            spread={120}
+            direction="left"
+            yoyo={false}
+            pauseOnHover={true}
+            disabled={false}
+          />
         )}
         <PostHeader
           post={post}

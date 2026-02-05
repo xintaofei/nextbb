@@ -76,7 +76,7 @@ export async function GET(
           created_at: true,
           views: true,
           posts: {
-            where: { floor_number: 1, is_deleted: false },
+            where: { floor_number: 0, is_deleted: false },
             select: {
               id: true,
             },
@@ -90,7 +90,7 @@ export async function GET(
         where: {
           user_id: userId,
           is_deleted: false,
-          floor_number: { gt: 1 }, // 排除首帖
+          floor_number: { gt: 0 }, // 排除首帖
         },
         select: {
           id: true,

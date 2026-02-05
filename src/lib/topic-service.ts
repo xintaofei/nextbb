@@ -166,6 +166,7 @@ export const getTopicPosts = cache(async function getTopicPosts(
       where: { topic_id: topicId },
       select: {
         id: true,
+        floor_number: true,
         content: true,
         translations: getTranslationsQuery(locale, { content_html: true }),
         created_at: true,
@@ -456,6 +457,7 @@ export const getTopicPosts = cache(async function getTopicPosts(
 
     return {
       id: idStr,
+      floorNumber: p.floor_number,
       author: {
         id: userId,
         name: p.user.name,

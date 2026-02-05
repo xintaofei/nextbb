@@ -51,12 +51,12 @@ export async function POST(req: Request) {
             return
           }
 
-          // Get all eligible posts (exclude floor 1)
+          // Get all eligible posts (exclude floor 0)
           const posts = await tx.posts.findMany({
             where: {
               topic_id: lottery.topic_id,
               is_deleted: false,
-              floor_number: { gt: 1 },
+              floor_number: { gt: 0 },
             },
             select: {
               id: true,

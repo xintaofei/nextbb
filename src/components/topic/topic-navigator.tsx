@@ -1,5 +1,3 @@
-"use client"
-
 import { useEffect, useRef, useState } from "react"
 import { useRouter } from "next/navigation"
 import { useTranslations } from "next-intl"
@@ -59,6 +57,7 @@ export function TopicNavigator({
   const isDraggingRef = useRef(false)
   const sliderAnimRef = useRef<number | null>(null)
   const scrollerRef = useRef<HTMLElement | null>(null)
+  const displayCurrent: number = Math.max(current, 1)
   // 尾部楼层覆盖策略常量
   const RESERVE_PX = 24 // 尾部保留像素
   const TAIL_THRESHOLD_FLOORS = 5 // 触发尾部特殊处理的剩余楼层阈值
@@ -85,6 +84,19 @@ export function TopicNavigator({
     const elRect = el.getBoundingClientRect()
     const cRect = container.getBoundingClientRect()
     return elRect.top - cRect.top + container.scrollTop
+  }
+
+  const updateFloorHash = (floor: number) => {
+    if (typeof window === "undefined") return
+    if (!Number.isFinite(floor)) return
+    const safeFloor = Math.max(1, Math.floor(floor))
+    const hash = `#floor-${safeFloor}`
+    if (window.location.hash === hash) return
+    window.history.replaceState(
+      null,
+      "",
+      `${window.location.pathname}${window.location.search}${hash}`
+    )
   }
 
   useEffect(() => {
@@ -232,6 +244,7 @@ export function TopicNavigator({
       if (currentFloor !== currentRef.current) {
         currentRef.current = currentFloor
         setCurrent(currentFloor)
+        updateFloorHash(currentFloor)
         setAuthor(name)
       } else if (!authorRef.current) {
         setAuthor(name)
@@ -360,6 +373,7 @@ export function TopicNavigator({
       const floor = Math.max(n - 1, 1)
       setCurrent(floor)
       currentRef.current = floor
+      updateFloorHash(floor)
       // 滑块值计算：楼层号越大，滑块值越小（方向相反）
       // 使用实际已加载的楼层数
       const loadedFloors = anchorsRef.current.length - 1
@@ -550,8 +564,12 @@ export function TopicNavigator({
                       if (n <= 0) return
 
                       const floorFloat = n - v[0] + 1
-                      const targetFloor = Math.round(floorFloat)
+                      const targetFloor = Math.max(
+                        1,
+                        Math.min(n, Math.round(floorFloat))
+                      )
                       const anchorIndex = targetFloor
+                      updateFloorHash(targetFloor)
 
                       const scroller = getScrollContainer()
                       const targetAnchor = anchorsRef.current[anchorIndex]
@@ -591,7 +609,7 @@ export function TopicNavigator({
                     ref={labelRef}
                   >
                     <span className="font-bold">
-                      {current} / {totalFloors}
+                      {displayCurrent} / {totalFloors}
                     </span>
                     <span className="text-muted-foreground max-w-[120px] truncate whitespace-nowrap">
                       {author || "-"}

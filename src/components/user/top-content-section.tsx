@@ -92,7 +92,7 @@ function ReplyItemCard({ reply }: { reply: ReplyItem }) {
 
   return (
     <Link
-      href={`/topic/${reply.topicId}?floor=${reply.floorNumber}`}
+      href={`/topic/${reply.topicId}#floor-${reply.floorNumber}`}
       className="block rounded-lg border p-4 transition-colors hover:bg-accent"
     >
       <p className="mb-2 line-clamp-3 text-sm text-muted-foreground break-words">
