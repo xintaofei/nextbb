@@ -31,12 +31,22 @@ function replaceLocaleInPath(
   return `/${target}/${parts.join("/")}`
 }
 
+const LOCALE_STORAGE_KEY = "locale-mode"
+
 export function LocaleSwitcher() {
   const router = useRouter()
   const pathname = usePathname()
   const locale = useLocale() as (typeof SUPPORTED_LOCALES)[number]
   const [mode, setMode] = React.useState<Mode>("auto")
   const t = useTranslations("Common.LocaleSwitcher")
+
+  // 从 localStorage 读取保存的语言模式
+  React.useEffect(() => {
+    const savedMode = localStorage.getItem(LOCALE_STORAGE_KEY)
+    if (savedMode && ["auto", "zh", "en"].includes(savedMode)) {
+      setMode(savedMode as Mode)
+    }
+  }, [])
 
   const label = mode === "auto" ? t("auto") : mode === "zh" ? t("zh") : t("en")
 
@@ -59,6 +69,9 @@ export function LocaleSwitcher() {
           onValueChange={(value) => {
             const v = value as Mode
             setMode(v)
+            // 保存到 localStorage
+            localStorage.setItem(LOCALE_STORAGE_KEY, v)
+
             if (v === "auto") {
               const nav =
                 typeof navigator !== "undefined" ? navigator.language : locale
