@@ -8,11 +8,11 @@ import { useNewTopic } from "@/components/providers/new-topic-provider"
 import { TopicHeaderBar } from "@/components/topic/topic-header-bar"
 import { type RouteParams } from "@/lib/route-utils"
 import { Skeleton } from "@/components/ui/skeleton"
-import { cn } from "@/lib/utils"
 import { useCategories } from "@/components/providers/taxonomy-provider"
 import type { CategoryWithCount } from "@/types/taxonomy"
 import type { TopicListResult } from "@/lib/services/topic-service"
 import React from "react"
+import { QuickPostForm } from "@/components/new-topic/quick-post-form"
 
 type DynamicRouteClientProps = {
   routeParams: RouteParams
@@ -132,13 +132,15 @@ export function DynamicRouteClient({
         className="max-sm:pb-4 sm:sticky sm:top-0 sm:z-1 bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/60"
         onSortStart={() => {}}
       />
-      <div className={cn(routeParams.categoryId ? "max-sm:mb-4" : "")}>
-        {routeParams.categoryId && (
+      <div className="max-sm:mb-4">
+        {routeParams.categoryId ? (
           <CategoryHeader
             category={category}
             categoryId={routeParams.categoryId}
             tCat={tCat}
           />
+        ) : (
+          <QuickPostForm onPublished={() => mutate()} />
         )}
       </div>
       <TopicList

@@ -397,7 +397,7 @@ export const EditorToolbar = memo(({ getEditor }: EditorToolbarProps) => {
   )
 
   return (
-    <div className="flex flex-col border-b bg-muted/30 sticky top-0 z-40">
+    <div className="flex flex-col border-b bg-muted/30 sticky top-0">
       {/* Desktop toolbar */}
       <div className="hidden md:flex items-center gap-1 px-2 py-1.5 flex-wrap">
         <ExpressionPicker onSelect={handleExpression} />
