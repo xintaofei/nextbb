@@ -35,6 +35,7 @@ export function Aside() {
   const welcomeMessage = configs?.["basic.welcome_message"] as
     | string
     | undefined
+  const icp = configs?.["basic.icp"] as string | undefined
 
   const { data: comments, isLoading: commentsLoading } = useSWR<
     {
@@ -192,6 +193,16 @@ export function Aside() {
               {tc("Footer.cookie")}
             </span>
             <span>{tc("Footer.copyright")}</span>
+            {icp && (
+              <a
+                href="https://beian.miit.gov.cn"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="hover:underline"
+              >
+                {icp}
+              </a>
+            )}
           </div>
         </>
       )}
