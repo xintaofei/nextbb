@@ -218,9 +218,7 @@ const MessageBubble = memo(function MessageBubble({
       >
         {isGroup && !message.isMine && (
           <div className="mb-1 px-1 text-xs text-muted-foreground">
-            {message.sender.isDeleted
-              ? deletedUserLabel
-              : message.sender.name}
+            {message.sender.isDeleted ? deletedUserLabel : message.sender.name}
           </div>
         )}
         <div
