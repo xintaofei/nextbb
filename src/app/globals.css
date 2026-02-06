@@ -163,7 +163,7 @@
 
 .milkdown .ProseMirror {
   padding: 1rem;
-  min-height: 10rem;
+  min-height: 8rem;
   max-height: 20rem;
   overflow-y: auto;
   position: relative;

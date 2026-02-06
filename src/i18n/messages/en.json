@@ -222,6 +222,17 @@
         "unauthorized": "Please sign in to publish"
       }
     },
+    "QuickPost": {
+      "placeholder": "Share your thoughts...",
+      "titlePlaceholder": "Enter title",
+      "publish": "Publish",
+      "publishing": "Publishing...",
+      "cancel": "Cancel",
+      "success": "Published successfully!",
+      "failed": "Failed to publish",
+      "unauthorized": "Please sign in to publish",
+      "goLogin": "Sign in to publish"
+    },
     "Categories": {
       "tech": "Tech Discussion",
       "resource": "Resource Sharing",
