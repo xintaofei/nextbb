@@ -126,7 +126,7 @@ export function Aside() {
                 {comments?.map((comment) => (
                   <div
                     key={comment.id}
-                    className="px-3 py-2 border-b last:border-0 hover:bg-muted/50 transition-colors"
+                    className="p-3 border-b last:border-0 hover:bg-muted/50 transition-colors"
                   >
                     <div className="flex gap-2">
                       <UserInfoCard
@@ -155,7 +155,7 @@ export function Aside() {
                         </div>
                         <Link
                           href={`/topic/${comment.topic.id}#floor-${comment.floorNumber}`}
-                          className="text-xs text-foreground line-clamp-2 hover:text-foreground transition-colors break-all"
+                          className="text-sm text-foreground line-clamp-2 hover:text-foreground transition-colors break-all"
                         >
                           {stripHtmlAndTruncate(
                             comment.contentHtml || comment.content,
@@ -164,7 +164,7 @@ export function Aside() {
                         </Link>
                         <Link
                           href={`/topic/${comment.topic.id}`}
-                          className="text-[10px] text-muted-foreground hover:text-primary truncate"
+                          className="text-xs text-muted-foreground hover:text-primary truncate"
                         >
                           {tc("Table.inTopic", { topic: comment.topic.title })}
                         </Link>
