@@ -18,6 +18,7 @@ import {
   InputGroupInput,
 } from "@/components/ui/input-group"
 import { TopicControls } from "../topic/topic-controls"
+import { useStickySidebar } from "@/hooks/use-sticky-sidebar"
 
 export function Aside() {
   const pathname = usePathname()
@@ -28,6 +29,7 @@ export function Aside() {
   const t = useTranslations("Index")
   const tc = useTranslations("Common")
   const locale = useLocale()
+  const sidebarRef = useStickySidebar()
 
   const { configs } = useConfig()
   const welcomeMessage = configs?.["basic.welcome_message"] as
@@ -59,7 +61,10 @@ export function Aside() {
   }
 
   return (
-    <aside className="hidden lg:flex w-64 flex-col gap-4 ml-7 max-xl:mr-7 py-8 px-1 sticky top-0 h-screen overflow-y-auto scrollbar-none">
+    <aside
+      ref={sidebarRef}
+      className="hidden lg:flex w-64 flex-col gap-4 ml-7 max-xl:mr-7 py-8 px-1 sticky self-start"
+    >
       {isTopicPage ? (
         <div id="topic-aside-portal" className="w-full" />
       ) : (
