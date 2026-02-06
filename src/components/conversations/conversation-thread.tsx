@@ -1,9 +1,11 @@
 "use client"
 
 import { memo, useMemo, useState, useRef, useEffect, useCallback } from "react"
+import { useRouter } from "next/navigation"
 import useSWR from "swr"
 import { useTranslations } from "next-intl"
 import {
+  ArrowLeft,
   Languages,
   Loader2,
   MessageCircle,
@@ -307,6 +309,7 @@ export const ConversationThread = memo(function ConversationThread({
   conversationId,
 }: ConversationThreadProps) {
   const t = useTranslations("Conversations")
+  const router = useRouter()
   const [joining, setJoining] = useState(false)
   const [editDialogOpen, setEditDialogOpen] = useState(false)
   const [editTitle, setEditTitle] = useState("")
@@ -447,7 +450,8 @@ export const ConversationThread = memo(function ConversationThread({
     return (
       <div className="flex flex-col h-full">
         {/* Header skeleton */}
-        <div className="flex items-center gap-3 px-6 py-4 border-b shrink-0">
+        <div className="flex items-center gap-3 px-4 py-4 border-b shrink-0 sm:px-6">
+          <Skeleton className="size-9 rounded-md shrink-0 lg:hidden" />
           <Skeleton className="size-10 rounded-full" />
           <div className="space-y-2">
             <Skeleton className="h-4 w-28" />
@@ -501,8 +505,16 @@ export const ConversationThread = memo(function ConversationThread({
 
   return (
     <div className="flex flex-col h-full">
-      <div className="flex items-center justify-between gap-4 px-6 py-4 border-b shrink-0">
+      <div className="flex items-center justify-between gap-4 px-4 py-4 border-b shrink-0 sm:px-6">
         <div className="flex items-center gap-3 min-w-0">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="shrink-0 lg:hidden"
+            onClick={() => router.push("/conversations")}
+          >
+            <ArrowLeft className="size-5" />
+          </Button>
           <Avatar className="size-10">
             <AvatarImage src={avatarSrc} alt={title} />
             <AvatarFallback>

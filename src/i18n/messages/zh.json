@@ -655,6 +655,7 @@
       "discover": "发现群聊"
     },
     "actions": {
+      "back": "返回",
       "join": "加入",
       "joining": "加入中",
       "loadMore": "加载更多",

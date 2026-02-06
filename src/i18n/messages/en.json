@@ -655,6 +655,7 @@
       "discover": "Discover Groups"
     },
     "actions": {
+      "back": "Back",
       "join": "Join",
       "joining": "Joining",
       "loadMore": "Load more",

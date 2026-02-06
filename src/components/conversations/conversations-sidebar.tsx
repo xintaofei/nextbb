@@ -254,7 +254,7 @@ export const ConversationsSidebar = memo(function ConversationsSidebar() {
   }
 
   return (
-    <aside className="flex flex-col w-full max-lg:border-b max-lg:max-h-[40vh] lg:w-80 bg-background shrink-0">
+    <aside className="flex flex-col w-full h-full bg-background">
       <div className="flex items-center justify-between px-4 py-4 border-b shrink-0">
         <div className="flex items-center gap-2 font-semibold text-lg">
           <MessageCircle className="size-5 text-muted-foreground" />
