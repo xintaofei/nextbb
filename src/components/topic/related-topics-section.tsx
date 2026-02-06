@@ -93,6 +93,8 @@ export const RelatedTopicsSection = memo(function RelatedTopicsSection({
                         description={t.category.description}
                         bgColor={t.category.bgColor}
                         textColor={t.category.textColor}
+                        darkBgColor={t.category.darkBgColor}
+                        darkTextColor={t.category.darkTextColor}
                       />
                       {t.tags.map((tag) => (
                         <TagBadge
@@ -103,6 +105,8 @@ export const RelatedTopicsSection = memo(function RelatedTopicsSection({
                           description={tag.description}
                           bgColor={tag.bgColor}
                           textColor={tag.textColor}
+                          darkBgColor={tag.darkBgColor}
+                          darkTextColor={tag.darkTextColor}
                         />
                       ))}
                     </div>

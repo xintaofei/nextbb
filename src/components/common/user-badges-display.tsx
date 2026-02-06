@@ -17,6 +17,8 @@ export type BadgeItem = {
   level: number
   bgColor: string | null
   textColor: string | null
+  darkBgColor?: string | null
+  darkTextColor?: string | null
   description?: string | null
 }
 
@@ -52,6 +54,8 @@ function UserBadgesDisplayBase({
           name={badge.name}
           bgColor={badge.bgColor}
           textColor={badge.textColor}
+          darkBgColor={badge.darkBgColor}
+          darkTextColor={badge.darkTextColor}
           level={badge.level}
           size={size}
           description={badge.description}
@@ -81,6 +85,8 @@ function UserBadgesDisplayBase({
                     name={badge.name}
                     bgColor={badge.bgColor}
                     textColor={badge.textColor}
+                    darkBgColor={badge.darkBgColor}
+                    darkTextColor={badge.darkTextColor}
                     level={badge.level}
                     size={size}
                     description={badge.description}

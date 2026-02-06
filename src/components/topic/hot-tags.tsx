@@ -21,6 +21,8 @@ type TagDTO = {
   sort: number
   bgColor?: string | null
   textColor?: string | null
+  darkBgColor?: string | null
+  darkTextColor?: string | null
 }
 
 type HotTagsProps = {
@@ -98,6 +100,8 @@ export function HotTags({ className, count = 5 }: HotTagsProps) {
                     description={t.description}
                     bgColor={t.bgColor}
                     textColor={t.textColor}
+                    darkBgColor={t.darkBgColor}
+                    darkTextColor={t.darkTextColor}
                     active={active}
                     onClick={active ? cancelTag : undefined}
                   />

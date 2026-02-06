@@ -8,6 +8,8 @@ export type CategoryInfo = {
   icon: string
   bgColor: string | null
   textColor: string | null
+  darkBgColor: string | null
+  darkTextColor: string | null
 }
 
 // 作者信息

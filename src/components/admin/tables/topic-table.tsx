@@ -61,6 +61,8 @@ export interface TopicTableItem {
     icon: string
     bgColor: string | null
     textColor: string | null
+    darkBgColor: string | null
+    darkTextColor: string | null
   }
   tags: Array<{
     id: string
@@ -68,6 +70,8 @@ export interface TopicTableItem {
     icon: string
     bgColor: string | null
     textColor: string | null
+    darkBgColor: string | null
+    darkTextColor: string | null
   }>
   replies: number
   views: number
@@ -309,6 +313,8 @@ export function TopicTable({
                         name={topic.category.name}
                         bgColor={topic.category.bgColor}
                         textColor={topic.category.textColor}
+                        darkBgColor={topic.category.darkBgColor}
+                        darkTextColor={topic.category.darkTextColor}
                       />
                     </TableCell>
                   )}
@@ -325,6 +331,8 @@ export function TopicTable({
                               name={tag.name}
                               bgColor={tag.bgColor}
                               textColor={tag.textColor}
+                              darkBgColor={tag.darkBgColor}
+                              darkTextColor={tag.darkTextColor}
                             />
                           ))
                         )}

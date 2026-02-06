@@ -4,6 +4,7 @@ import Link from "next/link"
 import { Badge } from "@/components/ui/badge"
 import { cn } from "@/lib/utils"
 import { buildRoutePath } from "@/lib/route-utils"
+import { useThemeColor } from "@/lib/hooks/use-theme-color"
 
 export type CategoryBadgeProps = {
   id?: string
@@ -12,6 +13,8 @@ export type CategoryBadgeProps = {
   description?: string | null
   bgColor?: string | null
   textColor?: string | null
+  darkBgColor?: string | null
+  darkTextColor?: string | null
   className?: string
   onClick?: () => void
 }
@@ -23,20 +26,30 @@ export function CategoryBadge({
   description,
   bgColor,
   textColor,
+  darkBgColor,
+  darkTextColor,
   className,
   onClick,
 }: CategoryBadgeProps) {
+  const themeColor = useThemeColor({
+    bgColor,
+    textColor,
+    darkBgColor,
+    darkTextColor,
+  })
+  const colorStyle = {
+    backgroundColor: themeColor.bgColor,
+    color: themeColor.textColor,
+    borderColor: themeColor.bgColor ? `${themeColor.bgColor}40` : undefined,
+  }
+
   // 如果有自定义 onClick，使用按钮模式
   if (onClick) {
     return (
       <Badge
         variant="secondary"
         className={cn("cursor-pointer", className)}
-        style={{
-          backgroundColor: bgColor || undefined,
-          color: textColor || undefined,
-          borderColor: bgColor ? `${bgColor}40` : undefined,
-        }}
+        style={colorStyle}
         onClick={onClick}
         title={description || undefined}
       >
@@ -53,11 +66,7 @@ export function CategoryBadge({
         <Badge
           variant="secondary"
           className={cn("cursor-pointer", className)}
-          style={{
-            backgroundColor: bgColor || undefined,
-            color: textColor || undefined,
-            borderColor: bgColor ? `${bgColor}40` : undefined,
-          }}
+          style={colorStyle}
           title={description || undefined}
         >
           {icon ?? "📁"} {name}
@@ -71,11 +80,7 @@ export function CategoryBadge({
     <Badge
       variant="secondary"
       className={className}
-      style={{
-        backgroundColor: bgColor || undefined,
-        color: textColor || undefined,
-        borderColor: bgColor ? `${bgColor}40` : undefined,
-      }}
+      style={colorStyle}
       title={description || undefined}
     >
       {icon ?? "📁"} {name}

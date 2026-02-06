@@ -16,6 +16,8 @@ type BadgeDTO = {
   sort: number
   bgColor: string | null
   textColor: string | null
+  darkBgColor: string | null
+  darkTextColor: string | null
   sourceLocale: string
   isEnabled: boolean
   isVisible: boolean
@@ -152,6 +154,8 @@ export async function GET(request: NextRequest) {
         sort: true,
         bg_color: true,
         text_color: true,
+        dark_bg_color: true,
+        dark_text_color: true,
         is_enabled: true,
         is_visible: true,
         is_deleted: true,
@@ -184,6 +188,8 @@ export async function GET(request: NextRequest) {
         sort: b.sort,
         bgColor: b.bg_color,
         textColor: b.text_color,
+        darkBgColor: b.dark_bg_color,
+        darkTextColor: b.dark_text_color,
         sourceLocale: b.source_locale,
         isEnabled: b.is_enabled,
         isVisible: b.is_visible,
@@ -223,6 +229,8 @@ export async function POST(request: NextRequest) {
       sort,
       bgColor,
       textColor,
+      darkBgColor,
+      darkTextColor,
       isEnabled,
       isVisible,
     } = body
@@ -290,6 +298,20 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    if (!validateColor(darkBgColor)) {
+      return NextResponse.json(
+        { error: "Invalid dark background color format" },
+        { status: 400 }
+      )
+    }
+
+    if (!validateColor(darkTextColor)) {
+      return NextResponse.json(
+        { error: "Invalid dark text color format" },
+        { status: 400 }
+      )
+    }
+
     // 获取当前请求的语言作为源语言
     const sourceLocale = await getLocale()
 
@@ -305,6 +327,8 @@ export async function POST(request: NextRequest) {
           sort,
           bg_color: bgColor || null,
           text_color: textColor || null,
+          dark_bg_color: darkBgColor || null,
+          dark_text_color: darkTextColor || null,
           is_enabled: typeof isEnabled === "boolean" ? isEnabled : true,
           is_visible: typeof isVisible === "boolean" ? isVisible : true,
           is_deleted: false,
@@ -344,6 +368,8 @@ export async function POST(request: NextRequest) {
       sort: result.sort,
       bgColor: result.bg_color,
       textColor: result.text_color,
+      darkBgColor: result.dark_bg_color,
+      darkTextColor: result.dark_text_color,
       sourceLocale: result.source_locale,
       isEnabled: result.is_enabled,
       isVisible: result.is_visible,

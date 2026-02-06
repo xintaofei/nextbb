@@ -41,6 +41,8 @@ type BadgeListItem = {
   sort: number
   bgColor: string | null
   textColor: string | null
+  darkBgColor: string | null
+  darkTextColor: string | null
   sourceLocale: string
   isEnabled: boolean
   isVisible: boolean
@@ -190,6 +192,8 @@ export default function AdminBadgesPage() {
     sort: number
     bgColor: string | null
     textColor: string | null
+    darkBgColor: string | null
+    darkTextColor: string | null
     isEnabled: boolean
     isVisible: boolean
   }) => {

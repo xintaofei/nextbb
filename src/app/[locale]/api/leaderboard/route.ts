@@ -24,6 +24,8 @@ type RankingUser = {
     level: number
     bgColor: string | null
     textColor: string | null
+    darkBgColor: string | null
+    darkTextColor: string | null
   }[]
 }
 
@@ -453,6 +455,8 @@ async function getUserBadges(userIds: bigint[], locale: string) {
           level: true,
           bg_color: true,
           text_color: true,
+          dark_bg_color: true,
+          dark_text_color: true,
           translations: getTranslationsQuery(locale, {
             name: true,
           }),
@@ -471,6 +475,8 @@ async function getUserBadges(userIds: bigint[], locale: string) {
       level: number
       bgColor: string | null
       textColor: string | null
+      darkBgColor: string | null
+      darkTextColor: string | null
     }[]
   >()
 
@@ -495,6 +501,8 @@ async function getUserBadges(userIds: bigint[], locale: string) {
         level: ub.badge.level,
         bgColor: ub.badge.bg_color,
         textColor: ub.badge.text_color,
+        darkBgColor: ub.badge.dark_bg_color,
+        darkTextColor: ub.badge.dark_text_color,
       })
     }
   })

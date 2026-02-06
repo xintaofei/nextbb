@@ -14,6 +14,8 @@ type TagDTO = {
   sort: number
   bgColor: string | null
   textColor: string | null
+  darkBgColor: string | null
+  darkTextColor: string | null
   sourceLocale: string
   isDeleted: boolean
   createdAt: string
@@ -103,6 +105,8 @@ export async function GET(request: NextRequest) {
         sort: true,
         bg_color: true,
         text_color: true,
+        dark_bg_color: true,
+        dark_text_color: true,
         is_deleted: true,
         created_at: true,
         updated_at: true,
@@ -136,6 +140,8 @@ export async function GET(request: NextRequest) {
         sort: t.sort,
         bgColor: t.bg_color,
         textColor: t.text_color,
+        darkBgColor: t.dark_bg_color,
+        darkTextColor: t.dark_text_color,
         sourceLocale: t.source_locale,
         isDeleted: t.is_deleted,
         createdAt: t.created_at.toISOString(),
@@ -170,7 +176,16 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    const { name, icon, description, sort, bgColor, textColor } = body
+    const {
+      name,
+      icon,
+      description,
+      sort,
+      bgColor,
+      textColor,
+      darkBgColor,
+      darkTextColor,
+    } = body
 
     // 验证必填字段
     if (
@@ -229,6 +244,20 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    if (!validateColor(darkBgColor)) {
+      return NextResponse.json(
+        { error: "Invalid dark background color format" },
+        { status: 400 }
+      )
+    }
+
+    if (!validateColor(darkTextColor)) {
+      return NextResponse.json(
+        { error: "Invalid dark text color format" },
+        { status: 400 }
+      )
+    }
+
     // 获取当前请求的语言作为源语言
     const sourceLocale = await getLocale()
 
@@ -242,6 +271,8 @@ export async function POST(request: NextRequest) {
           sort,
           bg_color: bgColor || null,
           text_color: textColor || null,
+          dark_bg_color: darkBgColor || null,
+          dark_text_color: darkTextColor || null,
           is_deleted: false,
           source_locale: sourceLocale,
         },
@@ -281,6 +312,8 @@ export async function POST(request: NextRequest) {
       sort: result.sort,
       bgColor: result.bg_color,
       textColor: result.text_color,
+      darkBgColor: result.dark_bg_color,
+      darkTextColor: result.dark_text_color,
       sourceLocale: result.source_locale,
       isDeleted: result.is_deleted,
       createdAt: result.created_at.toISOString(),

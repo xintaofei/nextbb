@@ -16,6 +16,8 @@ type BadgeItem = {
   sort: number
   bgColor: string | null
   textColor: string | null
+  darkBgColor: string | null
+  darkTextColor: string | null
   isEnabled: boolean
   isVisible: boolean
   isDeleted: boolean

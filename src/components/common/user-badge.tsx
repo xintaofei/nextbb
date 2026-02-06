@@ -8,12 +8,15 @@ import {
 import { Highlighter } from "@/components/ui/highlighter"
 import { cn } from "@/lib/utils"
 import { useTranslations } from "next-intl"
+import { useThemeColor } from "@/lib/hooks/use-theme-color"
 
 export type UserBadgeProps = {
   icon: string
   name: string
   bgColor?: string | null
   textColor?: string | null
+  darkBgColor?: string | null
+  darkTextColor?: string | null
   level?: number
   className?: string
   size?: "xs" | "sm" | "md" | "lg"
@@ -25,21 +28,29 @@ export function UserBadge({
   name,
   bgColor,
   textColor,
+  darkBgColor,
+  darkTextColor,
   level = 1,
   className,
   size = "md",
   description,
 }: UserBadgeProps) {
   const t = useTranslations("AdminBadges")
+  const themeColor = useThemeColor({
+    bgColor,
+    textColor,
+    darkBgColor,
+    darkTextColor,
+  })
   const badge = (
     <span>
       {" "}
-      <Highlighter action="highlight" color={bgColor || undefined}>
+      <Highlighter action="highlight" color={themeColor.bgColor}>
         <div className={cn("flex items-center gap-1", className)}>
           <span>{icon}</span>
           <span
             className={"text-" + size}
-            style={{ color: textColor || undefined }}
+            style={{ color: themeColor.textColor }}
           >
             {name}
           </span>

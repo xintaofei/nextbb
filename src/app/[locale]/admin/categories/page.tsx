@@ -54,6 +54,8 @@ type CategoryListItem = {
   sort: number
   bgColor: string | null
   textColor: string | null
+  darkBgColor: string | null
+  darkTextColor: string | null
   isDeleted: boolean
   createdAt: string
   updatedAt: string
@@ -192,6 +194,8 @@ export default function AdminCategoriesPage() {
     description: string | null
     bgColor: string | null
     textColor: string | null
+    darkBgColor: string | null
+    darkTextColor: string | null
   }) => {
     try {
       if (editingCategory) {

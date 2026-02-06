@@ -32,6 +32,8 @@ type BadgeFormData = {
   sort: number
   bgColor: string | null
   textColor: string | null
+  darkBgColor: string | null
+  darkTextColor: string | null
   isEnabled: boolean
   isVisible: boolean
 }
@@ -49,6 +51,8 @@ type BadgeDialogProps = {
     sort: number
     bgColor: string | null
     textColor: string | null
+    darkBgColor: string | null
+    darkTextColor: string | null
     isEnabled: boolean
     isVisible: boolean
   }
@@ -71,6 +75,8 @@ export function BadgeDialog({
     sort: 0,
     bgColor: null,
     textColor: null,
+    darkBgColor: null,
+    darkTextColor: null,
     isEnabled: true,
     isVisible: true,
   })
@@ -87,6 +93,8 @@ export function BadgeDialog({
         sort: badge.sort,
         bgColor: badge.bgColor,
         textColor: badge.textColor,
+        darkBgColor: badge.darkBgColor,
+        darkTextColor: badge.darkTextColor,
         isEnabled: badge.isEnabled,
         isVisible: badge.isVisible,
       })
@@ -100,6 +108,8 @@ export function BadgeDialog({
         sort: 0,
         bgColor: null,
         textColor: null,
+        darkBgColor: null,
+        darkTextColor: null,
         isEnabled: true,
         isVisible: true,
       })
@@ -243,39 +253,102 @@ export function BadgeDialog({
               </div>
             </div>
 
-            {/* 背景色和文字色 */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <ColorPickerField
-                label={t("dialog.bgColor")}
-                value={formData.bgColor}
-                onChange={(color) =>
-                  setFormData({ ...formData, bgColor: color })
-                }
-                placeholder={t("dialog.bgColorPlaceholder")}
-              />
+            {/* 浅色模式颜色 */}
+            <div className="space-y-2">
+              <Label className="text-sm font-medium text-muted-foreground">
+                {t("dialog.lightModeColors")}
+              </Label>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <ColorPickerField
+                  label={t("dialog.bgColor")}
+                  value={formData.bgColor}
+                  onChange={(color) =>
+                    setFormData({ ...formData, bgColor: color })
+                  }
+                  placeholder={t("dialog.bgColorPlaceholder")}
+                />
 
-              <ColorPickerField
-                label={t("dialog.textColor")}
-                value={formData.textColor}
-                onChange={(color) =>
-                  setFormData({ ...formData, textColor: color })
-                }
-                placeholder={t("dialog.textColorPlaceholder")}
-              />
+                <ColorPickerField
+                  label={t("dialog.textColor")}
+                  value={formData.textColor}
+                  onChange={(color) =>
+                    setFormData({ ...formData, textColor: color })
+                  }
+                  placeholder={t("dialog.textColorPlaceholder")}
+                />
+              </div>
+            </div>
+
+            {/* 深色模式颜色 */}
+            <div className="space-y-2">
+              <Label className="text-sm font-medium text-muted-foreground">
+                {t("dialog.darkModeColors")}
+              </Label>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <ColorPickerField
+                  label={t("dialog.darkBgColor")}
+                  value={formData.darkBgColor}
+                  onChange={(color) =>
+                    setFormData({ ...formData, darkBgColor: color })
+                  }
+                  placeholder={t("dialog.darkBgColorPlaceholder")}
+                />
+
+                <ColorPickerField
+                  label={t("dialog.darkTextColor")}
+                  value={formData.darkTextColor}
+                  onChange={(color) =>
+                    setFormData({ ...formData, darkTextColor: color })
+                  }
+                  placeholder={t("dialog.darkTextColorPlaceholder")}
+                />
+              </div>
             </div>
 
             {/* 颜色预览 */}
-            {(formData.bgColor || formData.textColor) && (
+            {(formData.bgColor ||
+              formData.textColor ||
+              formData.darkBgColor ||
+              formData.darkTextColor) && (
               <div className="space-y-2">
                 <Label>{t("dialog.colorPreview")}</Label>
-                <div
-                  className="h-16 rounded-lg border border-border/40 flex items-center justify-center text-xl font-semibold"
-                  style={{
-                    backgroundColor: formData.bgColor || "transparent",
-                    color: formData.textColor || "inherit",
-                  }}
-                >
-                  {(formData.icon || "🏆") + " " + (formData.name || "预览")}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="space-y-1">
+                    <span className="text-xs text-muted-foreground">
+                      {t("dialog.lightPreview")}
+                    </span>
+                    <div
+                      className="h-14 rounded-lg border border-border/40 flex items-center justify-center text-lg font-semibold"
+                      style={{
+                        backgroundColor: formData.bgColor || "transparent",
+                        color: formData.textColor || "inherit",
+                      }}
+                    >
+                      {(formData.icon || "🏆") +
+                        " " +
+                        (formData.name || "预览")}
+                    </div>
+                  </div>
+                  <div className="space-y-1">
+                    <span className="text-xs text-muted-foreground">
+                      {t("dialog.darkPreview")}
+                    </span>
+                    <div
+                      className="h-14 rounded-lg border border-border/40 flex items-center justify-center text-lg font-semibold bg-zinc-900"
+                      style={{
+                        backgroundColor:
+                          formData.darkBgColor || formData.bgColor || undefined,
+                        color:
+                          formData.darkTextColor ||
+                          formData.textColor ||
+                          "#e4e4e7",
+                      }}
+                    >
+                      {(formData.icon || "🏆") +
+                        " " +
+                        (formData.name || "预览")}
+                    </div>
+                  </div>
                 </div>
               </div>
             )}

@@ -21,6 +21,8 @@ function formatCategoryInfo(
     icon: string
     bg_color: string | null
     text_color: string | null
+    dark_bg_color: string | null
+    dark_text_color: string | null
     translations: {
       locale: string
       name: string
@@ -35,6 +37,8 @@ function formatCategoryInfo(
     icon: category.icon,
     bgColor: category.bg_color,
     textColor: category.text_color,
+    darkBgColor: category.dark_bg_color,
+    darkTextColor: category.dark_text_color,
   }
 }
 
@@ -64,6 +68,8 @@ async function getTopicsActivities(
           icon: true,
           bg_color: true,
           text_color: true,
+          dark_bg_color: true,
+          dark_text_color: true,
           translations: getTranslationsQuery(locale, {
             name: true,
           }),
@@ -131,6 +137,8 @@ async function getPostsActivities(
               icon: true,
               bg_color: true,
               text_color: true,
+              dark_bg_color: true,
+              dark_text_color: true,
               translations: getTranslationsQuery(locale, {
                 name: true,
               }),
@@ -221,6 +229,8 @@ async function getLikesActivities(
                   icon: true,
                   bg_color: true,
                   text_color: true,
+                  dark_bg_color: true,
+                  dark_text_color: true,
                   translations: getTranslationsQuery(locale, {
                     name: true,
                   }),
@@ -307,6 +317,8 @@ async function getBookmarksActivities(
                   icon: true,
                   bg_color: true,
                   text_color: true,
+                  dark_bg_color: true,
+                  dark_text_color: true,
                   translations: getTranslationsQuery(locale, {
                     name: true,
                   }),

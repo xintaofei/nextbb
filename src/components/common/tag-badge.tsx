@@ -4,6 +4,7 @@ import Link from "next/link"
 import { Badge } from "@/components/ui/badge"
 import { cn } from "@/lib/utils"
 import { buildRoutePath } from "@/lib/route-utils"
+import { useThemeColor } from "@/lib/hooks/use-theme-color"
 
 export type TagBadgeProps = {
   id?: string
@@ -12,6 +13,8 @@ export type TagBadgeProps = {
   description?: string | null
   bgColor?: string | null
   textColor?: string | null
+  darkBgColor?: string | null
+  darkTextColor?: string | null
   className?: string
   active?: boolean
   onClick?: () => void
@@ -24,10 +27,30 @@ export function TagBadge({
   description,
   bgColor,
   textColor,
+  darkBgColor,
+  darkTextColor,
   className,
   active,
   onClick,
 }: TagBadgeProps) {
+  const themeColor = useThemeColor({
+    bgColor,
+    textColor,
+    darkBgColor,
+    darkTextColor,
+  })
+
+  const colorStyle = !active
+    ? {
+        backgroundColor: themeColor.bgColor,
+        color: themeColor.textColor,
+        borderColor: themeColor.bgColor
+          ? `${themeColor.bgColor}40`
+          : themeColor.textColor
+            ? `${themeColor.textColor}40`
+            : undefined,
+      }
+    : undefined
   // 如果有自定义 onClick，使用按钮模式
   if (onClick) {
     return (
@@ -38,19 +61,7 @@ export function TagBadge({
           active && "bg-primary/10 text-primary border-primary/20",
           className
         )}
-        style={
-          !active
-            ? {
-                backgroundColor: bgColor || undefined,
-                color: textColor || undefined,
-                borderColor: bgColor
-                  ? `${bgColor}40`
-                  : textColor
-                    ? `${textColor}40`
-                    : undefined,
-              }
-            : undefined
-        }
+        style={colorStyle}
         onClick={onClick}
         title={description || undefined}
       >
@@ -71,19 +82,7 @@ export function TagBadge({
             active && "bg-primary/10 text-primary border-primary/20",
             className
           )}
-          style={
-            !active
-              ? {
-                  backgroundColor: bgColor || undefined,
-                  color: textColor || undefined,
-                  borderColor: bgColor
-                    ? `${bgColor}40`
-                    : textColor
-                      ? `${textColor}40`
-                      : undefined,
-                }
-              : undefined
-          }
+          style={colorStyle}
           title={description || undefined}
         >
           {icon} {name}
@@ -100,19 +99,7 @@ export function TagBadge({
         active && "bg-primary/10 text-primary border-primary/20",
         className
       )}
-      style={
-        !active
-          ? {
-              backgroundColor: bgColor || undefined,
-              color: textColor || undefined,
-              borderColor: bgColor
-                ? `${bgColor}40`
-                : textColor
-                  ? `${textColor}40`
-                  : undefined,
-            }
-          : undefined
-      }
+      style={colorStyle}
       title={description || undefined}
     >
       {icon} {name}
