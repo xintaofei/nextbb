@@ -16,7 +16,7 @@ export function ConversationsLayoutClient({
   const hasConversation = segment !== null
 
   return (
-    <div className="flex w-full h-[calc(100dvh-3.5rem)] sm:h-screen overflow-hidden">
+    <div className="flex w-full h-[calc(100dvh-3.5rem-1px)] sm:h-screen overflow-hidden">
       <div
         className={cn(
           "shrink-0 h-full",

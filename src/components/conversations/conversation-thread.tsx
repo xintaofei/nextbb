@@ -216,6 +216,13 @@ const MessageBubble = memo(function MessageBubble({
           message.isMine ? "items-end" : "items-start"
         )}
       >
+        {isGroup && !message.isMine && (
+          <div className="mb-1 px-1 text-xs text-muted-foreground">
+            {message.sender.isDeleted
+              ? deletedUserLabel
+              : message.sender.name}
+          </div>
+        )}
         <div
           className={cn(
             "rounded-2xl px-4 py-2.5 text-sm",
@@ -224,13 +231,6 @@ const MessageBubble = memo(function MessageBubble({
               : "bg-neutral-100 dark:bg-neutral-800/50"
           )}
         >
-          {isGroup && !message.isMine && (
-            <div className="mb-1 text-xs opacity-70">
-              {message.sender.isDeleted
-                ? deletedUserLabel
-                : message.sender.name}
-            </div>
-          )}
           {parsedContent ? (
             <div
               className={cn(
