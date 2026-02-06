@@ -19,7 +19,7 @@ type Mode = "auto" | (typeof SUPPORTED_LOCALES)[number]
 function replaceLocaleInPath(
   pathname: string,
   target: (typeof SUPPORTED_LOCALES)[number]
-) {
+): string {
   if (!pathname || pathname === "/") return `/${target}`
   const parts = pathname.split("/").filter(Boolean)
   if (parts.length === 0) return `/${target}`
@@ -31,22 +31,38 @@ function replaceLocaleInPath(
   return `/${target}/${parts.join("/")}`
 }
 
-const LOCALE_STORAGE_KEY = "locale-mode"
+const LOCALE_COOKIE_NAME = "NEXT_LOCALE"
+const COOKIE_MAX_AGE = 365 * 24 * 60 * 60 // 1 年（秒）
+
+function getLocaleCookie(): string | undefined {
+  const match = document.cookie.match(
+    new RegExp(`(?:^|;\\s*)${LOCALE_COOKIE_NAME}=([^;]*)`)
+  )
+  return match?.[1] || undefined
+}
+
+function setLocaleCookie(locale: string): void {
+  document.cookie = `${LOCALE_COOKIE_NAME}=${locale};path=/;max-age=${COOKIE_MAX_AGE};SameSite=Lax`
+}
+
+function removeLocaleCookie(): void {
+  document.cookie = `${LOCALE_COOKIE_NAME}=;path=/;max-age=0;SameSite=Lax`
+}
 
 export function LocaleSwitcher() {
   const router = useRouter()
   const pathname = usePathname()
   const locale = useLocale() as (typeof SUPPORTED_LOCALES)[number]
-  const [mode, setMode] = React.useState<Mode>("auto")
   const t = useTranslations("Common.LocaleSwitcher")
 
-  // 从 localStorage 读取保存的语言模式
-  React.useEffect(() => {
-    const savedMode = localStorage.getItem(LOCALE_STORAGE_KEY)
-    if (savedMode && ["auto", "zh", "en"].includes(savedMode)) {
-      setMode(savedMode as Mode)
-    }
-  }, [])
+  // 从 cookie 推导模式：有 NEXT_LOCALE cookie 就是手动选择，没有就是自动
+  const [mode, setMode] = React.useState<Mode>(() => {
+    if (typeof document === "undefined") return "auto"
+    const cookie = getLocaleCookie()
+    return cookie && (SUPPORTED_LOCALES as readonly string[]).includes(cookie)
+      ? (cookie as Mode)
+      : "auto"
+  })
 
   const label = mode === "auto" ? t("auto") : mode === "zh" ? t("zh") : t("en")
 
@@ -69,10 +85,10 @@ export function LocaleSwitcher() {
           onValueChange={(value) => {
             const v = value as Mode
             setMode(v)
-            // 保存到 localStorage
-            localStorage.setItem(LOCALE_STORAGE_KEY, v)
 
             if (v === "auto") {
+              // 自动模式：删除 cookie，让中间件根据浏览器语言决定
+              removeLocaleCookie()
               const nav =
                 typeof navigator !== "undefined" ? navigator.language : locale
               const target = String(nav).toLowerCase().startsWith("zh")
@@ -82,6 +98,8 @@ export function LocaleSwitcher() {
               router.push(nextPath)
               return
             }
+            // 手动选择语言：设置 NEXT_LOCALE cookie，中间件会优先读取
+            setLocaleCookie(v)
             const nextPath = replaceLocaleInPath(pathname, v)
             router.push(nextPath)
           }}
