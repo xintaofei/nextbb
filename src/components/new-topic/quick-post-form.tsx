@@ -128,7 +128,7 @@ export function QuickPostForm({ onPublished }: QuickPostFormProps) {
           type="button"
           onClick={handleExpand}
           className={cn(
-            "w-full px-4 py-3 text-left text-muted-foreground",
+            "w-full px-4 py-3 text-left text-lg",
             "hover:bg-muted/50 transition-colors cursor-text"
           )}
         >
