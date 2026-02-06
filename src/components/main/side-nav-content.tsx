@@ -27,7 +27,7 @@ export const SideNavContent = memo(function SideNavContent({
     | undefined
 
   return (
-    <div className="flex flex-col h-full w-full bg-background">
+    <div className="flex flex-col h-full w-full bg-linear-to-l from-muted-foreground/5 to-background">
       {/* Header */}
       <div
         className={cn(

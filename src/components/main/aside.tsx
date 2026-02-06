@@ -71,7 +71,7 @@ export function Aside() {
       ) : (
         <>
           {/* Search */}
-          <InputGroup className="w-full h-10 rounded-full">
+          <InputGroup className="w-full h-10 rounded-full bg-linear-to-b from-muted-foreground/5 to-card">
             <InputGroupInput
               className="h-full"
               placeholder={tc("Search.placeholder")}
@@ -82,8 +82,8 @@ export function Aside() {
           </InputGroup>
 
           {/* Welcome */}
-          <div className="w-full border rounded-xl flex flex-col overflow-hidden bg-card">
-            <div className="p-3 border-b bg-muted/30 font-medium text-sm flex items-center gap-2">
+          <div className="w-full border rounded-xl flex flex-col overflow-hidden bg-linear-to-b from-muted-foreground/5 to-card">
+            <div className="p-3 border-b bg-muted/30 font-bold text-base flex items-center gap-2">
               <span>{tc("welcome")}</span>
             </div>
             <span className="p-3 text-sm text-muted-foreground break-all">
@@ -93,8 +93,8 @@ export function Aside() {
 
           {/* Topic Filter */}
           {isMainListPage && (
-            <div className="w-full border rounded-xl flex flex-col overflow-hidden bg-card">
-              <div className="p-3 border-b bg-muted/30 font-medium text-sm flex items-center gap-2">
+            <div className="w-full border rounded-xl flex flex-col overflow-hidden bg-linear-to-b from-muted-foreground/5 to-card">
+              <div className="p-3 border-b bg-muted/30 font-bold text-base flex items-center gap-2">
                 <span>{tc("Filters.title")}</span>
               </div>
               <div className="p-3 text-sm text-muted-foreground break-all">
@@ -104,8 +104,8 @@ export function Aside() {
           )}
 
           {/* Latest Comments */}
-          <div className="w-full border rounded-xl flex flex-col overflow-hidden bg-card">
-            <div className="p-3 border-b bg-muted/30 font-medium text-sm flex items-center gap-2">
+          <div className="w-full border rounded-xl flex flex-col overflow-hidden bg-linear-to-b from-muted-foreground/5 to-card">
+            <div className="p-3 border-b bg-muted/30 font-bold text-base flex items-center gap-2">
               <span>{tc("Title.latestComments")}</span>
             </div>
 

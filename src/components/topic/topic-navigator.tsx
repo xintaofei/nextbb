@@ -481,9 +481,9 @@ export function TopicNavigator({
           <>
             {isAuthenticated ? (
               <Button
-                size="sm"
-                variant="secondary"
-                className="w-full"
+                size="lg"
+                variant="default"
+                className="w-full text-base"
                 onClick={() => {
                   if (onReplyTopic) onReplyTopic()
                   else jumpLast()
@@ -494,9 +494,9 @@ export function TopicNavigator({
               </Button>
             ) : (
               <Button
-                size="sm"
-                variant="secondary"
-                className="w-full"
+                size="lg"
+                variant="outline"
+                className="w-full text-base"
                 onClick={() => {
                   router.push(`/login`)
                 }}
@@ -505,7 +505,7 @@ export function TopicNavigator({
                 {t("goLogin")}
               </Button>
             )}
-            <Button size="sm" variant="secondary" className="w-full">
+            <Button size="lg" variant="outline" className="w-full text-base">
               <ArrowDown10 />
               {t("sort")}
             </Button>
