@@ -235,15 +235,9 @@ src/
 
 ### QQ 交流群
 
-<p>
-  <a href="https://qm.qq.com/cgi-bin/qm/qr?k=xxx" target="_blank">
-    <img src="https://img.shields.io/badge/QQ%E7%BE%A4-235959967-EB1923?style=flat-square&logo=tencentqq&logoColor=white" alt="QQ Group" />
-  </a>
-</p>
-
 **QQ 群号：235959967**
 
-在这里你可以：
+### 在这里你可以：
 - 💡 讨论功能建议和使用技巧
 - 🐛 反馈问题并获得技术支持
 - 🤝 结识志同道合的开发者
