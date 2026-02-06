@@ -223,7 +223,6 @@
       }
     },
     "QuickPost": {
-      "placeholder": "Share your thoughts...",
       "titlePlaceholder": "Enter title",
       "publish": "Publish",
       "publishing": "Publishing...",
@@ -231,7 +230,11 @@
       "success": "Published successfully!",
       "failed": "Failed to publish",
       "unauthorized": "Please sign in to publish",
-      "goLogin": "Sign in to publish"
+      "hints": {
+        "0": "Share thoughts",
+        "1": "Share a find",
+        "2": "Swap tips"
+      }
     },
     "Categories": {
       "tech": "Tech Discussion",

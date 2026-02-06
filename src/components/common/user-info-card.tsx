@@ -270,7 +270,7 @@ export function UserInfoCard({
         align={align}
         className="w-md max-sm:w-80 p-0 overflow-hidden"
       >
-        <div className="flex flex-col gap-4 p-4">
+        <div className="flex flex-col gap-4 p-4 bg-linear-to-br from-muted-foreground/5 to-transparent">
           {/* 头部区域 */}
           <div className="flex flex-row items-start gap-4">
             {/* 头像区域 */}

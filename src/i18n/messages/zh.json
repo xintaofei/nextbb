@@ -223,7 +223,6 @@
       }
     },
     "QuickPost": {
-      "placeholder": "分享你的想法...",
       "titlePlaceholder": "输入标题",
       "publish": "发布",
       "publishing": "发布中...",
@@ -231,7 +230,11 @@
       "success": "发布成功！",
       "failed": "发布失败",
       "unauthorized": "请先登录后再发布",
-      "goLogin": "点击登录后发布"
+      "hints": {
+        "0": "分享想法",
+        "1": "分享发现",
+        "2": "交流经验"
+      }
     },
     "Categories": {
       "tech": "技术讨论",

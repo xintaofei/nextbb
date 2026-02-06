@@ -24,6 +24,7 @@ import { TopicType } from "@/types/topic-type"
 import { cn } from "@/lib/utils"
 import { Loader2, Send } from "lucide-react"
 import { useRouter } from "next/navigation"
+import { MorphingText } from "@/components/ui/morphing-text"
 
 const MilkdownEditorWrapper = dynamic(
   () =>
@@ -122,17 +123,18 @@ export function QuickPostForm({ onPublished }: QuickPostFormProps) {
 
   // 收起状态：占位符
   if (!expanded) {
+    const texts: string[] = Array.from({ length: 3 }, (_, i) => t(`hints.${i}`))
     return (
       <div className="border-y bg-muted/40 max-sm:border max-sm:rounded-lg">
         <button
           type="button"
           onClick={handleExpand}
           className={cn(
-            "w-full px-4 py-3 text-left text-lg",
-            "hover:bg-muted/50 transition-colors cursor-text"
+            "w-full p-4 text-left text-base",
+            "hover:bg-muted/50 cursor-text"
           )}
         >
-          {isAuthenticated ? t("placeholder") : t("goLogin")}
+          <MorphingText texts={texts} />
         </button>
       </div>
     )
