@@ -200,8 +200,8 @@ export function CategoryDialog({
               formData.darkTextColor) && (
               <div className="space-y-2">
                 <Label>{t("dialog.colorPreview")}</Label>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div className="space-y-1">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                  <div className="space-y-1 p-4 bg-background border rounded-lg">
                     <span className="text-xs text-muted-foreground">
                       {t("dialog.lightPreview")}
                     </span>
@@ -215,8 +215,8 @@ export function CategoryDialog({
                       {(formData.icon || "") + " " + (formData.name || "预览")}
                     </div>
                   </div>
-                  <div className="space-y-1">
-                    <span className="text-xs text-muted-foreground">
+                  <div className="space-y-1 p-4 bg-primary border rounded-lg">
+                    <span className="text-xs text-muted">
                       {t("dialog.darkPreview")}
                     </span>
                     <div
