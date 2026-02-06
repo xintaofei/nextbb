@@ -111,7 +111,7 @@ export function NavMain({ className, onLinkClick }: NavMainProps) {
             )}
           >
             <item.icon className="size-6" />
-            <span className="text-xl">{item.title}</span>
+            <span className="text-lg">{item.title}</span>
           </div>
         </Link>
       ))}

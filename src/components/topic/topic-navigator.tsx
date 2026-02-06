@@ -483,7 +483,7 @@ export function TopicNavigator({
               <Button
                 size="lg"
                 variant="default"
-                className="w-full text-base"
+                className="w-full text-base rounded-full"
                 onClick={() => {
                   if (onReplyTopic) onReplyTopic()
                   else jumpLast()
@@ -496,7 +496,7 @@ export function TopicNavigator({
               <Button
                 size="lg"
                 variant="outline"
-                className="w-full text-base"
+                className="w-full text-base rounded-full"
                 onClick={() => {
                   router.push(`/login`)
                 }}
@@ -505,7 +505,11 @@ export function TopicNavigator({
                 {t("goLogin")}
               </Button>
             )}
-            <Button size="lg" variant="outline" className="w-full text-base">
+            <Button
+              size="lg"
+              variant="outline"
+              className="w-full text-base rounded-full"
+            >
               <ArrowDown10 />
               {t("sort")}
             </Button>
