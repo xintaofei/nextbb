@@ -35,9 +35,9 @@ export function TagBadge({
 }: TagBadgeProps) {
   const { themeStyle } = useThemeColor({
     bgColor,
-    textColor,
+    textColor: textColor || "var(--muted-foreground)",
     darkBgColor,
-    darkTextColor,
+    darkTextColor: darkTextColor || "var(--muted-foreground)",
   })
 
   const colorStyle = !active ? themeStyle : undefined
@@ -49,7 +49,7 @@ export function TagBadge({
         className={cn(
           "cursor-pointer",
           !active &&
-            "bg-(--bg-light) dark:bg-(--bg-dark) text-(--text-light) dark:text-(--text-dark) border-(--text-light)/10 dark:border-(--text-dark)/10",
+            "bg-(--bg-light) dark:bg-(--bg-dark) text-(--text-light) dark:text-(--text-dark) border-(--text-light)/15 dark:border-(--text-dark)/15 hover:border-(--text-light)/30 dark:hover:border-(--text-dark)/30",
           active && "bg-primary/10 text-primary border-primary/20",
           className
         )}
@@ -72,7 +72,7 @@ export function TagBadge({
           className={cn(
             "cursor-pointer",
             !active &&
-              "bg-(--bg-light) dark:bg-(--bg-dark) text-(--text-light) dark:text-(--text-dark) border-(--text-light)/10 dark:border-(--text-dark)/10",
+              "bg-(--bg-light) dark:bg-(--bg-dark) text-(--text-light) dark:text-(--text-dark) border-(--text-light)/15 dark:border-(--text-dark)/15 hover:border-(--text-light)/30 dark:hover:border-(--text-dark)/30",
             active && "bg-primary/10 text-primary border-primary/20",
             className
           )}
@@ -91,7 +91,7 @@ export function TagBadge({
       variant="outline"
       className={cn(
         !active &&
-          "bg-(--bg-light) dark:bg-(--bg-dark) text-(--text-light) dark:text-(--text-dark) border-(--text-light)/10 dark:border-(--text-dark)/10",
+          "bg-(--bg-light) dark:bg-(--bg-dark) text-(--text-light) dark:text-(--text-dark) border-(--text-light)/15 dark:border-(--text-dark)/15 hover:border-(--text-light)/30 dark:hover:border-(--text-dark)/30",
         active && "bg-primary/10 text-primary border-primary/20",
         className
       )}

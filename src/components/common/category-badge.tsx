@@ -32,10 +32,10 @@ export function CategoryBadge({
   onClick,
 }: CategoryBadgeProps) {
   const { themeStyle } = useThemeColor({
-    bgColor: bgColor || "var(--bg-muted)",
-    textColor,
-    darkBgColor,
-    darkTextColor,
+    bgColor: bgColor || "var(--muted)",
+    textColor: textColor || "var(--muted-foreground)",
+    darkBgColor: darkBgColor || "var(--muted)",
+    darkTextColor: darkTextColor || "var(--muted-foreground)",
   })
 
   // 如果有自定义 onClick，使用按钮模式
@@ -45,7 +45,7 @@ export function CategoryBadge({
         variant="secondary"
         className={cn(
           "cursor-pointer",
-          "bg-(--bg-light) dark:bg-(--bg-dark) text-(--text-light) dark:text-(--text-dark) border-(--text-light)/10 dark:border-(--text-dark)/10",
+          "bg-(--bg-light) dark:bg-(--bg-dark) text-(--text-light) dark:text-(--text-dark) border-(--text-light)/15 dark:border-(--text-dark)/15 hover:border-(--text-light)/30 dark:hover:border-(--text-dark)/30",
           className
         )}
         style={themeStyle}
@@ -66,7 +66,7 @@ export function CategoryBadge({
           variant="secondary"
           className={cn(
             "cursor-pointer",
-            "bg-(--bg-light) dark:bg-(--bg-dark) text-(--text-light) dark:text-(--text-dark) border-(--text-light)/10 dark:border-(--text-dark)/10",
+            "bg-(--bg-light) dark:bg-(--bg-dark) text-(--text-light) dark:text-(--text-dark) border-(--text-light)/15 dark:border-(--text-dark)/15 hover:border-(--text-light)/30 dark:hover:border-(--text-dark)/30",
             className
           )}
           style={themeStyle}
@@ -83,7 +83,7 @@ export function CategoryBadge({
     <Badge
       variant="secondary"
       className={cn(
-        "bg-(--bg-light) dark:bg-(--bg-dark) text-(--text-light) dark:text-(--text-dark) border-(--text-light)/10 dark:border-(--text-dark)/10",
+        "bg-(--bg-light) dark:bg-(--bg-dark) text-(--text-light) dark:text-(--text-dark) border-(--text-light)/15 dark:border-(--text-dark)/15 hover:border-(--text-light)/30 dark:hover:border-(--text-dark)/30",
         className
       )}
       style={themeStyle}
