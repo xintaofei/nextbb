@@ -231,9 +231,9 @@
       "failed": "Failed to publish",
       "unauthorized": "Please sign in to publish",
       "hints": {
-        "0": "Share thoughts",
-        "1": "Share a find",
-        "2": "Swap tips"
+        "0": "✨ Discovered something new? Share it with everyone.",
+        "1": "💡 Stuck on a problem? Start a discussion.",
+        "2": "🎯 Got tips & tricks? Write them down to help others."
       }
     },
     "Categories": {
