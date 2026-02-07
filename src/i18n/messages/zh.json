@@ -1957,26 +1957,6 @@
         "statusExpiryCustomPlaceholder": "选择过期时间",
         "selectedExpiry": "已选择过期时间",
         "apply": "应用",
-        "socialAccounts": {
-          "title": "关联账号",
-          "description": "管理与第三方平台的账号关联，方便快捷登录",
-          "linked": "已关联",
-          "notLinked": "未关联",
-          "link": "关联",
-          "unlink": "解除关联",
-          "lastUsed": "最近使用于",
-          "linkSuccess": "账号关联成功",
-          "linkError": "账号关联失败，请重试",
-          "unlinkSuccess": "已解除账号关联",
-          "unlinkError": "解除关联失败，请重试",
-          "alreadyLinked": "此账号已关联到您的账户",
-          "linkedToOther": "此社交账号已关联到其他用户",
-          "cannotUnlinkLast": "无法解除最后一个关联账号（您尚未设置密码）",
-          "unlinkConfirmTitle": "确认解除关联",
-          "unlinkConfirmDescription": "确定要解除与 {provider} 的账号关联吗？解除后将无法使用该平台登录。",
-          "cancel": "取消",
-          "confirmUnlink": "确认解除"
-        }
       },
       "profile": {
         "title": "个人资料",
@@ -1997,7 +1977,27 @@
       },
       "security": {
         "title": "安全",
-        "description": "管理密码和第三方账号绑定"
+        "description": "管理密码和第三方账号绑定",
+        "socialAccounts": {
+          "title": "关联账号",
+          "description": "管理与第三方平台的账号关联，方便快捷登录",
+          "linked": "已关联",
+          "notLinked": "未关联",
+          "link": "关联",
+          "unlink": "解除关联",
+          "lastUsed": "最近使用于",
+          "linkSuccess": "账号关联成功",
+          "linkError": "账号关联失败，请重试",
+          "unlinkSuccess": "已解除账号关联",
+          "unlinkError": "解除关联失败，请重试",
+          "alreadyLinked": "此账号已关联到您的账户",
+          "linkedToOther": "此社交账号已关联到其他用户",
+          "cannotUnlinkLast": "无法解除最后一个关联账号（您尚未设置密码）",
+          "unlinkConfirmTitle": "确认解除关联",
+          "unlinkConfirmDescription": "确定要解除与 {provider} 的账号关联吗？解除后将无法使用该平台登录。",
+          "cancel": "取消",
+          "confirmUnlink": "确认解除"
+        }
       },
       "interface": {
         "title": "界面"

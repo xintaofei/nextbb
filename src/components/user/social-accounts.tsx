@@ -46,7 +46,7 @@ type SocialAccountsProps = {
 const fetcher = (url: string) => fetch(url).then((res) => res.json())
 
 export function SocialAccounts({ providers }: SocialAccountsProps) {
-  const t = useTranslations("User.preferences.account.socialAccounts")
+  const t = useTranslations("User.preferences.security.socialAccounts")
   const searchParams = useSearchParams()
   const router = useRouter()
   const [linkingProvider, setLinkingProvider] = useState<string | null>(null)
