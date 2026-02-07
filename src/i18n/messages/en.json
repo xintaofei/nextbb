@@ -638,6 +638,36 @@
         "sendTooFrequent": "Sending too frequently, please try again later",
         "codeExpired": "Failed to send verification code"
       }
+    },
+    "PasswordReset": {
+      "title": "Reset Password",
+      "description": "Enter your new password to complete the reset.",
+      "newPassword": "New Password",
+      "newPasswordPlaceholder": "Enter new password",
+      "confirmPassword": "Confirm Password",
+      "confirmPasswordPlaceholder": "Re-enter new password",
+      "submit": "Reset Password",
+      "success": "Password reset successful. Please sign in with your new password.",
+      "backToLogin": "Back to Sign In",
+      "invalidToken": "Reset link is invalid or expired. Please request a new password reset.",
+      "noToken": "Missing reset token, redirecting to sign in...",
+      "email": {
+        "subject": "Password Reset",
+        "textBody": "You are resetting your password. Please click the link below to proceed: {link}\n\nThis link expires in {minutes} minutes. If you didn't request this, please ignore this email.",
+        "htmlLine1": "You are resetting your password. Please click the link below to proceed:",
+        "htmlLine2": "This link expires in {minutes} minutes. If you didn't request this, please ignore this email."
+      },
+      "error": {
+        "passwordMin": "Password must be at least 8 characters",
+        "passwordMax": "Password must be at most 72 characters",
+        "passwordMismatch": "Passwords do not match",
+        "tokenRequired": "Missing reset token",
+        "tokenInvalid": "Reset link is invalid or expired",
+        "resetFailed": "Password reset failed, please try again",
+        "sendFailed": "Failed to send reset email, please try again",
+        "sendTooFrequent": "Sending too frequently, please try again later",
+        "noEmail": "Your account has no email address, cannot send reset email"
+      }
     }
   },
   "Nav": {
@@ -1956,7 +1986,7 @@
         "statusExpiryCustom": "Quick Set",
         "statusExpiryCustomPlaceholder": "Select expiry time",
         "selectedExpiry": "Selected expiry",
-        "apply": "Apply",
+        "apply": "Apply"
       },
       "profile": {
         "title": "Profile",
@@ -1978,6 +2008,17 @@
       "security": {
         "title": "Security",
         "description": "Manage passwords and third-party account linking",
+        "passwordManagement": {
+          "title": "Password Management",
+          "descriptionHasPassword": "You can change your current password by requesting a password reset email.",
+          "descriptionNoPassword": "Your account doesn't have a password yet. You can set one via email.",
+          "sendResetEmail": "Send Password Reset Email",
+          "sending": "Sending...",
+          "cooldown": "Resend in {seconds}s",
+          "emailSent": "Reset email sent. Please check your inbox and click the link to reset your password.",
+          "sendError": "Failed to send, please try again",
+          "sendTooFrequent": "Sending too frequently, please try again later"
+        },
         "socialAccounts": {
           "title": "Connected Accounts",
           "description": "Manage your connected third-party accounts for easier login",

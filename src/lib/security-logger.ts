@@ -10,6 +10,8 @@ type SecurityEventType =
   | "PASSWORD_MISMATCH"
   | "ACCOUNT_DISABLED"
   | "UNKNOWN_PROVIDER"
+  | "PASSWORD_RESET_REQUESTED"
+  | "PASSWORD_RESET_SUCCESS"
 
 type SecurityLogData = {
   event: SecurityEventType
