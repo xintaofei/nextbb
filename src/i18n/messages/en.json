@@ -1996,7 +1996,8 @@
         "saveError": "Failed to save, please try again"
       },
       "security": {
-        "title": "Security"
+        "title": "Security",
+        "description": "Manage passwords and third-party account linking"
       },
       "interface": {
         "title": "Interface"
