@@ -59,7 +59,7 @@ export function TopicSortTabs({
     <nav
       role="tablist"
       className={cn(
-        "grid h-14 w-full bg-transparent p-0",
+        "grid h-12 w-full bg-transparent p-0",
         isLoggedIn ? "grid-cols-4" : "grid-cols-3",
         className
       )}

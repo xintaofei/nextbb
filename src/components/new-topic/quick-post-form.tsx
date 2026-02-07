@@ -24,7 +24,7 @@ import { TopicType } from "@/types/topic-type"
 import { cn } from "@/lib/utils"
 import { Loader2, Send } from "lucide-react"
 import { useRouter } from "next/navigation"
-import { MorphingText } from "@/components/ui/morphing-text"
+import { TypingAnimation } from "@/components/ui/typing-animation"
 
 const MilkdownEditorWrapper = dynamic(
   () =>
@@ -134,7 +134,7 @@ export function QuickPostForm({ onPublished }: QuickPostFormProps) {
             "hover:bg-muted/50 cursor-text"
           )}
         >
-          <MorphingText texts={texts} />
+          <TypingAnimation words={texts} loop={true} />
         </button>
       </div>
     )
