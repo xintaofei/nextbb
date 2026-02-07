@@ -158,15 +158,26 @@ export async function PATCH(
         name !== undefined || description !== undefined
 
       if (hasTranslationFieldsInRequest) {
-        // 获取当前源语言翻译
+        // 获取当前源语言翻译（只查询需要的字段以提升性能）
         const sourceTranslation = await tx.tag_translations.findFirst({
           where: {
             tag_id: tagId,
             is_source: true,
           },
+          select: {
+            name: true,
+            description: true,
+            version: true,
+            locale: true,
+          },
         })
 
-        if (sourceTranslation) {
+        if (!sourceTranslation) {
+          // 数据一致性检查：源翻译应该始终存在
+          console.error(
+            `Source translation not found for tag ${tagId}. This indicates a data consistency issue.`
+          )
+        } else {
           // 检查是否真的有变化
           const nameChanged =
             name !== undefined && name !== sourceTranslation.name
