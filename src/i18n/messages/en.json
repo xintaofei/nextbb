@@ -666,7 +666,8 @@
         "resetFailed": "Password reset failed, please try again",
         "sendFailed": "Failed to send reset email, please try again",
         "sendTooFrequent": "Sending too frequently, please try again later",
-        "noEmail": "Your account has no email address, cannot send reset email"
+        "noEmail": "Your account has no email address, cannot send reset email",
+        "passwordWeak": "Password is too weak. Please choose a stronger password (avoid common passwords, sequential numbers or letters)"
       }
     }
   },

@@ -2,10 +2,15 @@ import { NextResponse } from "next/server"
 import { z } from "zod"
 import bcrypt from "bcryptjs"
 import { prisma } from "@/lib/prisma"
-import { verifyResetToken } from "@/lib/password-reset"
+import {
+  verifyResetToken,
+  checkResetAttemptRateLimit,
+} from "@/lib/password-reset"
 import { logSecurityEvent } from "@/lib/security-logger"
 import { getClientIp } from "@/lib/get-client-ip"
 import { getTranslations } from "next-intl/server"
+import { forceLogoutUser } from "@/lib/session-blacklist"
+import { isWeakPassword } from "@/lib/password-validation"
 
 const schema = z.object({
   token: z.string().min(1),
@@ -24,8 +29,35 @@ export async function POST(request: Request) {
   const { token, newPassword } = result.data
 
   try {
+    // 先校验密码（不消耗 token，允许用户修正后重试）
+    if (isWeakPassword(newPassword)) {
+      return NextResponse.json({ error: t("passwordWeak") }, { status: 400 })
+    }
+    if (Buffer.byteLength(newPassword, "utf8") > 72) {
+      return NextResponse.json({ error: t("passwordMax") }, { status: 400 })
+    }
+
+    // 重置密码速率限制（10 次 / 15 分钟）
+    const ip = await getClientIp()
+    const rateLimitResult = await checkResetAttemptRateLimit(ip)
+    if (!rateLimitResult.allowed) {
+      return NextResponse.json(
+        {
+          error: "Too many reset attempts",
+          retryAfter: rateLimitResult.remainingTime,
+        },
+        { status: 429 }
+      )
+    }
+
+    // 密码校验通过后才消费 token
     const userId = await verifyResetToken(token)
     if (!userId) {
+      logSecurityEvent({
+        event: "PASSWORD_RESET_FAILED",
+        ip,
+        details: "Invalid or expired reset token",
+      })
       return NextResponse.json({ error: t("tokenInvalid") }, { status: 400 })
     }
 
@@ -36,11 +68,14 @@ export async function POST(request: Request) {
       data: { password: hashedPassword },
     })
 
-    const ip = await getClientIp()
+    // 立即失效所有旧 session（强制所有设备重新登录）
+    await forceLogoutUser(userId.toString())
+
     logSecurityEvent({
       event: "PASSWORD_RESET_SUCCESS",
       userId,
       ip,
+      details: "All sessions invalidated",
     })
 
     return NextResponse.json({ success: true })

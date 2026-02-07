@@ -12,6 +12,7 @@ type SecurityEventType =
   | "UNKNOWN_PROVIDER"
   | "PASSWORD_RESET_REQUESTED"
   | "PASSWORD_RESET_SUCCESS"
+  | "PASSWORD_RESET_FAILED"
 
 type SecurityLogData = {
   event: SecurityEventType
@@ -58,6 +59,7 @@ export function logSecurityEvent(data: SecurityLogData): void {
     "TOKEN_VERIFICATION_FAILED",
     "PASSWORD_MISMATCH",
     "ACCOUNT_DISABLED",
+    "PASSWORD_RESET_FAILED",
   ]
 
   if (criticalEvents.includes(data.event)) {

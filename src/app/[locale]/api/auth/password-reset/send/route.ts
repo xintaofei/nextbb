@@ -11,6 +11,7 @@ import {
   getResetCooldown,
   storeResetToken,
   clearResetToken,
+  checkSendResetRateLimit,
 } from "@/lib/password-reset"
 
 export async function POST() {
@@ -32,6 +33,19 @@ export async function POST() {
   }
 
   try {
+    // 发送邮件速率限制（5 次 / 15 分钟）
+    const ip = await getClientIp()
+    const rateLimitResult = await checkSendResetRateLimit(ip)
+    if (!rateLimitResult.allowed) {
+      return NextResponse.json(
+        {
+          error: t("sendTooFrequent"),
+          retryAfter: rateLimitResult.remainingTime,
+        },
+        { status: 429 }
+      )
+    }
+
     const cooldown = await getResetCooldown(user.userId)
     if (cooldown > 0) {
       return NextResponse.json(
@@ -63,7 +77,6 @@ export async function POST() {
       throw error
     }
 
-    const ip = await getClientIp()
     logSecurityEvent({
       event: "PASSWORD_RESET_REQUESTED",
       userId: user.userId,

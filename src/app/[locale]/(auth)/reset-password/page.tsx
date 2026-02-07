@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useMemo } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import { useTranslations } from "next-intl"
 import { z } from "zod"
@@ -46,18 +46,26 @@ export default function ResetPasswordPage() {
     }
   }, [token, router])
 
-  const schema = z
-    .object({
-      newPassword: z
-        .string()
-        .min(8, t("error.passwordMin"))
-        .max(72, t("error.passwordMax")),
-      confirmPassword: z.string(),
-    })
-    .refine((data) => data.newPassword === data.confirmPassword, {
-      message: t("error.passwordMismatch"),
-      path: ["confirmPassword"],
-    })
+  const schema = useMemo(
+    () =>
+      z
+        .object({
+          newPassword: z
+            .string()
+            .min(8, t("error.passwordMin"))
+            .max(72, t("error.passwordMax"))
+            .refine(
+              (val) => new TextEncoder().encode(val).length <= 72,
+              t("error.passwordMax")
+            ),
+          confirmPassword: z.string(),
+        })
+        .refine((data) => data.newPassword === data.confirmPassword, {
+          message: t("error.passwordMismatch"),
+          path: ["confirmPassword"],
+        }),
+    [t]
+  )
 
   const form = useForm<ResetPasswordValues>({
     resolver: zodResolver(schema),
