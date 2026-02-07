@@ -15,6 +15,8 @@ export type BadgeItem = {
   level: number
   bgColor: string | null
   textColor: string | null
+  darkBgColor: string | null
+  darkTextColor: string | null
   description?: string | null
 }
 
@@ -64,6 +66,8 @@ export type RelatedTopicItem = {
     description?: string | null
     bgColor?: string | null
     textColor?: string | null
+    darkBgColor?: string | null
+    darkTextColor?: string | null
   }
   tags: {
     id: string
@@ -72,6 +76,8 @@ export type RelatedTopicItem = {
     description?: string | null
     bgColor?: string | null
     textColor?: string | null
+    darkBgColor?: string | null
+    darkTextColor?: string | null
   }[]
   replies: number
   views: number
@@ -94,6 +100,8 @@ export type TopicInfo = {
     description?: string | null
     bgColor?: string | null
     textColor?: string | null
+    darkBgColor?: string | null
+    darkTextColor?: string | null
   }
   tags: {
     id: string
@@ -102,6 +110,8 @@ export type TopicInfo = {
     description?: string | null
     bgColor?: string | null
     textColor?: string | null
+    darkBgColor?: string | null
+    darkTextColor?: string | null
   }[]
   views: number
   participantCount: number

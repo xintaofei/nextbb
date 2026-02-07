@@ -37,6 +37,8 @@ export const getTopicInfo = cache(async function getTopicInfo(
           icon: true,
           bg_color: true,
           text_color: true,
+          dark_bg_color: true,
+          dark_text_color: true,
           translations: getTranslationsQuery(locale, {
             name: true,
             description: true,
@@ -51,6 +53,8 @@ export const getTopicInfo = cache(async function getTopicInfo(
               icon: true,
               bg_color: true,
               text_color: true,
+              dark_bg_color: true,
+              dark_text_color: true,
               translations: getTranslationsQuery(locale, {
                 name: true,
                 description: true,
@@ -107,6 +111,8 @@ export const getTopicInfo = cache(async function getTopicInfo(
       description: categoryFields.description,
       bgColor: topic.category.bg_color,
       textColor: topic.category.text_color,
+      darkBgColor: topic.category.dark_bg_color,
+      darkTextColor: topic.category.dark_text_color,
     },
     tags: topic.tag_links.map((l) => {
       const tagFields = getTranslationFields(l.tag.translations, locale, {
@@ -120,6 +126,8 @@ export const getTopicInfo = cache(async function getTopicInfo(
         description: tagFields.description,
         bgColor: l.tag.bg_color,
         textColor: l.tag.text_color,
+        darkBgColor: l.tag.dark_bg_color,
+        darkTextColor: l.tag.dark_text_color,
       }
     }),
     views: topic.views + 1,
@@ -242,6 +250,8 @@ export const getTopicPosts = cache(async function getTopicPosts(
                 level: true,
                 bg_color: true,
                 text_color: true,
+                dark_bg_color: true,
+                dark_text_color: true,
                 translations: getTranslationsQuery(locale, {
                   name: true,
                   description: true,
@@ -360,6 +370,8 @@ export const getTopicPosts = cache(async function getTopicPosts(
       level: ub.badge.level,
       bgColor: ub.badge.bg_color,
       textColor: ub.badge.text_color,
+      darkBgColor: ub.badge.dark_bg_color,
+      darkTextColor: ub.badge.dark_text_color,
       description: badgeFields.description,
     })
   }

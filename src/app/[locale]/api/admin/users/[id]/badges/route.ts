@@ -30,6 +30,8 @@ export async function GET(req: NextRequest, context: RouteContext) {
             level: true,
             bg_color: true,
             text_color: true,
+            dark_bg_color: true,
+            dark_text_color: true,
             translations: getTranslationsQuery(locale, { name: true }),
           },
         },
@@ -52,6 +54,8 @@ export async function GET(req: NextRequest, context: RouteContext) {
         level: ub.badge.level,
         bgColor: ub.badge.bg_color,
         textColor: ub.badge.text_color,
+        darkBgColor: ub.badge.dark_bg_color,
+        darkTextColor: ub.badge.dark_text_color,
         awardedAt: ub.awarded_at.toISOString(),
       }
     })

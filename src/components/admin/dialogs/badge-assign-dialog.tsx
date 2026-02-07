@@ -160,6 +160,8 @@ export function BadgeAssignDialog({
                         name={badge.name}
                         bgColor={badge.bgColor}
                         textColor={badge.textColor}
+                        darkBgColor={badge.darkBgColor}
+                        darkTextColor={badge.darkTextColor}
                         level={badge.level}
                         size="sm"
                       />

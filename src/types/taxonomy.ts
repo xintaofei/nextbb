@@ -4,6 +4,8 @@ export interface CategoryWithCount {
   sort: number
   bgColor: string | null
   textColor: string | null
+  darkBgColor: string | null
+  darkTextColor: string | null
   name: string
   description: string | null
   topicCount: number
@@ -15,6 +17,8 @@ export interface TagWithCount {
   sort: number
   bgColor: string | null
   textColor: string | null
+  darkBgColor: string | null
+  darkTextColor: string | null
   name: string
   description: string | null
   topicCount: number

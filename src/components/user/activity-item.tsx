@@ -84,6 +84,8 @@ export function ActivityItem({ activity }: ActivityItemProps) {
                     icon={category.icon}
                     bgColor={category.bgColor}
                     textColor={category.textColor}
+                    darkBgColor={category.darkBgColor}
+                    darkTextColor={category.darkTextColor}
                   />
                   {topicType !== TopicType.GENERAL && (
                     <TopicStatusTags isPinned={false} topicType={topicType} />
@@ -140,6 +142,8 @@ export function ActivityItem({ activity }: ActivityItemProps) {
                     icon={category.icon}
                     bgColor={category.bgColor}
                     textColor={category.textColor}
+                    darkBgColor={category.darkBgColor}
+                    darkTextColor={category.darkTextColor}
                   />
                   <span className="inline-flex items-center gap-1 text-xs text-muted-foreground">
                     <Hash className="h-3 w-3" />
@@ -194,6 +198,8 @@ export function ActivityItem({ activity }: ActivityItemProps) {
                     icon={category.icon}
                     bgColor={category.bgColor}
                     textColor={category.textColor}
+                    darkBgColor={category.darkBgColor}
+                    darkTextColor={category.darkTextColor}
                   />
                   <span className="inline-flex items-center gap-1 text-xs text-muted-foreground">
                     <Hash className="h-3 w-3" />
@@ -253,6 +259,8 @@ export function ActivityItem({ activity }: ActivityItemProps) {
                     icon={category.icon}
                     bgColor={category.bgColor}
                     textColor={category.textColor}
+                    darkBgColor={category.darkBgColor}
+                    darkTextColor={category.darkTextColor}
                   />
                   <span className="inline-flex items-center gap-1 text-xs text-muted-foreground">
                     <Hash className="h-3 w-3" />

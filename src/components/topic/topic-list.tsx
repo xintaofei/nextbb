@@ -35,6 +35,8 @@ export type TopicCategory = {
   description?: string | null
   bgColor?: string | null
   textColor?: string | null
+  darkBgColor?: string | null
+  darkTextColor?: string | null
 }
 
 export type TopicTag = {
@@ -44,6 +46,8 @@ export type TopicTag = {
   description?: string | null
   bgColor?: string | null
   textColor?: string | null
+  darkBgColor?: string | null
+  darkTextColor?: string | null
 }
 
 export type TopicListItem = {
@@ -265,6 +269,8 @@ export function TopicList({
                       description={t.category.description}
                       bgColor={t.category.bgColor}
                       textColor={t.category.textColor}
+                      darkBgColor={t.category.darkBgColor}
+                      darkTextColor={t.category.darkTextColor}
                     />
                     {t.tags.map((tag) => (
                       <TagBadge
@@ -275,6 +281,8 @@ export function TopicList({
                         description={tag.description}
                         bgColor={tag.bgColor}
                         textColor={tag.textColor}
+                        darkBgColor={tag.darkBgColor}
+                        darkTextColor={tag.darkTextColor}
                       />
                     ))}
                   </div>

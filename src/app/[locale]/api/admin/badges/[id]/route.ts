@@ -13,6 +13,8 @@ type BadgeDTO = {
   sort: number
   bgColor: string | null
   textColor: string | null
+  darkBgColor: string | null
+  darkTextColor: string | null
   sourceLocale: string
   isEnabled: boolean
   isVisible: boolean
@@ -73,6 +75,8 @@ export async function PATCH(
       sort,
       bgColor,
       textColor,
+      darkBgColor,
+      darkTextColor,
       isEnabled,
       isVisible,
       isDeleted,
@@ -140,6 +144,20 @@ export async function PATCH(
       )
     }
 
+    if (darkBgColor !== undefined && !validateColor(darkBgColor)) {
+      return NextResponse.json(
+        { error: "Invalid dark background color format" },
+        { status: 400 }
+      )
+    }
+
+    if (darkTextColor !== undefined && !validateColor(darkTextColor)) {
+      return NextResponse.json(
+        { error: "Invalid dark text color format" },
+        { status: 400 }
+      )
+    }
+
     // 构建更新数据
     const hasTranslationUpdate = name !== undefined || description !== undefined
     const badgeUpdateData: {
@@ -149,6 +167,8 @@ export async function PATCH(
       sort?: number
       bg_color?: string | null
       text_color?: string | null
+      dark_bg_color?: string | null
+      dark_text_color?: string | null
       is_enabled?: boolean
       is_visible?: boolean
       is_deleted?: boolean
@@ -160,6 +180,10 @@ export async function PATCH(
     if (sort !== undefined) badgeUpdateData.sort = sort
     if (bgColor !== undefined) badgeUpdateData.bg_color = bgColor || null
     if (textColor !== undefined) badgeUpdateData.text_color = textColor || null
+    if (darkBgColor !== undefined)
+      badgeUpdateData.dark_bg_color = darkBgColor || null
+    if (darkTextColor !== undefined)
+      badgeUpdateData.dark_text_color = darkTextColor || null
     if (isEnabled !== undefined) badgeUpdateData.is_enabled = isEnabled
     if (isVisible !== undefined) badgeUpdateData.is_visible = isVisible
     if (isDeleted !== undefined) badgeUpdateData.is_deleted = isDeleted
@@ -225,6 +249,8 @@ export async function PATCH(
           sort: true,
           bg_color: true,
           text_color: true,
+          dark_bg_color: true,
+          dark_text_color: true,
           is_enabled: true,
           is_visible: true,
           is_deleted: true,
@@ -267,6 +293,8 @@ export async function PATCH(
       sort: result.sort,
       bgColor: result.bg_color,
       textColor: result.text_color,
+      darkBgColor: result.dark_bg_color,
+      darkTextColor: result.dark_text_color,
       sourceLocale: result.source_locale,
       isEnabled: result.is_enabled,
       isVisible: result.is_visible,

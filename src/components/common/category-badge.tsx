@@ -4,6 +4,7 @@ import Link from "next/link"
 import { Badge } from "@/components/ui/badge"
 import { cn } from "@/lib/utils"
 import { buildRoutePath } from "@/lib/route-utils"
+import { useThemeColor } from "@/lib/hooks/use-theme-color"
 
 export type CategoryBadgeProps = {
   id?: string
@@ -12,6 +13,8 @@ export type CategoryBadgeProps = {
   description?: string | null
   bgColor?: string | null
   textColor?: string | null
+  darkBgColor?: string | null
+  darkTextColor?: string | null
   className?: string
   onClick?: () => void
 }
@@ -23,20 +26,29 @@ export function CategoryBadge({
   description,
   bgColor,
   textColor,
+  darkBgColor,
+  darkTextColor,
   className,
   onClick,
 }: CategoryBadgeProps) {
+  const { themeStyle } = useThemeColor({
+    bgColor: bgColor || "var(--muted)",
+    textColor: textColor || "var(--muted-foreground)",
+    darkBgColor: darkBgColor || "var(--muted)",
+    darkTextColor: darkTextColor || "var(--muted-foreground)",
+  })
+
   // 如果有自定义 onClick，使用按钮模式
   if (onClick) {
     return (
       <Badge
         variant="secondary"
-        className={cn("cursor-pointer", className)}
-        style={{
-          backgroundColor: bgColor || undefined,
-          color: textColor || undefined,
-          borderColor: bgColor ? `${bgColor}40` : undefined,
-        }}
+        className={cn(
+          "cursor-pointer",
+          "bg-(--bg-light) dark:bg-(--bg-dark) text-(--text-light) dark:text-(--text-dark) border-(--text-light)/15 dark:border-(--text-dark)/15 hover:border-(--text-light)/30 dark:hover:border-(--text-dark)/30",
+          className
+        )}
+        style={themeStyle}
         onClick={onClick}
         title={description || undefined}
       >
@@ -52,12 +64,12 @@ export function CategoryBadge({
       <Link href={href}>
         <Badge
           variant="secondary"
-          className={cn("cursor-pointer", className)}
-          style={{
-            backgroundColor: bgColor || undefined,
-            color: textColor || undefined,
-            borderColor: bgColor ? `${bgColor}40` : undefined,
-          }}
+          className={cn(
+            "cursor-pointer",
+            "bg-(--bg-light) dark:bg-(--bg-dark) text-(--text-light) dark:text-(--text-dark) border-(--text-light)/15 dark:border-(--text-dark)/15 hover:border-(--text-light)/30 dark:hover:border-(--text-dark)/30",
+            className
+          )}
+          style={themeStyle}
           title={description || undefined}
         >
           {icon ?? "📁"} {name}
@@ -70,12 +82,11 @@ export function CategoryBadge({
   return (
     <Badge
       variant="secondary"
-      className={className}
-      style={{
-        backgroundColor: bgColor || undefined,
-        color: textColor || undefined,
-        borderColor: bgColor ? `${bgColor}40` : undefined,
-      }}
+      className={cn(
+        "bg-(--bg-light) dark:bg-(--bg-dark) text-(--text-light) dark:text-(--text-dark) border-(--text-light)/15 dark:border-(--text-dark)/15 hover:border-(--text-light)/30 dark:hover:border-(--text-dark)/30",
+        className
+      )}
+      style={themeStyle}
       title={description || undefined}
     >
       {icon ?? "📁"} {name}

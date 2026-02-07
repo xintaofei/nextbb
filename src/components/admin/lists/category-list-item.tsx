@@ -17,6 +17,8 @@ type CategoryListItemProps = {
     sort: number
     bgColor: string | null
     textColor: string | null
+    darkBgColor: string | null
+    darkTextColor: string | null
     isDeleted: boolean
     createdAt: string
     updatedAt: string

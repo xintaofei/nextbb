@@ -15,6 +15,8 @@ type RelatedTopicItem = {
     icon?: string
     bgColor?: string | null
     textColor?: string | null
+    darkBgColor?: string | null
+    darkTextColor?: string | null
   }
   tags: {
     id: string
@@ -22,6 +24,8 @@ type RelatedTopicItem = {
     icon: string
     bgColor?: string | null
     textColor?: string | null
+    darkBgColor?: string | null
+    darkTextColor?: string | null
   }[]
   replies: number
   views: number
@@ -67,6 +71,8 @@ export async function GET(
           icon: true,
           bg_color: true,
           text_color: true,
+          dark_bg_color: true,
+          dark_text_color: true,
           translations: getTranslationsQuery(locale, {
             name: true,
             description: true,
@@ -81,6 +87,8 @@ export async function GET(
               icon: true,
               bg_color: true,
               text_color: true,
+              dark_bg_color: true,
+              dark_text_color: true,
               translations: getTranslationsQuery(locale, {
                 name: true,
               }),
@@ -143,6 +151,8 @@ export async function GET(
             ) ?? undefined,
           bgColor: t.category.bg_color,
           textColor: t.category.text_color,
+          darkBgColor: t.category.dark_bg_color,
+          darkTextColor: t.category.dark_text_color,
         },
         tags: t.tag_links.map((l) => ({
           id: String(l.tag.id),
@@ -150,6 +160,8 @@ export async function GET(
           icon: l.tag.icon,
           bgColor: l.tag.bg_color,
           textColor: l.tag.text_color,
+          darkBgColor: l.tag.dark_bg_color,
+          darkTextColor: l.tag.dark_text_color,
         })),
         replies: Math.max(a.replies - 1, 0),
         views: viewsById.get(String(t.id)) ?? 0,

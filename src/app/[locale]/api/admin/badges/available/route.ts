@@ -40,6 +40,8 @@ export async function GET(req: NextRequest) {
         sort: true,
         bg_color: true,
         text_color: true,
+        dark_bg_color: true,
+        dark_text_color: true,
         translations: {
           where: {
             OR: [{ locale, is_source: false }, { is_source: true }],
@@ -70,6 +72,8 @@ export async function GET(req: NextRequest) {
         level: badge.level,
         bgColor: badge.bg_color,
         textColor: badge.text_color,
+        darkBgColor: badge.dark_bg_color,
+        darkTextColor: badge.dark_text_color,
         description: translation?.description,
       }
     })

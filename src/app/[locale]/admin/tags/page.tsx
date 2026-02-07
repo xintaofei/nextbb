@@ -39,6 +39,8 @@ type TagListItem = {
   sort: number
   bgColor: string | null
   textColor: string | null
+  darkBgColor: string | null
+  darkTextColor: string | null
   sourceLocale: string
   isDeleted: boolean
   createdAt: string
@@ -170,6 +172,8 @@ export default function AdminTagsPage() {
     sort: number
     bgColor: string | null
     textColor: string | null
+    darkBgColor: string | null
+    darkTextColor: string | null
   }) => {
     try {
       if (editingTag) {

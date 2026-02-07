@@ -16,6 +16,8 @@ export type TopicListItem = {
     description?: string | null
     bgColor?: string | null
     textColor?: string | null
+    darkBgColor?: string | null
+    darkTextColor?: string | null
   }
   tags: {
     id: string
@@ -24,6 +26,8 @@ export type TopicListItem = {
     description?: string | null
     bgColor?: string | null
     textColor?: string | null
+    darkBgColor?: string | null
+    darkTextColor?: string | null
   }[]
   author: {
     id: string
@@ -127,6 +131,8 @@ export async function getTopicList(
             icon: true,
             bg_color: true,
             text_color: true,
+            dark_bg_color: true,
+            dark_text_color: true,
             translations: getTranslationsQuery(locale, {
               name: true,
               description: true,
@@ -141,6 +147,8 @@ export async function getTopicList(
                 icon: true,
                 bg_color: true,
                 text_color: true,
+                dark_bg_color: true,
+                dark_text_color: true,
                 translations: getTranslationsQuery(locale, {
                   name: true,
                   description: true,
@@ -186,6 +194,8 @@ export async function getTopicList(
       icon: string
       bg_color: string | null
       text_color: string | null
+      dark_bg_color: string | null
+      dark_text_color: string | null
       translations: {
         locale: string
         name: string
@@ -199,6 +209,8 @@ export async function getTopicList(
         icon: string
         bg_color: string | null
         text_color: string | null
+        dark_bg_color: string | null
+        dark_text_color: string | null
         translations: {
           locale: string
           name: string
@@ -267,6 +279,8 @@ export async function getTopicList(
           icon: string
           bg_color: string | null
           text_color: string | null
+          dark_bg_color: string | null
+          dark_text_color: string | null
           translations: {
             locale: string
             name: string
@@ -286,6 +300,8 @@ export async function getTopicList(
           description: tagFields.description,
           bgColor: l.tag.bg_color,
           textColor: l.tag.text_color,
+          darkBgColor: l.tag.dark_bg_color,
+          darkTextColor: l.tag.dark_text_color,
         }
       }
     )
@@ -303,6 +319,8 @@ export async function getTopicList(
         description: categoryFields.description ?? undefined,
         bgColor: t.category.bg_color,
         textColor: t.category.text_color,
+        darkBgColor: t.category.dark_bg_color,
+        darkTextColor: t.category.dark_text_color,
       },
       tags,
       author: {

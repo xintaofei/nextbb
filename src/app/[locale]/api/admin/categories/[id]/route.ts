@@ -11,6 +11,8 @@ type CategoryDTO = {
   sort: number
   bgColor: string | null
   textColor: string | null
+  darkBgColor: string | null
+  darkTextColor: string | null
   sourceLocale: string
   isDeleted: boolean
   createdAt: string
@@ -50,7 +52,16 @@ export async function PATCH(
     }
 
     const body = await request.json()
-    const { name, icon, description, bgColor, textColor, isDeleted } = body
+    const {
+      name,
+      icon,
+      description,
+      bgColor,
+      textColor,
+      darkBgColor,
+      darkTextColor,
+      isDeleted,
+    } = body
 
     // 验证字段
     if (name !== undefined) {
@@ -85,6 +96,20 @@ export async function PATCH(
       )
     }
 
+    if (darkBgColor !== undefined && !validateColor(darkBgColor)) {
+      return NextResponse.json(
+        { error: "Invalid dark background color format" },
+        { status: 400 }
+      )
+    }
+
+    if (darkTextColor !== undefined && !validateColor(darkTextColor)) {
+      return NextResponse.json(
+        { error: "Invalid dark text color format" },
+        { status: 400 }
+      )
+    }
+
     // 构建更新数据
     // 区分：name/description 更新翻译表，其他字段更新主表
     const hasTranslationUpdate = name !== undefined || description !== undefined
@@ -92,6 +117,8 @@ export async function PATCH(
       icon?: string
       bg_color?: string | null
       text_color?: string | null
+      dark_bg_color?: string | null
+      dark_text_color?: string | null
       is_deleted?: boolean
     } = {}
 
@@ -99,6 +126,10 @@ export async function PATCH(
     if (bgColor !== undefined) categoryUpdateData.bg_color = bgColor || null
     if (textColor !== undefined)
       categoryUpdateData.text_color = textColor || null
+    if (darkBgColor !== undefined)
+      categoryUpdateData.dark_bg_color = darkBgColor || null
+    if (darkTextColor !== undefined)
+      categoryUpdateData.dark_text_color = darkTextColor || null
     if (isDeleted !== undefined) categoryUpdateData.is_deleted = isDeleted
 
     // 使用事务更新
@@ -158,6 +189,8 @@ export async function PATCH(
           sort: true,
           bg_color: true,
           text_color: true,
+          dark_bg_color: true,
+          dark_text_color: true,
           is_deleted: true,
           created_at: true,
           updated_at: true,
@@ -202,6 +235,8 @@ export async function PATCH(
       sort: result.sort,
       bgColor: result.bg_color,
       textColor: result.text_color,
+      darkBgColor: result.dark_bg_color,
+      darkTextColor: result.dark_text_color,
       sourceLocale: result.source_locale,
       isDeleted: result.is_deleted,
       createdAt: result.created_at.toISOString(),

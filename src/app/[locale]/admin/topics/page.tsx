@@ -51,6 +51,8 @@ type TopicListItem = {
     icon: string
     bgColor: string | null
     textColor: string | null
+    darkBgColor: string | null
+    darkTextColor: string | null
   }
   tags: Array<{
     id: string
@@ -58,6 +60,8 @@ type TopicListItem = {
     icon: string
     bgColor: string | null
     textColor: string | null
+    darkBgColor: string | null
+    darkTextColor: string | null
   }>
   replies: number
   views: number

@@ -19,6 +19,8 @@ type TopicListItem = {
     icon: string
     bgColor: string | null
     textColor: string | null
+    darkBgColor: string | null
+    darkTextColor: string | null
   }
   tags: Array<{
     id: string
@@ -26,6 +28,8 @@ type TopicListItem = {
     icon: string
     bgColor: string | null
     textColor: string | null
+    darkBgColor: string | null
+    darkTextColor: string | null
   }>
   replies: number
   views: number
@@ -164,6 +168,8 @@ export async function GET(request: NextRequest) {
             icon: true,
             bg_color: true,
             text_color: true,
+            dark_bg_color: true,
+            dark_text_color: true,
             translations: getTranslationsQuery(locale, { name: true }),
           },
         },
@@ -175,6 +181,8 @@ export async function GET(request: NextRequest) {
                 icon: true,
                 bg_color: true,
                 text_color: true,
+                dark_bg_color: true,
+                dark_text_color: true,
                 translations: getTranslationsQuery(locale, { name: true }),
               },
             },
@@ -243,6 +251,8 @@ export async function GET(request: NextRequest) {
           icon: topic.category.icon,
           bgColor: topic.category.bg_color,
           textColor: topic.category.text_color,
+          darkBgColor: topic.category.dark_bg_color,
+          darkTextColor: topic.category.dark_text_color,
         },
         tags: topic.tag_links.map((link) => ({
           id: String(link.tag.id),
@@ -250,6 +260,8 @@ export async function GET(request: NextRequest) {
           icon: link.tag.icon,
           bgColor: link.tag.bg_color,
           textColor: link.tag.text_color,
+          darkBgColor: link.tag.dark_bg_color,
+          darkTextColor: link.tag.dark_text_color,
         })),
         replies,
         views: topic.views,

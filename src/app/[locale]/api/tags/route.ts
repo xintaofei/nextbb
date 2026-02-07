@@ -11,6 +11,8 @@ type TagDTO = {
   sort: number
   bgColor?: string | null
   textColor?: string | null
+  darkBgColor?: string | null
+  darkTextColor?: string | null
 }
 
 export async function GET() {
@@ -23,6 +25,8 @@ export async function GET() {
       sort: true,
       bg_color: true,
       text_color: true,
+      dark_bg_color: true,
+      dark_text_color: true,
       translations: getTranslationsQuery(locale, {
         name: true,
         description: true,
@@ -37,6 +41,8 @@ export async function GET() {
     sort: number
     bg_color: string | null
     text_color: string | null
+    dark_bg_color: string | null
+    dark_text_color: string | null
     translations: {
       locale: string
       name: string
@@ -59,6 +65,8 @@ export async function GET() {
       sort: t.sort,
       bgColor: t.bg_color,
       textColor: t.text_color,
+      darkBgColor: t.dark_bg_color,
+      darkTextColor: t.dark_text_color,
     }
   })
 

@@ -51,6 +51,8 @@ type BadgeItem = {
   level: number
   bgColor: string | null
   textColor: string | null
+  darkBgColor?: string | null
+  darkTextColor?: string | null
   description?: string | null
 }
 

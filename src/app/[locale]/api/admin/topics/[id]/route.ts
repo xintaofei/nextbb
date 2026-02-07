@@ -22,6 +22,8 @@ type TopicDetail = {
     icon: string
     bgColor: string | null
     textColor: string | null
+    darkBgColor: string | null
+    darkTextColor: string | null
   }
   tags: Array<{
     id: string
@@ -81,6 +83,8 @@ export async function GET(
             icon: true,
             bg_color: true,
             text_color: true,
+            dark_bg_color: true,
+            dark_text_color: true,
             translations: {
               where: { is_source: true },
               select: {
@@ -155,6 +159,8 @@ export async function GET(
         icon: topic.category.icon,
         bgColor: topic.category.bg_color,
         textColor: topic.category.text_color,
+        darkBgColor: topic.category.dark_bg_color,
+        darkTextColor: topic.category.dark_text_color,
       },
       tags: topic.tag_links.map((link) => ({
         id: String(link.tag.id),

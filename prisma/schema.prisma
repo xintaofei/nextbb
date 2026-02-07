@@ -68,8 +68,10 @@ model categories {
   source_locale String   @default("zh") @db.VarChar(8)
   icon          String   @db.VarChar(32)
   sort          Int      @default(0)
-  bg_color      String?  @db.VarChar(16)
-  text_color    String?  @db.VarChar(16)
+  bg_color        String?  @db.VarChar(16)
+  text_color      String?  @db.VarChar(16)
+  dark_bg_color   String?  @db.VarChar(16)
+  dark_text_color String?  @db.VarChar(16)
   is_deleted    Boolean
   created_at    DateTime @default(now())
   updated_at    DateTime @updatedAt
@@ -103,8 +105,10 @@ model tags {
   source_locale String   @default("zh") @db.VarChar(8)
   icon          String   @db.VarChar(32)
   sort          Int      @default(0)
-  bg_color      String?  @db.VarChar(16)
-  text_color    String?  @db.VarChar(16)
+  bg_color        String?  @db.VarChar(16)
+  text_color      String?  @db.VarChar(16)
+  dark_bg_color   String?  @db.VarChar(16)
+  dark_text_color String?  @db.VarChar(16)
   is_deleted    Boolean
   created_at    DateTime @default(now())
   updated_at    DateTime @updatedAt
@@ -285,8 +289,10 @@ model badges {
   badge_type    String   @db.VarChar(32)
   level         Int      @default(1)
   sort          Int      @default(0)
-  bg_color      String?  @db.VarChar(16)
-  text_color    String?  @db.VarChar(16)
+  bg_color        String?  @db.VarChar(16)
+  text_color      String?  @db.VarChar(16)
+  dark_bg_color   String?  @db.VarChar(16)
+  dark_text_color String?  @db.VarChar(16)
   is_enabled    Boolean  @default(true)
   is_visible    Boolean  @default(true)
   is_deleted    Boolean  @default(false)

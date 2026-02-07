@@ -40,6 +40,8 @@ export const TopicHeader = memo(function TopicHeader({
             description={topicInfo.category.description}
             bgColor={topicInfo.category.bgColor}
             textColor={topicInfo.category.textColor}
+            darkBgColor={topicInfo.category.darkBgColor}
+            darkTextColor={topicInfo.category.darkTextColor}
           />
         ) : null}
         {(topicInfo.tags ?? []).map((tag) => (
@@ -51,6 +53,8 @@ export const TopicHeader = memo(function TopicHeader({
             description={tag.description}
             bgColor={tag.bgColor}
             textColor={tag.textColor}
+            darkBgColor={tag.darkBgColor}
+            darkTextColor={tag.darkTextColor}
           />
         ))}
       </div>
