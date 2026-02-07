@@ -121,7 +121,6 @@ export async function PATCH(
     }
 
     // 构建更新数据
-    const hasTranslationUpdate = name !== undefined || description !== undefined
     const tagUpdateData: {
       icon?: string
       sort?: number
@@ -143,6 +142,8 @@ export async function PATCH(
     if (isDeleted !== undefined) tagUpdateData.is_deleted = isDeleted
 
     // 使用事务更新
+    let newVersion = 0
+    let hasActualTranslationChange = false
     const result = await prisma.$transaction(async (tx) => {
       // 1. 更新主表字段
       if (Object.keys(tagUpdateData).length > 0) {
@@ -152,8 +153,11 @@ export async function PATCH(
         })
       }
 
-      // 2. 如果有 name 或 description 更新,更新翻译表
-      if (hasTranslationUpdate) {
+      // 2. 检查是否有 name 或 description 需要更新
+      const hasTranslationFieldsInRequest =
+        name !== undefined || description !== undefined
+
+      if (hasTranslationFieldsInRequest) {
         // 获取当前源语言翻译
         const sourceTranslation = await tx.tag_translations.findFirst({
           where: {
@@ -163,29 +167,42 @@ export async function PATCH(
         })
 
         if (sourceTranslation) {
-          // 构建翻译更新数据
-          const translationUpdateData: {
-            name?: string
-            description?: string | null
-            version: number
-          } = {
-            version: sourceTranslation.version + 1, // 递增版本号
-          }
+          // 检查是否真的有变化
+          const nameChanged =
+            name !== undefined && name !== sourceTranslation.name
+          const descriptionChanged =
+            description !== undefined &&
+            (description || null) !== sourceTranslation.description
 
-          if (name !== undefined) translationUpdateData.name = name
-          if (description !== undefined) {
-            translationUpdateData.description = description || null
-          }
+          hasActualTranslationChange = nameChanged || descriptionChanged
 
-          await tx.tag_translations.update({
-            where: {
-              tag_id_locale: {
-                tag_id: tagId,
-                locale: sourceTranslation.locale,
+          // 只有在确实有变化时才更新翻译表
+          if (hasActualTranslationChange) {
+            // 构建翻译更新数据
+            newVersion = sourceTranslation.version + 1
+            const translationUpdateData: {
+              name?: string
+              description?: string | null
+              version: number
+            } = {
+              version: newVersion, // 递增版本号
+            }
+
+            if (nameChanged) translationUpdateData.name = name
+            if (descriptionChanged) {
+              translationUpdateData.description = description || null
+            }
+
+            await tx.tag_translations.update({
+              where: {
+                tag_id_locale: {
+                  tag_id: tagId,
+                  locale: sourceTranslation.locale,
+                },
               },
-            },
-            data: translationUpdateData,
-          })
+              data: translationUpdateData,
+            })
+          }
         }
       }
 
@@ -226,13 +243,13 @@ export async function PATCH(
       return NextResponse.json({ error: "Tag not found" }, { status: 404 })
     }
 
-    // 如果更新了源语言翻译，创建翻译任务
-    if (hasTranslationUpdate && result.translations[0]) {
+    // 只有在确实有翻译字段变化时才创建翻译任务
+    if (hasActualTranslationChange && newVersion > 0) {
       await createTranslationTasks(
         TranslationEntityType.TAG,
         result.id,
         result.source_locale,
-        result.translations[0].version
+        newVersion
       )
     }
 
