@@ -31,25 +31,24 @@ export function CategoryBadge({
   className,
   onClick,
 }: CategoryBadgeProps) {
-  const themeColor = useThemeColor({
-    bgColor,
+  const { themeStyle } = useThemeColor({
+    bgColor: bgColor || "var(--bg-muted)",
     textColor,
     darkBgColor,
     darkTextColor,
   })
-  const colorStyle = {
-    backgroundColor: themeColor.bgColor,
-    color: themeColor.textColor,
-    borderColor: themeColor.bgColor ? `${themeColor.bgColor}40` : undefined,
-  }
 
   // 如果有自定义 onClick，使用按钮模式
   if (onClick) {
     return (
       <Badge
         variant="secondary"
-        className={cn("cursor-pointer", className)}
-        style={colorStyle}
+        className={cn(
+          "cursor-pointer",
+          "bg-(--bg-light) dark:bg-(--bg-dark) text-(--text-light) dark:text-(--text-dark) border-(--text-light)/10 dark:border-(--text-dark)/10",
+          className
+        )}
+        style={themeStyle}
         onClick={onClick}
         title={description || undefined}
       >
@@ -65,8 +64,12 @@ export function CategoryBadge({
       <Link href={href}>
         <Badge
           variant="secondary"
-          className={cn("cursor-pointer", className)}
-          style={colorStyle}
+          className={cn(
+            "cursor-pointer",
+            "bg-(--bg-light) dark:bg-(--bg-dark) text-(--text-light) dark:text-(--text-dark) border-(--text-light)/10 dark:border-(--text-dark)/10",
+            className
+          )}
+          style={themeStyle}
           title={description || undefined}
         >
           {icon ?? "📁"} {name}
@@ -79,8 +82,11 @@ export function CategoryBadge({
   return (
     <Badge
       variant="secondary"
-      className={className}
-      style={colorStyle}
+      className={cn(
+        "bg-(--bg-light) dark:bg-(--bg-dark) text-(--text-light) dark:text-(--text-dark) border-(--text-light)/10 dark:border-(--text-dark)/10",
+        className
+      )}
+      style={themeStyle}
       title={description || undefined}
     >
       {icon ?? "📁"} {name}

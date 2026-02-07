@@ -33,24 +33,14 @@ export function TagBadge({
   active,
   onClick,
 }: TagBadgeProps) {
-  const themeColor = useThemeColor({
+  const { themeStyle } = useThemeColor({
     bgColor,
     textColor,
     darkBgColor,
     darkTextColor,
   })
 
-  const colorStyle = !active
-    ? {
-        backgroundColor: themeColor.bgColor,
-        color: themeColor.textColor,
-        borderColor: themeColor.bgColor
-          ? `${themeColor.bgColor}40`
-          : themeColor.textColor
-            ? `${themeColor.textColor}40`
-            : undefined,
-      }
-    : undefined
+  const colorStyle = !active ? themeStyle : undefined
   // 如果有自定义 onClick，使用按钮模式
   if (onClick) {
     return (
@@ -58,6 +48,8 @@ export function TagBadge({
         variant="outline"
         className={cn(
           "cursor-pointer",
+          !active &&
+            "bg-(--bg-light) dark:bg-(--bg-dark) text-(--text-light) dark:text-(--text-dark) border-(--text-light)/10 dark:border-(--text-dark)/10",
           active && "bg-primary/10 text-primary border-primary/20",
           className
         )}
@@ -79,6 +71,8 @@ export function TagBadge({
           variant="outline"
           className={cn(
             "cursor-pointer",
+            !active &&
+              "bg-(--bg-light) dark:bg-(--bg-dark) text-(--text-light) dark:text-(--text-dark) border-(--text-light)/10 dark:border-(--text-dark)/10",
             active && "bg-primary/10 text-primary border-primary/20",
             className
           )}
@@ -96,6 +90,8 @@ export function TagBadge({
     <Badge
       variant="outline"
       className={cn(
+        !active &&
+          "bg-(--bg-light) dark:bg-(--bg-dark) text-(--text-light) dark:text-(--text-dark) border-(--text-light)/10 dark:border-(--text-dark)/10",
         active && "bg-primary/10 text-primary border-primary/20",
         className
       )}

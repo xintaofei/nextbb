@@ -36,24 +36,26 @@ export function UserBadge({
   description,
 }: UserBadgeProps) {
   const t = useTranslations("AdminBadges")
-  const themeColor = useThemeColor({
+  const { bgColor: currentBgColor, themeStyle } = useThemeColor({
     bgColor,
     textColor,
     darkBgColor,
     darkTextColor,
   })
+
   const badge = (
-    <span>
+    <span style={themeStyle}>
       {" "}
-      <Highlighter action="highlight" color={themeColor.bgColor}>
-        <div className={cn("flex items-center gap-1", className)}>
+      <Highlighter action="highlight" color={currentBgColor || "#ffd1dc"}>
+        <div
+          className={cn(
+            "flex items-center gap-1",
+            "text-(--text-light) dark:text-(--text-dark)",
+            className
+          )}
+        >
           <span>{icon}</span>
-          <span
-            className={"text-" + size}
-            style={{ color: themeColor.textColor }}
-          >
-            {name}
-          </span>
+          <span className={"text-" + size}>{name}</span>
         </div>
       </Highlighter>{" "}
     </span>
