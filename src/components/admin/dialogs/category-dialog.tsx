@@ -14,6 +14,7 @@ import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { ColorPickerField } from "../fields/color-picker-field"
 import { EmojiPickerField } from "@/components/common/emoji-picker-field"
+import { useColorAutoFill } from "@/hooks/use-color-auto-fill"
 
 type CategoryFormData = {
   name: string
@@ -58,6 +59,14 @@ export function CategoryDialog({
     darkTextColor: null,
   })
   const [isSubmitting, setIsSubmitting] = useState(false)
+
+  // 使用颜色自动填充 Hook
+  const {
+    handleLightBgChange,
+    handleLightTextChange,
+    handleDarkBgChange,
+    handleDarkTextChange,
+  } = useColorAutoFill(formData, setFormData)
 
   useEffect(() => {
     if (category) {
@@ -152,18 +161,14 @@ export function CategoryDialog({
                 <ColorPickerField
                   label={t("dialog.bgColor")}
                   value={formData.bgColor}
-                  onChange={(color) =>
-                    setFormData({ ...formData, bgColor: color })
-                  }
+                  onChange={handleLightBgChange}
                   placeholder={t("dialog.bgColorPlaceholder")}
                 />
 
                 <ColorPickerField
                   label={t("dialog.textColor")}
                   value={formData.textColor}
-                  onChange={(color) =>
-                    setFormData({ ...formData, textColor: color })
-                  }
+                  onChange={handleLightTextChange}
                   placeholder={t("dialog.textColorPlaceholder")}
                 />
               </div>
@@ -177,18 +182,14 @@ export function CategoryDialog({
                 <ColorPickerField
                   label={t("dialog.darkBgColor")}
                   value={formData.darkBgColor}
-                  onChange={(color) =>
-                    setFormData({ ...formData, darkBgColor: color })
-                  }
+                  onChange={handleDarkBgChange}
                   placeholder={t("dialog.darkBgColorPlaceholder")}
                 />
 
                 <ColorPickerField
                   label={t("dialog.darkTextColor")}
                   value={formData.darkTextColor}
-                  onChange={(color) =>
-                    setFormData({ ...formData, darkTextColor: color })
-                  }
+                  onChange={handleDarkTextChange}
                   placeholder={t("dialog.darkTextColorPlaceholder")}
                 />
               </div>
