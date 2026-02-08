@@ -80,9 +80,9 @@ export async function handleSocialLinkMode(
 
   if (existingLink) {
     if (existingLink.user_id === linkUserId) {
-      return `/u/${encodedLinkUsername}/preferences/account?error=already_linked`
+      return `/u/${encodedLinkUsername}/preferences/security?error=already_linked`
     }
-    return `/u/${encodedLinkUsername}/preferences/account?error=account_linked_other`
+    return `/u/${encodedLinkUsername}/preferences/security?error=account_linked_other`
   }
 
   await prisma.user_social_accounts.create({
@@ -103,7 +103,7 @@ export async function handleSocialLinkMode(
     },
   })
 
-  return `/u/${encodedLinkUsername}/preferences/account?success=linked`
+  return `/u/${encodedLinkUsername}/preferences/security?success=linked`
 }
 
 /**

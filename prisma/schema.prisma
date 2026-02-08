@@ -59,6 +59,10 @@ model users {
   two_factor      user_two_factor?
   storage_files   storage_files[]        @relation("storage_files_user")
 
+  invite_codes        user_invite_codes[]  @relation("user_invite_codes_user")
+  invitations_sent    user_invitations[]   @relation("user_invitations_inviter")
+  invitation_received user_invitations?    @relation("user_invitations_invitee")
+
   @@unique([email], map: "users_email_key")
   @@map("users")
 }
@@ -1380,4 +1384,43 @@ model storage_files {
   @@index([is_deleted, created_at], map: "storage_files_deleted_created_index")
   @@index([created_at], map: "storage_files_created_index")
   @@map("storage_files")
+}
+
+// ==================== 邀请注册系统 ====================
+
+model user_invite_codes {
+  id         BigInt    @id @db.BigInt
+  user_id    BigInt    @db.BigInt
+  code       String    @unique @db.VarChar(32)
+  note       String    @default("") @db.VarChar(256)
+  max_uses   Int?
+  used_count Int       @default(0)
+  is_active  Boolean   @default(true)
+  expires_at DateTime?
+  created_at DateTime  @default(now())
+  updated_at DateTime  @updatedAt
+
+  user        users              @relation("user_invite_codes_user", fields: [user_id], references: [id])
+  invitations user_invitations[] @relation("user_invitations_code")
+
+  @@index([user_id], map: "user_invite_codes_user_index")
+  @@index([code], map: "user_invite_codes_code_index")
+  @@map("user_invite_codes")
+}
+
+model user_invitations {
+  id             BigInt   @id @db.BigInt
+  inviter_id     BigInt   @db.BigInt
+  invitee_id     BigInt   @unique @db.BigInt
+  invite_code_id BigInt   @db.BigInt
+  created_at     DateTime @default(now())
+
+  inviter     users             @relation("user_invitations_inviter", fields: [inviter_id], references: [id])
+  invitee     users             @relation("user_invitations_invitee", fields: [invitee_id], references: [id])
+  invite_code user_invite_codes @relation("user_invitations_code", fields: [invite_code_id], references: [id])
+
+  @@index([inviter_id], map: "user_invitations_inviter_index")
+  @@index([invitee_id], map: "user_invitations_invitee_index")
+  @@index([invite_code_id], map: "user_invitations_code_index")
+  @@map("user_invitations")
 }
