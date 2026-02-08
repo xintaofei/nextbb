@@ -107,7 +107,9 @@ export function stripHtmlAndTruncate(
     // 如果 getPlainTextFromContent 返回了原内容，说明不是 JSON (或者解析失败/结构不符)
     // 尝试作为 HTML 处理
     text = text
-      // 替换图片
+      // 替换表情图片
+      .replace(/<img[^>]*data-expression[^>]*>/g, "[表情]")
+      // 替换普通图片
       .replace(/<img[^>]*>/g, "[图片]")
       // 替换视频/iframe
       .replace(/<(video|iframe)[^>]*>.*?<\/\1>/g, "[视频]")
