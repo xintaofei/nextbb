@@ -105,7 +105,7 @@ export function TopicControls({
   )
 
   return (
-    <div className={cn("flex flex-col gap-2 items-start", className)}>
+    <div className={cn("flex flex-col gap-3 items-start", className)}>
       <CategorySelect
         className="w-full text-xs shadow-none"
         value={categoryId}
