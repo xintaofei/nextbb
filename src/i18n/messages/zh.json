@@ -607,6 +607,8 @@
       "codeCooldown": "{seconds}s 后可重发",
       "codeHint": "验证码有效期 10 分钟",
       "submit": "注册",
+      "inviteCode": "邀请码",
+      "inviteCodePlaceholder": "请输入 32 位邀请码",
       "hintTitle": "支持社交账号一键注册",
       "questionHaveAccount": "已有账号？",
       "toLogin": "去登录",
@@ -636,7 +638,12 @@
         "registrationNotEnabled": "系统暂未开放注册，请联系管理员",
         "emailVerificationNotEnabled": "邮箱验证未开启",
         "sendTooFrequent": "发送过于频繁，请稍后再试",
-        "codeExpired": "验证码发送失败"
+        "codeExpired": "验证码发送失败",
+        "inviteCodeRequired": "请输入邀请码",
+        "inviteCodeInvalid": "邀请码无效",
+        "inviteCodeInactive": "邀请码已停用",
+        "inviteCodeExpired": "邀请码已过期",
+        "inviteCodeMaxUsed": "邀请码已达到最大使用次数"
       }
     },
     "PasswordReset": {
@@ -1664,6 +1671,10 @@
       "username_max_length": {
         "label": "用户名最大长度",
         "description": "用户名允许的最大字符数"
+      },
+      "require_invite_code": {
+        "label": "邀请码注册",
+        "description": "开启后新用户必须提供有效邀请码才能注册"
       }
     },
     "content": {
@@ -2049,6 +2060,47 @@
       },
       "privacy": {
         "title": "隐私"
+      },
+      "invitations": {
+        "title": "邀请",
+        "description": "创建和管理邀请码，邀请新用户加入社区",
+        "createCode": "创建邀请码",
+        "creating": "创建中...",
+        "note": "备注",
+        "notePlaceholder": "可选，为这个邀请码添加备注",
+        "maxUses": "最大使用次数",
+        "maxUsesPlaceholder": "留空为不限次数",
+        "expiresAt": "过期时间",
+        "expiresAtPlaceholder": "留空为永不过期",
+        "code": "邀请码",
+        "copyCode": "复制邀请码",
+        "codeCopied": "邀请码已复制到剪贴板",
+        "statusActive": "生效中",
+        "statusInactive": "已停用",
+        "statusExpired": "已过期",
+        "statusMaxUsed": "已用完",
+        "usedCount": "已使用 {used} 次",
+        "usedCountWithMax": "已使用 {used}/{max} 次",
+        "noExpiry": "永不过期",
+        "expiresAtLabel": "过期于 {date}",
+        "enable": "启用",
+        "disable": "停用",
+        "delete": "删除",
+        "deleteConfirmTitle": "确认删除邀请码",
+        "deleteConfirmDescription": "确定要删除这个邀请码吗？此操作不可撤销。",
+        "deleteHasInvitations": "该邀请码已有邀请记录，无法删除",
+        "deleteSuccess": "邀请码已删除",
+        "deleteError": "删除失败，请重试",
+        "updateSuccess": "邀请码已更新",
+        "updateError": "更新失败，请重试",
+        "createSuccess": "邀请码创建成功",
+        "createError": "创建失败，请重试",
+        "cancel": "取消",
+        "confirm": "确认",
+        "invitedUsers": "已邀请用户",
+        "noInvitedUsers": "暂无邀请记录",
+        "emptyState": "你还没有创建邀请码",
+        "emptyStateHint": "创建邀请码来邀请新用户加入社区"
       }
     }
   },

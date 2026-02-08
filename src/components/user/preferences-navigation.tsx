@@ -3,7 +3,15 @@
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { encodeUsername } from "@/lib/utils"
-import { User, UserPen, Shield, Palette, Bell, Lock } from "lucide-react"
+import {
+  User,
+  UserPen,
+  Shield,
+  Palette,
+  Bell,
+  Lock,
+  TicketCheck,
+} from "lucide-react"
 import { useTranslations } from "next-intl"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 
@@ -62,6 +70,12 @@ export function PreferencesNavigation({
       icon: Lock,
       value: "privacy",
     },
+    {
+      label: t("invitations.title"),
+      href: `/u/${encodedUsername}/preferences/invitations`,
+      icon: TicketCheck,
+      value: "invitations",
+    },
   ]
 
   // 确定当前激活的 tab
@@ -70,7 +84,7 @@ export function PreferencesNavigation({
 
   return (
     <Tabs value={activeValue} className="w-full">
-      <TabsList className="grid w-full grid-cols-6 max-sm:grid-cols-3 gap-2 h-auto">
+      <TabsList className="grid w-full grid-cols-7 max-sm:grid-cols-4 gap-2 h-auto">
         {navItems.map((item) => {
           const Icon = item.icon
           return (

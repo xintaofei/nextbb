@@ -29,6 +29,7 @@ type RegisterValues = {
   password: string
   username: string
   emailCode: string
+  inviteCode: string
 }
 
 type RegisterSubmitValues = {
@@ -36,6 +37,7 @@ type RegisterSubmitValues = {
   password: string
   username: string
   emailCode?: string
+  inviteCode?: string
 }
 
 type ApiResponse = { success: true; email: string } | { error: string }
@@ -55,6 +57,8 @@ export default function RegisterPage() {
   const siteName = configs?.["basic.name"] || "NextBB"
   const registrationEnabled = configs?.["registration.enabled"] === true
   const emailVerifyEnabled = configs?.["registration.email_verify"] === true
+  const inviteCodeRequired =
+    configs?.["registration.require_invite_code"] === true
   const usernameMinLength = configs?.["registration.username_min_length"] ?? 3
   const usernameMaxLength = configs?.["registration.username_max_length"] ?? 32
 
@@ -99,6 +103,13 @@ export default function RegisterPage() {
             .trim()
             .regex(/^\d{6}$/, { message: t("error.codeInvalid") }),
         ]),
+        inviteCode: z.union([
+          z.literal(""),
+          z
+            .string()
+            .trim()
+            .length(32, { message: t("error.inviteCodeInvalid") }),
+        ]),
       })
       .superRefine((data, ctx) => {
         if (emailVerifyEnabled && !data.emailCode) {
@@ -108,12 +119,31 @@ export default function RegisterPage() {
             message: t("error.codeRequired"),
           })
         }
+        if (inviteCodeRequired && !data.inviteCode) {
+          ctx.addIssue({
+            code: "custom",
+            path: ["inviteCode"],
+            message: t("error.inviteCodeRequired"),
+          })
+        }
       })
-  }, [emailVerifyEnabled, usernameMinLength, usernameMaxLength, t])
+  }, [
+    emailVerifyEnabled,
+    inviteCodeRequired,
+    usernameMinLength,
+    usernameMaxLength,
+    t,
+  ])
 
   const form = useForm<RegisterValues>({
     resolver: zodResolver(schema),
-    defaultValues: { email: "", password: "", username: "", emailCode: "" },
+    defaultValues: {
+      email: "",
+      password: "",
+      username: "",
+      emailCode: "",
+      inviteCode: "",
+    },
     mode: "onChange",
   })
 
@@ -188,11 +218,13 @@ export default function RegisterPage() {
     setServerError(null)
     setCodeError(null)
     const trimmedEmailCode = values.emailCode.trim()
+    const trimmedInviteCode = values.inviteCode.trim()
     const payload = {
       email: values.email,
       password: values.password,
       username: values.username,
       emailCode: trimmedEmailCode ? trimmedEmailCode : undefined,
+      inviteCode: trimmedInviteCode ? trimmedInviteCode : undefined,
     } satisfies RegisterSubmitValues
     const res = await fetch("/api/auth/register", {
       method: "POST",
@@ -258,6 +290,28 @@ export default function RegisterPage() {
                 onSubmit={form.handleSubmit(onSubmit)}
                 className="space-y-4"
               >
+                {inviteCodeRequired ? (
+                  <FormField
+                    control={form.control}
+                    name="inviteCode"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-sm font-medium">
+                          {t("inviteCode")}
+                        </FormLabel>
+                        <FormControl>
+                          <Input
+                            placeholder={t("inviteCodePlaceholder")}
+                            className="h-11 font-mono"
+                            maxLength={32}
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                ) : null}
                 <FormField
                   control={form.control}
                   name="email"

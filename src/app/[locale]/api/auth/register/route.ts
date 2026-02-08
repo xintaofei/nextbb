@@ -49,6 +49,19 @@ const schema = z.object({
       .regex(/^\d{6}$/)
       .optional()
   ),
+  inviteCode: z.preprocess(
+    (value) => {
+      if (typeof value === "string" && value.trim().length === 0) {
+        return undefined
+      }
+      return value
+    },
+    z
+      .string()
+      .trim()
+      .length(32)
+      .optional()
+  ),
 })
 
 async function isRegistrationEnabled(): Promise<boolean> {
@@ -62,6 +75,14 @@ async function isRegistrationEnabled(): Promise<boolean> {
 async function isEmailVerifyEnabled(): Promise<boolean> {
   const config = await prisma.system_configs.findUnique({
     where: { config_key: "registration.email_verify" },
+    select: { config_value: true },
+  })
+  return config?.config_value === "true"
+}
+
+async function isInviteCodeRequired(): Promise<boolean> {
+  const config = await prisma.system_configs.findUnique({
+    where: { config_key: "registration.require_invite_code" },
     select: { config_value: true },
   })
   return config?.config_value === "true"
@@ -89,7 +110,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: t("invalidParams") }, { status: 400 })
   }
 
-  const { password, username, emailCode } = result.data
+  const { password, username, emailCode, inviteCode } = result.data
   const email = normalizeEmail(result.data.email)
 
   // 从配置获取用户名长度限制
@@ -133,6 +154,72 @@ export async function POST(request: Request) {
     }
   }
 
+  // 邀请码验证
+  const inviteCodeRequired = await isInviteCodeRequired()
+  let validInviteCode: {
+    id: bigint
+    user_id: bigint
+    maxUses: number | null
+  } | null = null
+
+  if (inviteCodeRequired) {
+    if (!inviteCode) {
+      return NextResponse.json(
+        { error: t("inviteCodeRequired") },
+        { status: 400 }
+      )
+    }
+
+    const codeRecord = await prisma.user_invite_codes.findUnique({
+      where: { code: inviteCode },
+      select: {
+        id: true,
+        user_id: true,
+        is_active: true,
+        max_uses: true,
+        used_count: true,
+        expires_at: true,
+      },
+    })
+
+    if (!codeRecord) {
+      return NextResponse.json(
+        { error: t("inviteCodeInvalid") },
+        { status: 400 }
+      )
+    }
+
+    if (!codeRecord.is_active) {
+      return NextResponse.json(
+        { error: t("inviteCodeInactive") },
+        { status: 400 }
+      )
+    }
+
+    if (codeRecord.expires_at && codeRecord.expires_at < new Date()) {
+      return NextResponse.json(
+        { error: t("inviteCodeExpired") },
+        { status: 400 }
+      )
+    }
+
+    if (
+      codeRecord.max_uses !== null &&
+      codeRecord.used_count >= codeRecord.max_uses
+    ) {
+      return NextResponse.json(
+        { error: t("inviteCodeMaxUsed") },
+        { status: 400 }
+      )
+    }
+
+    validInviteCode = {
+      id: codeRecord.id,
+      user_id: codeRecord.user_id,
+      maxUses: codeRecord.max_uses,
+    }
+  }
+
   const hash = await bcrypt.hash(password, 12)
 
   const id = generateId()
@@ -163,7 +250,7 @@ export async function POST(request: Request) {
       const isFirstUser = userCount === 0
 
       // 创建用户
-      return await tx.users.create({
+      const newUser = await tx.users.create({
         data: {
           id,
           email,
@@ -175,6 +262,38 @@ export async function POST(request: Request) {
           is_admin: isFirstUser,
         },
       })
+
+      // 记录邀请关系
+      if (validInviteCode) {
+        await tx.user_invitations.create({
+          data: {
+            id: generateId(),
+            inviter_id: validInviteCode.user_id,
+            invitee_id: id,
+            invite_code_id: validInviteCode.id,
+          },
+        })
+
+        // 使用 updateMany + WHERE 条件防止并发竞态
+        const updated = await tx.user_invite_codes.updateMany({
+          where: {
+            id: validInviteCode.id,
+            OR: [
+              { max_uses: null },
+              { used_count: { lt: validInviteCode.maxUses ?? 99999999 } },
+            ],
+          },
+          data: {
+            used_count: { increment: 1 },
+          },
+        })
+
+        if (updated.count === 0) {
+          throw new Error("INVITE_CODE_MAX_USED")
+        }
+      }
+
+      return newUser
     })
 
     // 触发用户注册事件
@@ -202,6 +321,12 @@ export async function POST(request: Request) {
         return NextResponse.json(
           { error: t("usernameExists") },
           { status: 409 }
+        )
+      }
+      if (error.message === "INVITE_CODE_MAX_USED") {
+        return NextResponse.json(
+          { error: t("inviteCodeMaxUsed") },
+          { status: 400 }
         )
       }
     }

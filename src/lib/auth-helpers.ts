@@ -226,6 +226,17 @@ export async function createNewOAuthUser(
     return false
   }
 
+  // 开启邀请码注册时，拒绝 OAuth 新用户自动创建
+  const inviteCodeRequired = await getConfigValue(
+    "registration.require_invite_code"
+  )
+  if (inviteCodeRequired) {
+    console.log(
+      `[OAuth] 邀请码注册已开启，拒绝创建新用户: ${email} (provider: ${provider})，请先通过表单+邀请码注册`
+    )
+    return false
+  }
+
   const id = generateId()
 
   let name: string =
