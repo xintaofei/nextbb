@@ -154,7 +154,7 @@ export function TypingAnimation({
     <MotionSpan
       ref={elementRef}
       className={cn(
-        "text-base leading-10 tracking-[-0.02em] text-muted-foreground",
+        "text-base tracking-[-0.02em] text-muted-foreground",
         className
       )}
       {...props}
