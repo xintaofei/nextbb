@@ -10,13 +10,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip"
-import {
-  ChevronsUp,
-  ChevronsDown,
-  ArrowDown10,
-  LogIn,
-  Reply,
-} from "lucide-react"
+import { ChevronsDown, ChevronsUp, LogIn, Reply } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 type TopicNavigatorProps = {
@@ -64,10 +58,9 @@ export function TopicNavigator({
   const TAIL_THRESHOLD_FLOORS = 5 // 触发尾部特殊处理的剩余楼层阈值
 
   const getScrollContainer = () => {
-    const root =
+    let el: HTMLElement | null =
       anchorsRef.current[0]?.parentElement ||
       (document.scrollingElement as HTMLElement | null)
-    let el: HTMLElement | null = root
     while (el) {
       const style = window.getComputedStyle(el)
       const oy = style.overflowY
@@ -294,16 +287,14 @@ export function TopicNavigator({
         updateFloorHash(currentFloor)
 
         // 只在楼层变化时查询作者信息（避免每次滚动都查询 DOM）
-        const anchorIndex = currentFloor // anchors[i] 对应 i 楼
-        const el = anchors[anchorIndex]
+        const el = anchors[currentFloor]
         const name =
           el?.querySelector<HTMLElement>("[data-slot=timeline-steps-title]")
             ?.textContent || ""
         setAuthor(name)
       } else if (!authorRef.current) {
         // 首次加载时设置作者信息
-        const anchorIndex = currentFloor
-        const el = anchors[anchorIndex]
+        const el = anchors[currentFloor]
         const name =
           el?.querySelector<HTMLElement>("[data-slot=timeline-steps-title]")
             ?.textContent || ""
@@ -467,10 +458,198 @@ export function TopicNavigator({
   return (
     <div
       className={cn(
-        "hidden lg:flex lg:flex-col sticky top-8 w-44 h-80 shrink-0 gap-3",
+        "hidden lg:flex lg:flex-col sticky top-8 w-44 h-80 shrink-0 gap-8",
         className
       )}
     >
+      <div className="flex flex-1 items-center">
+        {repliesLoading ? (
+          <div className="flex flex-1 items-center justify-center">
+            <Skeleton className="h-72 w-full" />
+          </div>
+        ) : totalFloors === 0 ? (
+          <div className="flex flex-1 items-center justify-center border-t border-b py-2 text-sm text-muted-foreground">
+            {t("noReplies")}
+          </div>
+        ) : (
+          <div className="w-full border rounded-lg bg-linear-to-b from-muted-foreground/5 to-card">
+            <div className="bg-muted/30 font-bold text-base border-b p-3">
+              {t("title")}
+            </div>
+            <TooltipProvider disableHoverableContent>
+              <div className="flex flex-1 flex-col gap-3 p-3">
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      aria-label={t("aria.toFirst")}
+                      onClick={jumpFirst}
+                      disabled={current <= 1}
+                    >
+                      <ChevronsUp className="size-4" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent side="right">{t("toFirst")}</TooltipContent>
+                </Tooltip>
+                <div className="flex-1 w-full flex items-center pl-4.5">
+                  <div
+                    ref={sliderWrapRef}
+                    className="relative h-full flex items-center"
+                  >
+                    <Slider
+                      orientation="vertical"
+                      min={1}
+                      max={Math.max(actualFloors, 2)} // 确保至少有2的范围，避免单楼层时滑块在底部
+                      step={0.001}
+                      value={sliderValue}
+                      disabled={actualFloors === 1} // 单楼层时禁用滑块
+                      onValueChange={(v) => {
+                        // 设置拖动标志
+                        isDraggingRef.current = true
+                        setSliderValue(v)
+
+                        const anchors = anchorsRef.current
+                        // 使用实际 DOM 中的锚点数量
+                        const n = anchors.length - 1
+                        if (n <= 0) return
+
+                        const s = v[0] // 当前滑块值
+                        // 反推楼层号（浮点）
+                        const floorFloat = n - s + 1
+
+                        // 计算插值位置：支持中间位置的平滑滚动
+                        const lowerFloor = Math.floor(floorFloat)
+                        const upperFloor = Math.ceil(floorFloat)
+                        const fraction = floorFloat - lowerFloor
+
+                        // 确保楼层索引在有效范围内
+                        const safeLower = Math.max(1, Math.min(n, lowerFloor))
+                        const safeUpper = Math.max(1, Math.min(n, upperFloor))
+
+                        const scroller = getScrollContainer()
+                        const lowerAnchor = anchors[safeLower]
+                        const upperAnchor = anchors[safeUpper]
+
+                        if (lowerAnchor && upperAnchor) {
+                          const lowerTop = getRelativeTop(lowerAnchor, scroller)
+                          const upperTop = getRelativeTop(upperAnchor, scroller)
+                          // 插值计算目标滚动位置
+                          const targetScrollTop =
+                            lowerTop * (1 - fraction) + upperTop * fraction
+
+                          // 拖动中使用 auto 立即跳转，避免动画延迟
+                          if (scroller) {
+                            scroller.scrollTo({
+                              top: targetScrollTop,
+                              behavior: "auto",
+                            })
+                          } else {
+                            window.scrollTo({
+                              top: targetScrollTop,
+                              behavior: "auto",
+                            })
+                          }
+                        }
+
+                        // 更新当前楼层信息
+                        const currentFloor = Math.round(floorFloat)
+                        setCurrent(currentFloor)
+                        currentRef.current = currentFloor
+
+                        const anchorEl = anchors[currentFloor]
+                        const name =
+                          anchorEl?.querySelector<HTMLElement>(
+                            "[data-slot=timeline-steps-title]"
+                          )?.textContent || ""
+                        setAuthor(name)
+
+                        // 更新标签位置
+                        window.requestAnimationFrame(() => {
+                          updateLabelPos()
+                        })
+                      }}
+                      onValueCommit={(v) => {
+                        // 释放拖动标志
+                        isDraggingRef.current = false
+
+                        // 计算目标楼层：使用实际 DOM 中的锚点数量
+                        const n = anchorsRef.current.length - 1
+                        if (n <= 0) return
+
+                        const floorFloat = n - v[0] + 1
+                        const targetFloor = Math.max(
+                          1,
+                          Math.min(n, Math.round(floorFloat))
+                        )
+                        const anchorIndex = targetFloor
+                        updateFloorHash(targetFloor)
+
+                        const scroller = getScrollContainer()
+                        const targetAnchor = anchorsRef.current[anchorIndex]
+
+                        if (targetAnchor) {
+                          const top = getRelativeTop(targetAnchor, scroller)
+
+                          // 释放时使用 smooth 平滑滚动
+                          if (scroller) {
+                            scroller.scrollTo({ top, behavior: "smooth" })
+                            // fallback: 确保滚动到位
+                            setTimeout(() => {
+                              if (Math.abs(scroller.scrollTop - top) > 1) {
+                                scroller.scrollTop = top
+                              }
+                            }, 300)
+                          } else {
+                            window.scrollTo({ top, behavior: "smooth" })
+                            // fallback: 确保滚动到位
+                            setTimeout(() => {
+                              const se =
+                                document.scrollingElement as HTMLElement | null
+                              if (se && Math.abs(se.scrollTop - top) > 1) {
+                                se.scrollTop = top
+                              }
+                              if (Math.abs(window.scrollY - top) > 1) {
+                                window.scrollTo(0, top)
+                              }
+                            }, 300)
+                          }
+                        }
+                      }}
+                      className="h-full [&_[data-slot=slider-track]]:w-px [&_[data-slot=slider-track]]:bg-border [&_[data-slot=slider-range]]:bg-transparent [&_[data-slot=slider-thumb]]:w-[5px] [&_[data-slot=slider-thumb]]:h-16 [&_[data-slot=slider-thumb]]:rounded-full [&_[data-slot=slider-thumb]]:bg-primary [&_[data-slot=slider-thumb]]:border-0"
+                    />
+                    <div
+                      className="absolute left-full ml-3 -translate-y-1/2 flex flex-col items-start w-32"
+                      ref={labelRef}
+                    >
+                      <span className="font-bold">
+                        {displayCurrent} / {totalFloors}
+                      </span>
+                      <span className="text-muted-foreground max-w-30 truncate whitespace-nowrap">
+                        {author || "-"}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      aria-label={t("aria.toLast")}
+                      onClick={jumpLast}
+                      disabled={current >= actualFloors}
+                    >
+                      <ChevronsDown className="size-4" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent side="right">{t("toLast")}</TooltipContent>
+                </Tooltip>
+              </div>
+            </TooltipProvider>
+          </div>
+        )}
+      </div>
       <div className="flex flex-col items-center gap-3">
         {topicLoading ? (
           <>
@@ -495,7 +674,7 @@ export function TopicNavigator({
             ) : (
               <Button
                 size="lg"
-                variant="outline"
+                variant="default"
                 className="w-full text-base rounded-full"
                 onClick={() => {
                   router.push(`/login`)
@@ -505,198 +684,7 @@ export function TopicNavigator({
                 {t("goLogin")}
               </Button>
             )}
-            <Button
-              size="lg"
-              variant="outline"
-              className="w-full text-base rounded-full"
-            >
-              <ArrowDown10 />
-              {t("sort")}
-            </Button>
           </>
-        )}
-      </div>
-      <div className="flex flex-1 items-center mt-2">
-        {repliesLoading ? (
-          <div className="flex flex-1 items-center justify-center">
-            <Skeleton className="h-72 w-full" />
-          </div>
-        ) : totalFloors === 0 ? (
-          <div className="flex flex-1 items-center justify-center border-t border-b py-2 text-sm text-muted-foreground">
-            {t("noReplies")}
-          </div>
-        ) : (
-          <TooltipProvider disableHoverableContent>
-            <div className="flex flex-1 flex-col gap-3 border-t border-b py-2">
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    aria-label={t("aria.toFirst")}
-                    onClick={jumpFirst}
-                    disabled={current <= 1}
-                  >
-                    <ChevronsUp className="size-4" />
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent side="right">{t("toFirst")}</TooltipContent>
-              </Tooltip>
-              <div className="flex-1 w-full flex items-center pl-4.5">
-                <div
-                  ref={sliderWrapRef}
-                  className="relative h-full flex items-center"
-                >
-                  <Slider
-                    orientation="vertical"
-                    min={1}
-                    max={Math.max(actualFloors, 2)} // 确保至少有2的范围，避免单楼层时滑块在底部
-                    step={0.001}
-                    value={sliderValue}
-                    disabled={actualFloors === 1} // 单楼层时禁用滑块
-                    onValueChange={(v) => {
-                      // 设置拖动标志
-                      isDraggingRef.current = true
-                      setSliderValue(v)
-
-                      const anchors = anchorsRef.current
-                      // 使用实际 DOM 中的锚点数量
-                      const n = anchors.length - 1
-                      if (n <= 0) return
-
-                      const s = v[0] // 当前滑块值
-                      // 反推楼层号（浮点）
-                      const floorFloat = n - s + 1
-
-                      // 计算插值位置：支持中间位置的平滑滚动
-                      const lowerFloor = Math.floor(floorFloat)
-                      const upperFloor = Math.ceil(floorFloat)
-                      const fraction = floorFloat - lowerFloor
-
-                      // 确保楼层索引在有效范围内
-                      const safeLower = Math.max(1, Math.min(n, lowerFloor))
-                      const safeUpper = Math.max(1, Math.min(n, upperFloor))
-
-                      const scroller = getScrollContainer()
-                      const lowerAnchor = anchors[safeLower]
-                      const upperAnchor = anchors[safeUpper]
-
-                      if (lowerAnchor && upperAnchor) {
-                        const lowerTop = getRelativeTop(lowerAnchor, scroller)
-                        const upperTop = getRelativeTop(upperAnchor, scroller)
-                        // 插值计算目标滚动位置
-                        const targetScrollTop =
-                          lowerTop * (1 - fraction) + upperTop * fraction
-
-                        // 拖动中使用 auto 立即跳转，避免动画延迟
-                        if (scroller) {
-                          scroller.scrollTo({
-                            top: targetScrollTop,
-                            behavior: "auto",
-                          })
-                        } else {
-                          window.scrollTo({
-                            top: targetScrollTop,
-                            behavior: "auto",
-                          })
-                        }
-                      }
-
-                      // 更新当前楼层信息
-                      const currentFloor = Math.round(floorFloat)
-                      setCurrent(currentFloor)
-                      currentRef.current = currentFloor
-
-                      const anchorEl = anchors[currentFloor]
-                      const name =
-                        anchorEl?.querySelector<HTMLElement>(
-                          "[data-slot=timeline-steps-title]"
-                        )?.textContent || ""
-                      setAuthor(name)
-
-                      // 更新标签位置
-                      window.requestAnimationFrame(() => {
-                        updateLabelPos()
-                      })
-                    }}
-                    onValueCommit={(v) => {
-                      // 释放拖动标志
-                      isDraggingRef.current = false
-
-                      // 计算目标楼层：使用实际 DOM 中的锚点数量
-                      const n = anchorsRef.current.length - 1
-                      if (n <= 0) return
-
-                      const floorFloat = n - v[0] + 1
-                      const targetFloor = Math.max(
-                        1,
-                        Math.min(n, Math.round(floorFloat))
-                      )
-                      const anchorIndex = targetFloor
-                      updateFloorHash(targetFloor)
-
-                      const scroller = getScrollContainer()
-                      const targetAnchor = anchorsRef.current[anchorIndex]
-
-                      if (targetAnchor) {
-                        const top = getRelativeTop(targetAnchor, scroller)
-
-                        // 释放时使用 smooth 平滑滚动
-                        if (scroller) {
-                          scroller.scrollTo({ top, behavior: "smooth" })
-                          // fallback: 确保滚动到位
-                          setTimeout(() => {
-                            if (Math.abs(scroller.scrollTop - top) > 1) {
-                              scroller.scrollTop = top
-                            }
-                          }, 300)
-                        } else {
-                          window.scrollTo({ top, behavior: "smooth" })
-                          // fallback: 确保滚动到位
-                          setTimeout(() => {
-                            const se =
-                              document.scrollingElement as HTMLElement | null
-                            if (se && Math.abs(se.scrollTop - top) > 1) {
-                              se.scrollTop = top
-                            }
-                            if (Math.abs(window.scrollY - top) > 1) {
-                              window.scrollTo(0, top)
-                            }
-                          }, 300)
-                        }
-                      }
-                    }}
-                    className="h-full [&_[data-slot=slider-track]]:w-px [&_[data-slot=slider-track]]:bg-border [&_[data-slot=slider-range]]:bg-transparent [&_[data-slot=slider-thumb]]:w-[5px] [&_[data-slot=slider-thumb]]:h-16 [&_[data-slot=slider-thumb]]:rounded-full [&_[data-slot=slider-thumb]]:bg-primary [&_[data-slot=slider-thumb]]:border-0"
-                  />
-                  <div
-                    className="absolute left-full ml-3 -translate-y-1/2 flex flex-col items-start w-32"
-                    ref={labelRef}
-                  >
-                    <span className="font-bold">
-                      {displayCurrent} / {totalFloors}
-                    </span>
-                    <span className="text-muted-foreground max-w-[120px] truncate whitespace-nowrap">
-                      {author || "-"}
-                    </span>
-                  </div>
-                </div>
-              </div>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    aria-label={t("aria.toLast")}
-                    onClick={jumpLast}
-                    disabled={current >= actualFloors}
-                  >
-                    <ChevronsDown className="size-4" />
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent side="right">{t("toLast")}</TooltipContent>
-              </Tooltip>
-            </div>
-          </TooltipProvider>
         )}
       </div>
     </div>

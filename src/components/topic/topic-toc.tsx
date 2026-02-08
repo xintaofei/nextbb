@@ -1,8 +1,11 @@
 "use client"
 
 import { useEffect, useMemo, useState, useSyncExternalStore } from "react"
+import { useRouter } from "next/navigation"
 import { cn, slugify } from "@/lib/utils"
 import { useTranslations } from "next-intl"
+import { Button } from "@/components/ui/button"
+import { LogIn, Reply } from "lucide-react"
 
 interface Heading {
   id: string
@@ -13,10 +16,19 @@ interface Heading {
 interface TopicTocProps {
   contentHtml?: string
   className?: string
+  isAuthenticated?: boolean
+  onReplyTopic?: () => void
 }
 
-export function TopicToc({ contentHtml, className }: TopicTocProps) {
+export function TopicToc({
+  contentHtml,
+  className,
+  isAuthenticated,
+  onReplyTopic,
+}: TopicTocProps) {
   const t = useTranslations("Topic")
+  const tn = useTranslations("Topic.Navigator")
+  const router = useRouter()
   const [activeId, setActiveId] = useState<string>("")
   const mounted = useSyncExternalStore(
     () => () => {},
@@ -69,47 +81,74 @@ export function TopicToc({ contentHtml, className }: TopicTocProps) {
   if (!headings.length) return null
 
   return (
-    <div
-      className={cn(
-        "hidden lg:flex lg:flex-col sticky top-20 w-full shrink-0 border rounded-lg",
-        className,
-        "bg-linear-to-b from-muted-foreground/5 to-card"
+    <div className="flex flex-col gap-8">
+      <div
+        className={cn(
+          "hidden lg:flex lg:flex-col sticky top-20 w-full shrink-0 border rounded-lg",
+          className,
+          "bg-linear-to-b from-muted-foreground/5 to-card"
+        )}
+      >
+        <div className="bg-muted/30 font-bold text-base border-b p-3">
+          {t("toc")}
+        </div>
+        <div className="flex flex-col gap-1 max-h-[calc(100vh-10rem)] overflow-y-auto p-3">
+          {headings.map((heading) => (
+            <a
+              key={heading.id}
+              href={`#${heading.id}`}
+              className={cn(
+                "text-sm hover:text-primary transition-colors line-clamp-1 block py-1",
+                activeId === heading.id
+                  ? "text-primary font-medium"
+                  : "text-muted-foreground",
+                heading.level === 1 && "pl-0 font-bold",
+                heading.level === 2 && "pl-3",
+                heading.level === 3 && "pl-6",
+                heading.level === 4 && "pl-9",
+                heading.level >= 5 && "pl-12"
+              )}
+              onClick={(e) => {
+                e.preventDefault()
+                const element = document.getElementById(heading.id)
+                if (element) {
+                  const y =
+                    element.getBoundingClientRect().top + window.scrollY - 80
+                  window.scrollTo({ top: y, behavior: "smooth" })
+                  setActiveId(heading.id)
+                }
+              }}
+            >
+              {heading.text}
+            </a>
+          ))}
+        </div>
+      </div>
+      {isAuthenticated ? (
+        <Button
+          size="lg"
+          variant="default"
+          className="w-full text-base rounded-full"
+          onClick={() => {
+            if (onReplyTopic) onReplyTopic()
+          }}
+        >
+          <Reply />
+          {tn("replyToTopic")}
+        </Button>
+      ) : (
+        <Button
+          size="lg"
+          variant="default"
+          className="w-full text-base rounded-full"
+          onClick={() => {
+            router.push(`/login`)
+          }}
+        >
+          <LogIn />
+          {tn("goLogin")}
+        </Button>
       )}
-    >
-      <div className="bg-muted/30 font-bold text-base border-b p-3">
-        {t("toc")}
-      </div>
-      <div className="flex flex-col gap-1 max-h-[calc(100vh-10rem)] overflow-y-auto p-3">
-        {headings.map((heading) => (
-          <a
-            key={heading.id}
-            href={`#${heading.id}`}
-            className={cn(
-              "text-sm hover:text-primary transition-colors line-clamp-1 block py-1",
-              activeId === heading.id
-                ? "text-primary font-medium"
-                : "text-muted-foreground",
-              heading.level === 1 && "pl-0 font-bold",
-              heading.level === 2 && "pl-3",
-              heading.level === 3 && "pl-6",
-              heading.level === 4 && "pl-9",
-              heading.level >= 5 && "pl-12"
-            )}
-            onClick={(e) => {
-              e.preventDefault()
-              const element = document.getElementById(heading.id)
-              if (element) {
-                const y =
-                  element.getBoundingClientRect().top + window.scrollY - 80
-                window.scrollTo({ top: y, behavior: "smooth" })
-                setActiveId(heading.id)
-              }
-            }}
-          >
-            {heading.text}
-          </a>
-        ))}
-      </div>
     </div>
   )
 }

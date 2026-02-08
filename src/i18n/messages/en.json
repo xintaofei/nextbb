@@ -161,6 +161,7 @@
       "loading": "Loading floor {floor}..."
     },
     "Navigator": {
+      "title": "Floor Nav",
       "toFirst": "Jump to first",
       "toLast": "Jump to last",
       "aria": {

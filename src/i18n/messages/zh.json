@@ -153,7 +153,7 @@
     "reply": "回复",
     "replies": "个回复",
     "replyPlaceholder": "请输入您的回复...",
-    "toc": "目录",
+    "toc": "目录导航",
     "floor": {
       "op": "楼主",
       "notFound": "楼层 {floor} 不存在",
@@ -161,6 +161,7 @@
       "loading": "正在加载第 {floor} 楼..."
     },
     "Navigator": {
+      "title": "楼层导航",
       "toFirst": "到首楼",
       "toLast": "到末楼",
       "aria": {

@@ -993,6 +993,11 @@ export default function TopicOverviewClient({
             <TopicToc
               contentHtml={posts[0]?.contentHtml || ""}
               className="w-full h-auto static"
+              isAuthenticated={!!currentUserId}
+              onReplyTopic={() => {
+                setReplyToPostId(null)
+                setReplyOpen(true)
+              }}
             />
           ) : (
             <TopicNavigator
