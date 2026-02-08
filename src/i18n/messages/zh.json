@@ -1,6 +1,6 @@
 {
   "Index": {
-    "title": "欢迎来到 NextBB！",
+    "title": "欢迎来到 NextBB，共建和谐之社区！",
     "description": "这是一个生产级多语言示例。"
   },
   "Dashboard": {
@@ -102,7 +102,13 @@
     "won": "中奖",
     "notWon": "未中奖",
     "noWinners": "暂无中奖者",
-    "welcome": "欢迎"
+    "welcome": "欢迎",
+    "Stats": {
+      "topics": "话题",
+      "posts": "帖子",
+      "users": "用户",
+      "interactions": "互动"
+    }
   },
   "Checkin": {
     "pageTitle": "签到",

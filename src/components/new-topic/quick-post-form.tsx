@@ -125,7 +125,7 @@ export function QuickPostForm({ onPublished }: QuickPostFormProps) {
   if (!expanded) {
     const texts: string[] = Array.from({ length: 3 }, (_, i) => t(`hints.${i}`))
     return (
-      <div className="border-y bg-muted/40 max-sm:border max-sm:rounded-lg">
+      <div className="border-b bg-muted/40 max-sm:border max-sm:rounded-lg">
         <button
           type="button"
           onClick={handleExpand}

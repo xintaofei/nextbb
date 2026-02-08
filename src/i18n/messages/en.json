@@ -1,6 +1,6 @@
 {
   "Index": {
-    "title": "Welcome to NextBB!",
+    "title": "Welcome to NextBB, building a harmonious community together!",
     "description": "This is a production-ready i18n example."
   },
   "Dashboard": {
@@ -102,7 +102,13 @@
     "won": "Won",
     "notWon": "Not won",
     "noWinners": "No winners yet",
-    "welcome": "Welcome"
+    "welcome": "Welcome",
+    "Stats": {
+      "topics": "Topics",
+      "posts": "Posts",
+      "users": "Users",
+      "interactions": "Interactions"
+    }
   },
   "Checkin": {
     "pageTitle": "Check-in",

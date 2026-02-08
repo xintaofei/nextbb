@@ -26,7 +26,6 @@ export function Aside() {
   const isMainListPage = parseRouteSegments(segments).valid
   const isTopicPage = pathname.includes("/topic/")
   const isConversationPage = pathname.includes("/conversations")
-  const t = useTranslations("Index")
   const tc = useTranslations("Common")
   const contentLabels: ContentLabels = {
     image: tc("ContentLabel.image"),
@@ -37,9 +36,6 @@ export function Aside() {
   const sidebarRef = useStickySidebar()
 
   const { configs } = useConfig()
-  const welcomeMessage = configs?.["basic.welcome_message"] as
-    | string
-    | undefined
   const icp = configs?.["basic.icp"] as string | undefined
 
   const { data: comments, isLoading: commentsLoading } = useSWR<
@@ -85,16 +81,6 @@ export function Aside() {
               <SearchIcon />
             </InputGroupAddon>
           </InputGroup>
-
-          {/* Welcome */}
-          <div className="w-full border rounded-xl flex flex-col overflow-hidden bg-linear-to-b from-muted-foreground/5 to-card">
-            <div className="p-3 border-b bg-muted/30 font-bold text-base flex items-center gap-2">
-              <span>{tc("welcome")}</span>
-            </div>
-            <span className="p-3 text-sm text-muted-foreground break-all">
-              {welcomeMessage || t("title")}
-            </span>
-          </div>
 
           {/* Topic Filter */}
           {isMainListPage && (

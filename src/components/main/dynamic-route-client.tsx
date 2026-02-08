@@ -13,6 +13,7 @@ import type { CategoryWithCount } from "@/types/taxonomy"
 import type { TopicListResult } from "@/lib/services/topic-service"
 import React from "react"
 import { QuickPostForm } from "@/components/new-topic/quick-post-form"
+import { CommunityBanner } from "@/components/main/community-banner"
 
 type DynamicRouteClientProps = {
   routeParams: RouteParams
@@ -128,6 +129,7 @@ export function DynamicRouteClient({
 
   return (
     <div className="flex min-h-screen w-full flex-col max-sm:p-4">
+      <CommunityBanner />
       <TopicHeaderBar
         className="max-sm:pb-4 sm:sticky sm:top-0 sm:z-1 bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/60"
         onSortStart={() => {}}
