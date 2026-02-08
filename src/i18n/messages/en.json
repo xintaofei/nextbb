@@ -615,7 +615,8 @@
       "verification": {
         "subject": "Registration Verification Code",
         "textBody": "Your registration verification code is: {code}, valid for {minutes} minutes.",
-        "htmlBody": "<p>Your registration verification code is: <strong>{code}</strong></p><p>Valid for {minutes} minutes.</p>"
+        "htmlLine1": "Your registration verification code is:",
+        "htmlLine2": "Valid for {minutes} minutes."
       },
       "error": {
         "failed": "Sign up failed",

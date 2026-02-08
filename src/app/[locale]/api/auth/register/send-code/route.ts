@@ -83,7 +83,9 @@ export async function POST(request: Request) {
     )
     const subject = tEmail("subject")
     const text = tEmail("textBody", { code, minutes: expiresMinutes })
-    const html = tEmail("htmlBody", { code, minutes: expiresMinutes })
+    const htmlLine1 = tEmail("htmlLine1")
+    const htmlLine2 = tEmail("htmlLine2", { minutes: expiresMinutes })
+    const html = `<p>${htmlLine1}<strong>${code}</strong></p><p>${htmlLine2}</p>`
 
     try {
       await sendEmail({ to: email, subject, text, html })

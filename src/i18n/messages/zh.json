@@ -615,7 +615,8 @@
       "verification": {
         "subject": "注册验证码",
         "textBody": "您的注册验证码是：{code}，有效期 {minutes} 分钟。",
-        "htmlBody": "<p>您的注册验证码是：<strong>{code}</strong></p><p>有效期 {minutes} 分钟。</p>"
+        "htmlLine1": "您的注册验证码是：",
+        "htmlLine2": "有效期 {minutes} 分钟。"
       },
       "error": {
         "failed": "注册失败",
