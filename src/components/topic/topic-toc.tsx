@@ -90,10 +90,10 @@ export function TopicToc({ contentHtml, className }: TopicTocProps) {
                 ? "text-primary font-medium"
                 : "text-muted-foreground",
               heading.level === 1 && "pl-0 font-bold",
-              heading.level === 2 && "pl-2",
-              heading.level === 3 && "pl-4",
-              heading.level === 4 && "pl-6",
-              heading.level >= 5 && "pl-8"
+              heading.level === 2 && "pl-3",
+              heading.level === 3 && "pl-6",
+              heading.level === 4 && "pl-9",
+              heading.level >= 5 && "pl-12"
             )}
             onClick={(e) => {
               e.preventDefault()
