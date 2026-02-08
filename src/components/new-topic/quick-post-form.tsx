@@ -44,7 +44,7 @@ type QuickPostFormProps = {
 const quickPostSchema = z.object({
   title: z.string().min(5).max(100),
   categoryId: z.string().regex(/^\d+$/),
-  content: z.string().min(20).max(5000),
+  content: z.string().min(20).max(10000),
   content_html: z.string(),
   tags: z.array(z.string().max(15)).max(5),
 })

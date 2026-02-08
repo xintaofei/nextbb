@@ -148,6 +148,7 @@
     "reply": "回复",
     "replies": "个回复",
     "replyPlaceholder": "请输入您的回复...",
+    "toc": "目录",
     "floor": {
       "op": "楼主",
       "notFound": "楼层 {floor} 不存在",
@@ -186,7 +187,7 @@
         "content": {
           "label": "话题内容",
           "placeholder": "请详细描述您的话题内容...",
-          "counter": "{count}/5000 字符"
+          "counter": "{count}/10000 字符"
         },
         "tags": {
           "label": "标签",
