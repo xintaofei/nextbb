@@ -64,7 +64,7 @@ export function Aside() {
   return (
     <aside
       ref={sidebarRef}
-      className="hidden lg:flex w-64 flex-col gap-4 ml-7 max-xl:mr-7 py-8 px-1 sticky self-start"
+      className="hidden lg:flex w-64 2xl:w-72 flex-col gap-4 ml-7 max-xl:mr-7 py-8 px-1 sticky self-start"
     >
       {isTopicPage ? (
         <div id="topic-aside-portal" className="w-full" />
