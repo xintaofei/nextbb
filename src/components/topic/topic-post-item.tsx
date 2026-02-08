@@ -315,7 +315,7 @@ export const TopicPostItem = memo(function TopicPostItem({
           overrideContentRaw={overrideContentRaw}
           className={
             topicType === TopicType.TUTORIAL && post.floorNumber === 0
-              ? "border rounded-lg p-4"
+              ? "pt-4"
               : undefined
           }
         />
