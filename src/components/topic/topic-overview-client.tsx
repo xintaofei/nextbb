@@ -975,6 +975,7 @@ export default function TopicOverviewClient({
                     onAccept={onAccept}
                     acceptMutating={acceptMutating}
                     topicAuthorId={topicAuthorId}
+                    topicType={topicInfo?.type}
                   />
                 )
               })}

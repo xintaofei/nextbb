@@ -13,6 +13,7 @@ import {
   AvatarImage,
 } from "@/components/ui/avatar"
 import { PostItem } from "@/types/topic"
+import { TopicType } from "@/types/topic-type"
 import { UserInfoCard } from "@/components/common/user-info-card"
 import { ReactNode, useMemo, useState, memo, useCallback, useRef } from "react"
 import useSWR from "swr"
@@ -145,6 +146,7 @@ interface TopicPostItemProps {
   onAccept?: (postId: string, isAccepted: boolean) => void | Promise<void>
   acceptMutating?: boolean
   topicAuthorId?: string
+  topicType?: string
 }
 
 export const TopicPostItem = memo(function TopicPostItem({
@@ -177,6 +179,7 @@ export const TopicPostItem = memo(function TopicPostItem({
   onAccept,
   acceptMutating = false,
   topicAuthorId,
+  topicType,
 }: TopicPostItemProps) {
   const displayAvatar = useMemo(() => {
     return post.author.avatar || undefined
@@ -310,6 +313,11 @@ export const TopicPostItem = memo(function TopicPostItem({
           deletedText={deletedText}
           overrideContentHtml={overrideContentHtml}
           overrideContentRaw={overrideContentRaw}
+          className={
+            topicType === TopicType.TUTORIAL && post.floorNumber === 0
+              ? "border rounded-lg p-4"
+              : undefined
+          }
         />
 
         {topicTypeSlot}

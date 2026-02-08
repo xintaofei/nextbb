@@ -323,14 +323,16 @@ export const PostContent = memo(function PostContent({
   deletedText,
   overrideContentHtml,
   overrideContentRaw,
+  className,
 }: {
   post: PostItem
   deletedText: string
   overrideContentHtml?: string | null
   overrideContentRaw?: string | null
+  className?: string
 }) {
   return (
-    <TimelineStepsDescription>
+    <TimelineStepsDescription className={className}>
       {post.isDeleted ? (
         <span className="text-muted-foreground">{deletedText}</span>
       ) : overrideContentHtml ? (

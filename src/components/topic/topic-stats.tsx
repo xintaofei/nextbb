@@ -18,7 +18,7 @@ export const TopicStats = memo(function TopicStats({
   if (!topicInfo) return null
 
   return (
-    <div className="flex flex-wrap justify-between items-center text-sm text-muted-foreground mb-8 bg-muted border px-4 max-sm:px-2 py-3 rounded-lg">
+    <div className="flex flex-wrap justify-between items-center text-sm text-muted-foreground mb-8 bg-muted/80 border px-4 max-sm:px-2 py-3 rounded-lg">
       <div className="flex items-center gap-x-8 max-sm:gap-x-4 gap-y-2">
         <div className="flex items-center gap-1">
           <Eye className="w-4 h-4" />
