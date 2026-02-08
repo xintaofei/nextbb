@@ -112,6 +112,14 @@ async function seedSystemConfigs(tx: TxClient): Promise<void> {
       pub: true,
     },
     {
+      key: "registration.require_invite_code",
+      value: "false",
+      type: "boolean",
+      cat: "registration",
+      desc: "是否需要邀请码才能注册",
+      pub: true,
+    },
+    {
       key: "content.topic.publish_permission",
       value: "all",
       type: "string",

@@ -19,6 +19,7 @@ import {
   createNewOAuthUser,
 } from "@/lib/auth-helpers"
 import { logSecurityEvent } from "@/lib/security-logger"
+import { isUserForcedLogout } from "@/lib/session-blacklist"
 
 export const SOCIAL_LINK_COOKIE = "social_link_user_id"
 
@@ -104,6 +105,21 @@ export async function createAuthOptions(): Promise<NextAuthOptions> {
           await recordLogin(user?.id || null, "FAILED", "CREDENTIALS")
           await recordFailedLoginAttempt(`email:${credentials.email}`)
           await recordFailedLoginAttempt(`ip:${clientIp}`)
+          return null
+        }
+
+        // 检查用户是否被拉黑（强制登出）
+        const isBlacklisted = await isUserForcedLogout(user.id.toString())
+        if (isBlacklisted) {
+          logSecurityEvent({
+            event: "ACCOUNT_DISABLED",
+            userId: user.id,
+            email: credentials.email,
+            ip: clientIp,
+            provider: "CREDENTIALS",
+            details: "用户已被拉黑，禁止登录",
+          })
+          await recordLogin(user.id, "FAILED", "CREDENTIALS")
           return null
         }
 

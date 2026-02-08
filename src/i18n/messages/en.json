@@ -607,13 +607,16 @@
       "codeCooldown": "Resend in {seconds}s",
       "codeHint": "Code expires in 10 minutes",
       "submit": "Sign Up",
+      "inviteCode": "Invite Code",
+      "inviteCodePlaceholder": "Enter 32-character invite code",
       "hintTitle": "Sign up with social accounts",
       "questionHaveAccount": "Already have an account?",
       "toLogin": "Go to Sign In",
       "verification": {
         "subject": "Registration Verification Code",
         "textBody": "Your registration verification code is: {code}, valid for {minutes} minutes.",
-        "htmlBody": "<p>Your registration verification code is: <strong>{code}</strong></p><p>Valid for {minutes} minutes.</p>"
+        "htmlLine1": "Your registration verification code is:",
+        "htmlLine2": "Valid for {minutes} minutes."
       },
       "error": {
         "failed": "Sign up failed",
@@ -636,7 +639,12 @@
         "registrationNotEnabled": "Registration is currently closed, please contact administrator",
         "emailVerificationNotEnabled": "Email verification is not enabled",
         "sendTooFrequent": "Sending too frequently, please try again later",
-        "codeExpired": "Failed to send verification code"
+        "codeExpired": "Failed to send verification code",
+        "inviteCodeRequired": "Invite code is required",
+        "inviteCodeInvalid": "Invalid invite code",
+        "inviteCodeInactive": "Invite code has been deactivated",
+        "inviteCodeExpired": "Invite code has expired",
+        "inviteCodeMaxUsed": "Invite code has reached maximum uses"
       }
     },
     "PasswordReset": {
@@ -689,6 +697,7 @@
       "profile": "My Profile",
       "activity": "My Activity",
       "notifications": "My Notifications",
+      "invitations": "Invitations",
       "settings": "Settings",
       "logout": "Log out"
     }
@@ -1664,6 +1673,10 @@
       "username_max_length": {
         "label": "Maximum Username Length",
         "description": "Maximum allowed username characters"
+      },
+      "require_invite_code": {
+        "label": "Invite Code Registration",
+        "description": "When enabled, new users must provide a valid invite code to register"
       }
     },
     "content": {
@@ -2050,6 +2063,47 @@
       "privacy": {
         "title": "Privacy"
       }
+    },
+    "invitations": {
+      "title": "Invitations",
+      "description": "Create and manage invite codes to invite new users to the community",
+      "createCode": "Create Invite Code",
+      "creating": "Creating...",
+      "note": "Note",
+      "notePlaceholder": "Optional note for this invite code",
+      "maxUses": "Max Uses",
+      "maxUsesPlaceholder": "Leave empty for unlimited",
+      "expiresAt": "Expires At",
+      "expiresAtPlaceholder": "Leave empty for no expiry",
+      "code": "Invite Code",
+      "copyCode": "Copy Invite Code",
+      "codeCopied": "Invite code copied to clipboard",
+      "statusActive": "Active",
+      "statusInactive": "Inactive",
+      "statusExpired": "Expired",
+      "statusMaxUsed": "Used Up",
+      "usedCount": "Used {used} times",
+      "usedCountWithMax": "Used {used}/{max} times",
+      "noExpiry": "No expiry",
+      "expiresAtLabel": "Expires on {date}",
+      "enable": "Enable",
+      "disable": "Disable",
+      "delete": "Delete",
+      "deleteConfirmTitle": "Delete Invite Code",
+      "deleteConfirmDescription": "Are you sure you want to delete this invite code? This action cannot be undone.",
+      "deleteHasInvitations": "This invite code has invitation records and cannot be deleted",
+      "deleteSuccess": "Invite code deleted",
+      "deleteError": "Failed to delete, please try again",
+      "updateSuccess": "Invite code updated",
+      "updateError": "Failed to update, please try again",
+      "createSuccess": "Invite code created successfully",
+      "createError": "Failed to create, please try again",
+      "cancel": "Cancel",
+      "confirm": "Confirm",
+      "invitedUsers": "Invited Users",
+      "noInvitedUsers": "No invitation records yet",
+      "emptyState": "You haven't created any invite codes yet",
+      "emptyStateHint": "Create an invite code to invite new users to the community"
     }
   },
   "UserCard": {

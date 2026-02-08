@@ -7,6 +7,7 @@ import { recordLogin } from "@/lib/auth"
 import { encodeUsername } from "@/lib/utils"
 import { SOCIAL_LINK_COOKIE } from "@/lib/auth-options"
 import { getConfigValue } from "@/lib/services/config-service"
+import { isUserForcedLogout } from "@/lib/session-blacklist"
 import type { Account, Profile } from "next-auth"
 
 /**
@@ -135,6 +136,13 @@ export async function handleExistingSocialAccount(
     return false
   }
 
+  // 检查用户是否被拉黑
+  const isBlacklisted = await isUserForcedLogout(linkedUser.id.toString())
+  if (isBlacklisted) {
+    await recordLogin(linkedUser.id, "FAILED", provider.toUpperCase())
+    return false
+  }
+
   await prisma.user_social_accounts.update({
     where: { id: existingSocialAccount.id },
     data: {
@@ -181,6 +189,15 @@ export async function handleExistingUserByEmail(
     return false
   }
 
+  // 检查用户是否被拉黑
+  const isBlacklisted = await isUserForcedLogout(
+    existingUserByEmail.id.toString()
+  )
+  if (isBlacklisted) {
+    await recordLogin(existingUserByEmail.id, "FAILED", provider.toUpperCase())
+    return false
+  }
+
   if (existingUserByEmail.social_accounts.length === 0) {
     await prisma.user_social_accounts.create({
       data: {
@@ -222,6 +239,17 @@ export async function createNewOAuthUser(
   if (!registrationEnabled) {
     console.log(
       `[OAuth] 注册已关闭，拒绝创建新用户: ${email} (provider: ${provider})`
+    )
+    return false
+  }
+
+  // 开启邀请码注册时，拒绝 OAuth 新用户自动创建
+  const inviteCodeRequired = await getConfigValue(
+    "registration.require_invite_code"
+  )
+  if (inviteCodeRequired) {
+    console.log(
+      `[OAuth] 邀请码注册已开启，拒绝创建新用户: ${email} (provider: ${provider})，请先通过表单+邀请码注册`
     )
     return false
   }

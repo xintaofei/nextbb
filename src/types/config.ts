@@ -14,6 +14,7 @@ export interface PublicConfigs {
   "registration.email_verify": boolean
   "registration.username_min_length": number
   "registration.username_max_length": number
+  "registration.require_invite_code": boolean
 }
 
 /**

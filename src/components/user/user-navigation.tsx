@@ -3,7 +3,15 @@
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { cn, encodeUsername } from "@/lib/utils"
-import { Activity, Award, Bell, Settings, User, Users } from "lucide-react"
+import {
+  Activity,
+  Award,
+  Bell,
+  Settings,
+  TicketCheck,
+  User,
+  Users,
+} from "lucide-react"
 import { useTranslations } from "next-intl"
 
 type UserNavigationProps = {
@@ -26,6 +34,7 @@ export function UserNavigation({
   const encodedUsername = encodeUsername(username)
   const t = useTranslations("User.profile")
   const tNotifications = useTranslations("User.notifications")
+  const tInvitations = useTranslations("User.invitations")
 
   const navItems: NavItem[] = [
     {
@@ -56,6 +65,12 @@ export function UserNavigation({
       label: tNotifications("title"),
       href: `/u/${encodedUsername}/notifications`,
       icon: Bell,
+      requiresAuth: true,
+    },
+    {
+      label: tInvitations("title"),
+      href: `/u/${encodedUsername}/invitations`,
+      icon: TicketCheck,
       requiresAuth: true,
     },
     {
