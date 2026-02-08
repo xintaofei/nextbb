@@ -9,7 +9,6 @@ import {
 import { logSecurityEvent } from "@/lib/security-logger"
 import { getClientIp } from "@/lib/get-client-ip"
 import { getTranslations } from "next-intl/server"
-import { forceLogoutUser } from "@/lib/session-blacklist"
 import { isWeakPassword } from "@/lib/password-validation"
 
 const schema = z.object({
@@ -68,14 +67,10 @@ export async function POST(request: Request) {
       data: { password: hashedPassword },
     })
 
-    // 立即失效所有旧 session（强制所有设备重新登录）
-    await forceLogoutUser(userId.toString())
-
     logSecurityEvent({
       event: "PASSWORD_RESET_SUCCESS",
       userId,
       ip,
-      details: "All sessions invalidated",
     })
 
     return NextResponse.json({ success: true })

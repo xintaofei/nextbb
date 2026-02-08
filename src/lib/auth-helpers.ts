@@ -7,6 +7,7 @@ import { recordLogin } from "@/lib/auth"
 import { encodeUsername } from "@/lib/utils"
 import { SOCIAL_LINK_COOKIE } from "@/lib/auth-options"
 import { getConfigValue } from "@/lib/services/config-service"
+import { isUserForcedLogout } from "@/lib/session-blacklist"
 import type { Account, Profile } from "next-auth"
 
 /**
@@ -135,6 +136,13 @@ export async function handleExistingSocialAccount(
     return false
   }
 
+  // 检查用户是否被拉黑
+  const isBlacklisted = await isUserForcedLogout(linkedUser.id.toString())
+  if (isBlacklisted) {
+    await recordLogin(linkedUser.id, "FAILED", provider.toUpperCase())
+    return false
+  }
+
   await prisma.user_social_accounts.update({
     where: { id: existingSocialAccount.id },
     data: {
@@ -177,6 +185,15 @@ export async function handleExistingUserByEmail(
   if (!existingUserByEmail) return false
 
   if (existingUserByEmail.is_deleted || existingUserByEmail.status !== 1) {
+    await recordLogin(existingUserByEmail.id, "FAILED", provider.toUpperCase())
+    return false
+  }
+
+  // 检查用户是否被拉黑
+  const isBlacklisted = await isUserForcedLogout(
+    existingUserByEmail.id.toString()
+  )
+  if (isBlacklisted) {
     await recordLogin(existingUserByEmail.id, "FAILED", provider.toUpperCase())
     return false
   }
