@@ -6,7 +6,7 @@ import { useParams, useRouter } from "next/navigation"
 import useSWRInfinite from "swr/infinite"
 import { useTranslations } from "next-intl"
 import { Users, MessageCircle, Plus, Upload } from "lucide-react"
-import { cn, stripHtmlAndTruncate } from "@/lib/utils"
+import { cn, stripHtmlAndTruncate, type ContentLabels } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
@@ -86,6 +86,12 @@ const fetcher = async <T,>(url: string): Promise<T> => {
 
 export const ConversationsSidebar = memo(function ConversationsSidebar() {
   const t = useTranslations("Conversations")
+  const tc = useTranslations("Common")
+  const contentLabels: ContentLabels = {
+    image: tc("ContentLabel.image"),
+    expression: tc("ContentLabel.expression"),
+    video: tc("ContentLabel.video"),
+  }
   const router = useRouter()
   const params = useParams()
   const [tab, setTab] = useState("mine")
@@ -313,7 +319,7 @@ export const ConversationsSidebar = memo(function ConversationsSidebar() {
                     : item.avatar || undefined
                 const lastMessage = item.lastMessage
                 const preview = lastMessage
-                  ? stripHtmlAndTruncate(lastMessage.content, 80)
+                  ? stripHtmlAndTruncate(lastMessage.content, 80, contentLabels)
                   : t("empty.noMessages")
 
                 return (
@@ -434,7 +440,11 @@ export const ConversationsSidebar = memo(function ConversationsSidebar() {
                     </div>
                     {item.lastMessage && (
                       <div className="text-xs text-muted-foreground truncate">
-                        {stripHtmlAndTruncate(item.lastMessage.content, 60)}
+                        {stripHtmlAndTruncate(
+                          item.lastMessage.content,
+                          60,
+                          contentLabels
+                        )}
                       </div>
                     )}
                   </div>

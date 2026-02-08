@@ -1,10 +1,10 @@
 import { NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
 import { getServerSessionUser } from "@/lib/server-auth"
-import { getLocale } from "next-intl/server"
+import { getLocale, getTranslations } from "next-intl/server"
 import { getTranslationsQuery, getTranslationField } from "@/lib/locale"
 import { getTopicTitle, getPostHtml } from "@/lib/topic-translation"
-import { stripHtmlAndTruncate } from "@/lib/utils"
+import { stripHtmlAndTruncate, type ContentLabels } from "@/lib/utils"
 import type {
   ActivityType,
   ActivityItem,
@@ -107,7 +107,8 @@ async function getPostsActivities(
   userId: bigint,
   limit: number,
   offset: number,
-  locale: string
+  locale: string,
+  contentLabels: ContentLabels
 ): Promise<ActivityItem[]> {
   const posts = await prisma.posts.findMany({
     where: {
@@ -179,7 +180,8 @@ async function getPostsActivities(
       floorNumber: post.floor_number,
       contentPreview: stripHtmlAndTruncate(
         getPostHtml(post.translations, locale) || post.content,
-        150
+        150,
+        contentLabels
       ),
       topicId: String(post.topic.id),
       topicTitle: getTopicTitle(post.topic.translations, locale),
@@ -194,7 +196,8 @@ async function getLikesActivities(
   userId: bigint,
   limit: number,
   offset: number,
-  locale: string
+  locale: string,
+  contentLabels: ContentLabels
 ): Promise<ActivityItem[]> {
   const likes = await prisma.post_likes.findMany({
     where: {
@@ -263,7 +266,8 @@ async function getLikesActivities(
       floorNumber: like.post.floor_number,
       contentPreview: stripHtmlAndTruncate(
         getPostHtml(like.post.translations, locale) || like.post.content,
-        150
+        150,
+        contentLabels
       ),
       topicId: String(like.post.topic.id),
       topicTitle: getTopicTitle(like.post.topic.translations, locale),
@@ -282,7 +286,8 @@ async function getBookmarksActivities(
   userId: bigint,
   limit: number,
   offset: number,
-  locale: string
+  locale: string,
+  contentLabels: ContentLabels
 ): Promise<ActivityItem[]> {
   const bookmarks = await prisma.post_bookmarks.findMany({
     where: {
@@ -352,7 +357,8 @@ async function getBookmarksActivities(
       contentPreview: stripHtmlAndTruncate(
         getPostHtml(bookmark.post.translations, locale) ||
           bookmark.post.content,
-        150
+        150,
+        contentLabels
       ),
       topicId: String(bookmark.post.topic.id),
       topicTitle: getTopicTitle(bookmark.post.topic.translations, locale),
@@ -391,6 +397,12 @@ export async function GET(req: Request, props: { params: Params }) {
 
     // 获取当前语言
     const locale = await getLocale()
+    const t = await getTranslations("Common.ContentLabel")
+    const contentLabels: ContentLabels = {
+      image: t("image"),
+      expression: t("expression"),
+      video: t("video"),
+    }
 
     // 解析查询参数
     const url = new URL(req.url)
@@ -438,7 +450,13 @@ export async function GET(req: Request, props: { params: Params }) {
         where: { user_id: userId, is_deleted: false },
       })
     } else if (type === "posts") {
-      items = await getPostsActivities(userId, pageSize, offset, locale)
+      items = await getPostsActivities(
+        userId,
+        pageSize,
+        offset,
+        locale,
+        contentLabels
+      )
       total = await prisma.posts.count({
         where: {
           user_id: userId,
@@ -447,7 +465,13 @@ export async function GET(req: Request, props: { params: Params }) {
         },
       })
     } else if (type === "likes") {
-      items = await getLikesActivities(userId, pageSize, offset, locale)
+      items = await getLikesActivities(
+        userId,
+        pageSize,
+        offset,
+        locale,
+        contentLabels
+      )
       total = await prisma.post_likes.count({
         where: {
           user_id: userId,
@@ -460,7 +484,13 @@ export async function GET(req: Request, props: { params: Params }) {
         },
       })
     } else if (type === "bookmarks") {
-      items = await getBookmarksActivities(userId, pageSize, offset, locale)
+      items = await getBookmarksActivities(
+        userId,
+        pageSize,
+        offset,
+        locale,
+        contentLabels
+      )
       total = await prisma.post_bookmarks.count({
         where: {
           user_id: userId,
@@ -479,9 +509,27 @@ export async function GET(req: Request, props: { params: Params }) {
 
       const [topics, posts, likes, bookmarks] = await Promise.all([
         getTopicsActivities(userId, perTypeLimit, perTypeOffset, locale),
-        getPostsActivities(userId, perTypeLimit, perTypeOffset, locale),
-        getLikesActivities(userId, perTypeLimit, perTypeOffset, locale),
-        getBookmarksActivities(userId, perTypeLimit, perTypeOffset, locale),
+        getPostsActivities(
+          userId,
+          perTypeLimit,
+          perTypeOffset,
+          locale,
+          contentLabels
+        ),
+        getLikesActivities(
+          userId,
+          perTypeLimit,
+          perTypeOffset,
+          locale,
+          contentLabels
+        ),
+        getBookmarksActivities(
+          userId,
+          perTypeLimit,
+          perTypeOffset,
+          locale,
+          contentLabels
+        ),
       ])
 
       // 合并所有活动并按时间排序

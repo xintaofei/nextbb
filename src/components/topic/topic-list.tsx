@@ -20,7 +20,7 @@ import { TagBadge } from "@/components/common/tag-badge"
 import { TopicStatusTags } from "@/components/common/topic-status-tags"
 import { UserInfoCard } from "@/components/common/user-info-card"
 import { type TopicTypeValue } from "@/types/topic-type"
-import { stripHtmlAndTruncate } from "@/lib/utils"
+import { stripHtmlAndTruncate, type ContentLabels } from "@/lib/utils"
 
 export type TopicAuthor = {
   id: string
@@ -85,6 +85,11 @@ export function TopicList({
   onLoadMore?: () => Promise<void> | void
 }) {
   const tc = useTranslations("Common")
+  const contentLabels: ContentLabels = {
+    image: tc("ContentLabel.image"),
+    expression: tc("ContentLabel.expression"),
+    video: tc("ContentLabel.video"),
+  }
   const sentinelRef = useRef<HTMLDivElement | null>(null)
   const [highlightIndex, setHighlightIndex] = useState<number | null>(null)
   const [clickedTopicId, setClickedTopicId] = useState<string | null>(null)
@@ -292,7 +297,11 @@ export function TopicList({
                       className="inline-flex mt-2 text-base text-muted-foreground max-w-full"
                     >
                       <span className="line-clamp-3 whitespace-normal wrap-break-word">
-                        {stripHtmlAndTruncate(t.firstPost.content)}
+                        {stripHtmlAndTruncate(
+                          t.firstPost.content,
+                          150,
+                          contentLabels
+                        )}
                       </span>
                     </Link>
                   )}

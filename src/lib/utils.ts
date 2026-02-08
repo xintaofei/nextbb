@@ -42,10 +42,25 @@ interface ProseMirrorNode {
   [key: string]: unknown
 }
 
+export interface ContentLabels {
+  image: string
+  expression: string
+  video: string
+}
+
+const defaultContentLabels: ContentLabels = {
+  image: "[图片]",
+  expression: "[表情]",
+  video: "[视频]",
+}
+
 /**
  * 从 ProseMirror/Milkdown JSON 内容中提取纯文本
  */
-export function getPlainTextFromContent(content: string): string {
+export function getPlainTextFromContent(
+  content: string,
+  labels: ContentLabels = defaultContentLabels
+): string {
   if (!content) return ""
   try {
     // 尝试解析 JSON
@@ -61,9 +76,9 @@ export function getPlainTextFromContent(content: string): string {
       if (node.type === "text" && typeof node.text === "string") {
         text += node.text
       } else if (node.type === "image") {
-        text += "[图片]"
+        text += labels.image
       } else if (node.type === "expression") {
-        text += "[表情]"
+        text += labels.expression
       } else if (node.type === "hard_break") {
         text += " "
       }
@@ -97,10 +112,11 @@ export function getPlainTextFromContent(content: string): string {
  */
 export function stripHtmlAndTruncate(
   content: string,
-  maxLength: number = 150
+  maxLength: number = 150,
+  labels: ContentLabels = defaultContentLabels
 ): string {
   // 1. 尝试从 JSON 中提取纯文本 (针对 Milkdown/ProseMirror 数据)
-  let text = getPlainTextFromContent(content)
+  let text = getPlainTextFromContent(content, labels)
 
   // 2. 处理 HTML 内容
   if (text === content) {
@@ -108,12 +124,12 @@ export function stripHtmlAndTruncate(
     // 尝试作为 HTML 处理
     text = text
       // 替换表情图片
-      .replace(/<img[^>]*data-expression[^>]*>/g, "[表情]")
+      .replace(/<img[^>]*data-expression[^>]*>/g, labels.expression)
       // 替换普通图片
-      .replace(/<img[^>]*>/g, "[图片]")
+      .replace(/<img[^>]*>/g, labels.image)
       // 替换视频/iframe
-      .replace(/<(video|iframe)[^>]*>.*?<\/\1>/g, "[视频]")
-      .replace(/<(video|iframe)[^>]*>/g, "[视频]")
+      .replace(/<(video|iframe)[^>]*>.*?<\/\1>/g, labels.video)
+      .replace(/<(video|iframe)[^>]*>/g, labels.video)
       // 替换换行符为空格
       .replace(/<br\s*\/?>/gi, " ")
       .replace(/<\/p>/gi, " ")

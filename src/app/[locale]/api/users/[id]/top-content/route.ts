@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
-import { stripHtmlAndTruncate } from "@/lib/utils"
-import { getLocale } from "next-intl/server"
+import { stripHtmlAndTruncate, type ContentLabels } from "@/lib/utils"
+import { getLocale, getTranslations } from "next-intl/server"
 import { getTranslationsQuery } from "@/lib/locale"
 import { getTopicTitle } from "@/lib/topic-translation"
 
@@ -33,6 +33,12 @@ export async function GET(
   ctx: { params: Promise<{ id: string }> }
 ) {
   const locale = await getLocale()
+  const t = await getTranslations("Common.ContentLabel")
+  const contentLabels: ContentLabels = {
+    image: t("image"),
+    expression: t("expression"),
+    video: t("video"),
+  }
   try {
     const { id: idStr } = await ctx.params
     let userId: bigint
@@ -154,7 +160,7 @@ export async function GET(
     const topReplies: TopReplyItem[] = repliesData
       .map((reply) => ({
         id: String(reply.id),
-        contentPreview: stripHtmlAndTruncate(reply.content, 100),
+        contentPreview: stripHtmlAndTruncate(reply.content, 100, contentLabels),
         topicId: String(reply.topic.id),
         topicTitle: getTopicTitle(reply.topic.translations, locale),
         createdAt: reply.created_at.toISOString(),

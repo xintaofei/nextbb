@@ -6,7 +6,7 @@ import { useConfig } from "@/components/providers/config-provider"
 import { useTranslations, useLocale } from "next-intl"
 import Link from "next/link"
 import useSWR from "swr"
-import { stripHtmlAndTruncate } from "@/lib/utils"
+import { stripHtmlAndTruncate, type ContentLabels } from "@/lib/utils"
 import { parseRouteSegments } from "@/lib/route-utils"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { RelativeTime } from "@/components/common/relative-time"
@@ -28,6 +28,11 @@ export function Aside() {
   const isConversationPage = pathname.includes("/conversations")
   const t = useTranslations("Index")
   const tc = useTranslations("Common")
+  const contentLabels: ContentLabels = {
+    image: tc("ContentLabel.image"),
+    expression: tc("ContentLabel.expression"),
+    video: tc("ContentLabel.video"),
+  }
   const locale = useLocale()
   const sidebarRef = useStickySidebar()
 
@@ -160,7 +165,8 @@ export function Aside() {
                         >
                           {stripHtmlAndTruncate(
                             comment.contentHtml || comment.content,
-                            60
+                            60,
+                            contentLabels
                           )}
                         </Link>
                         <Link

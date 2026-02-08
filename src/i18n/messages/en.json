@@ -91,6 +91,11 @@
       "success": "Success",
       "goBack": "Go Back"
     },
+    "ContentLabel": {
+      "image": "[Image]",
+      "expression": "[Emoji]",
+      "video": "[Video]"
+    },
     "credits": "credits",
     "floor": "Floor",
     "winners": "Winners",

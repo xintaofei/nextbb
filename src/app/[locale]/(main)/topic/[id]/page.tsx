@@ -8,7 +8,7 @@ import {
   incrementTopicViewsOnce,
 } from "@/lib/topic-service"
 import { getServerSessionUser } from "@/lib/server-auth"
-import { stripHtmlAndTruncate } from "@/lib/utils"
+import { stripHtmlAndTruncate, type ContentLabels } from "@/lib/utils"
 
 type TopicPageProps = {
   params: Promise<{ id: string }>
@@ -22,6 +22,12 @@ export async function generateMetadata({
   const { id: idStr } = await params
   const locale = await getLocale()
   const auth = await getServerSessionUser()
+  const t = await getTranslations("Common.ContentLabel")
+  const contentLabels: ContentLabels = {
+    image: t("image"),
+    expression: t("expression"),
+    video: t("video"),
+  }
 
   let topicId: bigint
   try {
@@ -49,7 +55,7 @@ export async function generateMetadata({
   // 从第一页的第一个帖子获取内容作为描述
   const firstPost = postsData.items[0]
   let description = firstPost
-    ? stripHtmlAndTruncate(firstPost.content || "")
+    ? stripHtmlAndTruncate(firstPost.content || "", 150, contentLabels)
     : ""
   if (description.length > 100) {
     description = description.slice(0, 100).replace(/\n/g, " ").trim() + "..."

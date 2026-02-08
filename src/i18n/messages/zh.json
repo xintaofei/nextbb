@@ -91,6 +91,11 @@
       "success": "操作成功",
       "goBack": "返回上一页"
     },
+    "ContentLabel": {
+      "image": "[图片]",
+      "expression": "[表情]",
+      "video": "[视频]"
+    },
     "credits": "积分",
     "floor": "楼层",
     "winners": "中奖名单",
