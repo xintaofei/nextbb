@@ -3,6 +3,7 @@
 import { useParams } from "next/navigation"
 import { TimelineSteps } from "@/components/ui/timeline-steps"
 import { TopicNavigator } from "@/components/topic/topic-navigator"
+import { TopicToc } from "@/components/topic/topic-toc"
 import { useTranslations } from "next-intl"
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { createPortal } from "react-dom"
@@ -987,18 +988,25 @@ export default function TopicOverviewClient({
       </div>
       {portalContainer &&
         createPortal(
-          <TopicNavigator
-            total={totalPosts}
-            loadedCount={posts.length}
-            isAuthenticated={!!currentUserId}
-            onReplyTopic={() => {
-              setReplyToPostId(null)
-              setReplyOpen(true)
-            }}
-            topicLoading={false}
-            repliesLoading={postListLoading}
-            className="w-full h-auto static"
-          />,
+          topicInfo?.type === TopicType.TUTORIAL ? (
+            <TopicToc
+              contentHtml={posts[0]?.contentHtml || ""}
+              className="w-full h-auto static"
+            />
+          ) : (
+            <TopicNavigator
+              total={totalPosts}
+              loadedCount={posts.length}
+              isAuthenticated={!!currentUserId}
+              onReplyTopic={() => {
+                setReplyToPostId(null)
+                setReplyOpen(true)
+              }}
+              topicLoading={false}
+              repliesLoading={postListLoading}
+              className="w-full h-auto static"
+            />
+          ),
           portalContainer
         )}
       <DrawerEditor

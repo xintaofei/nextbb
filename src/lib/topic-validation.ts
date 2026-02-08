@@ -23,7 +23,7 @@ export function createTopicFormSchema(t: TranslateFn) {
     content: z
       .string()
       .min(20, t("Topic.Validation.content.min"))
-      .max(5000, t("Topic.Validation.content.max")),
+      .max(10000, t("Topic.Validation.content.max")),
     content_html: z.string(),
     tags: z
       .array(z.string().max(15, t("Topic.Validation.tag.maxLength")))
@@ -344,7 +344,7 @@ export function createTopicFormSchemaWithCredits(
     content: z
       .string()
       .min(20, t("Topic.Validation.content.min"))
-      .max(5000, t("Topic.Validation.content.max")),
+      .max(10000, t("Topic.Validation.content.max")),
     content_html: z.string(),
     tags: z
       .array(z.string().max(15, t("Topic.Validation.tag.maxLength")))

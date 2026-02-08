@@ -49,7 +49,7 @@ import parse, {
   HTMLReactParserOptions,
 } from "html-react-parser"
 import { useTranslations } from "next-intl"
-import { cn } from "@/lib/utils"
+import { cn, slugify } from "@/lib/utils"
 import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip"
 
 // --- Helper Components ---
@@ -253,6 +253,27 @@ export const PostHeader = memo(function PostHeader({
 
 export const parseOptions: HTMLReactParserOptions = {
   replace: (domNode) => {
+    if (domNode instanceof Element && /^h[1-6]$/.test(domNode.name)) {
+      if (!domNode.attribs.id) {
+        const getText = (node: DOMNode): string => {
+          if (node.type === "text" && "data" in node) {
+            return (node as { data: string }).data
+          }
+          if (node instanceof Element) {
+            return node.children
+              .map((child) => getText(child as DOMNode))
+              .join("")
+          }
+          return ""
+        }
+        const text = domNode.children
+          .map((child) => getText(child as DOMNode))
+          .join("")
+        const id = slugify(text)
+        domNode.attribs.id = id
+      }
+    }
+
     if (
       domNode instanceof Element &&
       domNode.name === "span" &&

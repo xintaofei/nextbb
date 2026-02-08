@@ -148,6 +148,7 @@
     "reply": "Reply",
     "replies": "replies",
     "replyPlaceholder": "Enter your reply...",
+    "toc": "Table of Contents",
     "floor": {
       "op": "OP",
       "notFound": "Floor {floor} does not exist",
@@ -186,7 +187,7 @@
         "content": {
           "label": "Content",
           "placeholder": "Describe your topic in detail...",
-          "counter": "{count}/5000 characters"
+          "counter": "{count}/10000 characters"
         },
         "tags": {
           "label": "Tags",

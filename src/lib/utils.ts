@@ -141,3 +141,18 @@ export function stripHtmlAndTruncate(
   }
   return text.substring(0, maxLength) + "..."
 }
+
+/**
+ * 将文本转换为 URL 友好的 slug
+ * 支持中文（保留中文不被移除），将空格转换为连字符
+ */
+export function slugify(text: string): string {
+  return text
+    .toLowerCase()
+    .trim()
+    .replace(/[\s\t\n]+/g, "-") // 空白转连字符
+    .replace(/[^\w\u4e00-\u9fa5\-]+/g, "") // 移除非单词、非中文、非连字符的字符
+    .replace(/\-\-+/g, "-") // 合并连续连字符
+    .replace(/^-+/, "") // 移除开头连字符
+    .replace(/-+$/, "") // 移除结尾连字符
+}
