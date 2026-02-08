@@ -63,7 +63,7 @@ const fetcher = (url: string): Promise<{ codes: InviteCode[] }> =>
   fetch(url).then((res) => res.json())
 
 export function InviteCodes() {
-  const t = useTranslations("User.preferences.invitations")
+  const t = useTranslations("User.invitations")
   const [showCreateDialog, setShowCreateDialog] = useState(false)
   const [creating, setCreating] = useState(false)
   const [deleteTarget, setDeleteTarget] = useState<InviteCode | null>(null)
