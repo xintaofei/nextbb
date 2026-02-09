@@ -33,7 +33,7 @@ export function Aside() {
     video: tc("ContentLabel.video"),
   }
   const locale = useLocale()
-  const sidebarRef = useStickySidebar()
+  const sidebarRef = useStickySidebar(pathname)
 
   const { configs } = useConfig()
   const icp = configs?.["basic.icp"] as string | undefined
