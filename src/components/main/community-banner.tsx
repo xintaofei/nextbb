@@ -1,6 +1,6 @@
 "use client"
 
-import { memo } from "react"
+import { Fragment, memo } from "react"
 import useSWR from "swr"
 import { useTranslations } from "next-intl"
 import { useConfig } from "@/components/providers/config-provider"
@@ -60,12 +60,9 @@ export const CommunityBanner = memo(function CommunityBanner() {
       {/* 统计数据 */}
       <div className="flex items-center justify-center gap-4">
         {statItems.map((item, index) => (
-          <>
+          <Fragment key={item.label}>
             {index > 0 && <div className="h-4 w-px bg-border rotate-25" />}
-            <div
-              key={item.label}
-              className="flex items-center gap-1.5 bg-muted px-4 py-1 rounded-full border"
-            >
+            <div className="flex items-center gap-1.5 bg-muted px-4 py-1 rounded-full border">
               <span className="h-1.5 w-1.5 rounded-full shrink-0 bg-foreground" />
               <span className="text-xs text-primary/80">{item.label}</span>
               {isLoading ? (
@@ -76,7 +73,7 @@ export const CommunityBanner = memo(function CommunityBanner() {
                 </span>
               )}
             </div>
-          </>
+          </Fragment>
         ))}
       </div>
     </div>
