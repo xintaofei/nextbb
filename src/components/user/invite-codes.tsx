@@ -182,10 +182,9 @@ export function InviteCodes() {
     if (!deleteTarget) return
     setDeleting(true)
     try {
-      const res = await fetch(
-        `/api/users/me/invite-codes/${deleteTarget.id}`,
-        { method: "DELETE" }
-      )
+      const res = await fetch(`/api/users/me/invite-codes/${deleteTarget.id}`, {
+        method: "DELETE",
+      })
 
       if (!res.ok) {
         const data = await res.json()
@@ -235,22 +234,15 @@ export function InviteCodes() {
       {codes.length === 0 ? (
         <div className="text-center py-12 space-y-2">
           <TicketCheck className="h-12 w-12 mx-auto text-muted-foreground/50" />
-          <p className="text-muted-foreground font-medium">
-            {t("emptyState")}
-          </p>
-          <p className="text-sm text-muted-foreground">
-            {t("emptyStateHint")}
-          </p>
+          <p className="text-muted-foreground font-medium">{t("emptyState")}</p>
+          <p className="text-sm text-muted-foreground">{t("emptyStateHint")}</p>
         </div>
       ) : (
         <div className="space-y-3">
           {codes.map((code) => {
             const isExpanded = expandedIds.has(code.id)
             return (
-              <div
-                key={code.id}
-                className="border rounded-lg p-4 space-y-3"
-              >
+              <div key={code.id} className="border rounded-lg p-4 space-y-3">
                 {/* Header */}
                 <div className="flex items-center justify-between gap-4">
                   <div className="flex items-center gap-2 min-w-0">
@@ -288,9 +280,7 @@ export function InviteCodes() {
                         })
                       : t("noExpiry")}
                   </span>
-                  {code.note && (
-                    <span className="italic">{code.note}</span>
-                  )}
+                  {code.note && <span className="italic">{code.note}</span>}
                 </div>
 
                 {/* Actions */}
@@ -334,10 +324,7 @@ export function InviteCodes() {
                 {isExpanded && code.invitations.length > 0 && (
                   <div className="border-t pt-3 space-y-2">
                     {code.invitations.map((inv) => (
-                      <div
-                        key={inv.id}
-                        className="flex items-center gap-3"
-                      >
+                      <div key={inv.id} className="flex items-center gap-3">
                         <Avatar className="h-6 w-6">
                           <AvatarImage src={inv.inviteeAvatar} />
                           <AvatarFallback className="text-xs">

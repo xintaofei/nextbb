@@ -10,16 +10,8 @@ type RouteParams = {
 const updateSchema = z.object({
   isActive: z.boolean().optional(),
   note: z.string().max(256).optional(),
-  maxUses: z
-    .number()
-    .int()
-    .min(1)
-    .nullable()
-    .optional(),
-  expiresAt: z.iso
-    .datetime()
-    .nullable()
-    .optional(),
+  maxUses: z.number().int().min(1).nullable().optional(),
+  expiresAt: z.iso.datetime().nullable().optional(),
 })
 
 export async function PATCH(request: NextRequest, { params }: RouteParams) {
@@ -111,10 +103,7 @@ export async function DELETE(_request: NextRequest, { params }: RouteParams) {
   }
 
   if (inviteCode.invitations.length > 0) {
-    return NextResponse.json(
-      { error: "HAS_INVITATIONS" },
-      { status: 400 }
-    )
+    return NextResponse.json({ error: "HAS_INVITATIONS" }, { status: 400 })
   }
 
   await prisma.user_invite_codes.delete({

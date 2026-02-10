@@ -84,7 +84,10 @@ export async function PATCH(
     ])
 
     if (emailExists) {
-      return NextResponse.json({ error: "Email already exists" }, { status: 409 })
+      return NextResponse.json(
+        { error: "Email already exists" },
+        { status: 409 }
+      )
     }
 
     if (usernameExists) {

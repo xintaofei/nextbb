@@ -49,18 +49,8 @@ export async function GET() {
 
 const createSchema = z.object({
   note: z.string().max(256).optional().default(""),
-  maxUses: z
-    .number()
-    .int()
-    .min(1)
-    .nullable()
-    .optional()
-    .default(null),
-  expiresAt: z.iso
-    .datetime()
-    .nullable()
-    .optional()
-    .default(null),
+  maxUses: z.number().int().min(1).nullable().optional().default(null),
+  expiresAt: z.iso.datetime().nullable().optional().default(null),
 })
 
 export async function POST(request: Request) {
