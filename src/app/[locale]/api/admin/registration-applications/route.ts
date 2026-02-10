@@ -30,6 +30,9 @@ type RegistrationApplicationListResult = {
   total: number
 }
 
+const DEFAULT_PAGE_SIZE = 20
+const MAX_PAGE_SIZE = 100
+
 export async function GET(req: Request): Promise<Response> {
   const url = new URL(req.url)
   const parsed = QuerySchema.safeParse({
@@ -44,7 +47,10 @@ export async function GET(req: Request): Promise<Response> {
   }
 
   const page = parsed.data.page ? Number(parsed.data.page) : 1
-  const pageSize = parsed.data.pageSize ? Number(parsed.data.pageSize) : 20
+  const requestedPageSize = parsed.data.pageSize
+    ? Number(parsed.data.pageSize)
+    : DEFAULT_PAGE_SIZE
+  const pageSize = Math.min(requestedPageSize, MAX_PAGE_SIZE)
   const q = parsed.data.q?.trim()
 
   const where: {

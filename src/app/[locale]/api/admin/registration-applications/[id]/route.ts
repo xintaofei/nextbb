@@ -15,6 +15,10 @@ const PatchSchema = z.object({
 
 type PatchBody = z.infer<typeof PatchSchema>
 
+const APPLICATION_ALREADY_REVIEWED_ERROR = "APPLICATION_ALREADY_REVIEWED"
+const EMAIL_EXISTS_ERROR = "EMAIL_EXISTS"
+const USERNAME_EXISTS_ERROR = "USERNAME_EXISTS"
+
 function normalizeEmail(email: string): string {
   return email.trim().toLowerCase()
 }
@@ -77,80 +81,135 @@ export async function PATCH(
 
   if (body.action === "approve") {
     const email = normalizeEmail(application.email)
-
-    const [emailExists, usernameExists] = await Promise.all([
-      prisma.users.findUnique({ where: { email } }),
-      prisma.users.findFirst({ where: { name: application.username } }),
-    ])
-
-    if (emailExists) {
-      return NextResponse.json(
-        { error: "Email already exists" },
-        { status: 409 }
-      )
-    }
-
-    if (usernameExists) {
-      return NextResponse.json(
-        { error: "Username already exists" },
-        { status: 409 }
-      )
-    }
-
     const userId = generateId()
     const emailHash = createHash("md5")
       .update(email.trim().toLowerCase())
       .digest("hex")
     const avatarUrl = `https://www.gravatar.com/avatar/${emailHash}`
 
-    const createdUser = await prisma.$transaction(async (tx) => {
-      const userCount = await tx.users.count()
-      const isFirstUser = userCount === 0
+    let createdUser:
+      | {
+          id: bigint
+          email: string
+        }
+      | undefined
 
-      const user = await tx.users.create({
-        data: {
-          id: userId,
-          email,
-          name: application.username,
-          avatar: avatarUrl,
-          password: application.password_hash,
-          status: 1,
-          is_deleted: false,
-          is_admin: isFirstUser,
-        },
-      })
-
-      if (application.invite_code_id) {
-        const inviteCode = await tx.user_invite_codes.findUnique({
-          where: { id: application.invite_code_id },
-          select: { user_id: true },
+    try {
+      createdUser = await prisma.$transaction(async (tx) => {
+        const claimed = await tx.registration_applications.updateMany({
+          where: {
+            id: applicationId,
+            status: "PENDING",
+            user_id: null,
+          },
+          data: {
+            status: "APPROVED",
+            review_reason: reason,
+            reviewer_id: reviewer.userId,
+            reviewed_at: new Date(),
+          },
         })
 
-        if (inviteCode) {
-          await tx.user_invitations.create({
-            data: {
-              id: generateId(),
-              inviter_id: inviteCode.user_id,
-              invitee_id: userId,
-              invite_code_id: application.invite_code_id,
-            },
+        if (claimed.count === 0) {
+          throw new Error(APPLICATION_ALREADY_REVIEWED_ERROR)
+        }
+
+        const [emailExists, usernameExists] = await Promise.all([
+          tx.users.findUnique({ where: { email } }),
+          tx.users.findFirst({ where: { name: application.username } }),
+        ])
+
+        if (emailExists) {
+          throw new Error(EMAIL_EXISTS_ERROR)
+        }
+
+        if (usernameExists) {
+          throw new Error(USERNAME_EXISTS_ERROR)
+        }
+
+        const userCount = await tx.users.count()
+        const isFirstUser = userCount === 0
+
+        const user = await tx.users.create({
+          data: {
+            id: userId,
+            email,
+            name: application.username,
+            avatar: avatarUrl,
+            password: application.password_hash,
+            status: 1,
+            is_deleted: false,
+            is_admin: isFirstUser,
+          },
+        })
+
+        if (application.invite_code_id) {
+          const inviteCode = await tx.user_invite_codes.findUnique({
+            where: { id: application.invite_code_id },
+            select: { user_id: true },
           })
+
+          if (inviteCode) {
+            await tx.user_invitations.create({
+              data: {
+                id: generateId(),
+                inviter_id: inviteCode.user_id,
+                invitee_id: userId,
+                invite_code_id: application.invite_code_id,
+              },
+            })
+          }
+        }
+
+        await tx.registration_applications.update({
+          where: { id: applicationId },
+          data: {
+            user_id: userId,
+          },
+        })
+
+        return {
+          id: user.id,
+          email: user.email,
+        }
+      })
+    } catch (error) {
+      if (error instanceof Error) {
+        if (error.message === APPLICATION_ALREADY_REVIEWED_ERROR) {
+          return NextResponse.json(
+            { error: "Application already reviewed" },
+            { status: 400 }
+          )
+        }
+
+        if (error.message === EMAIL_EXISTS_ERROR) {
+          return NextResponse.json(
+            { error: "Email already exists" },
+            { status: 409 }
+          )
+        }
+
+        if (error.message === USERNAME_EXISTS_ERROR) {
+          return NextResponse.json(
+            { error: "Username already exists" },
+            { status: 409 }
+          )
         }
       }
 
-      await tx.registration_applications.update({
-        where: { id: applicationId },
-        data: {
-          status: "APPROVED",
-          review_reason: reason,
-          reviewer_id: reviewer.userId,
-          reviewed_at: new Date(),
-          user_id: userId,
-        },
-      })
+      console.error("Failed to approve registration application:", error)
+      return NextResponse.json(
+        { error: "Internal server error" },
+        { status: 500 }
+      )
+    }
 
-      return user
-    })
+    if (!createdUser) {
+      return NextResponse.json(
+        { error: "Internal server error" },
+        { status: 500 }
+      )
+    }
 
     await AutomationEvents.userRegister({
       userId: createdUser.id,
@@ -180,8 +239,12 @@ export async function PATCH(
     )
   }
 
-  await prisma.registration_applications.update({
-    where: { id: applicationId },
+  const updated = await prisma.registration_applications.updateMany({
+    where: {
+      id: applicationId,
+      status: "PENDING",
+      user_id: null,
+    },
     data: {
       status: "REJECTED",
       review_reason: reason,
@@ -189,6 +252,13 @@ export async function PATCH(
       reviewed_at: new Date(),
     },
   })
+
+  if (updated.count === 0) {
+    return NextResponse.json(
+      { error: "Application already reviewed" },
+      { status: 400 }
+    )
+  }
 
   try {
     const tEmail = await getTranslations("Auth.Register.review")
