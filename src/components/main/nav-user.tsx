@@ -9,7 +9,6 @@ import {
   LayoutDashboard,
   LogOut,
   Settings,
-  TicketCheck,
   User,
   Activity,
   MoreHorizontal,
@@ -177,19 +176,6 @@ export function NavUser({ onLinkClick, layout = "sidebar" }: NavUserProps) {
                 >
                   <Bell className="mr-2 h-4 w-4" />
                   {tNav("notifications")}
-                </Link>
-              </DropdownMenuItem>
-              <DropdownMenuItem asChild>
-                <Link
-                  href={
-                    encodedUsername
-                      ? `/u/${encodedUsername}/invitations`
-                      : "/login"
-                  }
-                  onClick={onLinkClick}
-                >
-                  <TicketCheck className="mr-2 h-4 w-4" />
-                  {tNav("invitations")}
                 </Link>
               </DropdownMenuItem>
               <DropdownMenuItem asChild>
