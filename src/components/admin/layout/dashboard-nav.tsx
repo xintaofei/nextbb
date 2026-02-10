@@ -52,11 +52,17 @@ export function DashboardNav() {
   const navItems = [
     { label: t("overview"), icon: BarChart3, path: "/admin" },
     { label: t("topics"), icon: FileText, path: "/admin/topics" },
-    { label: t("users"), icon: Users, path: "/admin/users" },
     {
-      label: t("registrationApplications"),
-      icon: ClipboardCheck,
-      path: "/admin/registration-applications",
+      label: t("userManagement"),
+      icon: Users,
+      items: [
+        { label: t("users"), icon: Users, path: "/admin/users" },
+        {
+          label: t("registrationApplications"),
+          icon: ClipboardCheck,
+          path: "/admin/registration-applications",
+        },
+      ],
     },
     {
       label: t("contentStructure"),

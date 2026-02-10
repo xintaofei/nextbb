@@ -919,6 +919,7 @@
     "nav": {
       "overview": "概览",
       "topics": "话题",
+      "userManagement": "用户管理",
       "users": "用户",
       "registrationApplications": "注册审核",
       "categories": "分类",
