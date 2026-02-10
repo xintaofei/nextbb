@@ -622,6 +622,11 @@
       "submit": "Sign Up",
       "inviteCode": "Invite Code",
       "inviteCodePlaceholder": "Enter 32-character invite code",
+      "applicationReason": "Application Reason",
+      "applicationReasonPlaceholder": "Briefly describe your purpose, background, or interests",
+      "applicationReasonHint": "Required when registration review is enabled; results will be sent by email",
+      "pendingTitle": "Application Submitted",
+      "pendingDescription": "You will receive an email after the review is completed",
       "hintTitle": "Sign up with social accounts",
       "questionHaveAccount": "Already have an account?",
       "toLogin": "Go to Sign In",
@@ -630,6 +635,20 @@
         "textBody": "Your registration verification code is: {code}, valid for {minutes} minutes.",
         "htmlLine1": "Your registration verification code is:",
         "htmlLine2": "Valid for {minutes} minutes."
+      },
+      "review": {
+        "approved": {
+          "subject": "Registration Approved",
+          "textBody": "Your registration application has been approved. You can now sign in. Note: {reason}",
+          "htmlLine1": "Your registration application has been approved. You can now sign in.",
+          "htmlLine2": "Note: {reason}"
+        },
+        "rejected": {
+          "subject": "Registration Rejected",
+          "textBody": "Sorry, your registration application was not approved. Reason: {reason}",
+          "htmlLine1": "Sorry, your registration application was not approved.",
+          "htmlLine2": "Reason: {reason}"
+        }
       },
       "error": {
         "failed": "Sign up failed",
@@ -657,7 +676,11 @@
         "inviteCodeInvalid": "Invalid invite code",
         "inviteCodeInactive": "Invite code has been deactivated",
         "inviteCodeExpired": "Invite code has expired",
-        "inviteCodeMaxUsed": "Invite code has reached maximum uses"
+        "inviteCodeMaxUsed": "Invite code has reached maximum uses",
+        "applicationReasonRequired": "Please provide an application reason",
+        "applicationReasonMin": "Application reason must be at least {min} characters",
+        "applicationReasonMax": "Application reason must be at most {max} characters",
+        "applicationPending": "An application with this email or username is already pending"
       }
     },
     "PasswordReset": {
@@ -897,6 +920,7 @@
       "overview": "Overview",
       "topics": "Topics",
       "users": "Users",
+      "registrationApplications": "Registration Review",
       "categories": "Categories",
       "tags": "Tags",
       "badges": "Badges",
@@ -1030,6 +1054,59 @@
       "alreadyOwned": "Already owned",
       "selectAtLeastOne": "Please select at least one badge",
       "empty": "No badges"
+    }
+  },
+  "AdminRegistrationApplications": {
+    "title": "Registration Review",
+    "description": "Review and manage new user registration applications",
+    "filter": {
+      "title": "Filters",
+      "status": "Status",
+      "statusAll": "All statuses",
+      "searchPlaceholder": "Search email or username",
+      "apply": "Apply filters"
+    },
+    "table": {
+      "applicant": "Applicant",
+      "reason": "Application Reason",
+      "status": "Status",
+      "reviewer": "Reviewer",
+      "reviewReason": "Review Reason",
+      "createdAt": "Submitted At",
+      "reviewedAt": "Reviewed At",
+      "actions": "Actions"
+    },
+    "status": {
+      "pending": "Pending",
+      "approved": "Approved",
+      "rejected": "Rejected"
+    },
+    "actions": {
+      "approve": "Approve",
+      "reject": "Reject"
+    },
+    "dialog": {
+      "titleApprove": "Approve Application",
+      "titleReject": "Reject Application",
+      "reasonLabel": "Review Reason",
+      "reasonPlaceholder": "Provide a clear reason for your decision",
+      "submitApprove": "Approve and Notify",
+      "submitReject": "Reject and Notify",
+      "cancel": "Cancel"
+    },
+    "message": {
+      "approveSuccess": "Application approved",
+      "rejectSuccess": "Application rejected",
+      "updateFailed": "Failed to update application",
+      "emailFailed": "Application updated, but notification email failed"
+    },
+    "empty": "No applications",
+    "loading": "Loading...",
+    "pagination": {
+      "total": "Total {count}",
+      "page": "Page {page}",
+      "prev": "Prev",
+      "next": "Next"
     }
   },
   "AdminDonations": {
@@ -1690,6 +1767,10 @@
       "require_invite_code": {
         "label": "Invite Code Registration",
         "description": "When enabled, new users must provide a valid invite code to register"
+      },
+      "review_enabled": {
+        "label": "Registration Review",
+        "description": "New users must submit an application for approval"
       }
     },
     "content": {

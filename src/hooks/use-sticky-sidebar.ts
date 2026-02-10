@@ -29,42 +29,43 @@ export function useStickySidebar(
   useEffect(() => {
     const el = ref.current
     if (!el) return
+    const sidebarState = state.current
 
     const compute = (): void => {
       const current = ref.current
       if (!current) return
 
       const scrollY = window.scrollY
-      const deltaY = scrollY - state.current.prevScrollY
-      const { sidebarHeight } = state.current
+      const deltaY = scrollY - sidebarState.prevScrollY
+      const { sidebarHeight } = sidebarState
       const viewportHeight = window.innerHeight
 
       if (sidebarHeight <= viewportHeight) {
-        state.current.currentTop = 0
+        sidebarState.currentTop = 0
       } else {
         const minTop = viewportHeight - sidebarHeight
 
         if (deltaY > 0) {
-          state.current.currentTop = Math.max(
+          sidebarState.currentTop = Math.max(
             minTop,
-            state.current.currentTop - deltaY
+            sidebarState.currentTop - deltaY
           )
         } else {
-          state.current.currentTop = Math.min(
+          sidebarState.currentTop = Math.min(
             0,
-            state.current.currentTop - deltaY
+            sidebarState.currentTop - deltaY
           )
         }
       }
 
-      current.style.top = `${state.current.currentTop}px`
-      state.current.prevScrollY = scrollY
+      current.style.top = `${sidebarState.currentTop}px`
+      sidebarState.prevScrollY = scrollY
     }
 
     const onScroll = (): void => {
-      if (state.current.rafId) return
-      state.current.rafId = requestAnimationFrame(() => {
-        state.current.rafId = 0
+      if (sidebarState.rafId) return
+      sidebarState.rafId = requestAnimationFrame(() => {
+        sidebarState.rafId = 0
         compute()
       })
     }
@@ -74,24 +75,24 @@ export function useStickySidebar(
       if (!current) return
 
       // 仅在 ResizeObserver 中读取 offsetHeight，缓存到 state
-      state.current.sidebarHeight = current.offsetHeight
+      sidebarState.sidebarHeight = current.offsetHeight
       const viewportHeight = window.innerHeight
-      const minTop = viewportHeight - state.current.sidebarHeight
+      const minTop = viewportHeight - sidebarState.sidebarHeight
 
-      if (state.current.sidebarHeight <= viewportHeight) {
-        state.current.currentTop = 0
+      if (sidebarState.sidebarHeight <= viewportHeight) {
+        sidebarState.currentTop = 0
       } else {
-        state.current.currentTop = Math.max(
+        sidebarState.currentTop = Math.max(
           minTop,
-          Math.min(0, state.current.currentTop)
+          Math.min(0, sidebarState.currentTop)
         )
       }
-      current.style.top = `${state.current.currentTop}px`
+      current.style.top = `${sidebarState.currentTop}px`
     })
 
     // 初始化：缓存高度并计算一次
-    state.current.prevScrollY = window.scrollY
-    state.current.sidebarHeight = el.offsetHeight
+    sidebarState.prevScrollY = window.scrollY
+    sidebarState.sidebarHeight = el.offsetHeight
     compute()
 
     window.addEventListener("scroll", onScroll, { passive: true })
@@ -99,7 +100,7 @@ export function useStickySidebar(
     resizeObserver.observe(el)
 
     return () => {
-      cancelAnimationFrame(state.current.rafId)
+      cancelAnimationFrame(sidebarState.rafId)
       window.removeEventListener("scroll", onScroll)
       window.removeEventListener("resize", onScroll)
       resizeObserver.disconnect()

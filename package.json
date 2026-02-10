@@ -2,6 +2,11 @@
   "name": "nextbb",
   "version": "0.0.2",
   "private": true,
+  "packageManager": "pnpm@10.22.0",
+  "engines": {
+    "node": ">=20.0.0",
+    "pnpm": ">=10.0.0"
+  },
   "scripts": {
     "dev": "next dev",
     "build": "prisma generate && prisma db push --accept-data-loss && tsx prisma/seeds/runner.ts && next build",

@@ -49,19 +49,18 @@ const schema = z.object({
       .regex(/^\d{6}$/)
       .optional()
   ),
-  inviteCode: z.preprocess(
-    (value) => {
-      if (typeof value === "string" && value.trim().length === 0) {
-        return undefined
-      }
-      return value
-    },
-    z
-      .string()
-      .trim()
-      .length(32)
-      .optional()
-  ),
+  inviteCode: z.preprocess((value) => {
+    if (typeof value === "string" && value.trim().length === 0) {
+      return undefined
+    }
+    return value
+  }, z.string().trim().length(32).optional()),
+  applicationReason: z.preprocess((value) => {
+    if (typeof value === "string") {
+      return value.trim()
+    }
+    return value
+  }, z.string().max(500).optional()),
 })
 
 async function isRegistrationEnabled(): Promise<boolean> {
@@ -83,6 +82,14 @@ async function isEmailVerifyEnabled(): Promise<boolean> {
 async function isInviteCodeRequired(): Promise<boolean> {
   const config = await prisma.system_configs.findUnique({
     where: { config_key: "registration.require_invite_code" },
+    select: { config_value: true },
+  })
+  return config?.config_value === "true"
+}
+
+async function isRegistrationReviewEnabled(): Promise<boolean> {
+  const config = await prisma.system_configs.findUnique({
+    where: { config_key: "registration.review_enabled" },
     select: { config_value: true },
   })
   return config?.config_value === "true"
@@ -110,7 +117,8 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: t("invalidParams") }, { status: 400 })
   }
 
-  const { password, username, emailCode, inviteCode } = result.data
+  const { password, username, emailCode, inviteCode, applicationReason } =
+    result.data
   const email = normalizeEmail(result.data.email)
 
   // 从配置获取用户名长度限制
@@ -150,6 +158,23 @@ export async function POST(request: Request) {
       return NextResponse.json(
         { error: t("codeVerificationFailed") },
         { status: 500 }
+      )
+    }
+  }
+
+  const reviewEnabled = await isRegistrationReviewEnabled()
+  if (reviewEnabled) {
+    const minReasonLength = 10
+    if (!applicationReason || applicationReason.length === 0) {
+      return NextResponse.json(
+        { error: t("applicationReasonRequired") },
+        { status: 400 }
+      )
+    }
+    if (applicationReason.length < minReasonLength) {
+      return NextResponse.json(
+        { error: t("applicationReasonMin", { min: minReasonLength }) },
+        { status: 400 }
       )
     }
   }
@@ -217,6 +242,97 @@ export async function POST(request: Request) {
       id: codeRecord.id,
       user_id: codeRecord.user_id,
       maxUses: codeRecord.max_uses,
+    }
+  }
+
+  if (reviewEnabled) {
+    const pendingApplication = await prisma.registration_applications.findFirst(
+      {
+        where: {
+          status: "PENDING",
+          OR: [{ email }, { username }],
+        },
+        select: { id: true },
+      }
+    )
+
+    if (pendingApplication) {
+      return NextResponse.json(
+        { error: t("applicationPending") },
+        { status: 409 }
+      )
+    }
+
+    const [emailExists, usernameExists] = await Promise.all([
+      prisma.users.findUnique({ where: { email } }),
+      prisma.users.findFirst({ where: { name: username } }),
+    ])
+
+    if (emailExists) {
+      return NextResponse.json({ error: t("emailExists") }, { status: 409 })
+    }
+
+    if (usernameExists) {
+      return NextResponse.json({ error: t("usernameExists") }, { status: 409 })
+    }
+
+    const hash = await bcrypt.hash(password, 12)
+    const applicationId = generateId()
+
+    try {
+      await prisma.$transaction(async (tx) => {
+        await tx.registration_applications.create({
+          data: {
+            id: applicationId,
+            email,
+            username,
+            password_hash: hash,
+            application_reason: applicationReason ?? "",
+            status: "PENDING",
+            invite_code_id: validInviteCode?.id ?? null,
+          },
+        })
+
+        if (validInviteCode) {
+          const updated = await tx.user_invite_codes.updateMany({
+            where: {
+              id: validInviteCode.id,
+              OR: [
+                { max_uses: null },
+                { used_count: { lt: validInviteCode.maxUses ?? 99999999 } },
+              ],
+            },
+            data: {
+              used_count: { increment: 1 },
+            },
+          })
+
+          if (updated.count === 0) {
+            throw new Error("INVITE_CODE_MAX_USED")
+          }
+        }
+      })
+
+      return NextResponse.json(
+        {
+          success: true,
+          email,
+          pending: true,
+        },
+        { status: 201 }
+      )
+    } catch (error) {
+      if (error instanceof Error && error.message === "INVITE_CODE_MAX_USED") {
+        return NextResponse.json(
+          { error: t("inviteCodeMaxUsed") },
+          { status: 400 }
+        )
+      }
+      console.error("Registration application failed:", error)
+      return NextResponse.json(
+        { error: t("registrationFailed") },
+        { status: 500 }
+      )
     }
   }
 

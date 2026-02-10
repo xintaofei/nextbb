@@ -134,9 +134,7 @@ function evalRateLimit(
 }
 
 /** 发送重置邮件的速率限制（5 次 / 15 分钟） */
-export function checkSendResetRateLimit(
-  ip: string
-): Promise<RateLimitResult> {
+export function checkSendResetRateLimit(ip: string): Promise<RateLimitResult> {
   return evalRateLimit(
     `pwd_reset:rl:send:${ip}`,
     SEND_RATE_LIMIT_MAX,

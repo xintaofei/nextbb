@@ -19,6 +19,7 @@ import {
   FormMessage,
 } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
+import { Textarea } from "@/components/ui/textarea"
 import { Button } from "@/components/ui/button"
 import { AuthBranding } from "@/components/auth/auth-branding"
 import { OAuthButtons } from "@/components/auth/oauth-buttons"
@@ -30,6 +31,7 @@ type RegisterValues = {
   username: string
   emailCode: string
   inviteCode: string
+  applicationReason: string
 }
 
 type RegisterSubmitValues = {
@@ -38,9 +40,12 @@ type RegisterSubmitValues = {
   username: string
   emailCode?: string
   inviteCode?: string
+  applicationReason?: string
 }
 
-type ApiResponse = { success: true; email: string } | { error: string }
+type ApiResponse =
+  | { success: true; email: string; pending?: boolean }
+  | { error: string }
 
 export default function RegisterPage() {
   const router = useRouter()
@@ -51,6 +56,7 @@ export default function RegisterPage() {
   const [sendingCode, setSendingCode] = useState(false)
   const [codeCooldown, setCodeCooldown] = useState(0)
   const [codeSent, setCodeSent] = useState(false)
+  const [pendingSuccess, setPendingSuccess] = useState(false)
   const { configs } = useConfig()
 
   const logoSrc = configs?.["basic.logo"] || "/nextbb-logo.png"
@@ -59,8 +65,11 @@ export default function RegisterPage() {
   const emailVerifyEnabled = configs?.["registration.email_verify"] === true
   const inviteCodeRequired =
     configs?.["registration.require_invite_code"] === true
+  const reviewEnabled = configs?.["registration.review_enabled"] === true
   const usernameMinLength = configs?.["registration.username_min_length"] ?? 3
   const usernameMaxLength = configs?.["registration.username_max_length"] ?? 32
+  const applicationReasonMinLength = 10
+  const applicationReasonMaxLength = 500
 
   const schema = useMemo(() => {
     return z
@@ -110,6 +119,14 @@ export default function RegisterPage() {
             .trim()
             .length(32, { message: t("error.inviteCodeInvalid") }),
         ]),
+        applicationReason: z
+          .string()
+          .trim()
+          .max(applicationReasonMaxLength, {
+            message: t("error.applicationReasonMax", {
+              max: applicationReasonMaxLength,
+            }),
+          }),
       })
       .superRefine((data, ctx) => {
         if (emailVerifyEnabled && !data.emailCode) {
@@ -126,12 +143,33 @@ export default function RegisterPage() {
             message: t("error.inviteCodeRequired"),
           })
         }
+        if (reviewEnabled) {
+          const reason = data.applicationReason.trim()
+          if (!reason) {
+            ctx.addIssue({
+              code: "custom",
+              path: ["applicationReason"],
+              message: t("error.applicationReasonRequired"),
+            })
+          } else if (reason.length < applicationReasonMinLength) {
+            ctx.addIssue({
+              code: "custom",
+              path: ["applicationReason"],
+              message: t("error.applicationReasonMin", {
+                min: applicationReasonMinLength,
+              }),
+            })
+          }
+        }
       })
   }, [
     emailVerifyEnabled,
     inviteCodeRequired,
+    reviewEnabled,
     usernameMinLength,
     usernameMaxLength,
+    applicationReasonMaxLength,
+    applicationReasonMinLength,
     t,
   ])
 
@@ -143,6 +181,7 @@ export default function RegisterPage() {
       username: "",
       emailCode: "",
       inviteCode: "",
+      applicationReason: "",
     },
     mode: "onChange",
   })
@@ -217,14 +256,20 @@ export default function RegisterPage() {
   const onSubmit = async (values: RegisterValues): Promise<void> => {
     setServerError(null)
     setCodeError(null)
+    setPendingSuccess(false)
     const trimmedEmailCode = values.emailCode.trim()
     const trimmedInviteCode = values.inviteCode.trim()
+    const trimmedApplicationReason = values.applicationReason.trim()
     const payload = {
       email: values.email,
       password: values.password,
       username: values.username,
       emailCode: trimmedEmailCode ? trimmedEmailCode : undefined,
       inviteCode: trimmedInviteCode ? trimmedInviteCode : undefined,
+      applicationReason:
+        reviewEnabled && trimmedApplicationReason
+          ? trimmedApplicationReason
+          : undefined,
     } satisfies RegisterSubmitValues
     const res = await fetch("/api/auth/register", {
       method: "POST",
@@ -234,6 +279,12 @@ export default function RegisterPage() {
     const data: ApiResponse = await res.json()
     if (!res.ok || "error" in data) {
       setServerError("error" in data ? data.error : t("error.failed"))
+      return
+    }
+
+    if ("pending" in data && data.pending) {
+      setPendingSuccess(true)
+      form.reset()
       return
     }
 
@@ -265,6 +316,14 @@ export default function RegisterPage() {
                 {t("error.registrationNotEnabled")}
               </div>
             )}
+            {pendingSuccess ? (
+              <div className="px-4 py-3 bg-emerald-500/10 border border-emerald-500/20 rounded-lg text-emerald-600 text-sm font-medium">
+                <div>{t("pendingTitle")}</div>
+                <div className="text-xs text-emerald-600/80 mt-1">
+                  {t("pendingDescription")}
+                </div>
+              </div>
+            ) : null}
             {/* Mobile Logo */}
             <div className="lg:hidden flex flex-col items-center gap-4">
               <div className="relative w-32 h-32">
@@ -282,7 +341,9 @@ export default function RegisterPage() {
               <h2 className="font-serif text-4xl font-bold tracking-tight">
                 {t("title")}
               </h2>
-              <p className="text-muted-foreground">{t("hintTitle")}</p>
+              <p className="text-muted-foreground">
+                {reviewEnabled ? t("applicationReasonHint") : t("hintTitle")}
+              </p>
             </div>
 
             <Form {...form}>
@@ -428,6 +489,31 @@ export default function RegisterPage() {
                     </FormItem>
                   )}
                 />
+                {reviewEnabled ? (
+                  <FormField
+                    control={form.control}
+                    name="applicationReason"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-sm font-medium">
+                          {t("applicationReason")}
+                        </FormLabel>
+                        <FormControl>
+                          <Textarea
+                            placeholder={t("applicationReasonPlaceholder")}
+                            className="min-h-28"
+                            maxLength={applicationReasonMaxLength}
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                        <div className="text-sm text-muted-foreground">
+                          {t("applicationReasonHint")}
+                        </div>
+                      </FormItem>
+                    )}
+                  />
+                ) : null}
                 {serverError ? (
                   <div className="px-4 py-3 bg-destructive/10 border border-destructive/20 rounded-lg text-destructive text-sm font-medium">
                     {serverError}
@@ -436,7 +522,11 @@ export default function RegisterPage() {
                 <Button
                   type="submit"
                   className="w-full h-11 font-medium"
-                  disabled={form.formState.isSubmitting || !registrationEnabled}
+                  disabled={
+                    form.formState.isSubmitting ||
+                    !registrationEnabled ||
+                    pendingSuccess
+                  }
                 >
                   {form.formState.isSubmitting ? (
                     <Loader2 className="w-5 h-5 animate-spin" />
@@ -447,18 +537,22 @@ export default function RegisterPage() {
               </form>
             </Form>
 
-            <div className="relative">
-              <div className="absolute inset-0 flex items-center">
-                <span className="w-full border-t border-border" />
-              </div>
-              <div className="relative flex justify-center text-xs uppercase">
-                <span className="bg-background px-4 text-muted-foreground font-medium tracking-wider">
-                  {tLogin("or")}
-                </span>
-              </div>
-            </div>
+            {!reviewEnabled ? (
+              <>
+                <div className="relative">
+                  <div className="absolute inset-0 flex items-center">
+                    <span className="w-full border-t border-border" />
+                  </div>
+                  <div className="relative flex justify-center text-xs uppercase">
+                    <span className="bg-background px-4 text-muted-foreground font-medium tracking-wider">
+                      {tLogin("or")}
+                    </span>
+                  </div>
+                </div>
 
-            <OAuthButtons />
+                <OAuthButtons />
+              </>
+            ) : null}
 
             <div className="text-center text-sm text-muted-foreground">
               {t("questionHaveAccount")}{" "}
