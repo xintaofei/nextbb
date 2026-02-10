@@ -62,6 +62,8 @@ model users {
   invite_codes        user_invite_codes[]  @relation("user_invite_codes_user")
   invitations_sent    user_invitations[]   @relation("user_invitations_inviter")
   invitation_received user_invitations?    @relation("user_invitations_invitee")
+  reviewed_registration_applications registration_applications[] @relation("registration_applications_reviewer")
+  registration_application            registration_applications?  @relation("registration_applications_user")
 
   @@unique([email], map: "users_email_key")
   @@map("users")
@@ -971,6 +973,13 @@ enum TranslationTaskPriority {
   URGENT // 紧急优先级
 }
 
+// 注册审核状态枚举
+enum RegistrationApplicationStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
 // 翻译任务表
 model translation_tasks {
   id BigInt @id @db.BigInt
@@ -1402,6 +1411,7 @@ model user_invite_codes {
 
   user        users              @relation("user_invite_codes_user", fields: [user_id], references: [id])
   invitations user_invitations[] @relation("user_invitations_code")
+  registration_applications registration_applications[] @relation("registration_applications_invite_code")
 
   @@index([user_id], map: "user_invite_codes_user_index")
   @@index([code], map: "user_invite_codes_code_index")
@@ -1423,4 +1433,28 @@ model user_invitations {
   @@index([invitee_id], map: "user_invitations_invitee_index")
   @@index([invite_code_id], map: "user_invitations_code_index")
   @@map("user_invitations")
+}
+
+model registration_applications {
+  id                 BigInt   @id @db.BigInt
+  email              String   @db.VarChar(256)
+  username           String   @db.VarChar(32)
+  password_hash      String   @db.VarChar(255)
+  application_reason String   @db.Text
+  status             RegistrationApplicationStatus @default(PENDING)
+  review_reason      String?  @db.Text
+  reviewer_id        BigInt?  @db.BigInt
+  reviewed_at        DateTime?
+  invite_code_id     BigInt?  @db.BigInt
+  user_id            BigInt?  @unique @db.BigInt
+  created_at         DateTime @default(now())
+  updated_at         DateTime @updatedAt
+
+  reviewer    users?             @relation("registration_applications_reviewer", fields: [reviewer_id], references: [id])
+  invite_code user_invite_codes? @relation("registration_applications_invite_code", fields: [invite_code_id], references: [id])
+  user        users?             @relation("registration_applications_user", fields: [user_id], references: [id])
+
+  @@index([email, status], map: "registration_applications_email_status_index")
+  @@index([created_at], map: "registration_applications_created_at_index")
+  @@map("registration_applications")
 }

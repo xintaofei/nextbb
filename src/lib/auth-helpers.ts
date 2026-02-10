@@ -254,6 +254,14 @@ export async function createNewOAuthUser(
     return false
   }
 
+  const reviewEnabled = await getConfigValue("registration.review_enabled")
+  if (reviewEnabled) {
+    console.log(
+      `[OAuth] 注册审核已开启，拒绝创建新用户: ${email} (provider: ${provider})`
+    )
+    return false
+  }
+
   const id = generateId()
 
   let name: string =

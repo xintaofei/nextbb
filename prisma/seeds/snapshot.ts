@@ -120,6 +120,14 @@ async function seedSystemConfigs(tx: TxClient): Promise<void> {
       pub: true,
     },
     {
+      key: "registration.review_enabled",
+      value: "false",
+      type: "boolean",
+      cat: "registration",
+      desc: "是否开启注册审核",
+      pub: true,
+    },
+    {
       key: "content.topic.publish_permission",
       value: "all",
       type: "string",

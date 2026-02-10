@@ -622,6 +622,11 @@
       "submit": "注册",
       "inviteCode": "邀请码",
       "inviteCodePlaceholder": "请输入 32 位邀请码",
+      "applicationReason": "注册申请说明",
+      "applicationReasonPlaceholder": "请简要说明注册目的、背景或兴趣",
+      "applicationReasonHint": "开启注册审核后需填写，审核结果将通过邮件通知",
+      "pendingTitle": "申请已提交",
+      "pendingDescription": "管理员审核完成后会发送邮件通知您",
       "hintTitle": "支持社交账号一键注册",
       "questionHaveAccount": "已有账号？",
       "toLogin": "去登录",
@@ -630,6 +635,20 @@
         "textBody": "您的注册验证码是：{code}，有效期 {minutes} 分钟。",
         "htmlLine1": "您的注册验证码是：",
         "htmlLine2": "有效期 {minutes} 分钟。"
+      },
+      "review": {
+        "approved": {
+          "subject": "注册审核通过",
+          "textBody": "您的注册申请已通过审核，现在可以使用邮箱登录。审核说明：{reason}",
+          "htmlLine1": "您的注册申请已通过审核，现在可以使用邮箱登录。",
+          "htmlLine2": "审核说明：{reason}"
+        },
+        "rejected": {
+          "subject": "注册审核未通过",
+          "textBody": "很抱歉，您的注册申请未通过审核。原因：{reason}",
+          "htmlLine1": "很抱歉，您的注册申请未通过审核。",
+          "htmlLine2": "原因：{reason}"
+        }
       },
       "error": {
         "failed": "注册失败",
@@ -657,7 +676,11 @@
         "inviteCodeInvalid": "邀请码无效",
         "inviteCodeInactive": "邀请码已停用",
         "inviteCodeExpired": "邀请码已过期",
-        "inviteCodeMaxUsed": "邀请码已达到最大使用次数"
+        "inviteCodeMaxUsed": "邀请码已达到最大使用次数",
+        "applicationReasonRequired": "请填写注册申请说明",
+        "applicationReasonMin": "申请说明至少需要 {min} 个字符",
+        "applicationReasonMax": "申请说明最多 {max} 个字符",
+        "applicationPending": "该邮箱或用户名已提交审核，请等待管理员处理"
       }
     },
     "PasswordReset": {
@@ -897,6 +920,7 @@
       "overview": "概览",
       "topics": "话题",
       "users": "用户",
+      "registrationApplications": "注册审核",
       "categories": "分类",
       "tags": "标签",
       "badges": "徽章",
@@ -1030,6 +1054,59 @@
       "alreadyOwned": "已拥有",
       "selectAtLeastOne": "请至少选择一个徽章",
       "empty": "暂无徽章"
+    }
+  },
+  "AdminRegistrationApplications": {
+    "title": "注册审核",
+    "description": "审核和管理新用户的注册申请",
+    "filter": {
+      "title": "筛选",
+      "status": "状态",
+      "statusAll": "全部状态",
+      "searchPlaceholder": "搜索邮箱或用户名",
+      "apply": "应用筛选"
+    },
+    "table": {
+      "applicant": "申请人",
+      "reason": "申请说明",
+      "status": "状态",
+      "reviewer": "审核人",
+      "reviewReason": "审核原因",
+      "createdAt": "提交时间",
+      "reviewedAt": "审核时间",
+      "actions": "操作"
+    },
+    "status": {
+      "pending": "待审核",
+      "approved": "已通过",
+      "rejected": "已拒绝"
+    },
+    "actions": {
+      "approve": "通过",
+      "reject": "拒绝"
+    },
+    "dialog": {
+      "titleApprove": "通过申请",
+      "titleReject": "拒绝申请",
+      "reasonLabel": "审核原因",
+      "reasonPlaceholder": "请填写审核原因",
+      "submitApprove": "通过并通知",
+      "submitReject": "拒绝并通知",
+      "cancel": "取消"
+    },
+    "message": {
+      "approveSuccess": "申请已通过",
+      "rejectSuccess": "申请已拒绝",
+      "updateFailed": "更新申请失败",
+      "emailFailed": "申请已更新，但邮件通知失败"
+    },
+    "empty": "暂无申请",
+    "loading": "加载中...",
+    "pagination": {
+      "total": "共 {count} 条",
+      "page": "第 {page} 页",
+      "prev": "上一页",
+      "next": "下一页"
     }
   },
   "AdminDonations": {
@@ -1690,6 +1767,10 @@
       "require_invite_code": {
         "label": "邀请码注册",
         "description": "开启后新用户必须提供有效邀请码才能注册"
+      },
+      "review_enabled": {
+        "label": "注册审核",
+        "description": "开启后新用户提交申请并等待管理员审核"
       }
     },
     "content": {
