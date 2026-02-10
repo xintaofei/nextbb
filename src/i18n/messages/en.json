@@ -919,6 +919,7 @@
     "nav": {
       "overview": "Overview",
       "topics": "Topics",
+      "userManagement": "User Management",
       "users": "Users",
       "registrationApplications": "Registration Review",
       "categories": "Categories",
